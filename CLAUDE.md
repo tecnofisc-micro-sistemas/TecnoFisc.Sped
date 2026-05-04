@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 `ARCHITECTURE.md` at the repo root is the master design document. Read it first every session. It defines naming rules, dependency rules, the staged development plan, and the public API shape. The notes below are operational shortcuts — they do not replace it.
 
+`STAGE_4_REGISTROS.md` at the repo root is the operational appendix for Stage 4. It lists every EFD Contribuições registro as an atomic sub-stage `4.001` … `4.203`, with its PDF page number in the layout guide. Before starting work on a registro, look up its sub-stage row there and open the PDF directly at the listed page (do not read the whole guide).
+
 ## Build / test / run
 
 Solution file is `TecnoFisc.Sped.slnx` (new SDK XML format). All projects target **.NET 10**.

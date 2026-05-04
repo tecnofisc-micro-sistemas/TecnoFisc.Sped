@@ -127,14 +127,15 @@ public static class CatalogoBuilder
 
         lista.Sort(static (a, b) => a.Ordem.CompareTo(b.Ordem));
 
-        // Detecta lacunas — ordens devem ser sequenciais a partir de 1.
+        // Detecta lacunas — REG é Nº 1 (implícito); os campos marcados começam em 2 e
+        // devem ser sequenciais, casando com a coluna "Nº" do Guia Prático.
         for (int i = 0; i < lista.Count; i++)
         {
-            int esperado = i + 1;
+            int esperado = i + 2;
             if (lista[i].Ordem != esperado)
                 throw new InvalidOperationException(
-                    $"Ordens de campos de {tipo.FullName} devem ser sequenciais a partir de 1; " +
-                    $"esperava {esperado}, encontrei {lista[i].Ordem} ({lista[i].Campo.Nome}).");
+                    $"Ordens de campos de {tipo.FullName} devem ser sequenciais a partir de 2 " +
+                    $"(REG ocupa a posição 1); esperava {esperado}, encontrei {lista[i].Ordem} ({lista[i].Campo.Nome}).");
         }
 
         return lista.Count == 0

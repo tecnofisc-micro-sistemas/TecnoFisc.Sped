@@ -1,14 +1,17 @@
 namespace TecnoFisc.Sped.Core.Atributos;
 
 /// <summary>
-/// Marca uma propriedade como um campo persistido em um registro SPED. A ordem reflete a
-/// posição da coluna dentro da linha pipe-delimitada, contada a partir do primeiro campo
-/// posterior ao código do registro (REG é considerado coluna 0 e não é marcado).
+/// Marca uma propriedade como um campo persistido em um registro SPED. A ordem espelha a
+/// numeração "Nº" das tabelas do Guia Prático: REG é o campo Nº 1 (não recebe atributo,
+/// é resolvido pelo próprio código do registro) e os demais começam em <c>Ordem = 2</c>.
 /// </summary>
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
 public sealed class CampoSpedAttribute : Attribute
 {
-    /// <summary>Posição do campo dentro da linha (1-based, REG fica na posição 0).</summary>
+    /// <summary>
+    /// Posição do campo no layout, idêntica à coluna "Nº" do Guia Prático. REG ocupa a
+    /// posição 1 (implícita); o primeiro campo declarado em código começa em 2.
+    /// </summary>
     public required int Ordem { get; init; }
 
     /// <summary>Tamanho máximo declarado pelo layout. <c>0</c> indica tamanho livre.</summary>

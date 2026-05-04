@@ -62,7 +62,7 @@ public sealed class CatalogoBuilderTests
 
         var ordens = meta!.Campos.Select(c => c.Ordem).ToList();
 
-        ordens.Should().Equal([1, 2, 3, 4, 5]);
+        ordens.Should().Equal([2, 3, 4, 5, 6]);
         meta.Campos.Select(c => c.Nome).Should().Equal(["CodVer", "DtIni", "DtFin", "Nome", "Cnpj"]);
     }
 

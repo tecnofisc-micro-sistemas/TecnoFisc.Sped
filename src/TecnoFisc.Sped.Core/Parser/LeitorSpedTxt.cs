@@ -167,7 +167,8 @@ public sealed class LeitorSpedTxt : ILeitorSped
 
         MetadadosRegistro? metadados = null;
         RegistroSped? registro = null;
-        int posicaoCampo = 0; // 0 = REG; 1..N = campos do layout
+        // Posição na nomenclatura do Guia Prático: 1 = REG; 2..N = campos do layout.
+        int posicaoCampo = 1;
         int inicioCampo = 0;
 
         for (int i = 0; i <= conteudo.Length; i++)
@@ -177,7 +178,7 @@ public sealed class LeitorSpedTxt : ILeitorSped
 
             var fatia = conteudo[inicioCampo..i];
 
-            if (posicaoCampo == 0)
+            if (posicaoCampo == 1)
             {
                 if (!_catalogo.TentarObter(fatia, out metadados))
                     throw new ErroLayoutSpedException(
@@ -188,7 +189,7 @@ public sealed class LeitorSpedTxt : ILeitorSped
             }
             else if (metadados is not null && registro is not null)
             {
-                int indice = posicaoCampo - 1;
+                int indice = posicaoCampo - 2;
                 if (indice < metadados.Campos.Count)
                 {
                     var campo = metadados.Campos[indice];

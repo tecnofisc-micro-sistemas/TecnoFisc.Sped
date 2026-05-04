@@ -1,0 +1,200 @@
+using System.Text;
+
+using TecnoFisc.Sped.Core.Abstracoes;
+using TecnoFisc.Sped.Core.Catalogo;
+using TecnoFisc.Sped.Core.Erros;
+using TecnoFisc.Sped.Core.Parser;
+using TecnoFisc.Sped.Core.Tests._Sintetico;
+
+namespace TecnoFisc.Sped.Core.Tests.Parser;
+
+public sealed class LeitorSpedTxtTests
+{
+    private static readonly IRegistroSpedCatalogo _catalogo =
+        CatalogoBuilder.BuildFromAssembly(typeof(Registro0000Sintetico).Assembly);
+
+    private static MemoryStream FluxoSped(string conteudo)
+        => new(EncodingSped.Latin1.GetBytes(conteudo));
+
+    private static async Task<List<RegistroSped>> LerTodosAsync(string conteudo)
+    {
+        var leitor = new LeitorSpedTxt(_catalogo);
+        var resultado = new List<RegistroSped>();
+        await foreach (var registro in leitor.LerAsync(FluxoSped(conteudo)))
+            resultado.Add(registro);
+        return resultado;
+    }
+
+    [Fact]
+    public async Task LerAsync_ArquivoSimples_MaterializaRegistrosNaOrdem()
+    {
+        const string sped =
+            "|0000|006|01012025|31012025|EMPRESA TESTE|11222333000181|\r\n" +
+            "|C001|0|\r\n" +
+            "|C100|0|123|1500,75|5102|\r\n" +
+            "|9999|3|\r\n";
+
+        var registros = await LerTodosAsync(sped);
+
+        registros.Select(r => r.Codigo).Should().Equal(["0000", "C001", "C100", "9999"]);
+
+        var r0000 = registros.OfType<Registro0000Sintetico>().Single();
+        r0000.CodVer.Should().Be("006");
+        r0000.DtIni.Should().Be(new DateOnly(2025, 1, 1));
+        r0000.DtFin.Should().Be(new DateOnly(2025, 1, 31));
+        r0000.Nome.Should().Be("EMPRESA TESTE");
+        r0000.Cnpj.ToString().Should().Be("11222333000181");
+
+        var r9999 = registros.OfType<Registro9999Sintetico>().Single();
+        r9999.QtdLin.Should().Be(3);
+    }
+
+    [Fact]
+    public async Task LerAsync_VinculaPaiEFilhosViaPilhaHierarquica()
+    {
+        const string sped =
+            "|0000|006|01012025|31012025|EMPRESA|11222333000181|\r\n" +
+            "|C001|0|\r\n" +
+            "|C100|0|123|1500,75|5102|\r\n" +
+            "|C170|1|MERCADORIA A|10|750,50|\r\n" +
+            "|C170|2|MERCADORIA B|5|750,25|\r\n" +
+            "|C100|0|456|2000,00|6101|\r\n" +
+            "|9999|6|\r\n";
+
+        var registros = await LerTodosAsync(sped);
+
+        var r0000 = registros.OfType<Registro0000Sintetico>().Single();
+        var c001 = registros.OfType<RegistroC001Sintetico>().Single();
+        var c100s = registros.OfType<RegistroC100Sintetico>().ToList();
+        var c170s = registros.OfType<RegistroC170Sintetico>().ToList();
+        var r9999 = registros.OfType<Registro9999Sintetico>().Single();
+
+        c001.Pai.Should().BeSameAs(r0000);
+        c100s[0].Pai.Should().BeSameAs(c001);
+        c100s[1].Pai.Should().BeSameAs(c001);
+        c170s[0].Pai.Should().BeSameAs(c100s[0]);
+        c170s[1].Pai.Should().BeSameAs(c100s[0]);
+        // 9999 está no mesmo nível de 0000 (raiz/fechador): ambos são raízes, não pai/filho.
+        r9999.Pai.Should().BeNull();
+
+        r0000.Filhos.Should().Equal([c001]);
+        r9999.Filhos.Should().BeEmpty();
+        c001.Filhos.Should().Equal(c100s);
+        c100s[0].Filhos.Should().Equal(c170s);
+        c100s[1].Filhos.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task LerAsync_AceitaTerminadorSomenteLF()
+    {
+        const string sped =
+            "|0000|006|01012025|31012025|EMPRESA|11222333000181|\n" +
+            "|9999|2|\n";
+
+        var registros = await LerTodosAsync(sped);
+
+        registros.Select(r => r.Codigo).Should().Equal(["0000", "9999"]);
+    }
+
+    [Fact]
+    public async Task LerAsync_AceitaUltimaLinhaSemTerminador()
+    {
+        const string sped =
+            "|0000|006|01012025|31012025|EMPRESA|11222333000181|\r\n" +
+            "|9999|2|";
+
+        var registros = await LerTodosAsync(sped);
+
+        registros.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task LerAsync_IgnoraLinhasVazias()
+    {
+        const string sped =
+            "|0000|006|01012025|31012025|EMPRESA|11222333000181|\r\n" +
+            "\r\n" +
+            "|9999|2|\r\n";
+
+        var registros = await LerTodosAsync(sped);
+
+        registros.Select(r => r.Codigo).Should().Equal(["0000", "9999"]);
+    }
+
+    [Fact]
+    public async Task LerAsync_QuandoCodigoDesconhecido_LancaErroLayout()
+    {
+        const string sped = "|XXXX|1|\r\n";
+
+        var act = async () => await LerTodosAsync(sped);
+
+        var assercao = await act.Should().ThrowAsync<ErroLayoutSpedException>();
+        assercao.Which.Erro.CodigoRegistro.Should().Be("XXXX");
+        assercao.Which.Erro.Linha.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task LerAsync_QuandoSemPipeInicial_LancaErroFormato()
+    {
+        const string sped = "0000|006|01012025|31012025|EMPRESA|11222333000181|\r\n";
+
+        var act = async () => await LerTodosAsync(sped);
+
+        await act.Should().ThrowAsync<ErroFormatoSpedException>();
+    }
+
+    [Fact]
+    public async Task LerAsync_QuandoCampoNumericoMalformado_LancaErroFormato()
+    {
+        const string sped = "|C001|abc|\r\n";
+
+        var act = async () => await LerTodosAsync(sped);
+
+        var assercao = await act.Should().ThrowAsync<ErroFormatoSpedException>();
+        assercao.Which.Erro.CodigoRegistro.Should().Be("C001");
+        assercao.Which.Erro.Campo.Should().Be("IndMov");
+    }
+
+    [Fact]
+    public async Task LerAsync_AceitaCaracteresAcentuadosLatin1()
+    {
+        const string sped =
+            "|0000|006|01012025|31012025|AÇÃO LTDA|11222333000181|\r\n" +
+            "|9999|2|\r\n";
+
+        var registros = await LerTodosAsync(sped);
+
+        var r0000 = registros.OfType<Registro0000Sintetico>().Single();
+        r0000.Nome.Should().Be("AÇÃO LTDA");
+    }
+
+    [Fact]
+    public async Task LerAsync_StreamGrandeAlemDoBufferInterno_LeTodasAsLinhas()
+    {
+        // Gera mais de 8 KB de conteúdo para forçar múltiplas iterações de PipeReader.ReadAsync.
+        var construtor = new StringBuilder();
+        construtor.AppendLine("|0000|006|01012025|31012025|EMPRESA|11222333000181|");
+        construtor.AppendLine("|C001|0|");
+        for (int i = 1; i <= 500; i++)
+            construtor.AppendLine($"|C100|0|{i}|1000,00|5102|");
+        construtor.AppendLine("|9999|503|");
+
+        var registros = await LerTodosAsync(construtor.ToString());
+
+        registros.OfType<RegistroC100Sintetico>().Should().HaveCount(500);
+        registros.OfType<RegistroC100Sintetico>().Last().CodPart.Should().Be(500);
+    }
+
+    [Fact]
+    public async Task LerAsync_QuandoStreamNulo_LancaArgumentNullException()
+    {
+        var leitor = new LeitorSpedTxt(_catalogo);
+
+        var act = async () =>
+        {
+            await foreach (var _ in leitor.LerAsync(null!)) { }
+        };
+
+        await act.Should().ThrowAsync<ArgumentNullException>();
+    }
+}

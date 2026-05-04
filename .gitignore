@@ -79,3 +79,6 @@ secrets.json
 *.log
 *.tmp
 *.bak
+
+# Especificações oficiais Receita Federal (mantidas localmente, não versionadas)
+*.pdf

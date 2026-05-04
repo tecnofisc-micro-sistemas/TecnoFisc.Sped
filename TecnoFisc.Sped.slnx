@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/TecnoFisc.Sped.Core/TecnoFisc.Sped.Core.csproj" />
+    <Project Path="src/TecnoFisc.Sped.EfdContribuicoes/TecnoFisc.Sped.EfdContribuicoes.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/TecnoFisc.Sped.Core.Tests/TecnoFisc.Sped.Core.Tests.csproj" />
+  </Folder>
+</Solution>

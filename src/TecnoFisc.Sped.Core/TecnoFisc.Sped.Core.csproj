@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Núcleo compartilhado da família TecnoFisc.Sped: value objects fiscais e infraestrutura de parsing/geração para arquivos SPED.</Description>
+    <PackageId>TecnoFisc.Sped.Core</PackageId>
+    <PackageTags>sped;efd;nfe;fiscal;brasil;tecnofisc</PackageTags>
+  </PropertyGroup>
+
+</Project>

@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Implementação .NET do layout EFD Contribuições (PIS/COFINS) — leitura, escrita e modelo tipado dos registros publicados pela Receita Federal.</Description>
+    <PackageId>TecnoFisc.Sped.EfdContribuicoes</PackageId>
+    <PackageTags>sped;efd-contribuicoes;pis;cofins;fiscal;brasil;tecnofisc</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TecnoFisc.Sped.Core\TecnoFisc.Sped.Core.csproj" />
+  </ItemGroup>
+
+</Project>

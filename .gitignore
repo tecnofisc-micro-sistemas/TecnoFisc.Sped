@@ -1,0 +1,81 @@
+# .NET build output
+bin/
+obj/
+out/
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Ll]og/
+[Ll]ogs/
+
+# .NET / NuGet caches
+*.nupkg
+*.snupkg
+.packages/
+.nuget/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+.nuget/packages/
+
+# Visual Studio / Rider / VS Code
+.vs/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+.vscode/
+*.swp
+
+# Test results / coverage
+TestResults/
+[Cc]overage/
+*.coverage
+*.coveragexml
+coverage*.json
+coverage*.xml
+coverage*.info
+*.opencover.xml
+
+# BenchmarkDotNet
+BenchmarkDotNet.Artifacts/
+
+# Rider / ReSharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Local secrets / env
+*.local.json
+appsettings.Local.json
+.env
+.env.*
+!.env.example
+secrets.json
+
+# SPED sample files (anonymized fixtures committed under tests/Fixtures/ should be allowed explicitly)
+*.sped
+*.txt.sped
+
+# Generated source output (kept out of source control)
+**/Generated/
+*.g.cs
+*.g.i.cs
+
+# Misc
+*.log
+*.tmp
+*.bak

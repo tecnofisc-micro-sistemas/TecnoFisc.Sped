@@ -1,0 +1,63 @@
+<Project>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <AnalysisMode>Recommended</AnalysisMode>
+    <DebugType>portable</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+    <NeutralLanguage>pt-BR</NeutralLanguage>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <!--
+      CS1591 (missing XML doc) silenced enquanto a biblioteca está em scaffolding.
+      Quando os docs públicos forem escritos (Stage 7+), remover esta linha.
+    -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <!-- Package metadata defaults (per-project may override Description, PackageId) -->
+  <PropertyGroup>
+    <Authors>TecnoFisc Micro Sistemas</Authors>
+    <Company>TecnoFisc Micro Sistemas</Company>
+    <Product>TecnoFisc.Sped</Product>
+    <Copyright>Copyright (c) TecnoFisc Micro Sistemas</Copyright>
+    <PackageProjectUrl>https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+  </PropertyGroup>
+
+  <!-- Source library projects (under src/) are packable by default -->
+  <PropertyGroup Condition="'$(MSBuildProjectDirectory.Contains(`\src\`))' == 'true' OR '$(MSBuildProjectDirectory.Contains(`/src/`))' == 'true'">
+    <IsPackable>true</IsPackable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <!-- Tests / benchmarks / samples are not packable -->
+  <PropertyGroup Condition="'$(MSBuildProjectDirectory.Contains(`\tests\`))' == 'true' OR '$(MSBuildProjectDirectory.Contains(`/tests/`))' == 'true'">
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <!-- Habilita docs para satisfazer IDE0005 sob TreatWarningsAsErrors -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(MSBuildProjectDirectory.Contains(`\benchmarks\`))' == 'true' OR '$(MSBuildProjectDirectory.Contains(`/benchmarks/`))' == 'true'">
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(MSBuildProjectDirectory.Contains(`\samples\`))' == 'true' OR '$(MSBuildProjectDirectory.Contains(`/samples/`))' == 'true'">
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+</Project>

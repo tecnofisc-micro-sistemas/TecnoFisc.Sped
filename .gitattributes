@@ -1,0 +1,32 @@
+# Auto-detect text + normalize to LF in repo. Working tree may use platform native.
+* text=auto
+
+# Source / config: LF in repo
+*.cs            text eol=lf diff=csharp
+*.csproj        text eol=lf
+*.props         text eol=lf
+*.targets       text eol=lf
+*.slnx          text eol=lf
+*.sln           text eol=crlf
+*.json          text eol=lf
+*.yml           text eol=lf
+*.yaml          text eol=lf
+*.md            text eol=lf
+*.editorconfig  text eol=lf
+*.gitignore     text eol=lf
+*.gitattributes text eol=lf
+
+# SPED .txt fixtures: byte-exact, no normalization
+tests/**/Fixtures/**/*.txt -text
+
+# Binaries
+*.pdf  binary
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.zip  binary
+*.dll  binary
+*.exe  binary
+*.snk  binary
+*.pfx  binary

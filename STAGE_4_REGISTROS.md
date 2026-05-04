@@ -75,7 +75,7 @@ Block headers are informational; numbering is global and contiguous (4.001 → 4
 | [x] | 4.004 | Registro 0100 | Dados do Contabilista | 70 |
 | [x] | 4.005 | Registro 0110 | Regimes de Apuração da Contribuição Social e de Apropriação de Crédito | 71 |
 | [x] | 4.006 | Registro 0111 | Tabela de Receita Bruta Mensal Para Fins de Rateio de Créditos Comuns | 74 |
-| [ ] | 4.007 | Registro 0120 | Identificação de EFD-Contribuições Sem Dados a Escriturar | 75 |
+| [x] | 4.007 | Registro 0120 | Identificação de EFD-Contribuições Sem Dados a Escriturar | 75 |
 | [ ] | 4.008 | Registro 0140 | Tabela de Cadastro de Estabelecimentos | 78 |
 | [ ] | 4.009 | Registro 0145 | Regime de Apuração da Contribuição Previdenciária Sobre a Receita Bruta | 79 |
 | [ ] | 4.010 | Registro 0150 | Tabela de Cadastro do Participante | 81 |

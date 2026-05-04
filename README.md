@@ -93,9 +93,7 @@ Detalhes completos em `ARCHITECTURE.md` §1.3 e §13.
 
 ## Licença
 
-A definir. Atualmente este repositório é **privado** e mantido pela
-**TecnoFisc Micro Sistemas**. Possível abertura como software livre será avaliada
-após a estabilização da API pública.
+[MIT](LICENSE) — © 2026 TecnoFisc Micro Sistemas.
 
 ## Contribuição
 

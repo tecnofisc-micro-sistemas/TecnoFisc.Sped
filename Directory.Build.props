@@ -31,6 +31,7 @@
     <PackageProjectUrl>https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped</PackageProjectUrl>
     <RepositoryUrl>https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>

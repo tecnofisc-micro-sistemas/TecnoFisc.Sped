@@ -73,7 +73,7 @@ Block headers are informational; numbering is global and contiguous (4.001 → 4
 | [x] | 4.002 | Registro 0001 | Abertura do Bloco 0 | 69 |
 | [x] | 4.003 | Registro 0035 | Identificação de Sociedade em Conta de Participação – SCP | 69 |
 | [x] | 4.004 | Registro 0100 | Dados do Contabilista | 70 |
-| [ ] | 4.005 | Registro 0110 | Regimes de Apuração da Contribuição Social e de Apropriação de Crédito | 71 |
+| [x] | 4.005 | Registro 0110 | Regimes de Apuração da Contribuição Social e de Apropriação de Crédito | 71 |
 | [ ] | 4.006 | Registro 0111 | Tabela de Receita Bruta Mensal Para Fins de Rateio de Créditos Comuns | 74 |
 | [ ] | 4.007 | Registro 0120 | Identificação de EFD-Contribuições Sem Dados a Escriturar | 75 |
 | [ ] | 4.008 | Registro 0140 | Tabela de Cadastro de Estabelecimentos | 78 |

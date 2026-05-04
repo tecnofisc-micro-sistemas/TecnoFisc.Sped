@@ -86,9 +86,9 @@ Block headers are informational; numbering is global and contiguous (4.001 → 4
 | [x] | 4.015 | Registro 0208 | Código de Grupos por Marca Comercial – Refri (bebidas frias) | 86 |
 | [x] | 4.016 | Registro 0400 | Tabela de Natureza da Operação/Prestação | 88 |
 | [x] | 4.017 | Registro 0450 | Tabela de Informação Complementar do Documento Fiscal | 88 |
-| [ ] | 4.018 | Registro 0500 | Plano de Contas Contábeis | 89 |
-| [ ] | 4.019 | Registro 0600 | Centro de Custos | 91 |
-| [ ] | 4.020 | Registro 0900 | Composição das Receitas do Período – Receita Bruta e Demais Receitas | 91 |
+| [x] | 4.018 | Registro 0500 | Plano de Contas Contábeis | 89 |
+| [x] | 4.019 | Registro 0600 | Centro de Custos | 91 |
+| [x] | 4.020 | Registro 0900 | Composição das Receitas do Período – Receita Bruta e Demais Receitas | 91 |
 | [x] | 4.021 | Registro 0990 | Encerramento do Bloco 0 | 94 |
 
 ### Bloco A — Documentos Fiscais (Serviços Sujeitos ao ISS)

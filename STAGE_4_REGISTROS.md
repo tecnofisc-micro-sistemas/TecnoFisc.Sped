@@ -81,9 +81,9 @@ Block headers are informational; numbering is global and contiguous (4.001 → 4
 | [x] | 4.010 | Registro 0150 | Tabela de Cadastro do Participante | 81 |
 | [x] | 4.011 | Registro 0190 | Identificação das Unidades de Medida | 83 |
 | [x] | 4.012 | Registro 0200 | Tabela de Identificação do Item (Produtos e Serviços) | 83 |
-| [ ] | 4.013 | Registro 0205 | Alteração do Item | 85 |
-| [ ] | 4.014 | Registro 0206 | Código de Produto Conforme Tabela ANP (Combustíveis) | 86 |
-| [ ] | 4.015 | Registro 0208 | Código de Grupos por Marca Comercial – Refri (bebidas frias) | 86 |
+| [x] | 4.013 | Registro 0205 | Alteração do Item | 85 |
+| [x] | 4.014 | Registro 0206 | Código de Produto Conforme Tabela ANP (Combustíveis) | 86 |
+| [x] | 4.015 | Registro 0208 | Código de Grupos por Marca Comercial – Refri (bebidas frias) | 86 |
 | [ ] | 4.016 | Registro 0400 | Tabela de Natureza da Operação/Prestação | 88 |
 | [ ] | 4.017 | Registro 0450 | Tabela de Informação Complementar do Documento Fiscal | 88 |
 | [ ] | 4.018 | Registro 0500 | Plano de Contas Contábeis | 89 |

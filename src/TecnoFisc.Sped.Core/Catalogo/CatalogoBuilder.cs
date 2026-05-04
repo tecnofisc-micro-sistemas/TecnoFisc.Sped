@@ -5,6 +5,7 @@ using System.Reflection;
 
 using TecnoFisc.Sped.Core.Abstracoes;
 using TecnoFisc.Sped.Core.Atributos;
+using TecnoFisc.Sped.Core.Gerador;
 using TecnoFisc.Sped.Core.Parser;
 
 namespace TecnoFisc.Sped.Core.Catalogo;
@@ -107,6 +108,8 @@ public static class CatalogoBuilder
 
             var conversor = ConstruirConversor(propriedade.PropertyType, atributo);
             var setter = ConstruirSetter(propriedade);
+            var getter = ConstruirGetter(propriedade);
+            var serializador = ConstruirSerializador(propriedade.PropertyType, atributo);
 
             lista.Add((atributo.Ordem, new MetadadosCampo(
                 propriedade.Name,
@@ -117,7 +120,9 @@ public static class CatalogoBuilder
                 atributo.Obrigatorio,
                 atributo.Formato,
                 conversor,
-                setter)));
+                setter,
+                getter,
+                serializador)));
         }
 
         lista.Sort(static (a, b) => a.Ordem.CompareTo(b.Ordem));
@@ -151,6 +156,17 @@ public static class CatalogoBuilder
 
         return Expression.Lambda<Action<RegistroSped, object?>>(
             atribuicao, paramRegistro, paramValor).Compile();
+    }
+
+    private static Func<RegistroSped, object?> ConstruirGetter(PropertyInfo propriedade)
+    {
+        var paramRegistro = Expression.Parameter(typeof(RegistroSped), "registro");
+
+        Expression registroTipado = Expression.Convert(paramRegistro, propriedade.DeclaringType!);
+        Expression leitura = Expression.Property(registroTipado, propriedade);
+        Expression boxed = Expression.Convert(leitura, typeof(object));
+
+        return Expression.Lambda<Func<RegistroSped, object?>>(boxed, paramRegistro).Compile();
     }
 
     private static Func<string, object?> ConstruirConversor(Type tipo, CampoSpedAttribute atributo)
@@ -211,6 +227,52 @@ public static class CatalogoBuilder
         throw new NotSupportedException(
             $"Tipo de campo SPED não suportado pelo CatalogoBuilder: {alvo.FullName}. " +
             "Registre um conversor via ConversoresPrimitivosCatalogo.Registrar<T>().");
+    }
+
+    private static Func<object, string> ConstruirSerializador(Type tipo, CampoSpedAttribute atributo)
+    {
+        var alvo = Nullable.GetUnderlyingType(tipo) ?? tipo;
+        return SelecionarSerializador(alvo, atributo);
+    }
+
+    private static Func<object, string> SelecionarSerializador(Type alvo, CampoSpedAttribute atributo)
+    {
+        if (alvo == typeof(string))
+            return static v => (string)v;
+
+        if (alvo == typeof(int))
+            return static v => SerializadoresPrimitivos.Inteiro((int)v);
+
+        if (alvo == typeof(long))
+            return static v => SerializadoresPrimitivos.Longo((long)v);
+
+        if (alvo == typeof(short))
+            return static v => SerializadoresPrimitivos.Inteiro((short)v);
+
+        if (alvo == typeof(decimal))
+        {
+            int casas = atributo.Decimais;
+            return v => SerializadoresPrimitivos.DeDecimal((decimal)v, casas);
+        }
+
+        if (alvo == typeof(DateOnly))
+        {
+            string? formato = atributo.Formato;
+            return v => SerializadoresPrimitivos.DataComFormato((DateOnly)v, formato);
+        }
+
+        if (alvo == typeof(bool))
+            return static v => ((bool)v) ? "true" : "false";
+
+        if (alvo == typeof(char))
+            return static v => ((char)v).ToString();
+
+        if (alvo.IsEnum)
+            return static v => v.ToString() ?? string.Empty;
+
+        // Value objects fiscais e demais tipos: usam ToString canônico (responsabilidade do
+        // próprio tipo expor a representação SPED). Cnpj, Cfop, Ncm, etc. já fazem isso.
+        return static v => v.ToString() ?? string.Empty;
     }
 
     private sealed class CatalogoReflexivo(Dictionary<string, MetadadosRegistro> registros)

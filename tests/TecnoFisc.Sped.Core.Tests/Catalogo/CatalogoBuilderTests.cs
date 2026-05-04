@@ -113,6 +113,47 @@ public sealed class CatalogoBuilderTests
     }
 
     [Fact]
+    public void Serializar_ProduzRepresentacaoSPEDPrimitivosEValueObjects()
+    {
+        var catalogo = CatalogoBuilder.BuildFromAssembly(_assembly);
+        catalogo.TentarObter("0000".AsSpan(), out var meta);
+        var registro = (Registro0000Sintetico)meta!.Fabrica();
+        registro.CodVer = "006";
+        registro.DtIni = new DateOnly(2025, 1, 1);
+        registro.DtFin = new DateOnly(2025, 1, 31);
+        registro.Nome = "EMPRESA TESTE";
+        registro.Cnpj = Cnpj.Criar("11222333000181");
+
+        meta.Campos[0].Serializar(registro).Should().Be("006");
+        meta.Campos[1].Serializar(registro).Should().Be("01012025");
+        meta.Campos[2].Serializar(registro).Should().Be("31012025");
+        meta.Campos[3].Serializar(registro).Should().Be("EMPRESA TESTE");
+        meta.Campos[4].Serializar(registro).Should().Be("11222333000181");
+    }
+
+    [Fact]
+    public void Serializar_QuandoStringNula_DevolveVazio()
+    {
+        var catalogo = CatalogoBuilder.BuildFromAssembly(_assembly);
+        catalogo.TentarObter("0000".AsSpan(), out var meta);
+        var registro = (Registro0000Sintetico)meta!.Fabrica();
+        registro.Nome = null;
+
+        meta.Campos[3].Serializar(registro).Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Serializar_AplicaCasasDecimaisDoLayout()
+    {
+        var catalogo = CatalogoBuilder.BuildFromAssembly(_assembly);
+        catalogo.TentarObter("C100".AsSpan(), out var meta);
+        var registro = (RegistroC100Sintetico)meta!.Fabrica();
+        registro.VlDoc = 1500.75m;
+
+        meta.Campos[2].Serializar(registro).Should().Be("1500,75");
+    }
+
+    [Fact]
     public void BuildFromAssembly_SegundaChamada_DevolveMesmaInstanciaDoCache()
     {
         var primeiro = CatalogoBuilder.BuildFromAssembly(_assembly);

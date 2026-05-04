@@ -75,6 +75,24 @@ public sealed class RegistroC170Sintetico : RegistroSped
     public decimal VlItem { get; set; }
 }
 
+[RegistroSped(Codigo = "0990", Nivel = 1, Bloco = "0")]
+public sealed class Registro0990Sintetico : RegistroSped
+{
+    public override string Codigo => "0990";
+
+    [CampoSped(Ordem = 1)]
+    public int QtdLin0 { get; set; }
+}
+
+[RegistroSped(Codigo = "C990", Nivel = 1, Bloco = "C")]
+public sealed class RegistroC990Sintetico : RegistroSped
+{
+    public override string Codigo => "C990";
+
+    [CampoSped(Ordem = 1)]
+    public int QtdLinC { get; set; }
+}
+
 [RegistroSped(Codigo = "9999", Nivel = 0, Bloco = "9")]
 public sealed class Registro9999Sintetico : RegistroSped
 {

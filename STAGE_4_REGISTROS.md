@@ -78,7 +78,7 @@ Block headers are informational; numbering is global and contiguous (4.001 → 4
 | [x] | 4.007 | Registro 0120 | Identificação de EFD-Contribuições Sem Dados a Escriturar | 75 |
 | [x] | 4.008 | Registro 0140 | Tabela de Cadastro de Estabelecimentos | 78 |
 | [x] | 4.009 | Registro 0145 | Regime de Apuração da Contribuição Previdenciária Sobre a Receita Bruta | 79 |
-| [ ] | 4.010 | Registro 0150 | Tabela de Cadastro do Participante | 81 |
+| [x] | 4.010 | Registro 0150 | Tabela de Cadastro do Participante | 81 |
 | [ ] | 4.011 | Registro 0190 | Identificação das Unidades de Medida | 83 |
 | [ ] | 4.012 | Registro 0200 | Tabela de Identificação do Item (Produtos e Serviços) | 83 |
 | [ ] | 4.013 | Registro 0205 | Alteração do Item | 85 |

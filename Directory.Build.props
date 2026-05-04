@@ -44,6 +44,11 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
+  <!-- Embute o README.md da raiz dentro de cada pacote NuGet de src/ -->
+  <ItemGroup Condition="'$(IsPackable)' == 'true'">
+    <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\" Visible="false" />
+  </ItemGroup>
+
   <!-- Tests / benchmarks / samples are not packable -->
   <PropertyGroup Condition="'$(MSBuildProjectDirectory.Contains(`\tests\`))' == 'true' OR '$(MSBuildProjectDirectory.Contains(`/tests/`))' == 'true'">
     <IsPackable>false</IsPackable>

@@ -467,19 +467,27 @@ Performance regression in any benchmark blocks merging.
 - `TotalizadorBlocos` (X990 closers, 9999 file closer).
 - Round-trip tests (parse → generate → parse equality).
 
-### Stage 4 — TecnoFisc.Sped.EfdContribuicoes minimal
+### Stage 4 — TecnoFisc.Sped.EfdContribuicoes (registros, layout V006)
 
-- Records for layout V006: 0000, 0001, 0140, 0150, 0200, C001, C100, C170, C190, C990, F001, F100, F990, 9001, 9990, 9999.
-- All enums needed by these records.
-- `ParserEfdContribuicoes` and `GeradorEfdContribuicoes`.
-- `ArquivoEfdContribuicoes` top-level model.
-- Tests with small synthetic files and at least one real anonymized file.
-- Publish v0.1.0.
+This stage implements **every registro** of the EFD Contribuições layout V006 (guide v1.35). It is decomposed into **203 sub-stages**, numbered `4.001` … `4.203`. The full decomposition table — sub-stage number, registro code, description, PDF page — lives in **`STAGE_4_REGISTROS.md`** at the repo root. Read that file when planning a sub-stage; do not duplicate the table here.
+
+Source of the decomposition is the Section 3 TOC of `Guia_Pratico_EFD_Contribuicoes_Versao_1_35 - 18_06_2021.pdf` (PDF page 3). Order of sub-stages = TOC order: Bloco 0 → A → C → D → F → I → M → P → 1 → 9. Within each block, registro codes ascend.
+
+PR granularity: a typical PR covers **one sub-stage**, but trivial registros (block openers/closers, simple "Processo Referenciado" entries with two or three fields and no validations) **may be batched** into one PR when grouping is logically clean (e.g., all `X990` closers at the end, or a contiguous run of `X9xx` referenciados within the same block). Non-trivial registros — anything with hierarchical children, conditional fields, calculated totalizers, or value-object validation — stay as single-sub-stage PRs.
+
+Stage-level deliverables (independent of the sub-stages):
+
+- All enums and value objects required by the registros (added on demand in the sub-stage that first needs them).
+- `ParserEfdContribuicoes`, `GeradorEfdContribuicoes`, `ArquivoEfdContribuicoes` — added incrementally; the first sub-stages bootstrap the minimum needed to parse/generate, and later sub-stages extend.
+- Real anonymized fixture file exercising every block round-trip.
+
+Publishing: SPED arquivos are all-or-nothing — a partial implementation cannot read a real production file because every record code present in the file must be recognized. Therefore there is **no intermediate release**. Stage 4 ships **v0.1.0 only after all 203 sub-stages are merged** and the parser+generator can round-trip a full real anonymized arquivo.
 
 ### Stage 5 — Streaming API
 
 - `ParserEfdContribuicoes.LerStreamingAsync` returning `IAsyncEnumerable<RegistroSped>`.
 - Memory-bounded benchmarks proving constant memory for arbitrary file size.
+- Can land mid-Stage 4, after enough registros exist to exercise the streaming path end-to-end.
 
 ### Stage 6 — Source generator (performance phase)
 
@@ -488,35 +496,29 @@ Performance regression in any benchmark blocks merging.
 - Generator producing factory delegates.
 - Migration of `EfdContribuicoes` to use generated catalog.
 - Benchmark comparison: reflection cache vs source-generated.
+- Lands once the registro shape has stabilized — typically after Bloco 0 and Bloco C are complete.
 
-### Stage 7 — TecnoFisc.Sped.EfdContribuicoes complete
-
-- All remaining records for layout V006.
-- All blocks: 0, A, C, D, F, I, M, P, 1, 9.
-- Full layout validation.
-- Publish v0.2.0.
-
-### Stage 8 — Layout V007 (and subsequent)
+### Stage 7 — Layout V007 (and subsequent)
 
 - `LayoutEfdContribuicoes` enum extended.
 - Subclasses or version-aware serialization for changed records.
 - Parser auto-detects from `Registro0000` and instantiates appropriate variants.
 - Tests covering both V006 and V007 round-trips.
 
-### Stage 9 — TecnoFisc.Sped.Fiscal (EFD ICMS-IPI)
+### Stage 8 — TecnoFisc.Sped.Fiscal (EFD ICMS-IPI)
 
 - Same internal structure as EfdContribuicoes.
 - Independent set of record classes.
 - Publish v0.3.0 of Fiscal.
 
-### Stage 10 — TecnoFisc.Sped.NFe (XML)
+### Stage 9 — TecnoFisc.Sped.NFe (XML)
 
 - XML parser using `System.Xml.Linq`.
 - Strongly-typed model classes mapping NF-e XML schema.
 - Digital signature validation (validation only — not signing).
 - Generator for NF-e XML (for retificadoras and similar use cases).
 
-### Stage 11 — Additional projects (incremental)
+### Stage 10 — Additional projects (incremental)
 
 - TecnoFisc.Sped.Reinf
 - TecnoFisc.Sped.Ecd

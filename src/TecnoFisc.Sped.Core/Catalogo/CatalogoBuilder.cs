@@ -268,7 +268,18 @@ public static class CatalogoBuilder
             return static v => ((char)v).ToString();
 
         if (alvo.IsEnum)
-            return static v => v.ToString() ?? string.Empty;
+        {
+            // Em SPED o valor de um campo enumerado é sempre o código numérico, com largura
+            // fixa quando o layout declara Tam=NNN*. Serializa pelo underlying e zero-pad até
+            // Tamanho (quando Tamanho > 0).
+            int tamanho = atributo.Tamanho;
+            return v =>
+            {
+                long underlying = ((IConvertible)v).ToInt64(CultureInfo.InvariantCulture);
+                string texto = underlying.ToString(CultureInfo.InvariantCulture);
+                return tamanho > 0 ? texto.PadLeft(tamanho, '0') : texto;
+            };
+        }
 
         // Value objects fiscais e demais tipos: usam ToString canônico (responsabilidade do
         // próprio tipo expor a representação SPED). Cnpj, Cfop, Ncm, etc. já fazem isso.

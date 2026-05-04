@@ -5,5 +5,6 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/TecnoFisc.Sped.Core.Tests/TecnoFisc.Sped.Core.Tests.csproj" />
+    <Project Path="tests/TecnoFisc.Sped.EfdContribuicoes.Tests/TecnoFisc.Sped.EfdContribuicoes.Tests.csproj" />
   </Folder>
 </Solution>

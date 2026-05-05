@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 `ARCHITECTURE.md` at the repo root is the master design document. Read it first every session. It defines naming rules, dependency rules, the staged development plan, and the public API shape. The notes below are operational shortcuts — they do not replace it.
 
-`STAGE_4_REGISTROS.md` at the repo root is the operational appendix for Stage 4. It lists every EFD Contribuições registro as an atomic sub-stage `4.001` … `4.203`, with its PDF page number in the layout guide. Before starting work on a registro, look up its sub-stage row there and open the PDF directly at the listed page (do not read the whole guide).
+`sped/STAGE_4_REGISTROS.md` is the operational appendix for Stage 4. It lists every EFD Contribuições registro as an atomic sub-stage `4.001` … `4.203`, with its PDF page number in the layout guide. Before starting work on a registro, look up its sub-stage row there and open the PDF directly at the listed page (do not read the whole guide).
 
 ## Build / test / run
 
@@ -28,11 +28,19 @@ dotnet run -c Release --project benchmarks/TecnoFisc.Sped.Benchmarks
 
 ## Authoritative spec for EFD Contribuições
 
-`Guia_Pratico_EFD_Contribuicoes_Versao_1_35 - 18_06_2021.pdf` at repo root is the Receita Federal layout guide (v1.35, layout 006). Use it as the source of truth when implementing fields on records (`RegistroXxxx`): order, type, length, decimals, optionality, valid value lists.
+`sped/guides/Guia_Pratico_EFD_Contribuicoes_Versao_1_35 - 18_06_2021.pdf` is the Receita Federal layout guide (v1.35, layout 006). Use it as the source of truth when implementing fields on records (`RegistroXxxx`): order, type, length, decimals, optionality, valid value lists.
 
 It is large (~4 MB, hundreds of pages). Never read the whole file. Use the `Read` tool's `pages` parameter to fetch only the section for the record you are implementing (e.g., `pages: "120-125"` for one record). The TOC near the start lists each registro and its page.
 
-When the user upgrades to a newer layout (v007+), expect a newer PDF dropped alongside this one — keep both, do not delete.
+The `sped/guides/` folder is gitignored — PDFs live there locally only. When the user upgrades to a newer layout (v007+), expect a newer PDF dropped alongside this one in `sped/guides/` — keep both, do not delete.
+
+## Repo folder map
+
+- `sped/` — SPED-related operational docs and local-only specs.
+  - `sped/STAGE_4_REGISTROS.md` — Stage 4 sub-stage tracking (EFD Contribuições).
+  - `sped/guides/` — Receita Federal PDFs (gitignored, local only).
+- `src/`, `tests/`, `benchmarks/`, `samples/` — target solution layout (per `ARCHITECTURE.md`).
+- `scripts/` — automation (e.g., `auto-implement-sped.ps1`).
 
 ## Repository state
 

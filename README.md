@@ -69,9 +69,12 @@ TecnoFisc.Sped/
 │   └── TecnoFisc.Sped.EfdContribuicoes/    # Layout EFD Contribuições (em construção)
 ├── tests/
 │   └── TecnoFisc.Sped.Core.Tests/
+├── sped/
+│   ├── STAGE_4_REGISTROS.md                # Decomposição do Stage 4 em sub-stages
+│   └── guides/                             # PDFs oficiais Receita Federal (gitignored)
+│       └── Guia_Pratico_EFD_Contribuicoes_*.pdf
 ├── ARCHITECTURE.md                         # Documento mestre (inglês, para LLMs)
-├── CLAUDE.md                               # Instruções para Claude Code
-└── Guia_Pratico_EFD_Contribuicoes_*.pdf    # Especificação oficial Receita Federal
+└── CLAUDE.md                               # Instruções para Claude Code
 ```
 
 A árvore-alvo (com `benchmarks/`, `samples/` e demais pacotes) está descrita em

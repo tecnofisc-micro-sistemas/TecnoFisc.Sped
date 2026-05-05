@@ -469,9 +469,9 @@ Performance regression in any benchmark blocks merging.
 
 ### Stage 4 — TecnoFisc.Sped.EfdContribuicoes (registros, layout V006)
 
-This stage implements **every registro** of the EFD Contribuições layout V006 (guide v1.35). It is decomposed into **203 sub-stages**, numbered `4.001` … `4.203`. The full decomposition table — sub-stage number, registro code, description, PDF page — lives in **`STAGE_4_REGISTROS.md`** at the repo root. Read that file when planning a sub-stage; do not duplicate the table here.
+This stage implements **every registro** of the EFD Contribuições layout V006 (guide v1.35). It is decomposed into **203 sub-stages**, numbered `4.001` … `4.203`. The full decomposition table — sub-stage number, registro code, description, PDF page — lives in **`sped/STAGE_4_REGISTROS.md`**. Read that file when planning a sub-stage; do not duplicate the table here.
 
-Source of the decomposition is the Section 3 TOC of `Guia_Pratico_EFD_Contribuicoes_Versao_1_35 - 18_06_2021.pdf` (PDF page 3). Order of sub-stages = TOC order: Bloco 0 → A → C → D → F → I → M → P → 1 → 9. Within each block, registro codes ascend.
+Source of the decomposition is the Section 3 TOC of `sped/guides/Guia_Pratico_EFD_Contribuicoes_Versao_1_35 - 18_06_2021.pdf` (PDF page 3). Order of sub-stages = TOC order: Bloco 0 → A → C → D → F → I → M → P → 1 → 9. Within each block, registro codes ascend.
 
 PR granularity: a typical PR covers **one sub-stage**, but trivial registros (block openers/closers, simple "Processo Referenciado" entries with two or three fields and no validations) **may be batched** into one PR when grouping is logically clean (e.g., all `X990` closers at the end, or a contiguous run of `X9xx` referenciados within the same block). Non-trivial registros — anything with hierarchical children, conditional fields, calculated totalizers, or value-object validation — stay as single-sub-stage PRs.
 

@@ -56,7 +56,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
 $RepoRoot     = Split-Path $PSScriptRoot -Parent
-$TrackingFile = Join-Path $RepoRoot "STAGE_4_REGISTROS.md"
+$TrackingFile = Join-Path $RepoRoot "sped/STAGE_4_REGISTROS.md"
 
 # ─── helpers ────────────────────────────────────────────────────────────────
 

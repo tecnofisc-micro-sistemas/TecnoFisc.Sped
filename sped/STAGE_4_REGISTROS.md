@@ -7,7 +7,7 @@
 ## How to use this document
 
 1. Pick the next un-implemented sub-stage (smallest 4.NNN with no PR merged yet).
-2. Open `Guia_Pratico_EFD_Contribuicoes_Versao_1_35 - 18_06_2021.pdf` directly at the PDF page listed for that sub-stage — do **not** read the whole guide. Use the `Read` tool's `pages` parameter (e.g., `pages: "117-122"` for `RegistroC170`). Some records span multiple pages; read until the next `Registro NNNN` heading.
+2. Open `sped/guides/Guia_Pratico_EFD_Contribuicoes_Versao_1_35 - 18_06_2021.pdf` directly at the PDF page listed for that sub-stage — do **not** read the whole guide. Use the `Read` tool's `pages` parameter (e.g., `pages: "117-122"` for `RegistroC170`). Some records span multiple pages; read until the next `Registro NNNN` heading.
 3. Implement the record class under the correct block folder (`Registros/Bloco0/`, `Registros/BlocoC/`, etc.) following naming and code conventions in `ARCHITECTURE.md`.
 4. Write tests in the matching `tests/` project: field validation, round-trip (parse → generate → parse), and at least one fixture line copied from the guide's example.
 5. PR with `feat: ` prefix and Portuguese body. See **PR granularity** below for when batching multiple sub-stages into one PR is allowed.
@@ -320,7 +320,7 @@ Block headers are informational; numbering is global and contiguous (4.001 → 4
 
 ## Notes
 
-- **Page numbers** refer to the physical pages of `Guia_Pratico_EFD_Contribuicoes_Versao_1_35 - 18_06_2021.pdf`. They were extracted from the Section 3 TOC (PDF page 3) and matched 1:1 to PDF pages — there is no offset between TOC and physical pages for this guide.
+- **Page numbers** refer to the physical pages of `sped/guides/Guia_Pratico_EFD_Contribuicoes_Versao_1_35 - 18_06_2021.pdf`. They were extracted from the Section 3 TOC (PDF page 3) and matched 1:1 to PDF pages — there is no offset between TOC and physical pages for this guide.
 - **Range tip:** when reading the PDF for a sub-stage, fetch a small range that includes the next registro's start as a safety boundary, e.g., for `Registro 0140` (page 78) read `pages: "78-81"` so the section ends naturally before `Registro 0145` (page 79) and `Registro 0150` (page 81).
 - **Newer layout (V007+):** when a newer guide PDF is dropped, regenerate this list from the new TOC and bump the affected sub-stages under Stage 7 (Layout V007).
 - **Other SPED leiautes:** this file documents only EFD Contribuições. EFD ICMS-IPI, EFD-Reinf, ECD, ECF, eSocial and the rest are tracked in their own appendices, generated the same way from their own *Guia Prático* PDFs when their stage starts.

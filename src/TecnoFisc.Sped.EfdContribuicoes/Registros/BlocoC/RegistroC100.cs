@@ -1,5 +1,6 @@
 using TecnoFisc.Sped.Core.Abstracoes;
 using TecnoFisc.Sped.Core.Atributos;
+using TecnoFisc.Sped.Core.Enums;
 using TecnoFisc.Sped.Core.ValueObjects;
 using TecnoFisc.Sped.EfdContribuicoes.Enums;
 

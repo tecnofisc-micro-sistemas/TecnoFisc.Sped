@@ -1,9 +1,15 @@
-namespace TecnoFisc.Sped.EfdContribuicoes.Enums;
+namespace TecnoFisc.Sped.Core.Enums;
 
 /// <summary>
-/// Código da situação do documento fiscal — campo COD_SIT dos Registros A100 e C100.
-/// Tabela 4.1.2. Valores conforme Guia Prático v1.35, p. 96/108.
+/// Código da situação do documento fiscal — Tabela 4.1.2 do Ato COTEPE/ICMS nº 09/2008
+/// e nº 44/2018. Regida pelo EFD ICMS-IPI; referenciada por todos os leiautes SPED
+/// que escrituram documentos fiscais (campo COD_SIT).
 /// </summary>
+/// <remarks>
+/// Códigos 04 (NF-e/NFC-e/CT-e denegado) e 05 (NF-e/NFC-e/CT-e numeração inutilizada)
+/// descontinuados a partir de janeiro de 2023 — mantidos no enum apenas para parsing
+/// de arquivos com fatos geradores anteriores ao corte.
+/// </remarks>
 public enum CodigoSituacaoDocumentoFiscal
 {
     /// <summary>00 — Documento regular.</summary>

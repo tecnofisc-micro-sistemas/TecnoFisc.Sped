@@ -112,18 +112,18 @@ Block headers are informational; numbering is global and contiguous (4.001 → 4
 | [x] | 4.031 | Registro C010 | Identificação do Estabelecimento | 105 |
 | [x] | 4.032 | Registro C100 | Documento - Nota Fiscal (01), Avulsa (1B), Produtor (04), NF-e (55), NFC-e (65) | 105 |
 | [ ] | 4.033 | Registro C110 | Complemento do Documento - Informação Complementar da Nota Fiscal (01, 1B, 04, 55) | 114 |
-| [ ] | 4.034 | Registro C111 | Processo Referenciado | 114 |
+| [x] | 4.034 | Registro C111 | Processo Referenciado | 114 |
 | [ ] | 4.035 | Registro C120 | Complemento do Documento - Operações de Importação (Código 01) | 115 |
 | [ ] | 4.036 | Registro C170 | Complemento do Documento - Itens do Documento (01, 1B, 04, 55) | 117 |
 | [ ] | 4.037 | Registro C175 | Registro Analítico do Documento (Código 65) | 122 |
 | [ ] | 4.038 | Registro C180 | Consolidação de NF-e Emitidas Pela Pessoa Jurídica (55, 65) – Vendas | 126 |
 | [ ] | 4.039 | Registro C181 | Detalhamento da Consolidação – Vendas – PIS/Pasep | 130 |
 | [ ] | 4.040 | Registro C185 | Detalhamento da Consolidação – Vendas – Cofins | 132 |
-| [ ] | 4.041 | Registro C188 | Processo Referenciado | 134 |
+| [x] | 4.041 | Registro C188 | Processo Referenciado | 134 |
 | [ ] | 4.042 | Registro C190 | Consolidação de NF-e (55) – Aquisições com Crédito e Devoluções | 135 |
 | [ ] | 4.043 | Registro C191 | Detalhamento da Consolidação – Aquisições/Devoluções – PIS/Pasep | 139 |
 | [ ] | 4.044 | Registro C195 | Detalhamento da Consolidação – Aquisições/Devoluções – Cofins | 142 |
-| [ ] | 4.045 | Registro C198 | Processo Referenciado | 145 |
+| [x] | 4.045 | Registro C198 | Processo Referenciado | 145 |
 | [ ] | 4.046 | Registro C199 | Complemento do Documento - Operações de Importação (Código 55) | 146 |
 | [ ] | 4.047 | Registro C380 | NF Venda a Consumidor (02) - Consolidação de Documentos Emitidos | 147 |
 | [ ] | 4.048 | Registro C381 | Detalhamento da Consolidação – PIS/Pasep | 148 |
@@ -134,27 +134,27 @@ Block headers are informational; numbering is global and contiguous (4.001 → 4
 | [ ] | 4.053 | Registro C405 | Redução Z (Códigos 02 e 2D) | 154 |
 | [ ] | 4.054 | Registro C481 | Resumo Diário ECF – PIS/Pasep (02, 2D) | 155 |
 | [ ] | 4.055 | Registro C485 | Resumo Diário ECF – Cofins (02, 2D) | 157 |
-| [ ] | 4.056 | Registro C489 | Processo Referenciado | 159 |
+| [x] | 4.056 | Registro C489 | Processo Referenciado | 159 |
 | [ ] | 4.057 | Registro C490 | Consolidação de Documentos Emitidos por ECF (02, 2D, 59, 60) | 160 |
 | [ ] | 4.058 | Registro C491 | Detalhamento Consolidação ECF (02, 2D, 59, 60) – PIS/Pasep | 160 |
 | [ ] | 4.059 | Registro C495 | Detalhamento Consolidação ECF (02, 2D, 59, 60) – Cofins | 162 |
-| [ ] | 4.060 | Registro C499 | Processo Referenciado | 164 |
+| [x] | 4.060 | Registro C499 | Processo Referenciado | 164 |
 | [ ] | 4.061 | Registro C500 | NF/Conta Energia (06), NF3e (66), Água (29), Gás (28), NF-e (55) – Entrada com Crédito | 165 |
 | [ ] | 4.062 | Registro C501 | Complemento da Operação (06, 28, 29) – PIS/Pasep | 167 |
 | [ ] | 4.063 | Registro C505 | Complemento da Operação (06, 28, 29) – Cofins | 169 |
-| [ ] | 4.064 | Registro C509 | Processo Referenciado | 171 |
+| [x] | 4.064 | Registro C509 | Processo Referenciado | 171 |
 | [ ] | 4.065 | Registro C600 | Consolidação Diária NF Energia/Água/Gás – Saída | 172 |
 | [ ] | 4.066 | Registro C601 | Complemento Consolidação Diária (06, 28, 29) – Saídas – PIS/Pasep | 174 |
 | [ ] | 4.067 | Registro C605 | Complemento Consolidação Diária (06, 28, 29) – Saídas – Cofins | 175 |
-| [ ] | 4.068 | Registro C609 | Processo Referenciado | 176 |
+| [x] | 4.068 | Registro C609 | Processo Referenciado | 176 |
 | [ ] | 4.069 | Registro C800 | Cupom Fiscal Eletrônico (Código 59) | 177 |
 | [ ] | 4.070 | Registro C810 | Detalhamento CF-e (59) – PIS/Pasep e Cofins | 179 |
 | [ ] | 4.071 | Registro C820 | Detalhamento CF-e (59) – PIS/Pasep e Cofins por Unidade de Medida | 182 |
-| [ ] | 4.072 | Registro C830 | Processo Referenciado | 184 |
+| [x] | 4.072 | Registro C830 | Processo Referenciado | 184 |
 | [ ] | 4.073 | Registro C860 | Identificação do Equipamento SAT-CF-e | 184 |
 | [ ] | 4.074 | Registro C870 | Resumo Diário SAT-CF-e (59) – PIS/Pasep e Cofins | 185 |
 | [ ] | 4.075 | Registro C880 | Resumo Diário SAT-CF-e (59) – PIS/Pasep e Cofins por Unidade de Medida | 188 |
-| [ ] | 4.076 | Registro C890 | Processo Referenciado | 191 |
+| [x] | 4.076 | Registro C890 | Processo Referenciado | 191 |
 | [x] | 4.077 | Registro C990 | Encerramento do Bloco C | 192 |
 
 ### Bloco D — Documentos Fiscais II (Serviços / ICMS)

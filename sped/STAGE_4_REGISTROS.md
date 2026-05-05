@@ -114,7 +114,7 @@ Block headers are informational; numbering is global and contiguous (4.001 → 4
 | [x] | 4.033 | Registro C110 | Complemento do Documento - Informação Complementar da Nota Fiscal (01, 1B, 04, 55) | 114 |
 | [x] | 4.034 | Registro C111 | Processo Referenciado | 114 |
 | [x] | 4.035 | Registro C120 | Complemento do Documento - Operações de Importação (Código 01) | 115 |
-| [ ] | 4.036 | Registro C170 | Complemento do Documento - Itens do Documento (01, 1B, 04, 55) | 117 |
+| [x] | 4.036 | Registro C170 | Complemento do Documento - Itens do Documento (01, 1B, 04, 55) | 117 |
 | [ ] | 4.037 | Registro C175 | Registro Analítico do Documento (Código 65) | 122 |
 | [ ] | 4.038 | Registro C180 | Consolidação de NF-e Emitidas Pela Pessoa Jurídica (55, 65) – Vendas | 126 |
 | [ ] | 4.039 | Registro C181 | Detalhamento da Consolidação – Vendas – PIS/Pasep | 130 |

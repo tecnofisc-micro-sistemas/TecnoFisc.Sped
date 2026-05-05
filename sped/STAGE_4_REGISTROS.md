@@ -163,7 +163,7 @@ Block headers are informational; numbering is global and contiguous (4.001 → 4
 | --- | --- | --- | --- | --- |
 | [x] | 4.078 | Registro D001 | Abertura do Bloco D | 193 |
 | [x] | 4.079 | Registro D010 | Identificação do Estabelecimento | 193 |
-| [ ] | 4.080 | Registro D100 | Aquisição de Serviços de Transporte (07, 08, 8B, 09, 10, 11, 26, 27, 57, 63, 67) | 194 |
+| [x] | 4.080 | Registro D100 | Aquisição de Serviços de Transporte (07, 08, 8B, 09, 10, 11, 26, 27, 57, 63, 67) | 194 |
 | [ ] | 4.081 | Registro D101 | Complemento do Documento de Transporte – PIS/Pasep | 197 |
 | [ ] | 4.082 | Registro D105 | Complemento do Documento de Transporte – Cofins | 200 |
 | [ ] | 4.083 | Registro D111 | Processo Referenciado | 202 |

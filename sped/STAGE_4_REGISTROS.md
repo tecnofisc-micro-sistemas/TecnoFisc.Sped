@@ -117,7 +117,7 @@ Block headers are informational; numbering is global and contiguous (4.001 → 4
 | [x] | 4.036 | Registro C170 | Complemento do Documento - Itens do Documento (01, 1B, 04, 55) | 117 |
 | [x] | 4.037 | Registro C175 | Registro Analítico do Documento (Código 65) | 122 |
 | [x] | 4.038 | Registro C180 | Consolidação de NF-e Emitidas Pela Pessoa Jurídica (55, 65) – Vendas | 126 |
-| [ ] | 4.039 | Registro C181 | Detalhamento da Consolidação – Vendas – PIS/Pasep | 130 |
+| [x] | 4.039 | Registro C181 | Detalhamento da Consolidação – Vendas – PIS/Pasep | 130 |
 | [ ] | 4.040 | Registro C185 | Detalhamento da Consolidação – Vendas – Cofins | 132 |
 | [x] | 4.041 | Registro C188 | Processo Referenciado | 134 |
 | [ ] | 4.042 | Registro C190 | Consolidação de NF-e (55) – Aquisições com Crédito e Devoluções | 135 |

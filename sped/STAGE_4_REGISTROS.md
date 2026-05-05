@@ -167,10 +167,10 @@ Block headers are informational; numbering is global and contiguous (4.001 → 4
 | [x] | 4.081 | Registro D101 | Complemento do Documento de Transporte – PIS/Pasep | 197 |
 | [x] | 4.082 | Registro D105 | Complemento do Documento de Transporte – Cofins | 200 |
 | [x] | 4.083 | Registro D111 | Processo Referenciado | 202 |
-| [ ] | 4.084 | Registro D200 | Resumo Diário – Prestação de Serviços de Transporte | 203 |
-| [ ] | 4.085 | Registro D201 | Totalização do Resumo Diário – PIS/Pasep | 204 |
-| [ ] | 4.086 | Registro D205 | Totalização do Resumo Diário – Cofins | 206 |
-| [ ] | 4.087 | Registro D209 | Processo Referenciado | 207 |
+| [x] | 4.084 | Registro D200 | Resumo Diário – Prestação de Serviços de Transporte | 203 |
+| [x] | 4.085 | Registro D201 | Totalização do Resumo Diário – PIS/Pasep | 204 |
+| [x] | 4.086 | Registro D205 | Totalização do Resumo Diário – Cofins | 206 |
+| [x] | 4.087 | Registro D209 | Processo Referenciado | 207 |
 | [ ] | 4.088 | Registro D300 | Resumo Diário - Bilhetes Consolidados de Passagem (13, 14, 15, 16, 18) | 208 |
 | [ ] | 4.089 | Registro D309 | Processo Referenciado | 210 |
 | [ ] | 4.090 | Registro D350 | Resumo Diário Cupom Fiscal Emitido por ECF (2E, 13, 14, 15, 16) | 211 |

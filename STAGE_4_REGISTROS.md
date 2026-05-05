@@ -96,7 +96,7 @@ Block headers are informational; numbering is global and contiguous (4.001 → 4
 | Feito | Sub-stage | Registro | Descrição | Página PDF |
 | --- | --- | --- | --- | --- |
 | [x] | 4.022 | Registro A001 | Abertura do Bloco A | 95 |
-| [ ] | 4.023 | Registro A010 | Identificação do Estabelecimento | 95 |
+| [x] | 4.023 | Registro A010 | Identificação do Estabelecimento | 95 |
 | [ ] | 4.024 | Registro A100 | Documento - Nota Fiscal de Serviço | 96 |
 | [ ] | 4.025 | Registro A110 | Complemento do Documento - Informação Complementar da NF | 98 |
 | [ ] | 4.026 | Registro A111 | Processo Referenciado | 99 |

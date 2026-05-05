@@ -1,8 +1,9 @@
-namespace TecnoFisc.Sped.EfdContribuicoes.Enums;
+namespace TecnoFisc.Sped.Core.Enums;
 
 /// <summary>
-/// Indicador de movimentação física do item/produto — campo IND_MOV do Registro C170.
-/// Valores válidos pelo Guia Prático v1.35: <c>0, 1</c>.
+/// Indicador de movimentação física do item/produto — campo <c>IND_MOV</c> em registros
+/// que escrituram itens de documento fiscal (ex.: C170 no EFD ICMS-IPI e EFD Contribuições).
+/// Origem: leiaute EFD ICMS-IPI (regente do Ato COTEPE/ICMS).
 /// </summary>
 public enum IndicadorMovimentacaoFisica
 {

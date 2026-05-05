@@ -117,8 +117,33 @@ function Get-OpenPRs {
     return $json | ConvertFrom-Json
 }
 
+function Wait-ForChecksToRegister {
+    # gh pr checks sai com exit 1 se nenhum check existe ainda. --watch nao espera
+    # checks aparecerem; se invocado antes do GitHub registrar workflows do PR, sai
+    # imediatamente como falha. Poll ate ter ao menos um check listado.
+    param([int]$PrNumber, [int]$MaxSeconds = 120)
+
+    $sw = [System.Diagnostics.Stopwatch]::StartNew()
+    while ($sw.Elapsed.TotalSeconds -lt $MaxSeconds) {
+        $json = gh pr checks $PrNumber --json bucket 2>$null
+        $exit = $LASTEXITCODE
+        # exit 0 = todos passaram, 8 = pendentes — ambos significam que checks existem.
+        if (($exit -eq 0 -or $exit -eq 8) -and $json -and $json.Trim() -ne "[]") {
+            return $true
+        }
+        Start-Sleep -Seconds 3
+    }
+    return $false
+}
+
 function Wait-ForCI {
     param([int]$PrNumber, [int]$TimeoutMinutes)
+
+    Write-Step "Aguardando checks registrarem no PR #$PrNumber..."
+    if (-not (Wait-ForChecksToRegister -PrNumber $PrNumber -MaxSeconds 120)) {
+        Write-Step "Nenhum check registrado apos 2min — workflow nao disparou?" "Red"
+        return "failed"
+    }
 
     Write-Step "Aguardando CI no PR #$PrNumber via gh --watch --fail-fast (timeout: ${TimeoutMinutes}min)..."
 

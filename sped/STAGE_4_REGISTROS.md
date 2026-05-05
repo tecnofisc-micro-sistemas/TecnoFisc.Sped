@@ -139,9 +139,9 @@ Block headers are informational; numbering is global and contiguous (4.001 → 4
 | [x] | 4.058 | Registro C491 | Detalhamento Consolidação ECF (02, 2D, 59, 60) – PIS/Pasep | 160 |
 | [x] | 4.059 | Registro C495 | Detalhamento Consolidação ECF (02, 2D, 59, 60) – Cofins | 162 |
 | [x] | 4.060 | Registro C499 | Processo Referenciado | 164 |
-| [ ] | 4.061 | Registro C500 | NF/Conta Energia (06), NF3e (66), Água (29), Gás (28), NF-e (55) – Entrada com Crédito | 165 |
-| [ ] | 4.062 | Registro C501 | Complemento da Operação (06, 28, 29) – PIS/Pasep | 167 |
-| [ ] | 4.063 | Registro C505 | Complemento da Operação (06, 28, 29) – Cofins | 169 |
+| [x] | 4.061 | Registro C500 | NF/Conta Energia (06), NF3e (66), Água (29), Gás (28), NF-e (55) – Entrada com Crédito | 165 |
+| [x] | 4.062 | Registro C501 | Complemento da Operação (06, 28, 29) – PIS/Pasep | 167 |
+| [x] | 4.063 | Registro C505 | Complemento da Operação (06, 28, 29) – Cofins | 169 |
 | [x] | 4.064 | Registro C509 | Processo Referenciado | 171 |
 | [ ] | 4.065 | Registro C600 | Consolidação Diária NF Energia/Água/Gás – Saída | 172 |
 | [ ] | 4.066 | Registro C601 | Complemento Consolidação Diária (06, 28, 29) – Saídas – PIS/Pasep | 174 |

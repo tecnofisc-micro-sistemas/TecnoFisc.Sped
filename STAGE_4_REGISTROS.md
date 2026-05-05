@@ -97,11 +97,11 @@ Block headers are informational; numbering is global and contiguous (4.001 → 4
 | --- | --- | --- | --- | --- |
 | [x] | 4.022 | Registro A001 | Abertura do Bloco A | 95 |
 | [x] | 4.023 | Registro A010 | Identificação do Estabelecimento | 95 |
-| [ ] | 4.024 | Registro A100 | Documento - Nota Fiscal de Serviço | 96 |
-| [ ] | 4.025 | Registro A110 | Complemento do Documento - Informação Complementar da NF | 98 |
-| [ ] | 4.026 | Registro A111 | Processo Referenciado | 99 |
-| [ ] | 4.027 | Registro A120 | Informação Complementar - Operações de Importação | 100 |
-| [ ] | 4.028 | Registro A170 | Complemento do Documento - Itens do Documento | 101 |
+| [x] | 4.024 | Registro A100 | Documento - Nota Fiscal de Serviço | 96 |
+| [x] | 4.025 | Registro A110 | Complemento do Documento - Informação Complementar da NF | 98 |
+| [x] | 4.026 | Registro A111 | Processo Referenciado | 99 |
+| [x] | 4.027 | Registro A120 | Informação Complementar - Operações de Importação | 100 |
+| [x] | 4.028 | Registro A170 | Complemento do Documento - Itens do Documento | 101 |
 | [x] | 4.029 | Registro A990 | Encerramento do Bloco A | 104 |
 
 ### Bloco C — Documentos Fiscais I (Mercadorias / ICMS-IPI)

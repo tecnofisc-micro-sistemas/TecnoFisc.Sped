@@ -171,10 +171,10 @@ Block headers are informational; numbering is global and contiguous (4.001 → 4
 | [x] | 4.085 | Registro D201 | Totalização do Resumo Diário – PIS/Pasep | 204 |
 | [x] | 4.086 | Registro D205 | Totalização do Resumo Diário – Cofins | 206 |
 | [x] | 4.087 | Registro D209 | Processo Referenciado | 207 |
-| [ ] | 4.088 | Registro D300 | Resumo Diário - Bilhetes Consolidados de Passagem (13, 14, 15, 16, 18) | 208 |
-| [ ] | 4.089 | Registro D309 | Processo Referenciado | 210 |
-| [ ] | 4.090 | Registro D350 | Resumo Diário Cupom Fiscal Emitido por ECF (2E, 13, 14, 15, 16) | 211 |
-| [ ] | 4.091 | Registro D359 | Processo Referenciado | 214 |
+| [x] | 4.088 | Registro D300 | Resumo Diário - Bilhetes Consolidados de Passagem (13, 14, 15, 16, 18) | 208 |
+| [x] | 4.089 | Registro D309 | Processo Referenciado | 210 |
+| [x] | 4.090 | Registro D350 | Resumo Diário Cupom Fiscal Emitido por ECF (2E, 13, 14, 15, 16) | 211 |
+| [x] | 4.091 | Registro D359 | Processo Referenciado | 214 |
 | [ ] | 4.092 | Registro D500 | NF Serviço de Comunicação (21) e Telecomunicação (22) – Aquisição com Crédito | 215 |
 | [ ] | 4.093 | Registro D501 | Complemento da Operação (21, 22) – PIS/Pasep | 216 |
 | [ ] | 4.094 | Registro D505 | Complemento da Operação (21, 22) – Cofins | 218 |

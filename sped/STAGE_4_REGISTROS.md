@@ -120,7 +120,7 @@ Block headers are informational; numbering is global and contiguous (4.001 → 4
 | [x] | 4.039 | Registro C181 | Detalhamento da Consolidação – Vendas – PIS/Pasep | 130 |
 | [x] | 4.040 | Registro C185 | Detalhamento da Consolidação – Vendas – Cofins | 132 |
 | [x] | 4.041 | Registro C188 | Processo Referenciado | 134 |
-| [ ] | 4.042 | Registro C190 | Consolidação de NF-e (55) – Aquisições com Crédito e Devoluções | 135 |
+| [x] | 4.042 | Registro C190 | Consolidação de NF-e (55) – Aquisições com Crédito e Devoluções | 135 |
 | [ ] | 4.043 | Registro C191 | Detalhamento da Consolidação – Aquisições/Devoluções – PIS/Pasep | 139 |
 | [ ] | 4.044 | Registro C195 | Detalhamento da Consolidação – Aquisições/Devoluções – Cofins | 142 |
 | [x] | 4.045 | Registro C198 | Processo Referenciado | 145 |

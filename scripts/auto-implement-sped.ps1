@@ -176,7 +176,7 @@ Push-Location $RepoRoot
 try {
     # ── dry run ────────────────────────────────────────────────────────────────
     if ($DryRun) {
-        $pending = Get-PendingRegistros -TargetBloco $Bloco
+        $pending = @(Get-PendingRegistros -TargetBloco $Bloco)
         $blocoStr = if ($Bloco) { " no Bloco $Bloco" } else { " (todos os blocos)" }
 
         if ($pending.Count -eq 0) {
@@ -191,7 +191,7 @@ try {
     }
 
     # ── verificacao inicial ────────────────────────────────────────────────────
-    $initialPending = Get-PendingRegistros -TargetBloco $Bloco
+    $initialPending = @(Get-PendingRegistros -TargetBloco $Bloco)
     $blocoStr       = if ($Bloco) { "Bloco $Bloco" } else { "todos os blocos" }
 
     if ($initialPending.Count -eq 0) {
@@ -211,7 +211,7 @@ try {
     while ($mergedCount -lt $MaxPRs) {
 
         # Re-read pendentes a cada iteracao (tracking file muda apos cada merge)
-        $pending = Get-PendingRegistros -TargetBloco $Bloco
+        $pending = @(Get-PendingRegistros -TargetBloco $Bloco)
 
         if ($pending.Count -eq 0) {
             Write-Banner "Todos os registros concluidos!" "Green"
@@ -234,7 +234,7 @@ try {
         Write-Step "Invocando: claude -p /implementar-registro --model $Model"
         Write-Host ""
 
-        claude --print "/implementar-registro" `
+        "" | claude --print "/implementar-registro" `
             --dangerously-skip-permissions `
             --model $Model `
             --no-session-persistence

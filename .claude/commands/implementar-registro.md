@@ -22,8 +22,8 @@ Se `$ARGUMENTS` contiver um módulo (ex.: `efd-contribuicoes`, `fiscal`), use-o.
 Módulos conhecidos e seus mapeamentos:
 
 **EFD Contribuições (Stage 4)**
-- Tracking: `STAGE_4_REGISTROS.md`
-- PDF: `Guia_Pratico_EFD_Contribuicoes_Versao_1_35 - 18_06_2021.pdf`
+- Tracking: `sped/STAGE_4_REGISTROS.md`
+- PDF: `sped/guides/Guia_Pratico_EFD_Contribuicoes_Versao_1_35 - 18_06_2021.pdf`
 - Projeto src: `TecnoFisc.Sped.EfdContribuicoes`
 - Path src: `src/TecnoFisc.Sped.EfdContribuicoes/Registros/Bloco{X}/`
 - Namespace src: `TecnoFisc.Sped.EfdContribuicoes.Registros.Bloco{X}`
@@ -256,7 +256,7 @@ Stage exatamente os arquivos criados/modificados:
 git add src/TecnoFisc.Sped.EfdContribuicoes/Registros/Bloco{X}/Registro{CODE}.cs
 git add tests/TecnoFisc.Sped.EfdContribuicoes.Tests/Registros/Bloco{X}/Registro{CODE}Tests.cs
 # + enums e value objects se criados
-git add STAGE_4_REGISTROS.md
+git add sped/STAGE_4_REGISTROS.md
 ```
 
 Mensagem de commit (Conventional Commits em inglês, corpo em português):

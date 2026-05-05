@@ -82,3 +82,4 @@ secrets.json
 
 # Especificações oficiais Receita Federal (mantidas localmente, não versionadas)
 *.pdf
+sped/guides/

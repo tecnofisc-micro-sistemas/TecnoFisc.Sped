@@ -117,61 +117,65 @@ function Get-OpenPRs {
     return $json | ConvertFrom-Json
 }
 
-function Wait-ForChecksToRegister {
-    # gh pr checks sai com exit 1 se nenhum check existe ainda. --watch nao espera
-    # checks aparecerem; se invocado antes do GitHub registrar workflows do PR, sai
-    # imediatamente como falha. Poll ate ter ao menos um check listado.
-    param([int]$PrNumber, [int]$MaxSeconds = 120)
-
-    $sw = [System.Diagnostics.Stopwatch]::StartNew()
-    while ($sw.Elapsed.TotalSeconds -lt $MaxSeconds) {
-        $json = gh pr checks $PrNumber --json bucket 2>$null
-        $exit = $LASTEXITCODE
-        # exit 0 = todos passaram, 8 = pendentes — ambos significam que checks existem.
-        if (($exit -eq 0 -or $exit -eq 8) -and $json -and $json.Trim() -ne "[]") {
-            return $true
-        }
-        Start-Sleep -Seconds 3
-    }
-    return $false
-}
-
 function Wait-ForCI {
-    param([int]$PrNumber, [int]$TimeoutMinutes)
+    # Polling puro via `gh pr checks --json`. Evita `--watch --fail-fast` e
+    # Process.Start, que no Windows/PowerShell estavam retornando exit code
+    # incorreto (falso "CI falhou" mesmo com checks verdes). Tambem trata
+    # bucket "skipping" (ex.: job Pack so roda em release) como nao-falha.
+    #
+    # Buckets gh: pass | fail | pending | skipping | cancel
+    param([int]$PrNumber, [int]$TimeoutMinutes, [int]$IntervalSeconds = 15)
 
-    Write-Step "Aguardando checks registrarem no PR #$PrNumber..."
-    if (-not (Wait-ForChecksToRegister -PrNumber $PrNumber -MaxSeconds 120)) {
-        Write-Step "Nenhum check registrado apos 2min — workflow nao disparou?" "Red"
-        return "failed"
-    }
+    $deadline         = (Get-Date).AddMinutes($TimeoutMinutes)
+    $registerDeadline = (Get-Date).AddMinutes(2)
+    $registered       = $false
 
-    Write-Step "Aguardando CI no PR #$PrNumber via gh --watch --fail-fast (timeout: ${TimeoutMinutes}min)..."
+    Write-Step "Polling CI no PR #$PrNumber a cada ${IntervalSeconds}s (timeout: ${TimeoutMinutes}min)..."
 
-    # gh pr checks --watch bloqueia ate completar, exit 0 = todos passaram, !=0 = falha.
-    # --fail-fast aborta no primeiro check vermelho (sai mais rapido em falhas).
-    # --interval 10 == default, mas explicito para clareza.
-    # Usa Process.Start com handles herdados para output em tempo real ate o console.
-    $psi = [System.Diagnostics.ProcessStartInfo]::new()
-    $psi.FileName  = "gh"
-    foreach ($a in @("pr","checks","$PrNumber","--watch","--fail-fast","--interval","10")) {
-        $psi.ArgumentList.Add($a)
-    }
-    $psi.UseShellExecute = $false   # heranca dos handles do console pai
+    while ((Get-Date) -lt $deadline) {
+        $json = gh pr checks $PrNumber --json bucket,state,name 2>$null
 
-    $proc       = [System.Diagnostics.Process]::Start($psi)
-    $timeoutMs  = $TimeoutMinutes * 60 * 1000
+        if (-not $json -or $json.Trim() -eq "" -or $json.Trim() -eq "[]") {
+            if (-not $registered -and (Get-Date) -ge $registerDeadline) {
+                Write-Step "Nenhum check registrado apos 2min. Workflow nao disparou?" "Red"
+                return "failed"
+            }
+            Write-Step "Aguardando checks registrarem..."
+            Start-Sleep -Seconds 5
+            continue
+        }
 
-    if ($proc.WaitForExit($timeoutMs)) {
-        if ($proc.ExitCode -eq 0) {
-            Write-Step "CI APROVADO" "Green"
+        $checks = @($json | ConvertFrom-Json)
+        if ($checks.Count -eq 0) {
+            Start-Sleep -Seconds 5
+            continue
+        }
+        $registered = $true
+
+        $failed  = @($checks | Where-Object { $_.bucket -in 'fail','cancel' })
+        $pending = @($checks | Where-Object { $_.bucket -eq 'pending' })
+
+        if ($failed.Count -gt 0) {
+            $names = ($failed | ForEach-Object { "$($_.name) ($($_.bucket))" }) -join ', '
+            Write-Step "CI FALHOU: $names" "Red"
+            return "failed"
+        }
+
+        if ($pending.Count -eq 0) {
+            $passCount = @($checks | Where-Object { $_.bucket -eq 'pass' }).Count
+            $skipCount = @($checks | Where-Object { $_.bucket -eq 'skipping' }).Count
+            $msg       = "$passCount pass"
+            if ($skipCount -gt 0) { $msg += ", $skipCount skip" }
+            Write-Step "CI APROVADO ($msg)" "Green"
             return "success"
         }
-        Write-Step "CI FALHOU (gh exit $($proc.ExitCode))" "Red"
-        return "failed"
+
+        $passCount = @($checks | Where-Object { $_.bucket -eq 'pass' }).Count
+        Write-Step "CI rodando: $passCount/$($checks.Count) ok, $($pending.Count) pendente(s)..."
+        Start-Sleep -Seconds $IntervalSeconds
     }
 
-    try { $proc.Kill($true) } catch { }
-    Write-Step "TIMEOUT apos ${TimeoutMinutes} minutos" "Yellow"
+    Write-Step "TIMEOUT apos ${TimeoutMinutes}min" "Yellow"
     return "timeout"
 }
 

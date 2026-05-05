@@ -147,13 +147,13 @@ Block headers are informational; numbering is global and contiguous (4.001 → 4
 | [x] | 4.066 | Registro C601 | Complemento Consolidação Diária (06, 28, 29) – Saídas – PIS/Pasep | 174 |
 | [x] | 4.067 | Registro C605 | Complemento Consolidação Diária (06, 28, 29) – Saídas – Cofins | 175 |
 | [x] | 4.068 | Registro C609 | Processo Referenciado | 176 |
-| [ ] | 4.069 | Registro C800 | Cupom Fiscal Eletrônico (Código 59) | 177 |
-| [ ] | 4.070 | Registro C810 | Detalhamento CF-e (59) – PIS/Pasep e Cofins | 179 |
-| [ ] | 4.071 | Registro C820 | Detalhamento CF-e (59) – PIS/Pasep e Cofins por Unidade de Medida | 182 |
+| [x] | 4.069 | Registro C800 | Cupom Fiscal Eletrônico (Código 59) | 177 |
+| [x] | 4.070 | Registro C810 | Detalhamento CF-e (59) – PIS/Pasep e Cofins | 179 |
+| [x] | 4.071 | Registro C820 | Detalhamento CF-e (59) – PIS/Pasep e Cofins por Unidade de Medida | 182 |
 | [x] | 4.072 | Registro C830 | Processo Referenciado | 184 |
-| [ ] | 4.073 | Registro C860 | Identificação do Equipamento SAT-CF-e | 184 |
-| [ ] | 4.074 | Registro C870 | Resumo Diário SAT-CF-e (59) – PIS/Pasep e Cofins | 185 |
-| [ ] | 4.075 | Registro C880 | Resumo Diário SAT-CF-e (59) – PIS/Pasep e Cofins por Unidade de Medida | 188 |
+| [x] | 4.073 | Registro C860 | Identificação do Equipamento SAT-CF-e | 184 |
+| [x] | 4.074 | Registro C870 | Resumo Diário SAT-CF-e (59) – PIS/Pasep e Cofins | 185 |
+| [x] | 4.075 | Registro C880 | Resumo Diário SAT-CF-e (59) – PIS/Pasep e Cofins por Unidade de Medida | 188 |
 | [x] | 4.076 | Registro C890 | Processo Referenciado | 191 |
 | [x] | 4.077 | Registro C990 | Encerramento do Bloco C | 192 |
 

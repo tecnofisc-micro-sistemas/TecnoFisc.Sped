@@ -111,8 +111,8 @@ function Get-PendingRegistros {
 }
 
 function Get-OpenPRs {
-    # Returns array of {number, headRefName}
-    $json = gh pr list --state open --base dev --json number,headRefName --limit 50
+    # Returns array of {number, headRefName, url}
+    $json = gh pr list --state open --base dev --json number,headRefName,url --limit 50
     if (-not $json) { return @() }
     return $json | ConvertFrom-Json
 }
@@ -120,45 +120,32 @@ function Get-OpenPRs {
 function Wait-ForCI {
     param([int]$PrNumber, [int]$TimeoutMinutes)
 
-    $startTime = Get-Date
-    $deadline  = $startTime.AddMinutes($TimeoutMinutes)
+    Write-Step "Aguardando CI no PR #$PrNumber via gh --watch --fail-fast (timeout: ${TimeoutMinutes}min)..."
 
-    Write-Step "Aguardando CI no PR #$PrNumber (timeout: ${TimeoutMinutes}min)..."
+    # gh pr checks --watch bloqueia ate completar, exit 0 = todos passaram, !=0 = falha.
+    # --fail-fast aborta no primeiro check vermelho (sai mais rapido em falhas).
+    # --interval 10 == default, mas explicito para clareza.
+    # Usa Process.Start com handles herdados para output em tempo real ate o console.
+    $psi = [System.Diagnostics.ProcessStartInfo]::new()
+    $psi.FileName  = "gh"
+    foreach ($a in @("pr","checks","$PrNumber","--watch","--fail-fast","--interval","10")) {
+        $psi.ArgumentList.Add($a)
+    }
+    $psi.UseShellExecute = $false   # heranca dos handles do console pai
 
-    # Give GitHub time to queue checks
-    Start-Sleep -Seconds 20
+    $proc       = [System.Diagnostics.Process]::Start($psi)
+    $timeoutMs  = $TimeoutMinutes * 60 * 1000
 
-    while ((Get-Date) -lt $deadline) {
-        $checksJson = gh pr checks $PrNumber --json name,state,bucket 2>$null
-
-        if ($checksJson) {
-            $checks = $checksJson | ConvertFrom-Json
-
-            # gh pr checks --json uses "bucket" field: pass | fail | pending | skipping | cancel
-            $failed  = @($checks | Where-Object { $_.bucket -in @("fail","cancel") })
-            $running = @($checks | Where-Object { $_.bucket -eq "pending" })
-            $passed  = @($checks | Where-Object { $_.bucket -in @("pass","skipping") })
-
-            if ($failed.Count -gt 0) {
-                $names = ($failed | ForEach-Object { $_.name }) -join ", "
-                Write-Step "CI FALHOU: $names" "Red"
-                return "failed"
-            }
-
-            if ($running.Count -eq 0 -and $passed.Count -gt 0) {
-                Write-Step "CI APROVADO ($($passed.Count) checks)" "Green"
-                return "success"
-            }
-
-            $elapsed = [int]((Get-Date) - $startTime).TotalMinutes
-            Write-Step "${elapsed}min decorrido — $($running.Count) checks em andamento, $($passed.Count) concluidos..."
-        } else {
-            Write-Step "Checks ainda nao apareceram no GitHub..."
+    if ($proc.WaitForExit($timeoutMs)) {
+        if ($proc.ExitCode -eq 0) {
+            Write-Step "CI APROVADO" "Green"
+            return "success"
         }
-
-        Start-Sleep -Seconds 30
+        Write-Step "CI FALHOU (gh exit $($proc.ExitCode))" "Red"
+        return "failed"
     }
 
+    try { $proc.Kill($true) } catch { }
     Write-Step "TIMEOUT apos ${TimeoutMinutes} minutos" "Yellow"
     return "timeout"
 }
@@ -249,7 +236,7 @@ try {
 
         # ── encontrar novo PR ──────────────────────────────────────────────────
         Write-Step "Verificando novo PR criado..."
-        Start-Sleep -Seconds 5
+        Start-Sleep -Seconds 2
 
         $afterPRs = @(Get-OpenPRs)
         $newPR    = $afterPRs | Where-Object { $beforePRNumbers -notcontains $_.number } | Select-Object -First 1
@@ -262,7 +249,7 @@ try {
 
         $prNumber   = [int]$newPR.number
         $branchName = $newPR.headRefName
-        $prUrl      = gh pr view $prNumber --json url --jq ".url" 2>$null
+        $prUrl      = $newPR.url
 
         Write-Step "Novo PR: #$prNumber — branch: $branchName"
         if ($prUrl) { Write-Step "URL: $prUrl" }
@@ -295,9 +282,6 @@ try {
 
         $mergedCount++
         Write-Step "PR #$prNumber mergeado com sucesso. Total nesta sessao: $mergedCount" "Green"
-
-        # Pausa breve entre iteracoes
-        Start-Sleep -Seconds 8
     }
 
     # ── sumario final ──────────────────────────────────────────────────────────

@@ -1,272 +1,150 @@
 ---
-description: Implementa o próximo registro SPED pendente com testes completos, cria commit e PR. Funciona para qualquer módulo SPED (EFD Contribuições, Fiscal, etc.).
+description: Implementa o próximo registro SPED pendente com testes completos, em commit e PR únicos. Funciona para qualquer módulo SPED (EFD Contribuições, Fiscal, etc.).
 argument-hint: [módulo] (opcional: efd-contribuicoes, fiscal — auto-detecta se omitido)
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent
 ---
 
-Você é um implementador de registros SPED. Sua tarefa é identificar o próximo sub-estágio pendente, implementar o registro com testes completos, e criar o commit e PR. Siga cada passo em ordem, sem pular etapas.
+Você é um implementador de registros SPED. Identifique o(s) próximo(s) sub-estágio(s) pendente(s), implemente com testes, e entregue em **um único PR**. Siga os passos em ordem.
 
-## PASSO 1 — Detectar módulo e mapeamento
+## Regra dura: 1 PR por execução
 
-### 1a. Identificar o módulo ativo
+**Tudo que esta execução produz vai num único PR. Sem exceções.**
 
-Se `$ARGUMENTS` contiver um módulo (ex.: `efd-contribuicoes`, `fiscal`), use-o. Caso contrário, auto-detecte:
+- Você pode implementar 1 registro **ou** um batch de registros simples no mesmo PR.
+- Cap absoluto: 10 registros por PR.
+- Se durante a execução perceber que precisa de mais de 1 PR (escopos divergentes, dependência circular, refator transversal), **pare** e reporte ao usuário antes de continuar. Não abra PRs adicionais por conta própria.
+- Não crie branches paralelos. Um único branch, um único commit (ou commits coesos no mesmo branch), um único `gh pr create`.
 
-1. Liste todos os arquivos `STAGE_*_REGISTROS*.md` na raiz do repositório com `Glob(pattern: "STAGE_*_REGISTROS*.md")`
-2. Para cada arquivo encontrado, leia as primeiras linhas para identificar o módulo
-3. Prefira o arquivo com sub-estágios mais recentemente implementados (marcados `[x]`)
-4. Se houver apenas um arquivo, use-o
+## PASSO 0 — Discovery paralelo (FAÇA EM UMA ÚNICA LEVA DE TOOL CALLS)
 
-### 1b. Mapa de módulos
+Antes de qualquer leitura sequencial, **dispare em paralelo**:
 
-Módulos conhecidos e seus mapeamentos:
+1. `Glob("sped/STAGE_*_REGISTROS*.md")` — descobrir tracking files do(s) módulo(s)
+2. `Glob("src/**/Registros/**/Registro*.cs")` — listar registros já implementados
+3. `Glob("src/**/Enums/*.cs")` — listar enums existentes
+4. `Glob("src/**/ValueObjects/*.cs")` — listar value objects do Core
+5. `Read` no tracking file do módulo ativo (use `$ARGUMENTS` se dado; senão escolha o que tem mais `[x]`)
+6. `Read` em **um registro recente similar** (ex.: último registro com filhos se for implementar registro com filhos; senão último simples) — serve de template canônico
+7. `Read` em **um teste recente correspondente** (`Registro{XXXX}Tests.cs` do registro acima)
+8. `Read` em **um enum existente** com `[SpedValor]` (ex.: `src/.../Enums/IndicadorAtividade.cs`) — copia padrão exato
 
-**EFD Contribuições (Stage 4)**
-- Tracking: `sped/STAGE_4_REGISTROS.md`
-- PDF: `sped/guides/Guia_Pratico_EFD_Contribuicoes_Versao_1_35 - 18_06_2021.pdf`
-- Projeto src: `TecnoFisc.Sped.EfdContribuicoes`
-- Path src: `src/TecnoFisc.Sped.EfdContribuicoes/Registros/Bloco{X}/`
-- Namespace src: `TecnoFisc.Sped.EfdContribuicoes.Registros.Bloco{X}`
-- Projeto tests: `TecnoFisc.Sped.EfdContribuicoes.Tests`
-- Path tests: `tests/TecnoFisc.Sped.EfdContribuicoes.Tests/Registros/Bloco{X}/`
-- Namespace tests: `TecnoFisc.Sped.EfdContribuicoes.Tests.Registros.Bloco{X}`
-- Namespace enums: `TecnoFisc.Sped.EfdContribuicoes.Enums`
-- Path enums: `src/TecnoFisc.Sped.EfdContribuicoes/Enums/`
+**Por que paralelo:** templates reais matam a maior parte das dúvidas de naming, atributos, namespaces, helper de round-trip, conversores. Não tente derivar do `ARCHITECTURE.md` o que já está cristalizado em código.
 
-**Novos módulos futuros (Stages 8-10)**
-- Quando um novo arquivo `STAGE_N_REGISTROS_*.md` existir, leia seu cabeçalho para obter os caminhos equivalentes
-- O padrão é sempre: `TecnoFisc.Sped.{NomeMódulo}` para src e `.Tests` para tests
-- O PDF será referenciado no cabeçalho do arquivo de tracking
+**O que extrair desses templates:**
+- Atributos exatos (`[RegistroSped]`, `[CampoSped]`, `[SpedValor]`) com nomes de propriedades reais.
+- Estrutura de `using`s e namespaces.
+- Helper de `RoundTripAsync` — copie literal.
+- Como filhos são modelados (`List<RegistroXxxx>` etc.) se o caso pedir.
 
-Para blocos com letra maiúscula (A, C, D, F, I, M, P): `Bloco{X}` onde `{X}` é a letra. Para blocos numéricos (0, 1, 9): `Bloco{X}` onde `{X}` é o dígito.
+Só leia ARCHITECTURE.md se o template for ambíguo.
 
-## PASSO 2 — Identificar próximo(s) sub-estágio(s)
+## PASSO 1 — Selecionar sub-estágio(s)
 
-### 2a. Ler o arquivo de tracking
+No tracking file lido no PASSO 0:
 
-Leia o arquivo de tracking completo. Encontre a **primeira linha com `| [ ] |`** (não implementada). Extraia:
-- Número do sub-estágio (ex.: `4.004`)
-- Código do registro (ex.: `0100`, `A010`, `C100`)
-- Descrição
-- Número da página PDF
+1. Primeira linha com `| [ ] |` = candidato.
+2. Avalie batch (todos os critérios devem ser verdadeiros):
+   - 2-3 campos sem decimais, sem enums, sem value objects além de formatação trivial
+   - Sem filhos hierárquicos
+   - Sem bloco "Regras de Validação" relevante
+   - Contíguos no mesmo bloco com candidatos igualmente simples
+3. Se elegível, inclua até os 2-3 sub-estágios seguintes (cap 10).
+4. **Anote a lista final** (ex.: `[4.034, 4.041, 4.045]`).
 
-### 2b. Avaliar batching
+## PASSO 2 — Ler PDF (apenas as páginas necessárias)
 
-Verifique se o registro candidato é elegível para batch (todos os critérios devem ser verdadeiros):
-- Dois ou três campos, sem decimais, sem enums, sem validação de value object além de formatação
-- Sem registros filhos hierárquicos
-- Sem bloco "Regras de Validação" / observações além da tabela de campos
-- Contíguo no mesmo bloco com outros candidatos igualmente simples
+Para cada registro escolhido, `Read` com `pages` apontando para a página do tracking. 3-6 páginas a partir de lá. Extraia:
 
-Se elegível, inspecione os 2-3 sub-estágios seguintes e avalie incluí-los no mesmo PR. Cap máximo: 10 registros por PR.
+- Código, **Nível**, **Ocorrência** (`1:N` / `0:1` / `1:1`)
+- Tabela de campos: `Ordem`, nome, `Tipo` (C/N), `Tam` (`*` = fixo), `Dec`, `Obrig` (S/N/O)
+- Observações, regras de validação, tabelas de códigos inline
 
-**Decisão final:** anote os sub-estágios a implementar nesta execução (ex.: `[4.004]` ou `[4.034, 4.041, 4.045, 4.056, 4.060]`).
+Janela fiscal de 5 anos: ignore marcos de versão anteriores ao corte vigente.
 
-## PASSO 3 — Ler o PDF
-
-Para cada registro a implementar, use `Read` com o parâmetro `pages` apontando para a página listada no tracking file. Leia 3-6 páginas a partir dessa página (até o próximo cabeçalho `Registro XXXX`).
-
-Do PDF extraia obrigatoriamente:
-- **Código** do registro (`Registro XXXX`)
-- **Nível hierárquico** (`Nível: N`) — crítico para `PilhaHierarquica`
-- **Ocorrência** (`1:N`, `0:1`, `1:1`) — determina se é filho obrigatório/opcional/repetido
-- **Tabela de campos**: posição na linha (`Ordem`), nome do campo, tipo (`C`/`N`), tamanho (`Tam`; `*` = fixo), decimais (`Dec`), obrigatoriedade (`Obrig`: S/N/O)
-- **Observações, regras de validação e tabelas de códigos** — encriptar como lógica de validação, não comentários
-
-## PASSO 4 — Criar branch git
-
-Antes de criar qualquer arquivo, crie o branch:
-
-- 1 registro: `feat/stage-{N-NNN}-registro-{CODE}` (ex.: `feat/stage-4-004-registro-0100`)
-- Batch de vários: `feat/stage-{N-NNN}-{N-MMM}-bloco{X}-batch` (ex.: `feat/stage-4-034-036-bloco-c-processos`)
+## PASSO 3 — Branch único
 
 ```powershell
 git checkout dev
 git pull
-git checkout -b feat/stage-...
+git checkout -b feat/stage-{N-NNN}-registro-{CODE}            # 1 registro
+# ou
+git checkout -b feat/stage-{N-NNN}-{N-MMM}-bloco{X}-batch     # batch
 ```
 
-## PASSO 5 — Implementar registro(s)
+## PASSO 4 — Implementar
 
-### 5a. Verificar pré-existência
+### 4a. Classe do registro
 
-Antes de criar, verifique com `Glob` se o arquivo já existe. Se existir, compare com o PDF e complemente se necessário.
+Caminho: `src/{ProjetoSrc}/Registros/Bloco{X}/Registro{CODE}.cs`. Copie shape do template lido no PASSO 0.
 
-### 5b. Classe do registro
+**Tipos:**
+- C → `string?` (default)
+- C data DDMMAAAA → `DateOnly?` + `Formato = "ddMMyyyy"`
+- C lista de códigos → enum nullable (criar se primeiro uso)
+- C CNPJ/CPF/CFOP/NCM/ChaveAcesso → tipo forte do Core
+- N sem decimais, valores pequenos → `int?`; grandes (totais) → `long?`
+- N com decimais → `decimal?` + `Decimais = {DEC}`
 
-Crie `src/{ProjetoSrc}/Registros/Bloco{X}/Registro{CODE}.cs`:
-
-```csharp
-using TecnoFisc.Sped.Core.Abstracoes;
-using TecnoFisc.Sped.Core.Atributos;
-// Adicionar: using TecnoFisc.Sped.Core.ValueObjects; se usar Cnpj, Cpf, etc.
-// Adicionar: using TecnoFisc.Sped.EfdContribuicoes.Enums; se usar enums do módulo
-
-namespace TecnoFisc.Sped.EfdContribuicoes.Registros.Bloco{X};
-
-/// <summary>
-/// Registro {CODE} — {Descrição completa do guia}. Nível hierárquico {N}, ocorrência {OCC}.
-/// Conforme Guia Prático v1.35, p. {PAGINA}.
-/// </summary>
-[RegistroSped(Codigo = "{CODE}", Nivel = {N}, Bloco = "{X}")]
-public sealed partial class Registro{CODE} : RegistroSped
-{
-    public override string Codigo => "{CODE}";
-
-    [CampoSped(Ordem = 2, Tamanho = {TAM}, Obrigatorio = {true|false})]
-    public {Tipo}? {NomeProp} { get; set; }
-    // ... campos na ordem exata do guia
-}
-```
-
-**Regras de mapeamento de tipos:**
-- Tipo `C`, sem validação especial → `string?`
-- Tipo `C`, data `DDMMAAAA` → `DateOnly` (ou `DateOnly?` se opcional); adicionar `Formato = "ddMMyyyy"` no atributo
-- Tipo `C`, lista de códigos pequena → enum nullable (criar enum se primeiro uso)
-- Tipo `C`, CNPJ/CPF/CFOP/NCM/ChaveAcesso → tipo forte correspondente do Core
-- Tipo `N`, sem decimais, valores pequenos → `int?`
-- Tipo `N`, sem decimais, valores grandes (totais) → `long?`
-- Tipo `N`, com decimais → `decimal?`; adicionar `Decimais = {DEC}` no atributo
-
-**Regras do `[CampoSped]`:**
-- `Ordem`: posição na linha SPED (campo `|REG|` é Ordem=1; campos do registro começam em Ordem=2)
-- `Tamanho`: número do guia; `0` se variável (sem asterisco no guia)
+**`[CampoSped]`:**
+- `Ordem` começa em 2 (campo 1 é `|REG|`)
+- `Tamanho`: número do guia; `0` se variável
 - `Decimais`: omitir se zero
-- `Obrigatorio = true`: apenas quando coluna `Obrig` = `S`; omitir quando `N` ou `O`
-- `Formato`: apenas para datas — `"ddMMyyyy"`
+- `Obrigatorio = true` apenas quando coluna `Obrig = S`
+- `Formato` apenas para datas
 
-**Campos obrigatórios não anuláveis:**
-- Se `Obrigatorio = true` e tipo forte (enum, DateOnly, int, etc.), declare sem `?`
-- Se `Obrigatorio = true` mas pode ser null em implementações parciais, use `?` e documente
+**Sealed partial sempre.** Campos `Obrigatorio = true` com tipo de valor → sem `?`, exceto se nullable for tecnicamente necessário.
 
-**Sealed + partial:** sempre `sealed partial class`.
+### 4b. Enums (regra first-use)
 
-### 5c. Enums (se necessário — regra first-use)
+Antes de criar, `Grep` no diretório de enums. Se não existir, crie em `src/{ProjetoSrc}/Enums/{NomeEnum}.cs` com padrão **idêntico** ao enum lido no PASSO 0. Sem sentinelas (`Desconhecido`, `Outros`).
 
-Verifique se o enum já existe com `Glob(pattern: "src/**/Enums/*.cs")` + `Grep`.
+## PASSO 5 — Testes
 
-Se não existir, crie `src/{ProjetoSrc}/Enums/{NomeEnum}.cs`:
+Caminho: `tests/{ProjetoTests}/Registros/Bloco{X}/Registro{CODE}Tests.cs`. Estrutura e helper de round-trip: copie do template lido no PASSO 0.
 
-```csharp
-namespace TecnoFisc.Sped.EfdContribuicoes.Enums;
+**Testes obrigatórios:**
 
-/// <summary>Descrição da tabela conforme Guia Prático v1.35, p. {PAGINA}.</summary>
-public enum {NomeEnum}
-{
-    /// <summary>Descrição do valor.</summary>
-    [SpedValor("{código}")]
-    NomeValor = {N},
-    // ...
-}
-```
+1. `Atributo_Declara{CODE}_Nivel{N}_Bloco{X}` — verifica `[RegistroSped]`
+2. `Catalogo_ExpoeRegistro{CODE}Com{N}CamposNaOrdem` — `meta.Campos`
+3. `Definidor_AtribuiTodosOsCampos` — itera `meta.Campos[i].Definidor(...)`
+4. `Definidor_CampoVazio_DevolveNulo` — opcionais com `Span.Empty`
+5. `RoundTrip_ComTodosOsCampos_PreservaTextoCanonico`
+6. ≥1 `RoundTrip_Com{Cenario}_PreservaTextoCanonico` adicional
 
-Use exatamente os valores listados no guia para aquele campo. Sem sentinelas como `Desconhecido` ou `Outros`.
+Enums novos: `[Theory] [InlineData]` cobrindo cada valor + null → empty.
 
-> Verifique como `SpedValor` ou equivalente está implementado nos enums existentes (`Glob("src/**/Enums/*.cs")`, leia um) e replique o padrão exato.
+Linhas SPED de teste: `|{CODE}|c2|c3|...|cN|\r\n`. Decimais com ponto. Datas `DDMMAAAA`.
 
-## PASSO 6 — Escrever testes
-
-Crie `tests/{ProjetoTests}/Registros/Bloco{X}/Registro{CODE}Tests.cs`.
-
-**Estrutura base obrigatória:**
-
-```csharp
-using System.Reflection;
-
-using TecnoFisc.Sped.Core.Abstracoes;
-using TecnoFisc.Sped.Core.Atributos;
-using TecnoFisc.Sped.Core.Catalogo;
-using TecnoFisc.Sped.Core.Gerador;
-using TecnoFisc.Sped.Core.Parser;
-// + using para enums/value objects usados nos testes
-
-namespace TecnoFisc.Sped.EfdContribuicoes.Tests.Registros.Bloco{X};
-
-public sealed class Registro{CODE}Tests
-{
-    private static readonly IRegistroSpedCatalogo _catalogo =
-        CatalogoBuilder.BuildFromAssembly(typeof(Registro{CODE}).Assembly);
-
-    // --- Testes obrigatórios ---
-}
-```
-
-**Testes obrigatórios (implemente todos):**
-
-1. `Atributo_Declara{CODE}_Nivel{N}_Bloco{X}` — verifica atributo `[RegistroSped]`
-2. `Catalogo_ExpoeRegistro{CODE}Com{N}CamposNaOrdem` — verifica lista de campos e ordens via `meta.Campos`
-3. `Definidor_AtribuiTodosOsCampos` — chama `meta.Campos[i].Definidor(registro, valor.AsSpan())` para todos os campos e verifica propriedades
-4. `Definidor_CampoVazio_DevolveNulo` — campos opcionais com `ReadOnlySpan<char>.Empty` retornam null
-5. `RoundTrip_ComTodosOsCampos_PreservaTextoCanonico` — linha SPED completa (cópia literal do guia, adaptada para exemplo válido)
-6. Pelo menos 1 `RoundTrip_Com{Cenario}_PreservaTextoCanonico` adicional (cenário parcial: campos opcionais vazios, filhos, etc.)
-
-**Testes adicionais para enums (se houver):**
-- `[Theory]` com `[InlineData]` para cada valor do enum → código SPED esperado
-- Teste de serialização com valor null → empty
-
-**Helper de round-trip (copiar exato):**
-
-```csharp
-private static async Task<string> RoundTripAsync(string sped, CancellationToken cancelamento)
-{
-    var leitor = new LeitorSpedTxt(_catalogo);
-    var escritor = new EscritorSpedTxt(_catalogo);
-
-    using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
-    var registros = new List<RegistroSped>();
-    await foreach (var registro in leitor.LerAsync(entrada, cancelamento))
-        registros.Add(registro);
-
-    using var saida = new MemoryStream();
-    await escritor.EscreverAsync(saida, registros, cancelamento);
-
-    return EncodingSped.Latin1.GetString(saida.ToArray());
-}
-```
-
-**Construção de linhas SPED para testes:**
-- Formato: `|{CODE}|campo2|campo3|...|campoN|\r\n`
-- Campos opcionais vazios: `||`
-- Números decimais: ponto como separador (ex.: `1234.56`)
-- Datas: `DDMMAAAA`
-
-## PASSO 7 — Build e testes
-
-Execute em sequência:
+## PASSO 6 — Build e testes
 
 ```powershell
 dotnet build TecnoFisc.Sped.slnx
 dotnet test TecnoFisc.Sped.slnx --filter "FullyQualifiedName~Registro{CODE}"
 ```
 
-Se houver erros de compilação, corrija-os antes de prosseguir. Se testes falharem, investigue e corrija (não pule testes).
+Erros bloqueiam progresso. Não pule testes.
 
-## PASSO 8 — Atualizar tracking file
+## PASSO 7 — Atualizar tracking
 
-No arquivo `STAGE_N_REGISTROS.md`, marque cada sub-estágio implementado:
-- `| [ ] |` → `| [x] |`
+No `STAGE_N_REGISTROS.md`, marque cada sub-estágio coberto: `| [ ] |` → `| [x] |`.
 
-Faça isso para todos os sub-estágios cobertos nesta execução.
-
-## PASSO 9 — Commit
-
-Stage exatamente os arquivos criados/modificados:
+## PASSO 8 — Commit único
 
 ```powershell
-git add src/TecnoFisc.Sped.EfdContribuicoes/Registros/Bloco{X}/Registro{CODE}.cs
-git add tests/TecnoFisc.Sped.EfdContribuicoes.Tests/Registros/Bloco{X}/Registro{CODE}Tests.cs
-# + enums e value objects se criados
+git add src/{ProjetoSrc}/Registros/Bloco{X}/Registro{CODE}.cs
+git add tests/{ProjetoTests}/Registros/Bloco{X}/Registro{CODE}Tests.cs
+# + enums/value objects criados
 git add sped/STAGE_4_REGISTROS.md
 ```
 
-Mensagem de commit (Conventional Commits em inglês, corpo em português):
+Conventional Commits, título inglês, corpo português:
 
 - 1 registro: `feat(efd-contribuicoes): adiciona Registro{CODE} (sub-stage {N.NNN})`
 - Batch: `feat(efd-contribuicoes): adiciona Registros {CODEs} — Bloco {X} batch (sub-stages {N.NNN}-{N.MMM})`
 
-Se enums foram criados, mencione no corpo: `Cria enum IndicadorXxx (first-use).`
+Mencione enums criados (`Cria enum IndicadorXxx (first-use).`) no corpo.
 
-## PASSO 10 — Criar PR
+## PASSO 9 — PR único
 
 ```powershell
 gh pr create `
@@ -275,34 +153,32 @@ gh pr create `
   --base dev
 ```
 
-**Corpo do PR deve conter:**
-- Lista de sub-estágios cobertos com código e descrição
-- Lista de campos implementados (nome, tipo, obrigatoriedade)
-- Enums/value objects criados nesta PR (se houver)
-- Referência à página PDF (`Guia Prático v1.35, p. {PAGINA}`)
-- Checklist: `- [x] Build passando`, `- [x] Testes passando`, `- [x] Round-trip verificado`, `- [x] Tracking file atualizado`
+Corpo do PR:
+- Sub-estágios cobertos (código + descrição)
+- Campos implementados (nome, tipo, obrigatoriedade)
+- Enums/value objects criados
+- Página PDF (`Guia Prático v1.35, p. {PAGINA}`)
+- Checklist: build, testes, round-trip, tracking atualizado
 
 ---
 
 ## Regras invioláveis
 
-1. **SEMPRE leia o PDF antes de implementar** — nunca assuma campos por inferência
-2. Português para nomes fiscais (campos, classes, enums); inglês para infra técnica (tests, helpers, builders)
-3. `sealed partial class` em todos os registros
-4. Sem comentários além do docstring de classe e WHY não-óbvio
-5. Sem runtime dependencies externas
-6. Encoding SPED = Latin1/Windows-1252 (`EncodingSped.Latin1`)
-7. Round-trip é obrigatório — se falhar, o registro está errado
-8. Marcar tracking file ANTES do commit, não depois
-9. Branch sempre a partir de `dev`, PR sempre com `--base dev`
-10. Nunca implementar mais de 10 registros em uma única PR
+1. **1 PR por execução.** Cap 10 registros. Escopo extra ⇒ parar e reportar.
+2. **Sempre leia o PDF** dos registros a implementar — nunca infira campos.
+3. **PASSO 0 é paralelo** — discovery em uma única leva de tool calls.
+4. Português para nomes fiscais, inglês para infra técnica.
+5. `sealed partial class` em todos os registros.
+6. Sem comentários além de docstring de classe e WHY não-óbvio.
+7. Sem runtime dependencies externas.
+8. Encoding `EncodingSped.Latin1`.
+9. Round-trip obrigatório.
+10. Tracking marcado **antes** do commit.
+11. Branch sempre a partir de `dev`. PR sempre `--base dev`.
 
-## Tratamento de erros comuns
+## Erros comuns
 
-**Enum com atributo desconhecido:** Verifique como `SpedValor` (ou atributo equivalente) está implementado em um enum existente e replique o padrão.
-
-**Campo com tipo forte (Cnpj, etc.) falhando no catálogo:** O conversor do tipo forte precisa estar registrado em `ConversoresPrimitivosCatalogo`. Verifique se o tipo existe lá antes de usá-lo.
-
-**Round-trip diverge:** Compare o texto gerado com o input. Geralmente indica `Ordem` incorreta, `Tamanho` com asterisco (fixo) vs. variável, ou `Formato` de data ausente.
-
-**Build falha por namespace:** Confirme que o `using` da namespace está correto e que o arquivo está no caminho certo.
+- **Atributo desconhecido em enum:** copie padrão exato de um enum existente (PASSO 0).
+- **Tipo forte falha no catálogo:** verifique se está em `ConversoresPrimitivosCatalogo`.
+- **Round-trip diverge:** revise `Ordem`, asterisco no `Tamanho`, `Formato` de data.
+- **Namespace não compila:** confirme caminho × namespace × `using`.

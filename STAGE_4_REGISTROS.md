@@ -111,7 +111,7 @@ Block headers are informational; numbering is global and contiguous (4.001 → 4
 | [x] | 4.030 | Registro C001 | Abertura do Bloco C | 104 |
 | [x] | 4.031 | Registro C010 | Identificação do Estabelecimento | 105 |
 | [x] | 4.032 | Registro C100 | Documento - Nota Fiscal (01), Avulsa (1B), Produtor (04), NF-e (55), NFC-e (65) | 105 |
-| [ ] | 4.033 | Registro C110 | Complemento do Documento - Informação Complementar da Nota Fiscal (01, 1B, 04, 55) | 114 |
+| [x] | 4.033 | Registro C110 | Complemento do Documento - Informação Complementar da Nota Fiscal (01, 1B, 04, 55) | 114 |
 | [x] | 4.034 | Registro C111 | Processo Referenciado | 114 |
 | [ ] | 4.035 | Registro C120 | Complemento do Documento - Operações de Importação (Código 01) | 115 |
 | [ ] | 4.036 | Registro C170 | Complemento do Documento - Itens do Documento (01, 1B, 04, 55) | 117 |

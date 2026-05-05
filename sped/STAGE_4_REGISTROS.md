@@ -130,10 +130,10 @@ Block headers are informational; numbering is global and contiguous (4.001 → 4
 | [x] | 4.049 | Registro C385 | Detalhamento da Consolidação – Cofins | 149 |
 | [x] | 4.050 | Registro C395 | NF Venda a Consumidor (02, 2D, 2E, 59, 60, 65) – Aquisições com Crédito | 151 |
 | [x] | 4.051 | Registro C396 | Itens do Documento (02, 2D, 2E, 59, 60, 65) – Aquisições com Crédito | 152 |
-| [ ] | 4.052 | Registro C400 | Equipamento ECF (Códigos 02 e 2D) | 154 |
-| [ ] | 4.053 | Registro C405 | Redução Z (Códigos 02 e 2D) | 154 |
-| [ ] | 4.054 | Registro C481 | Resumo Diário ECF – PIS/Pasep (02, 2D) | 155 |
-| [ ] | 4.055 | Registro C485 | Resumo Diário ECF – Cofins (02, 2D) | 157 |
+| [x] | 4.052 | Registro C400 | Equipamento ECF (Códigos 02 e 2D) | 154 |
+| [x] | 4.053 | Registro C405 | Redução Z (Códigos 02 e 2D) | 154 |
+| [x] | 4.054 | Registro C481 | Resumo Diário ECF – PIS/Pasep (02, 2D) | 155 |
+| [x] | 4.055 | Registro C485 | Resumo Diário ECF – Cofins (02, 2D) | 157 |
 | [x] | 4.056 | Registro C489 | Processo Referenciado | 159 |
 | [ ] | 4.057 | Registro C490 | Consolidação de Documentos Emitidos por ECF (02, 2D, 59, 60) | 160 |
 | [ ] | 4.058 | Registro C491 | Detalhamento Consolidação ECF (02, 2D, 59, 60) – PIS/Pasep | 160 |

@@ -318,7 +318,7 @@ try {
     Write-Host ("=" * 70) -ForegroundColor Green
     Write-Host "  Automacao finalizada. $mergedCount PR(s) mergeados." -ForegroundColor Green
 
-    $remaining = (Get-PendingRegistros -TargetBloco $Bloco).Count
+    $remaining = @(Get-PendingRegistros -TargetBloco $Bloco).Count
     if ($remaining -gt 0) {
         Write-Host "  $remaining registro(s) ainda pendentes ($blocoStr)." -ForegroundColor Yellow
     } else {

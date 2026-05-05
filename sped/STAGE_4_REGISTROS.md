@@ -121,8 +121,8 @@ Block headers are informational; numbering is global and contiguous (4.001 → 4
 | [x] | 4.040 | Registro C185 | Detalhamento da Consolidação – Vendas – Cofins | 132 |
 | [x] | 4.041 | Registro C188 | Processo Referenciado | 134 |
 | [x] | 4.042 | Registro C190 | Consolidação de NF-e (55) – Aquisições com Crédito e Devoluções | 135 |
-| [ ] | 4.043 | Registro C191 | Detalhamento da Consolidação – Aquisições/Devoluções – PIS/Pasep | 139 |
-| [ ] | 4.044 | Registro C195 | Detalhamento da Consolidação – Aquisições/Devoluções – Cofins | 142 |
+| [x] | 4.043 | Registro C191 | Detalhamento da Consolidação – Aquisições/Devoluções – PIS/Pasep | 139 |
+| [x] | 4.044 | Registro C195 | Detalhamento da Consolidação – Aquisições/Devoluções – Cofins | 142 |
 | [x] | 4.045 | Registro C198 | Processo Referenciado | 145 |
 | [ ] | 4.046 | Registro C199 | Complemento do Documento - Operações de Importação (Código 55) | 146 |
 | [ ] | 4.047 | Registro C380 | NF Venda a Consumidor (02) - Consolidação de Documentos Emitidos | 147 |

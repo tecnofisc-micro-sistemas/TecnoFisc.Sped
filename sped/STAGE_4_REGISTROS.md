@@ -128,8 +128,8 @@ Block headers are informational; numbering is global and contiguous (4.001 → 4
 | [x] | 4.047 | Registro C380 | NF Venda a Consumidor (02) - Consolidação de Documentos Emitidos | 147 |
 | [x] | 4.048 | Registro C381 | Detalhamento da Consolidação – PIS/Pasep | 148 |
 | [x] | 4.049 | Registro C385 | Detalhamento da Consolidação – Cofins | 149 |
-| [ ] | 4.050 | Registro C395 | NF Venda a Consumidor (02, 2D, 2E, 59, 60, 65) – Aquisições com Crédito | 151 |
-| [ ] | 4.051 | Registro C396 | Itens do Documento (02, 2D, 2E, 59, 60, 65) – Aquisições com Crédito | 152 |
+| [x] | 4.050 | Registro C395 | NF Venda a Consumidor (02, 2D, 2E, 59, 60, 65) – Aquisições com Crédito | 151 |
+| [x] | 4.051 | Registro C396 | Itens do Documento (02, 2D, 2E, 59, 60, 65) – Aquisições com Crédito | 152 |
 | [ ] | 4.052 | Registro C400 | Equipamento ECF (Códigos 02 e 2D) | 154 |
 | [ ] | 4.053 | Registro C405 | Redução Z (Códigos 02 e 2D) | 154 |
 | [ ] | 4.054 | Registro C481 | Resumo Diário ECF – PIS/Pasep (02, 2D) | 155 |

@@ -21,7 +21,7 @@ Antes de qualquer leitura sequencial, **dispare em paralelo**:
 
 1. `Glob("sped/STAGE_*_REGISTROS*.md")` — descobrir tracking files do(s) módulo(s)
 2. `Glob("src/**/Registros/**/Registro*.cs")` — listar registros já implementados
-3. `Glob("src/**/Enums/*.cs")` — listar enums existentes
+3. `Glob("src/**/Enums/*.cs")` — listar enums existentes (Core + módulo separadamente — Core dita reuso transversal)
 4. `Glob("src/**/ValueObjects/*.cs")` — listar value objects do Core
 5. `Read` no tracking file do módulo ativo (use `$ARGUMENTS` se dado; senão escolha o que tem mais `[x]`)
 6. `Read` em **um registro recente similar** (ex.: último registro com filhos se for implementar registro com filhos; senão último simples) — serve de template canônico
@@ -94,9 +94,28 @@ Caminho: `src/{ProjetoSrc}/Registros/Bloco{X}/Registro{CODE}.cs`. Copie shape do
 
 **Sealed partial sempre.** Campos `Obrigatorio = true` com tipo de valor → sem `?`, exceto se nullable for tecnicamente necessário.
 
-### 4b. Enums (regra first-use)
+### 4b. Enums (regra first-use + decisão de localização)
 
-Antes de criar, `Grep` no diretório de enums. Se não existir, crie em `src/{ProjetoSrc}/Enums/{NomeEnum}.cs` com padrão **idêntico** ao enum lido no PASSO 0. Sem sentinelas (`Desconhecido`, `Outros`).
+Antes de criar, `Grep` no diretório de enums (Core **e** módulo). Se não existir, decida onde criar **antes** de escrever:
+
+**Default → `src/TecnoFisc.Sped.Core/Enums/`** quando qualquer um for verdadeiro:
+
+- Enum modela campo regido por **Ato COTEPE/ICMS** (Tabela 4.1.1 Modelos, 4.1.2 Situação, etc.). EFD ICMS-IPI é regente — outros leiautes referenciam.
+- Campo é de **IPI** (`IndApur`, `CstIpi`, `CodEnq`...). IPI é tributo ICMS-IPI domain.
+- Campo é de **ICMS** ou **ICMS-ST** (CST ICMS, origem mercadoria, modalidade BC ST...).
+- Campo é fiscal **transversal** (movimentação física `IndMov`, indicador frete, indicador pagamento, modelo doc fiscal, situação doc).
+- Registro sendo implementado é **replicado literalmente** de outro leiaute (C100, C170, C500, etc. são canônicos do ICMS-IPI). Os enums dos campos desse registro quase sempre são Core.
+- Guia explicita "conforme Tabela 4.x.x" ou "ver leiaute ICMS-IPI".
+
+**Módulo `src/{ProjetoSrc}/Enums/`** apenas quando:
+
+- Enum modela campo **exclusivo** do tributo do módulo (PIS/COFINS para EFD Contribuições; ICMS/IPI específico para EFD ICMS-IPI sem reuso).
+- Sem citação a tabela Ato COTEPE no guia.
+- Não aparece em registros replicados.
+
+**Em dúvida → Core.** Drift bug de duplicar enum Ato COTEPE é pior que enum no Core que poderia estar no módulo.
+
+Padrão **idêntico** ao enum lido no PASSO 0. Sem sentinelas (`Desconhecido`, `Outros`).
 
 ## PASSO 5 — Testes
 
@@ -182,3 +201,4 @@ Corpo do PR:
 - **Tipo forte falha no catálogo:** verifique se está em `ConversoresPrimitivosCatalogo`.
 - **Round-trip diverge:** revise `Ordem`, asterisco no `Tamanho`, `Formato` de data.
 - **Namespace não compila:** confirme caminho × namespace × `using`.
+- **Enum no módulo errado:** se modela IPI/ICMS/Ato COTEPE/transversal fiscal → Core. Reler critério 4b.

@@ -18,6 +18,10 @@
     <!-- Benchmarks (placeholder for Stage 2+) -->
     <PackageVersion Include="BenchmarkDotNet" Version="0.14.0" />
 
+    <!-- Roslyn source generator stack (Stage 6) -->
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.11.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" />
+
     <!-- SourceLink: embute referência ao commit do GitHub nos pacotes publicados -->
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
   </ItemGroup>

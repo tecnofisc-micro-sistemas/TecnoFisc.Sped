@@ -1,6 +1,6 @@
 using TecnoFisc.Sped.Core.Abstracoes;
-using TecnoFisc.Sped.Core.Catalogo;
 using TecnoFisc.Sped.Core.Parser;
+using TecnoFisc.Sped.EfdContribuicoes.Generated;
 
 namespace TecnoFisc.Sped.EfdContribuicoes.Parser;
 
@@ -10,19 +10,20 @@ namespace TecnoFisc.Sped.EfdContribuicoes.Parser;
 /// ao <see cref="LeitorSpedTxt"/> compartilhado pelo Core.
 /// </summary>
 /// <remarks>
-/// A construção sem parâmetros usa o catálogo padrão do assembly de EFD Contribuições, montado
-/// uma única vez via <see cref="CatalogoBuilder"/> (cache global por assembly). Consumidores de
-/// teste ou cenários que substituem o catálogo (ex.: Stage 6, source generator) podem injetar
-/// uma implementação alternativa.
+/// A construção sem parâmetros usa o catálogo gerado em tempo de compilação
+/// (<see cref="CatalogoSpedGerado"/>, produzido pelo Stage 6 source generator). Substitui o
+/// scan reflexivo de <c>Assembly.GetTypes()</c> que era usado no Stage 2: as entradas do
+/// dicionário e as fábricas <c>static () =&gt; new T()</c> existem em compile-time.
+/// Consumidores de teste ou cenários que substituem o catálogo podem injetar uma
+/// implementação alternativa via <see cref="ParserEfdContribuicoes(IRegistroSpedCatalogo)"/>.
 /// </remarks>
 public sealed class ParserEfdContribuicoes : ILeitorSped
 {
-    private static readonly IRegistroSpedCatalogo _catalogoPadrao =
-        CatalogoBuilder.BuildFromAssembly(typeof(ParserEfdContribuicoes).Assembly);
+    private static readonly IRegistroSpedCatalogo _catalogoPadrao = new CatalogoSpedGerado();
 
     private readonly LeitorSpedTxt _leitor;
 
-    /// <summary>Cria o parser usando o catálogo padrão do assembly de EFD Contribuições.</summary>
+    /// <summary>Cria o parser usando o catálogo gerado em tempo de compilação.</summary>
     public ParserEfdContribuicoes() : this(_catalogoPadrao)
     {
     }

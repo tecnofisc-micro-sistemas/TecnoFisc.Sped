@@ -314,7 +314,7 @@ Block headers are informational; numbering is global and contiguous (4.001 → 4
 | Feito | Sub-stage | Registro | Descrição | Página PDF |
 | --- | --- | --- | --- | --- |
 | [x] | 4.200 | Registro 9001 | Abertura do Bloco 9 | 415 |
-| [ ] | 4.201 | Registro 9900 | Registros do Arquivo | 415 |
+| [x] | 4.201 | Registro 9900 | Registros do Arquivo | 415 |
 | [x] | 4.202 | Registro 9990 | Encerramento do Bloco 9 | 415 |
 | [x] | 4.203 | Registro 9999 | Encerramento do Arquivo Digital | 416 |
 

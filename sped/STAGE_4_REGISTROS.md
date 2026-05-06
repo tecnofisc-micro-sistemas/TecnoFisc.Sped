@@ -306,7 +306,7 @@ Block headers are informational; numbering is global and contiguous (4.001 → 4
 | [x] | 4.195 | Registro 1700 | Controle dos Valores Retidos na Fonte – Cofins | 406 |
 | [x] | 4.196 | Registro 1800 | Incorporação Imobiliária – RET | 408 |
 | [x] | 4.197 | Registro 1809 | Processo Referenciado | 409 |
-| [ ] | 4.198 | Registro 1900 | Consolidação dos Documentos Emitidos no Período – Lucro Presumido (Caixa/Competência) | 410 |
+| [x] | 4.198 | Registro 1900 | Consolidação dos Documentos Emitidos no Período – Lucro Presumido (Caixa/Competência) | 410 |
 | [x] | 4.199 | Registro 1990 | Encerramento do Bloco 1 | 413 |
 
 ### Bloco 9 — Controle e Encerramento do Arquivo Digital

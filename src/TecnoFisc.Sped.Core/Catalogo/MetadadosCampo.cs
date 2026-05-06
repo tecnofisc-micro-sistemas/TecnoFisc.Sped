@@ -6,17 +6,24 @@ namespace TecnoFisc.Sped.Core.Catalogo;
 /// Descreve um campo de um registro SPED — posição, tipo, restrições e como aplicá-lo
 /// a uma instância. <see cref="Definidor"/> é o ponto que lê a propriedade durante o
 /// parsing; <see cref="Serializar"/> é o ponto que a lê de volta para texto SPED durante
-/// a geração. No Stage 2/3 ambos são compilados em delegate via reflexão; no Stage 6
-/// o source generator substitui o catálogo reflexivo por código gerado.
+/// a geração.
 /// </summary>
+/// <remarks>
+/// A API expõe apenas dois delegates compostos: o definidor recebe o conteúdo bruto do
+/// campo como <see cref="ReadOnlySpan{Char}"/> (sem alocar string no chamador) e aplica
+/// parse + atribuição em uma única operação; o serializador lê a propriedade já tipada e
+/// devolve a representação canônica SPED. O caminho gerado pelo source generator (Stage 6)
+/// implementa esses delegates inline com casts diretos para o tipo concreto, sem boxing.
+/// O caminho reflexivo (<see cref="CatalogoBuilder"/>) compõe os mesmos delegates a partir
+/// de delegados intermediários compilados via <c>Expression</c>; preserva a API externa mas
+/// continua pagando boxing internamente — esperado, porque é o fallback.
+/// </remarks>
 public sealed class MetadadosCampo
 {
-    private readonly Func<string, object?> _conversor;
-    private readonly Action<RegistroSped, object?> _setter;
-    private readonly Func<RegistroSped, object?> _getter;
-    private readonly Func<object, string> _serializador;
+    private readonly Action<RegistroSped, ReadOnlySpan<char>> _definidor;
+    private readonly Func<RegistroSped, string> _serializador;
 
-    internal MetadadosCampo(
+    public MetadadosCampo(
         string nome,
         int ordem,
         Type tipo,
@@ -24,11 +31,14 @@ public sealed class MetadadosCampo
         int decimais,
         bool obrigatorio,
         string? formato,
-        Func<string, object?> conversor,
-        Action<RegistroSped, object?> setter,
-        Func<RegistroSped, object?> getter,
-        Func<object, string> serializador)
+        Action<RegistroSped, ReadOnlySpan<char>> definidor,
+        Func<RegistroSped, string> serializador)
     {
+        ArgumentNullException.ThrowIfNull(nome);
+        ArgumentNullException.ThrowIfNull(tipo);
+        ArgumentNullException.ThrowIfNull(definidor);
+        ArgumentNullException.ThrowIfNull(serializador);
+
         Nome = nome;
         Ordem = ordem;
         Tipo = tipo;
@@ -36,9 +46,7 @@ public sealed class MetadadosCampo
         Decimais = decimais;
         Obrigatorio = obrigatorio;
         Formato = formato;
-        _conversor = conversor;
-        _setter = setter;
-        _getter = getter;
+        _definidor = definidor;
         _serializador = serializador;
     }
 
@@ -51,25 +59,19 @@ public sealed class MetadadosCampo
     public string? Formato { get; }
 
     /// <summary>
-    /// Aplica o valor textual ao registro. Espera o conteúdo do campo (entre pipes), sem
-    /// delimitadores. Vazio é interpretado conforme a nullabilidade da propriedade.
+    /// Aplica o valor textual ao registro. Recebe o conteúdo do campo entre pipes (sem
+    /// delimitadores). Vazio é interpretado conforme a nullabilidade do tipo de destino.
     /// </summary>
     public void Definidor(RegistroSped registro, ReadOnlySpan<char> valor)
-    {
-        // Stage 2 fallback: aloca string. Stage 6 (source generator) elimina essa alocação.
-        string? texto = valor.IsEmpty ? null : valor.ToString();
-        object? convertido = _conversor(texto ?? string.Empty);
-        _setter(registro, convertido);
-    }
+        => _definidor(registro, valor);
 
     /// <summary>
-    /// Lê o valor da propriedade no registro e devolve a representação canônica SPED. Valor
-    /// nulo ou <c>default</c> em propriedade anulável vira string vazia.
+    /// Lê o valor da propriedade no registro e devolve a representação canônica SPED.
+    /// Valor nulo ou <c>default</c> em propriedade anulável vira string vazia.
     /// </summary>
     public string Serializar(RegistroSped registro)
     {
         ArgumentNullException.ThrowIfNull(registro);
-        object? valor = _getter(registro);
-        return valor is null ? string.Empty : _serializador(valor);
+        return _serializador(registro);
     }
 }

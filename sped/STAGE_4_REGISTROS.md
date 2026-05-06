@@ -255,15 +255,15 @@ Block headers are informational; numbering is global and contiguous (4.001 → 4
 | [x] | 4.154 | Registro M505 | Detalhamento da Base de Cálculo do Crédito Apurado – Cofins | 332 |
 | [x] | 4.155 | Registro M510 | Ajustes do Crédito de Cofins Apurado | 337 |
 | [x] | 4.156 | Registro M515 | Detalhamento dos Ajustes do Crédito de Cofins Apurado | 338 |
-| [ ] | 4.157 | Registro M600 | Consolidação da Contribuição para a Seguridade Social – Cofins | 339 |
-| [ ] | 4.158 | Registro M605 | Cofins a Recolher – Detalhamento por Código de Receita | 342 |
-| [ ] | 4.159 | Registro M610 | Detalhamento da Contribuição para a Seguridade Social – Cofins | 343 |
-| [ ] | 4.160 | Registro M611 | Sociedades Cooperativas – Composição da Base de Cálculo – Cofins | 352 |
-| [ ] | 4.161 | Registro M615 | Ajustes da Base de Cálculo da Cofins Apurada | 354 |
-| [ ] | 4.162 | Registro M620 | Ajustes da Cofins Apurada | 355 |
-| [ ] | 4.163 | Registro M625 | Detalhamento dos Ajustes da Cofins Apurada | 356 |
-| [ ] | 4.164 | Registro M630 | Informações Adicionais de Diferimento | 357 |
-| [ ] | 4.165 | Registro M700 | Cofins Diferida em Períodos Anteriores – Valores a Pagar | 358 |
+| [x] | 4.157 | Registro M600 | Consolidação da Contribuição para a Seguridade Social – Cofins | 339 |
+| [x] | 4.158 | Registro M605 | Cofins a Recolher – Detalhamento por Código de Receita | 342 |
+| [x] | 4.159 | Registro M610 | Detalhamento da Contribuição para a Seguridade Social – Cofins | 343 |
+| [x] | 4.160 | Registro M611 | Sociedades Cooperativas – Composição da Base de Cálculo – Cofins | 352 |
+| [x] | 4.161 | Registro M615 | Ajustes da Base de Cálculo da Cofins Apurada | 354 |
+| [x] | 4.162 | Registro M620 | Ajustes da Cofins Apurada | 355 |
+| [x] | 4.163 | Registro M625 | Detalhamento dos Ajustes da Cofins Apurada | 356 |
+| [x] | 4.164 | Registro M630 | Informações Adicionais de Diferimento | 357 |
+| [x] | 4.165 | Registro M700 | Cofins Diferida em Períodos Anteriores – Valores a Pagar | 358 |
 | [ ] | 4.166 | Registro M800 | Receitas Isentas / Alíquota Zero / Suspensão – Cofins | 359 |
 | [ ] | 4.167 | Registro M810 | Detalhamento das Receitas Isentas / Alíquota Zero / Suspensão – Cofins | 361 |
 | [x] | 4.168 | Registro M990 | Encerramento do Bloco M | 362 |

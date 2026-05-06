@@ -207,13 +207,13 @@ Block headers are informational; numbering is global and contiguous (4.001 → 4
 | [x] | 4.116 | Registro F510 | Consolidação Lucro Presumido – Caixa por Unidade de Medida (Alíquota em Reais) | 262 |
 | [x] | 4.117 | Registro F519 | Processo Referenciado | 265 |
 | [x] | 4.118 | Registro F525 | Composição da Receita Escriturada – Receita Recebida pelo Regime de Caixa | 266 |
-| [ ] | 4.119 | Registro F550 | Consolidação Lucro Presumido – Regime de Competência | 268 |
-| [ ] | 4.120 | Registro F559 | Processo Referenciado | 272 |
-| [ ] | 4.121 | Registro F560 | Consolidação Lucro Presumido – Competência por Unidade de Medida | 273 |
-| [ ] | 4.122 | Registro F569 | Processo Referenciado | 276 |
-| [ ] | 4.123 | Registro F600 | Contribuição Retida na Fonte | 277 |
-| [ ] | 4.124 | Registro F700 | Deduções Diversas | 280 |
-| [ ] | 4.125 | Registro F800 | Créditos Decorrentes de Eventos de Incorporação, Fusão e Cisão | 282 |
+| [x] | 4.119 | Registro F550 | Consolidação Lucro Presumido – Regime de Competência | 268 |
+| [x] | 4.120 | Registro F559 | Processo Referenciado | 272 |
+| [x] | 4.121 | Registro F560 | Consolidação Lucro Presumido – Competência por Unidade de Medida | 273 |
+| [x] | 4.122 | Registro F569 | Processo Referenciado | 276 |
+| [x] | 4.123 | Registro F600 | Contribuição Retida na Fonte | 277 |
+| [x] | 4.124 | Registro F700 | Deduções Diversas | 280 |
+| [x] | 4.125 | Registro F800 | Créditos Decorrentes de Eventos de Incorporação, Fusão e Cisão | 282 |
 | [x] | 4.126 | Registro F990 | Encerramento do Bloco F | 283 |
 
 ### Bloco I — Operações de Instituições Financeiras, Seguradoras e Assemelhados

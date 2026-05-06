@@ -175,14 +175,14 @@ Block headers are informational; numbering is global and contiguous (4.001 → 4
 | [x] | 4.089 | Registro D309 | Processo Referenciado | 210 |
 | [x] | 4.090 | Registro D350 | Resumo Diário Cupom Fiscal Emitido por ECF (2E, 13, 14, 15, 16) | 211 |
 | [x] | 4.091 | Registro D359 | Processo Referenciado | 214 |
-| [ ] | 4.092 | Registro D500 | NF Serviço de Comunicação (21) e Telecomunicação (22) – Aquisição com Crédito | 215 |
-| [ ] | 4.093 | Registro D501 | Complemento da Operação (21, 22) – PIS/Pasep | 216 |
-| [ ] | 4.094 | Registro D505 | Complemento da Operação (21, 22) – Cofins | 218 |
-| [ ] | 4.095 | Registro D509 | Processo Referenciado | 220 |
-| [ ] | 4.096 | Registro D600 | Consolidação Prestação Serviços Comunicação/Telecomunicação (21, 22) | 221 |
-| [ ] | 4.097 | Registro D601 | Complemento Consolidação (21, 22) – PIS/Pasep | 224 |
-| [ ] | 4.098 | Registro D605 | Complemento Consolidação (21, 22) – Cofins | 226 |
-| [ ] | 4.099 | Registro D609 | Processo Referenciado | 227 |
+| [x] | 4.092 | Registro D500 | NF Serviço de Comunicação (21) e Telecomunicação (22) – Aquisição com Crédito | 215 |
+| [x] | 4.093 | Registro D501 | Complemento da Operação (21, 22) – PIS/Pasep | 216 |
+| [x] | 4.094 | Registro D505 | Complemento da Operação (21, 22) – Cofins | 218 |
+| [x] | 4.095 | Registro D509 | Processo Referenciado | 220 |
+| [x] | 4.096 | Registro D600 | Consolidação Prestação Serviços Comunicação/Telecomunicação (21, 22) | 221 |
+| [x] | 4.097 | Registro D601 | Complemento Consolidação (21, 22) – PIS/Pasep | 224 |
+| [x] | 4.098 | Registro D605 | Complemento Consolidação (21, 22) – Cofins | 226 |
+| [x] | 4.099 | Registro D609 | Processo Referenciado | 227 |
 | [x] | 4.100 | Registro D990 | Encerramento do Bloco D | 228 |
 
 ### Bloco F — Demais Documentos e Operações

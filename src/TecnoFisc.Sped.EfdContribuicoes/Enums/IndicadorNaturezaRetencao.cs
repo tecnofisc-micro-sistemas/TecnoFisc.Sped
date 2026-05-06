@@ -1,7 +1,7 @@
 namespace TecnoFisc.Sped.EfdContribuicoes.Enums;
 
 /// <summary>
-/// Indicador da natureza da retenção na fonte — campo IND_NAT_RET dos Registros F600 e 1300.
+/// Indicador da natureza da retenção na fonte — campo IND_NAT_RET dos Registros F600, 1300 e 1700.
 /// Valores 01–05 e 99 válidos para regime não cumulativo e cumulativo geral. Valores 51–59
 /// aplicáveis a partir de 2014 para rendimentos sujeitos ao regime cumulativo auferido por PJ
 /// tributada pelo Lucro Real (art. 8º da Lei nº 10.637/2002 e art. 10 da Lei nº 10.833/2003).

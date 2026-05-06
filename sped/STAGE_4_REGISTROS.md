@@ -198,10 +198,10 @@ Block headers are informational; numbering is global and contiguous (4.001 → 4
 | [x] | 4.107 | Registro F130 | Bens Incorporados ao Ativo Imobilizado – Créditos por Aquisição/Contribuição | 242 |
 | [x] | 4.108 | Registro F139 | Processo Referenciado | 246 |
 | [x] | 4.109 | Registro F150 | Crédito Presumido sobre Estoque de Abertura | 247 |
-| [ ] | 4.110 | Registro F200 | Operações da Atividade Imobiliária - Unidade Imobiliária Vendida | 249 |
-| [ ] | 4.111 | Registro F205 | Operações da Atividade Imobiliária – Custo Incorrido da Unidade | 252 |
-| [ ] | 4.112 | Registro F210 | Operações da Atividade Imobiliária - Custo Orçado da Unidade Vendida | 255 |
-| [ ] | 4.113 | Registro F211 | Processo Referenciado | 257 |
+| [x] | 4.110 | Registro F200 | Operações da Atividade Imobiliária - Unidade Imobiliária Vendida | 249 |
+| [x] | 4.111 | Registro F205 | Operações da Atividade Imobiliária – Custo Incorrido da Unidade | 252 |
+| [x] | 4.112 | Registro F210 | Operações da Atividade Imobiliária - Custo Orçado da Unidade Vendida | 255 |
+| [x] | 4.113 | Registro F211 | Processo Referenciado | 257 |
 | [ ] | 4.114 | Registro F500 | Consolidação Lucro Presumido – Regime de Caixa | 258 |
 | [ ] | 4.115 | Registro F509 | Processo Referenciado | 261 |
 | [ ] | 4.116 | Registro F510 | Consolidação Lucro Presumido – Caixa por Unidade de Medida (Alíquota em Reais) | 262 |

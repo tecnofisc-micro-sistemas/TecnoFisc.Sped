@@ -138,6 +138,22 @@ public static class CatalogoBuilder
             var getter = ConstruirGetter(propriedade);
             var serializador = ConstruirSerializador(propriedade.PropertyType, atributo);
 
+            // Compõe a nova API zero-alloc-no-chamador a partir dos delegates intermediários:
+            // o caminho reflexivo continua boxando (string + object) por dentro, mas o consumidor
+            // só vê os dois delegates da API pública de MetadadosCampo.
+            Action<RegistroSped, ReadOnlySpan<char>> definidor = (registro, valor) =>
+            {
+                string texto = valor.IsEmpty ? string.Empty : valor.ToString();
+                object? convertido = conversor(texto);
+                setter(registro, convertido);
+            };
+
+            Func<RegistroSped, string> serializadorComposto = registro =>
+            {
+                object? leitura = getter(registro);
+                return leitura is null ? string.Empty : serializador(leitura);
+            };
+
             lista.Add((atributo.Ordem, new MetadadosCampo(
                 propriedade.Name,
                 atributo.Ordem,
@@ -146,10 +162,8 @@ public static class CatalogoBuilder
                 atributo.Decimais,
                 atributo.Obrigatorio,
                 atributo.Formato,
-                conversor,
-                setter,
-                getter,
-                serializador)));
+                definidor,
+                serializadorComposto)));
         }
 
         lista.Sort(static (a, b) => a.Ordem.CompareTo(b.Ordem));

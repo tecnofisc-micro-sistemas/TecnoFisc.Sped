@@ -239,11 +239,11 @@ Block headers are informational; numbering is global and contiguous (4.001 → 4
 | [x] | 4.138 | Registro M105 | Detalhamento da Base de Cálculo do Crédito Apurado – PIS/Pasep | 299 |
 | [x] | 4.139 | Registro M110 | Ajustes do Crédito de PIS/Pasep Apurado | 303 |
 | [x] | 4.140 | Registro M115 | Detalhamento dos Ajustes do Crédito de PIS/Pasep Apurado | 304 |
-| [ ] | 4.141 | Registro M200 | Consolidação da Contribuição para o PIS/Pasep do Período | 305 |
-| [ ] | 4.142 | Registro M205 | PIS/Pasep a Recolher – Detalhamento por Código de Receita | 308 |
-| [ ] | 4.143 | Registro M210 | Detalhamento da Contribuição para o PIS/Pasep do Período | 309 |
-| [ ] | 4.144 | Registro M211 | Sociedades Cooperativas – Composição da Base de Cálculo – PIS/Pasep | 318 |
-| [ ] | 4.145 | Registro M215 | Ajustes da Base de Cálculo da Contribuição para o PIS/Pasep | 319 |
+| [x] | 4.141 | Registro M200 | Consolidação da Contribuição para o PIS/Pasep do Período | 305 |
+| [x] | 4.142 | Registro M205 | PIS/Pasep a Recolher – Detalhamento por Código de Receita | 308 |
+| [x] | 4.143 | Registro M210 | Detalhamento da Contribuição para o PIS/Pasep do Período | 309 |
+| [x] | 4.144 | Registro M211 | Sociedades Cooperativas – Composição da Base de Cálculo – PIS/Pasep | 318 |
+| [x] | 4.145 | Registro M215 | Ajustes da Base de Cálculo da Contribuição para o PIS/Pasep | 319 |
 | [ ] | 4.146 | Registro M220 | Ajustes da Contribuição para o PIS/Pasep Apurada | 321 |
 | [ ] | 4.147 | Registro M225 | Detalhamento dos Ajustes da Contribuição para o PIS/Pasep | 321 |
 | [ ] | 4.148 | Registro M230 | Informações Adicionais de Diferimento | 323 |

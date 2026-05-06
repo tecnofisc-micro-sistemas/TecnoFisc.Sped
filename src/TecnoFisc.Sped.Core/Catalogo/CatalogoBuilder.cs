@@ -33,6 +33,33 @@ public static class CatalogoBuilder
     /// <summary>Limpa o cache do builder. Útil em cenários de teste.</summary>
     public static void LimparCache() => _cache.Clear();
 
+    /// <summary>
+    /// Constrói os metadados de um único registro a partir do tipo e da fábrica fornecida.
+    /// Usado pelo catálogo gerado em tempo de compilação (Stage 6) — o gerador conhece o tipo
+    /// e a fábrica em compile-time, mas reusa este helper para extrair via reflexão a tabela
+    /// de campos uma única vez na inicialização do catálogo. Reflexão fica fora da hot path
+    /// de parsing porque os <see cref="MetadadosCampo"/> internos guardam delegates compilados.
+    /// </summary>
+    public static MetadadosRegistro ConstruirMetadadosDoTipo(
+        Type tipo,
+        string codigo,
+        int nivel,
+        string bloco,
+        Func<RegistroSped> fabrica)
+    {
+        ArgumentNullException.ThrowIfNull(tipo);
+        ArgumentNullException.ThrowIfNull(codigo);
+        ArgumentNullException.ThrowIfNull(bloco);
+        ArgumentNullException.ThrowIfNull(fabrica);
+
+        if (tipo.IsAbstract || !typeof(RegistroSped).IsAssignableFrom(tipo))
+            throw new InvalidOperationException(
+                $"Tipo {tipo.FullName} precisa ser concreto e herdar de RegistroSped.");
+
+        var campos = ConstruirCampos(tipo);
+        return new MetadadosRegistro(codigo, nivel, bloco, tipo, fabrica, campos);
+    }
+
     private static IRegistroSpedCatalogo ConstruirNovo(Assembly assembly)
     {
         var registros = new Dictionary<string, MetadadosRegistro>(StringComparer.Ordinal);
@@ -111,6 +138,22 @@ public static class CatalogoBuilder
             var getter = ConstruirGetter(propriedade);
             var serializador = ConstruirSerializador(propriedade.PropertyType, atributo);
 
+            // Compõe a nova API zero-alloc-no-chamador a partir dos delegates intermediários:
+            // o caminho reflexivo continua boxando (string + object) por dentro, mas o consumidor
+            // só vê os dois delegates da API pública de MetadadosCampo.
+            Action<RegistroSped, ReadOnlySpan<char>> definidor = (registro, valor) =>
+            {
+                string texto = valor.IsEmpty ? string.Empty : valor.ToString();
+                object? convertido = conversor(texto);
+                setter(registro, convertido);
+            };
+
+            Func<RegistroSped, string> serializadorComposto = registro =>
+            {
+                object? leitura = getter(registro);
+                return leitura is null ? string.Empty : serializador(leitura);
+            };
+
             lista.Add((atributo.Ordem, new MetadadosCampo(
                 propriedade.Name,
                 atributo.Ordem,
@@ -119,10 +162,8 @@ public static class CatalogoBuilder
                 atributo.Decimais,
                 atributo.Obrigatorio,
                 atributo.Formato,
-                conversor,
-                setter,
-                getter,
-                serializador)));
+                definidor,
+                serializadorComposto)));
         }
 
         lista.Sort(static (a, b) => a.Ordem.CompareTo(b.Ordem));

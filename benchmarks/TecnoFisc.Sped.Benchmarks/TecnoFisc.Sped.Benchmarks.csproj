@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <Description>Benchmarks BenchmarkDotNet do TecnoFisc.Sped — caminhos de parsing/geração sensíveis a performance.</Description>
+    <!-- BenchmarkDotNet exige Release; o avisador é warning-as-error sem isso. -->
+    <ServerGarbageCollection>true</ServerGarbageCollection>
+    <ConcurrentGarbageCollection>true</ConcurrentGarbageCollection>
+    <!-- Habilita docs para satisfazer IDE0005 sob TreatWarningsAsErrors herdado de Directory.Build.props. -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- BenchmarkDotNet exige métodos de instância; CA1822 pediria static e quebra a validação. -->
+    <NoWarn>$(NoWarn);CA1822</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\TecnoFisc.Sped.Core\TecnoFisc.Sped.Core.csproj" />
+    <ProjectReference Include="..\..\src\TecnoFisc.Sped.EfdContribuicoes\TecnoFisc.Sped.EfdContribuicoes.csproj" />
+  </ItemGroup>
+
+</Project>

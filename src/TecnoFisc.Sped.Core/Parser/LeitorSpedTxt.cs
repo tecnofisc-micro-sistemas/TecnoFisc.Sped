@@ -22,6 +22,15 @@ namespace TecnoFisc.Sped.Core.Parser;
 /// </remarks>
 public sealed class LeitorSpedTxt : ILeitorSped
 {
+    /// <summary>
+    /// Código do registro de encerramento total do arquivo digital (Bloco 9, último registro
+    /// do leiaute). Ao encontrá-lo, o leitor encerra o consumo do stream — qualquer conteúdo
+    /// posterior (tipicamente o bloco de assinatura digital PKCS#7 anexado pelo PVA da Receita)
+    /// é ignorado por não fazer parte do leiaute textual de registros. Convenção universal
+    /// dos leiautes SPED .txt; se algum leiaute futuro divergir, promover para o catálogo.
+    /// </summary>
+    private const string CodigoEncerramentoArquivo = "9999";
+
     private readonly IRegistroSpedCatalogo _catalogo;
 
     public LeitorSpedTxt(IRegistroSpedCatalogo catalogo)
@@ -30,7 +39,7 @@ public sealed class LeitorSpedTxt : ILeitorSped
         _catalogo = catalogo;
     }
 
-    public async IAsyncEnumerable<RegistroSped> LerAsync(
+    public async IAsyncEnumerable<RegistroSped> LerStreamingAsync(
         Stream entrada,
         [EnumeratorCancellation] CancellationToken cancelamento = default)
     {
@@ -39,10 +48,11 @@ public sealed class LeitorSpedTxt : ILeitorSped
         var leitor = PipeReader.Create(entrada);
         var pilha = new PilhaHierarquica();
         long numeroLinha = 0;
+        bool encerrado = false;
 
         try
         {
-            while (true)
+            while (!encerrado)
             {
                 cancelamento.ThrowIfCancellationRequested();
 
@@ -54,7 +64,20 @@ public sealed class LeitorSpedTxt : ILeitorSped
                     numeroLinha++;
                     var registro = ProcessarLinha(in linha, numeroLinha, pilha);
                     if (registro is not null)
+                    {
                         yield return registro;
+                        if (registro.Codigo == CodigoEncerramentoArquivo)
+                        {
+                            encerrado = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (encerrado)
+                {
+                    leitor.AdvanceTo(buffer.Start, buffer.Start);
+                    break;
                 }
 
                 leitor.AdvanceTo(buffer.Start, buffer.End);

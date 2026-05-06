@@ -103,11 +103,35 @@ The library family covers all of these (incrementally, prioritizing EFD Contribu
 
 Each project depends only on `TecnoFisc.Sped.Core` (which itself depends on nothing external). No project depends on databases, CSV files, or external configuration sources. Hierarchical metadata, layout versions, and validation rules are all embedded in the assembly.
 
-### 4.2 Format independence
+### 4.2 Format independence (with shared authoritative tables)
 
-Each SPED project gets its own package. Even when two projects have records that look similar (e.g., RegistroC100 in EFD Contribuições and EFD ICMS-IPI), they are duplicated in their respective projects. They evolve independently because the Receita Federal publishes their layouts on independent cadences.
+Each SPED project gets its own package. The duplication rule applies at the **registro level**, not at the table/enum level.
 
-### 4.3 Performance-first
+**Registros duplicate per leiaute.** When two projects have records that look similar (e.g., `RegistroC100` in EFD Contribuições and EFD ICMS-IPI), they are duplicated in their respective projects. They have different children, different hierarchy, different cross-record validations, and evolve through different PRs because the Receita Federal publishes their layouts on independent cadences.
+
+**Ato COTEPE-referenced tables/enums live in `TecnoFisc.Sped.Core` (single source of truth).** EFD ICMS-IPI is the **regente** of the Ato COTEPE/ICMS no 44/2018 fiscal tables (`Tabela 4.1.1 - Modelos`, `Tabela 4.1.2 - Situação`, etc.). EFD Contribuições and other leiautes **reference** these tables — they do not redefine them. When the Ato COTEPE changes (e.g., `COD_SIT` codes 04 and 05 descontinuados a partir de 2023-01), the change propagates automatically to every leiaute that references the table. Duplicating the enum across leiautes would create silent drift bugs.
+
+**Concrete classification:**
+
+| Type | Location | Rationale |
+| --- | --- | --- |
+| `RegistroC100`, `RegistroC170`, etc. | Per-leiaute project | Filhos, hierarquia, validações cross-record divergem. |
+| `ModeloDocumento` (Tabela 4.1.1), `SituacaoDocumento` (Tabela 4.1.2) | `Core` | Regidos por Ato COTEPE; EFD ICMS-IPI é regente; demais leiautes referenciam. |
+| `Cnpj`, `Cpf`, `Cfop`, `Ncm`, `Cest`, `Cst`, `ChaveAcesso` | `Core` | Conceitos fiscais transversais. |
+| `IndicadorOperacao`, `IndicadorEmitente`, `IndicadorPagamento`, `IndicadorFrete` | `Core` | Mesma semântica e mesmos valores em todos os leiautes dentro da janela fiscal de 5 anos. |
+| Enums específicos do leiaute (ex.: regimes de PIS/Cofins, blocos M de apuração) | Per-leiaute project | Não existem fora do leiaute. |
+
+### 4.3 Janela fiscal de 5 anos
+
+A Receita Federal só permite revisão/escrituração dos últimos 5 anos. Marcos de versionamento de campos anteriores ao corte (hoje, anteriores a 2021-01) são **irrelevantes para implementação** — dados desse período não podem mais ser escriturados via SPED.
+
+Implicações práticas:
+
+- Versões anteriores de enums (ex.: `IND_PGTO` com código `9` antes de 2012-07; `IND_FRT` com semântica diferente antes de 2017-10/2018-01) **não precisam ser modeladas**.
+- Enums que aparentam divergir entre leiautes por marcos antigos (e.g., `IND_FRT` v3 a partir de 2017-10 no EFD Contribuições vs 2018-01 no EFD ICMS-IPI) **convergem** dentro da janela e são compartilháveis em `Core`.
+- Quando o corte avança (2027-01, 2028-01, ...), revisar enums Core para remover códigos descontinuados que saíram da janela.
+
+### 4.4 Performance-first
 
 The library is designed for processing files of multiple gigabytes. This drives concrete decisions:
 
@@ -117,15 +141,15 @@ The library is designed for processing files of multiple gigabytes. This drives 
 - Source-generated catalogs to eliminate reflection in hot paths.
 - Minimal allocations during parsing.
 
-### 4.4 Strongly-typed everything
+### 4.5 Strongly-typed everything
 
 Consumers should never deal with `string` or `string[]` representations of SPED data. Records expose typed properties (`Cfop`, `DateOnly`, `decimal`, enums). Parsing failures surface as exceptions or `Result<T>` at the parser boundary, not deep in the consumer code.
 
-### 4.5 Symmetric reading and writing
+### 4.6 Symmetric reading and writing
 
 Whatever the parser produces, the generator must consume back. Round-trip a file through the library and the result must match the original (modulo deliberate normalization). This invariant is enforced via property-based testing.
 
-### 4.6 Layout versioning
+### 4.7 Layout versioning
 
 SPED projects publish new layouts approximately yearly. The library handles multiple versions transparently:
 
@@ -133,7 +157,7 @@ SPED projects publish new layouts approximately yearly. The library handles mult
 - The parser reads the layout version from `Registro0000` and instantiates appropriate variants.
 - Records that diverge between versions are subclassed; minor changes use version-aware serialization.
 
-### 4.7 Zero reflection in hot paths
+### 4.8 Zero reflection in hot paths
 
 Reflection at startup (once) for catalog discovery is acceptable. Reflection during parsing of millions of records is forbidden. Source generators (`IIncrementalGenerator`) produce factory delegates and metadata at compile time.
 
@@ -198,7 +222,7 @@ TecnoFisc.Sped.NFe                   ← TecnoFisc.Sped.Core, TecnoFisc.Sped.Cor
 
 **Critical rule 1:** No project in TecnoFisc.Sped depends on any database, file system configuration, or external service.
 
-**Critical rule 2:** Format-specific projects (`EfdContribuicoes`, `Fiscal`, etc.) do NOT depend on each other. If RegistroC100 exists in two projects, it is two distinct classes.
+**Critical rule 2:** Format-specific projects (`EfdContribuicoes`, `Fiscal`, etc.) do NOT depend on each other. If `RegistroC100` exists in two projects, it is two distinct classes. **However**, this duplication rule applies only to **registros** (with their leiaute-specific filhos, hierarchy, and validations). Tables and enums regidos pelo Ato COTEPE/ICMS (e.g., `Tabela 4.1.1 - Modelos`, `Tabela 4.1.2 - Situação`) live in `TecnoFisc.Sped.Core` as a single source of truth — EFD ICMS-IPI is the regente; other leiautes reference. Duplicating those would create silent drift (see §4.2).
 
 **Critical rule 3:** The source generator project is referenced as an analyzer (`<ProjectReference OutputItemType="Analyzer" ReferenceOutputAssembly="false" />`), not as a runtime dependency. It produces code at compile time, ships nothing to the consumer at runtime.
 
@@ -469,9 +493,9 @@ Performance regression in any benchmark blocks merging.
 
 ### Stage 4 — TecnoFisc.Sped.EfdContribuicoes (registros, layout V006)
 
-This stage implements **every registro** of the EFD Contribuições layout V006 (guide v1.35). It is decomposed into **203 sub-stages**, numbered `4.001` … `4.203`. The full decomposition table — sub-stage number, registro code, description, PDF page — lives in **`STAGE_4_REGISTROS.md`** at the repo root. Read that file when planning a sub-stage; do not duplicate the table here.
+This stage implements **every registro** of the EFD Contribuições layout V006 (guide v1.35). It is decomposed into **203 sub-stages**, numbered `4.001` … `4.203`. The full decomposition table — sub-stage number, registro code, description, PDF page — lives in **`sped/STAGE_4_REGISTROS.md`**. Read that file when planning a sub-stage; do not duplicate the table here.
 
-Source of the decomposition is the Section 3 TOC of `Guia_Pratico_EFD_Contribuicoes_Versao_1_35 - 18_06_2021.pdf` (PDF page 3). Order of sub-stages = TOC order: Bloco 0 → A → C → D → F → I → M → P → 1 → 9. Within each block, registro codes ascend.
+Source of the decomposition is the Section 3 TOC of `sped/guides/Guia_Pratico_EFD_Contribuicoes_Versao_1_35 - 18_06_2021.pdf` (PDF page 3). Order of sub-stages = TOC order: Bloco 0 → A → C → D → F → I → M → P → 1 → 9. Within each block, registro codes ascend.
 
 PR granularity: a typical PR covers **one sub-stage**, but trivial registros (block openers/closers, simple "Processo Referenciado" entries with two or three fields and no validations) **may be batched** into one PR when grouping is logically clean (e.g., all `X990` closers at the end, or a contiguous run of `X9xx` referenciados within the same block). Non-trivial registros — anything with hierarchical children, conditional fields, calculated totalizers, or value-object validation — stay as single-sub-stage PRs.
 
@@ -613,9 +637,12 @@ When starting a session in this repository:
 6. Respect dependency rules from Section 6.1.
 7. **NEVER** add database, file-system configuration, or external service dependencies to any project.
 8. **NEVER** make format-specific projects depend on each other.
-9. Performance-sensitive code requires a BenchmarkDotNet benchmark.
-10. When in doubt about scope, ask before coding.
-11. Write tests alongside code, not after.
+9. **Registros duplicate per leiaute; Ato COTEPE-referenced tables/enums (Tabela 4.1.1, 4.1.2, etc.) live in `Core`** — see §4.2.
+10. **5-year fiscal window:** ignore versionamento de campos com vigência anterior a `(hoje - 5 anos)`. Dentro da janela, marcos temporais antigos não são modelados em código (vide §4.3).
+11. **EFD ICMS-IPI é o regente do Ato COTEPE.** Quando uma tabela/enum aparecer referenciada em múltiplos leiautes, extrair uma vez no leiaute-origem (EFD ICMS-IPI) e tratar como compartilhada.
+12. Performance-sensitive code requires a BenchmarkDotNet benchmark.
+13. When in doubt about scope, ask before coding.
+14. Write tests alongside code, not after.
 
 Update this document when:
 

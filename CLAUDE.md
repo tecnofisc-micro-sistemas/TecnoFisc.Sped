@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 `ARCHITECTURE.md` at the repo root is the master design document. Read it first every session. It defines naming rules, dependency rules, the staged development plan, and the public API shape. The notes below are operational shortcuts — they do not replace it.
 
-`STAGE_4_REGISTROS.md` at the repo root is the operational appendix for Stage 4. It lists every EFD Contribuições registro as an atomic sub-stage `4.001` … `4.203`, with its PDF page number in the layout guide. Before starting work on a registro, look up its sub-stage row there and open the PDF directly at the listed page (do not read the whole guide).
+`sped/STAGE_4_REGISTROS.md` is the operational appendix for Stage 4. It lists every EFD Contribuições registro as an atomic sub-stage `4.001` … `4.203`, with its PDF page number in the layout guide. Before starting work on a registro, look up its sub-stage row there and open the PDF directly at the listed page (do not read the whole guide).
 
 ## Build / test / run
 
@@ -26,13 +26,26 @@ Benchmarks (when the project exists):
 dotnet run -c Release --project benchmarks/TecnoFisc.Sped.Benchmarks
 ```
 
-## Authoritative spec for EFD Contribuições
+## Authoritative specs
 
-`Guia_Pratico_EFD_Contribuicoes_Versao_1_35 - 18_06_2021.pdf` at repo root is the Receita Federal layout guide (v1.35, layout 006). Use it as the source of truth when implementing fields on records (`RegistroXxxx`): order, type, length, decimals, optionality, valid value lists.
+PDFs in `sped/guides/` (gitignored, local only):
 
-It is large (~4 MB, hundreds of pages). Never read the whole file. Use the `Read` tool's `pages` parameter to fetch only the section for the record you are implementing (e.g., `pages: "120-125"` for one record). The TOC near the start lists each registro and its page.
+- `Guia_Pratico_EFD_Contribuicoes_Versao_1_35 - 18_06_2021.pdf` — EFD Contribuições layout guide (v1.35, layout 006). Source of truth para campos do `RegistroXxxx` deste leiaute.
+- `Guia Prático EFD - Versão 3.2.2.pdf` — EFD ICMS-IPI guide (Ato COTEPE/ICMS no 44/2018). Source of truth para EFD ICMS-IPI **e** para tabelas/enums regidos pelo Ato COTEPE referenciados por outros leiautes (Tabela 4.1.1 Modelos, Tabela 4.1.2 Situação, etc.).
 
-When the user upgrades to a newer layout (v007+), expect a newer PDF dropped alongside this one — keep both, do not delete.
+Both files are large (4–6 MB, hundreds of pages). Never read whole. Use `Read` tool's `pages` parameter to fetch only the section needed.
+
+**Hierarquia de autoridade.** EFD ICMS-IPI é o **regente** do Ato COTEPE. Quando o guia EFD Contribuições dizer "conforme Tabela 4.1.1" / "conforme Tabela 4.1.2", a definição canônica está no guia do EFD ICMS-IPI. Mudanças na origem propagam para EFD Contribuições — não duplicar.
+
+When the user upgrades to a newer layout, expect newer PDF dropped alongside the existing one in `sped/guides/` — keep both, do not delete.
+
+## Repo folder map
+
+- `sped/` — SPED-related operational docs and local-only specs.
+  - `sped/STAGE_4_REGISTROS.md` — Stage 4 sub-stage tracking (EFD Contribuições).
+  - `sped/guides/` — Receita Federal PDFs (gitignored, local only).
+- `src/`, `tests/`, `benchmarks/`, `samples/` — target solution layout (per `ARCHITECTURE.md`).
+- `scripts/` — automation (e.g., `auto-implement-sped.ps1`).
 
 ## Repository state
 
@@ -43,10 +56,11 @@ The current development stage is **Stage 0 → Stage 1** (foundation + core valu
 ## Hard rules (failing these blocks the change)
 
 1. **No external runtime dependencies in any project.** No DB, no file-system config, no network calls. Streams in, streams out.
-2. **Format-specific projects never reference each other.** `RegistroC100` in EFD Contribuições and EFD ICMS-IPI are two different classes by design — duplication is correct.
+2. **Format-specific projects never reference each other** — duplication is correct **at the registro level**. `RegistroC100` em EFD Contribuições e EFD ICMS-IPI são duas classes distintas por design (filhos, hierarquia, validações cross-record divergem). **Exceção:** tabelas/enums regidos pelo Ato COTEPE/ICMS (Tabela 4.1.1 Modelos, Tabela 4.1.2 Situação, etc.) e value objects fiscais transversais (`Cnpj`, `Cfop`, `Ncm`, `ChaveAcesso`, indicadores convergidos como `IndicadorPagamento`/`IndicadorFrete`) ficam em `TecnoFisc.Sped.Core`. EFD ICMS-IPI é o regente do Ato COTEPE; outros leiautes referenciam. Duplicar enum referenciado = drift bug. Ver `ARCHITECTURE.md` §4.2.
 3. **Source generator project is referenced as analyzer only:** `<ProjectReference OutputItemType="Analyzer" ReferenceOutputAssembly="false" />`. It must not ship at runtime.
 4. **No reflection in parsing hot paths.** Reflection at startup (cached) is fine. `Activator.CreateInstance`, `PropertyInfo.SetValue` per-record is forbidden — use source-generated factory delegates (Stage 6) or the cached `CatalogoBuilder` fallback (Stage 2).
 5. **Performance-sensitive code requires a BenchmarkDotNet benchmark.** Performance regressions block merge.
+6. **Janela fiscal de 5 anos.** Receita só permite revisão dos últimos 5 anos. Marcos de versionamento de campos com vigência anterior ao corte (hoje, anteriores a 2021-01) **não são modelados** em código. Versões antigas de enums (`IND_PGTO` pré-2012-07, `IND_FRT` pré-2017-10/2018-01, etc.) ficam de fora — só a versão vigente no corte e a evolução posterior contam. Ver `ARCHITECTURE.md` §4.3.
 
 ## Naming convention (CRITICAL — see ARCHITECTURE.md §1.3)
 

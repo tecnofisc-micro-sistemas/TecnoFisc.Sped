@@ -1,0 +1,32 @@
+using TecnoFisc.Sped.Core.Abstracoes;
+using TecnoFisc.Sped.Core.Atributos;
+
+namespace TecnoFisc.Sped.EfdContribuicoes.Registros.BlocoM;
+
+/// <summary>
+/// Registro M410 — Detalhamento das Receitas Isentas, não Alcançadas pela Incidência da Contribuição,
+/// Sujeitas a Alíquota Zero ou de Vendas com Suspensão – PIS/Pasep.
+/// Nível hierárquico 3, ocorrência 1:N (filho de M400).
+/// Conforme Guia Prático EFD Contribuições v1.35, p. 327.
+/// </summary>
+[RegistroSped(Codigo = "M410", Nivel = 3, Bloco = "M")]
+public sealed partial class RegistroM410 : RegistroSped
+{
+    public override string Codigo => "M410";
+
+    /// <summary>Natureza da Receita, conforme tabelas 4.3.10 a 4.3.16 por CST orientador.</summary>
+    [CampoSped(Ordem = 2, Tamanho = 3, Obrigatorio = true)]
+    public string? NatRec { get; set; }
+
+    /// <summary>Valor da receita bruta no período, relativo à natureza da receita (NAT_REC).</summary>
+    [CampoSped(Ordem = 3, Tamanho = 0, Decimais = 2, Obrigatorio = true)]
+    public decimal VlRec { get; set; }
+
+    /// <summary>Código da conta analítica contábil debitada/creditada.</summary>
+    [CampoSped(Ordem = 4, Tamanho = 255)]
+    public string? CodCta { get; set; }
+
+    /// <summary>Descrição Complementar da Natureza da Receita.</summary>
+    [CampoSped(Ordem = 5, Tamanho = 0)]
+    public string? DescCompl { get; set; }
+}

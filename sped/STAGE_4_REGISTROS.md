@@ -221,13 +221,13 @@ Block headers are informational; numbering is global and contiguous (4.001 → 4
 | Feito | Sub-stage | Registro | Descrição | Página PDF |
 | --- | --- | --- | --- | --- |
 | [x] | 4.127 | Registro I001 | Abertura do Bloco I | 284 |
-| [ ] | 4.128 | Registro I010 | Identificação da Pessoa Jurídica/Estabelecimento | 285 |
-| [ ] | 4.129 | Registro I100 | Consolidação das Operações do Período | 286 |
-| [ ] | 4.130 | Registro I199 | Processo Referenciado | 288 |
-| [ ] | 4.131 | Registro I200 | Composição das Receitas, Deduções e/ou Exclusões do Período | 289 |
-| [ ] | 4.132 | Registro I299 | Processo Referenciado | 290 |
-| [ ] | 4.133 | Registro I300 | Detalhamento das Receitas, Deduções e/ou Exclusões do Período | 291 |
-| [ ] | 4.134 | Registro I399 | Processo Referenciado | 293 |
+| [x] | 4.128 | Registro I010 | Identificação da Pessoa Jurídica/Estabelecimento | 285 |
+| [x] | 4.129 | Registro I100 | Consolidação das Operações do Período | 286 |
+| [x] | 4.130 | Registro I199 | Processo Referenciado | 288 |
+| [x] | 4.131 | Registro I200 | Composição das Receitas, Deduções e/ou Exclusões do Período | 289 |
+| [x] | 4.132 | Registro I299 | Processo Referenciado | 290 |
+| [x] | 4.133 | Registro I300 | Detalhamento das Receitas, Deduções e/ou Exclusões do Período | 291 |
+| [x] | 4.134 | Registro I399 | Processo Referenciado | 293 |
 | [x] | 4.135 | Registro I990 | Encerramento do Bloco I | 294 |
 
 ### Bloco M — Apuração da Contribuição e Crédito do PIS/Pasep e Cofins

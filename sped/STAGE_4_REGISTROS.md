@@ -202,11 +202,11 @@ Block headers are informational; numbering is global and contiguous (4.001 → 4
 | [x] | 4.111 | Registro F205 | Operações da Atividade Imobiliária – Custo Incorrido da Unidade | 252 |
 | [x] | 4.112 | Registro F210 | Operações da Atividade Imobiliária - Custo Orçado da Unidade Vendida | 255 |
 | [x] | 4.113 | Registro F211 | Processo Referenciado | 257 |
-| [ ] | 4.114 | Registro F500 | Consolidação Lucro Presumido – Regime de Caixa | 258 |
-| [ ] | 4.115 | Registro F509 | Processo Referenciado | 261 |
-| [ ] | 4.116 | Registro F510 | Consolidação Lucro Presumido – Caixa por Unidade de Medida (Alíquota em Reais) | 262 |
-| [ ] | 4.117 | Registro F519 | Processo Referenciado | 265 |
-| [ ] | 4.118 | Registro F525 | Composição da Receita Escriturada – Receita Recebida pelo Regime de Caixa | 266 |
+| [x] | 4.114 | Registro F500 | Consolidação Lucro Presumido – Regime de Caixa | 258 |
+| [x] | 4.115 | Registro F509 | Processo Referenciado | 261 |
+| [x] | 4.116 | Registro F510 | Consolidação Lucro Presumido – Caixa por Unidade de Medida (Alíquota em Reais) | 262 |
+| [x] | 4.117 | Registro F519 | Processo Referenciado | 265 |
+| [x] | 4.118 | Registro F525 | Composição da Receita Escriturada – Receita Recebida pelo Regime de Caixa | 266 |
 | [ ] | 4.119 | Registro F550 | Consolidação Lucro Presumido – Regime de Competência | 268 |
 | [ ] | 4.120 | Registro F559 | Processo Referenciado | 272 |
 | [ ] | 4.121 | Registro F560 | Consolidação Lucro Presumido – Competência por Unidade de Medida | 273 |

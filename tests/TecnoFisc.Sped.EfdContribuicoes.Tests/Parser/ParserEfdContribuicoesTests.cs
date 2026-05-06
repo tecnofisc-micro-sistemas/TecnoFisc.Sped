@@ -19,13 +19,13 @@ public sealed class ParserEfdContribuicoesTests
         ParserEfdContribuicoes parser, string sped, CancellationToken cancelamento)
     {
         var registros = new List<RegistroSped>();
-        await foreach (var registro in parser.LerAsync(Fluxo(sped), cancelamento))
+        await foreach (var registro in parser.LerStreamingAsync(Fluxo(sped), cancelamento))
             registros.Add(registro);
         return registros;
     }
 
     [Fact]
-    public async Task LerAsync_ConstrutorPadrao_UsaCatalogoDoLeiauteEfdContribuicoes()
+    public async Task LerStreamingAsync_ConstrutorPadrao_UsaCatalogoDoLeiauteEfdContribuicoes()
     {
         var parser = new ParserEfdContribuicoes();
         const string sped =
@@ -44,7 +44,7 @@ public sealed class ParserEfdContribuicoesTests
     }
 
     [Fact]
-    public async Task LerAsync_PreencheCamposTipadosDoCatalogo()
+    public async Task LerStreamingAsync_PreencheCamposTipadosDoCatalogo()
     {
         var parser = new ParserEfdContribuicoes();
         const string sped =
@@ -59,7 +59,7 @@ public sealed class ParserEfdContribuicoesTests
     }
 
     [Fact]
-    public async Task LerAsync_VinculaPaiEFilhosConformeNiveisDoLeiaute()
+    public async Task LerStreamingAsync_VinculaPaiEFilhosConformeNiveisDoLeiaute()
     {
         var parser = new ParserEfdContribuicoes();
         const string sped =
@@ -77,7 +77,7 @@ public sealed class ParserEfdContribuicoesTests
     }
 
     [Fact]
-    public async Task LerAsync_QuandoCodigoForaDoLeiaute_LancaErroLayout()
+    public async Task LerStreamingAsync_QuandoCodigoForaDoLeiaute_LancaErroLayout()
     {
         var parser = new ParserEfdContribuicoes();
         const string sped = "|ZZZZ|1|\r\n";
@@ -97,7 +97,7 @@ public sealed class ParserEfdContribuicoesTests
     }
 
     [Fact]
-    public async Task LerAsync_ComCatalogoCustomizado_DelegaParaCatalogoInjetado()
+    public async Task LerStreamingAsync_ComCatalogoCustomizado_DelegaParaCatalogoInjetado()
     {
         // O catálogo do assembly Core de testes não conhece os registros de EFD Contribuições;
         // se o parser usar este catálogo (em vez do padrão), "0001" deve ser desconhecido.
@@ -108,5 +108,42 @@ public sealed class ParserEfdContribuicoesTests
         var act = async () => await LerTodosAsync(parser, sped, TestContext.Current.CancellationToken);
 
         await act.Should().ThrowAsync<ErroLayoutSpedException>();
+    }
+
+    [Fact]
+    public async Task LerAsync_BufferedConvenience_RetornaArquivoComBlocosPopulados()
+    {
+        var parser = new ParserEfdContribuicoes();
+        const string sped =
+            "|0001|0|\r\n" +
+            "|0990|2|\r\n" +
+            "|9001|0|\r\n" +
+            "|9900|0000|1|\r\n" +
+            "|9990|2|\r\n" +
+            "|9999|6|\r\n";
+
+        var arquivo = await parser.LerAsync(Fluxo(sped), TestContext.Current.CancellationToken);
+
+        arquivo.Bloco0.EnumerarRegistros().Should().HaveCount(2);
+        arquivo.Bloco9.EnumerarRegistros().Should().HaveCount(4);
+        arquivo.EnumerarRegistros().Select(r => r.Codigo)
+            .Should().Equal("0001", "0990", "9001", "9900", "9990", "9999");
+    }
+
+    [Fact]
+    public async Task LerAsync_BufferedConvenience_PreservaVinculacaoPaiEFilhos()
+    {
+        var parser = new ParserEfdContribuicoes();
+        const string sped =
+            "|9001|0|\r\n" +
+            "|9900|0000|1|\r\n" +
+            "|9900|9999|1|\r\n";
+
+        var arquivo = await parser.LerAsync(Fluxo(sped), TestContext.Current.CancellationToken);
+
+        var abertura = arquivo.Bloco9.EnumerarRegistros().OfType<Registro9001>().Single();
+        var totalizadores = arquivo.Bloco9.EnumerarRegistros().OfType<Registro9900>().ToList();
+        totalizadores.Should().HaveCount(2);
+        totalizadores.Should().AllSatisfy(t => t.Pai.Should().BeSameAs(abertura));
     }
 }

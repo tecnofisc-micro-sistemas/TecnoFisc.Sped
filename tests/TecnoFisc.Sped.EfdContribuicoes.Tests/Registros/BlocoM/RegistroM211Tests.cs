@@ -120,7 +120,7 @@ public sealed class RegistroM211Tests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerAsync(entrada, cancelamento))
+        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
             registros.Add(registro);
 
         using var saida = new MemoryStream();

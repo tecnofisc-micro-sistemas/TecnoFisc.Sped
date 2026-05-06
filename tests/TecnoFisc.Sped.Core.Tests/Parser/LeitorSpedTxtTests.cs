@@ -20,13 +20,13 @@ public sealed class LeitorSpedTxtTests
     {
         var leitor = new LeitorSpedTxt(_catalogo);
         var resultado = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerAsync(FluxoSped(conteudo)))
+        await foreach (var registro in leitor.LerStreamingAsync(FluxoSped(conteudo)))
             resultado.Add(registro);
         return resultado;
     }
 
     [Fact]
-    public async Task LerAsync_ArquivoSimples_MaterializaRegistrosNaOrdem()
+    public async Task LerStreamingAsync_ArquivoSimples_MaterializaRegistrosNaOrdem()
     {
         const string sped =
             "|0000|006|01012025|31012025|EMPRESA TESTE|11222333000181|\r\n" +
@@ -50,7 +50,7 @@ public sealed class LeitorSpedTxtTests
     }
 
     [Fact]
-    public async Task LerAsync_VinculaPaiEFilhosViaPilhaHierarquica()
+    public async Task LerStreamingAsync_VinculaPaiEFilhosViaPilhaHierarquica()
     {
         const string sped =
             "|0000|006|01012025|31012025|EMPRESA|11222333000181|\r\n" +
@@ -85,7 +85,7 @@ public sealed class LeitorSpedTxtTests
     }
 
     [Fact]
-    public async Task LerAsync_AceitaTerminadorSomenteLF()
+    public async Task LerStreamingAsync_AceitaTerminadorSomenteLF()
     {
         const string sped =
             "|0000|006|01012025|31012025|EMPRESA|11222333000181|\n" +
@@ -97,7 +97,7 @@ public sealed class LeitorSpedTxtTests
     }
 
     [Fact]
-    public async Task LerAsync_AceitaUltimaLinhaSemTerminador()
+    public async Task LerStreamingAsync_AceitaUltimaLinhaSemTerminador()
     {
         const string sped =
             "|0000|006|01012025|31012025|EMPRESA|11222333000181|\r\n" +
@@ -109,7 +109,7 @@ public sealed class LeitorSpedTxtTests
     }
 
     [Fact]
-    public async Task LerAsync_IgnoraLinhasVazias()
+    public async Task LerStreamingAsync_IgnoraLinhasVazias()
     {
         const string sped =
             "|0000|006|01012025|31012025|EMPRESA|11222333000181|\r\n" +
@@ -122,7 +122,7 @@ public sealed class LeitorSpedTxtTests
     }
 
     [Fact]
-    public async Task LerAsync_QuandoCodigoDesconhecido_LancaErroLayout()
+    public async Task LerStreamingAsync_QuandoCodigoDesconhecido_LancaErroLayout()
     {
         const string sped = "|XXXX|1|\r\n";
 
@@ -134,7 +134,7 @@ public sealed class LeitorSpedTxtTests
     }
 
     [Fact]
-    public async Task LerAsync_QuandoSemPipeInicial_LancaErroFormato()
+    public async Task LerStreamingAsync_QuandoSemPipeInicial_LancaErroFormato()
     {
         const string sped = "0000|006|01012025|31012025|EMPRESA|11222333000181|\r\n";
 
@@ -144,7 +144,7 @@ public sealed class LeitorSpedTxtTests
     }
 
     [Fact]
-    public async Task LerAsync_QuandoCampoNumericoMalformado_LancaErroFormato()
+    public async Task LerStreamingAsync_QuandoCampoNumericoMalformado_LancaErroFormato()
     {
         const string sped = "|C001|abc|\r\n";
 
@@ -156,7 +156,7 @@ public sealed class LeitorSpedTxtTests
     }
 
     [Fact]
-    public async Task LerAsync_AceitaCaracteresAcentuadosLatin1()
+    public async Task LerStreamingAsync_AceitaCaracteresAcentuadosLatin1()
     {
         const string sped =
             "|0000|006|01012025|31012025|AÇÃO LTDA|11222333000181|\r\n" +
@@ -169,7 +169,7 @@ public sealed class LeitorSpedTxtTests
     }
 
     [Fact]
-    public async Task LerAsync_StreamGrandeAlemDoBufferInterno_LeTodasAsLinhas()
+    public async Task LerStreamingAsync_StreamGrandeAlemDoBufferInterno_LeTodasAsLinhas()
     {
         // Gera mais de 8 KB de conteúdo para forçar múltiplas iterações de PipeReader.ReadAsync.
         var construtor = new StringBuilder();
@@ -186,20 +186,20 @@ public sealed class LeitorSpedTxtTests
     }
 
     [Fact]
-    public async Task LerAsync_QuandoStreamNulo_LancaArgumentNullException()
+    public async Task LerStreamingAsync_QuandoStreamNulo_LancaArgumentNullException()
     {
         var leitor = new LeitorSpedTxt(_catalogo);
 
         var act = async () =>
         {
-            await foreach (var _ in leitor.LerAsync(null!)) { }
+            await foreach (var _ in leitor.LerStreamingAsync(null!)) { }
         };
 
         await act.Should().ThrowAsync<ArgumentNullException>();
     }
 
     [Fact]
-    public async Task LerAsync_QuandoBytesAposEncerramento9999_IgnoraSilenciosamente()
+    public async Task LerStreamingAsync_QuandoBytesAposEncerramento9999_IgnoraSilenciosamente()
     {
         // Simula arquivo emitido pelo PVA da Receita: registros válidos terminados por |9999|,
         // seguidos de bytes binários da assinatura digital PKCS#7. O parser deve encerrar no
@@ -214,7 +214,7 @@ public sealed class LeitorSpedTxtTests
 
         var leitor = new LeitorSpedTxt(_catalogo);
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerAsync(new MemoryStream(combinado), TestContext.Current.CancellationToken))
+        await foreach (var registro in leitor.LerStreamingAsync(new MemoryStream(combinado), TestContext.Current.CancellationToken))
             registros.Add(registro);
 
         registros.Select(r => r.Codigo).Should().Equal(["0000", "9999"]);

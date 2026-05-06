@@ -301,7 +301,7 @@ Block headers are informational; numbering is global and contiguous (4.001 → 4
 | [x] | 4.190 | Registro 1501 | Apuração de Crédito Extemporâneo – Períodos Anteriores – Cofins | 399 |
 | [x] | 4.191 | Registro 1502 | Detalhamento Crédito Extemporâneo Vinculado a Mais de Um Tipo de Receita – Cofins | 402 |
 | [x] | 4.192 | Registro 1600 | Contribuição Social Extemporânea – Cofins | 403 |
-| [ ] | 4.193 | Registro 1610 | Detalhamento da Contribuição Social Extemporânea – Cofins | 404 |
+| [x] | 4.193 | Registro 1610 | Detalhamento da Contribuição Social Extemporânea – Cofins | 404 |
 | [ ] | 4.194 | Registro 1620 | Demonstração do Crédito a Descontar da Contribuição Extemporânea – Cofins | 405 |
 | [ ] | 4.195 | Registro 1700 | Controle dos Valores Retidos na Fonte – Cofins | 406 |
 | [ ] | 4.196 | Registro 1800 | Incorporação Imobiliária – RET | 408 |

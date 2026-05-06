@@ -190,9 +190,9 @@ Block headers are informational; numbering is global and contiguous (4.001 → 4
 | Feito | Sub-stage | Registro | Descrição | Página PDF |
 | --- | --- | --- | --- | --- |
 | [x] | 4.101 | Registro F001 | Abertura do Bloco F | 229 |
-| [ ] | 4.102 | Registro F010 | Identificação do Estabelecimento | 230 |
-| [ ] | 4.103 | Registro F100 | Demais Documentos e Operações Geradoras de Contribuição e Créditos | 230 |
-| [ ] | 4.104 | Registro F111 | Processo Referenciado | 235 |
+| [x] | 4.102 | Registro F010 | Identificação do Estabelecimento | 230 |
+| [x] | 4.103 | Registro F100 | Demais Documentos e Operações Geradoras de Contribuição e Créditos | 230 |
+| [x] | 4.104 | Registro F111 | Processo Referenciado | 235 |
 | [ ] | 4.105 | Registro F120 | Bens Incorporados ao Ativo Imobilizado – Créditos por Depreciação/Amortização | 237 |
 | [ ] | 4.106 | Registro F129 | Processo Referenciado | 240 |
 | [ ] | 4.107 | Registro F130 | Bens Incorporados ao Ativo Imobilizado – Créditos por Aquisição/Contribuição | 242 |

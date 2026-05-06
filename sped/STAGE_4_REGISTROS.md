@@ -251,10 +251,10 @@ Block headers are informational; numbering is global and contiguous (4.001 → 4
 | [x] | 4.150 | Registro M350 | PIS/Pasep – Folha de Salários | 325 |
 | [x] | 4.151 | Registro M400 | Receitas Isentas / Alíquota Zero / Suspensão – PIS/Pasep | 326 |
 | [x] | 4.152 | Registro M410 | Detalhamento das Receitas Isentas / Alíquota Zero / Suspensão – PIS/Pasep | 327 |
-| [ ] | 4.153 | Registro M500 | Crédito de Cofins Relativo ao Período | 329 |
-| [ ] | 4.154 | Registro M505 | Detalhamento da Base de Cálculo do Crédito Apurado – Cofins | 332 |
-| [ ] | 4.155 | Registro M510 | Ajustes do Crédito de Cofins Apurado | 337 |
-| [ ] | 4.156 | Registro M515 | Detalhamento dos Ajustes do Crédito de Cofins Apurado | 338 |
+| [x] | 4.153 | Registro M500 | Crédito de Cofins Relativo ao Período | 329 |
+| [x] | 4.154 | Registro M505 | Detalhamento da Base de Cálculo do Crédito Apurado – Cofins | 332 |
+| [x] | 4.155 | Registro M510 | Ajustes do Crédito de Cofins Apurado | 337 |
+| [x] | 4.156 | Registro M515 | Detalhamento dos Ajustes do Crédito de Cofins Apurado | 338 |
 | [ ] | 4.157 | Registro M600 | Consolidação da Contribuição para a Seguridade Social – Cofins | 339 |
 | [ ] | 4.158 | Registro M605 | Cofins a Recolher – Detalhamento por Código de Receita | 342 |
 | [ ] | 4.159 | Registro M610 | Detalhamento da Contribuição para a Seguridade Social – Cofins | 343 |

@@ -235,7 +235,7 @@ Block headers are informational; numbering is global and contiguous (4.001 → 4
 | Feito | Sub-stage | Registro | Descrição | Página PDF |
 | --- | --- | --- | --- | --- |
 | [x] | 4.136 | Registro M001 | Abertura do Bloco M | 295 |
-| [ ] | 4.137 | Registro M100 | Crédito de PIS/Pasep Relativo ao Período | 295 |
+| [x] | 4.137 | Registro M100 | Crédito de PIS/Pasep Relativo ao Período | 295 |
 | [ ] | 4.138 | Registro M105 | Detalhamento da Base de Cálculo do Crédito Apurado – PIS/Pasep | 299 |
 | [ ] | 4.139 | Registro M110 | Ajustes do Crédito de PIS/Pasep Apurado | 303 |
 | [ ] | 4.140 | Registro M115 | Detalhamento dos Ajustes do Crédito de PIS/Pasep Apurado | 304 |

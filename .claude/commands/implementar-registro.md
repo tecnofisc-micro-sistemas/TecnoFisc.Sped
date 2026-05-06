@@ -1,6 +1,6 @@
 ---
 description: Implementa o próximo registro SPED pendente com testes completos, em commit e PR únicos. Funciona para qualquer módulo SPED (EFD Contribuições, Fiscal, etc.).
-argument-hint: [módulo] (opcional: efd-contribuicoes, fiscal — auto-detecta se omitido)
+argument-hint: [módulo] [single] (módulo opcional: efd-contribuicoes, fiscal; flag `single` desabilita batch — útil em automação para evitar estado parcial em interrupção)
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent
 ---
 
@@ -12,6 +12,7 @@ Você é um implementador de registros SPED. Identifique o(s) próximo(s) sub-es
 
 - Você pode implementar 1 registro **ou** um batch de registros simples no mesmo PR.
 - Cap absoluto: 10 registros por PR.
+- **Modo `single`:** se `$ARGUMENTS` contiver a palavra `single`, **desabilite avaliação de batch** — implemente exatamente 1 sub-estágio, mesmo que outros sejam elegíveis. Usado por automação para minimizar trabalho perdido em interrupções por limite de sessão.
 - Se durante a execução perceber que precisa de mais de 1 PR (escopos divergentes, dependência circular, refator transversal), **pare** e reporte ao usuário antes de continuar. Não abra PRs adicionais por conta própria.
 - Não crie branches paralelos. Um único branch, um único commit (ou commits coesos no mesmo branch), um único `gh pr create`.
 
@@ -43,13 +44,14 @@ Só leia ARCHITECTURE.md se o template for ambíguo.
 No tracking file lido no PASSO 0:
 
 1. Primeira linha com `| [ ] |` = candidato.
-2. Avalie batch (todos os critérios devem ser verdadeiros):
+2. Se `$ARGUMENTS` contém `single` → **pular avaliação de batch**, lista final = `[primeiro_candidato]`. Vá para PASSO 2.
+3. Senão, avalie batch (todos os critérios devem ser verdadeiros):
    - 2-3 campos sem decimais, sem enums, sem value objects além de formatação trivial
    - Sem filhos hierárquicos
    - Sem bloco "Regras de Validação" relevante
    - Contíguos no mesmo bloco com candidatos igualmente simples
-3. Se elegível, inclua até os 2-3 sub-estágios seguintes (cap 10).
-4. **Anote a lista final** (ex.: `[4.034, 4.041, 4.045]`).
+4. Se elegível, inclua até os 2-3 sub-estágios seguintes (cap 10).
+5. **Anote a lista final** (ex.: `[4.034, 4.041, 4.045]`).
 
 ## PASSO 2 — Ler PDF (apenas as páginas necessárias)
 

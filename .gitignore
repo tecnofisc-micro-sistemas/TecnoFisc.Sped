@@ -83,3 +83,6 @@ secrets.json
 # Especificações oficiais Receita Federal (mantidas localmente, não versionadas)
 *.pdf
 sped/guides/
+
+# Arquivos SPED reais para round-trip (anonimizados, mantidos localmente)
+sped/fixtures/

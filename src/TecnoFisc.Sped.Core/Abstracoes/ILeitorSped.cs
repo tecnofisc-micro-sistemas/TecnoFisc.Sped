@@ -7,8 +7,10 @@ namespace TecnoFisc.Sped.Core.Abstracoes;
 public interface ILeitorSped
 {
     /// <summary>
-    /// Lê o fluxo de entrada e materializa cada registro na ordem em que aparece no arquivo.
-    /// Os registros já vêm com Pai/Filhos vinculados conforme a pilha hierárquica.
+    /// Lê o fluxo de entrada e materializa cada registro na ordem em que aparece no arquivo,
+    /// em modo streaming — sem bufferizar o arquivo todo. Os registros já vêm com Pai/Filhos
+    /// vinculados conforme a pilha hierárquica. Memória consumida pelo enumerador é limitada
+    /// pelo buffer do <see cref="System.IO.Pipelines.PipeReader"/> (independente do tamanho do arquivo).
     /// </summary>
-    public IAsyncEnumerable<RegistroSped> LerAsync(Stream entrada, CancellationToken cancelamento = default);
+    public IAsyncEnumerable<RegistroSped> LerStreamingAsync(Stream entrada, CancellationToken cancelamento = default);
 }

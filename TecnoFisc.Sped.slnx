@@ -7,4 +7,7 @@
     <Project Path="tests/TecnoFisc.Sped.Core.Tests/TecnoFisc.Sped.Core.Tests.csproj" />
     <Project Path="tests/TecnoFisc.Sped.EfdContribuicoes.Tests/TecnoFisc.Sped.EfdContribuicoes.Tests.csproj" />
   </Folder>
+  <Folder Name="/benchmarks/">
+    <Project Path="benchmarks/TecnoFisc.Sped.Benchmarks/TecnoFisc.Sped.Benchmarks.csproj" />
+  </Folder>
 </Solution>

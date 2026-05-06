@@ -59,7 +59,7 @@ public sealed class GeradorEfdContribuicoesTests
 
         var registros = new List<RegistroSped>();
         using (var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped)))
-            await foreach (var r in parser.LerAsync(entrada, TestContext.Current.CancellationToken))
+            await foreach (var r in parser.LerStreamingAsync(entrada, TestContext.Current.CancellationToken))
                 registros.Add(r);
 
         var saida = await EscreverAsync(gerador, registros, TestContext.Current.CancellationToken);

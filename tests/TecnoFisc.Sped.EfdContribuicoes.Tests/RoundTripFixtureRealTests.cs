@@ -56,7 +56,7 @@ public sealed class RoundTripFixtureRealTests
             using var entrada = new MemoryStream(bytesCrus, writable: false);
 
             var registros = new List<TecnoFisc.Sped.Core.Abstracoes.RegistroSped>();
-            await foreach (var registro in parser.LerAsync(entrada, TestContext.Current.CancellationToken))
+            await foreach (var registro in parser.LerStreamingAsync(entrada, TestContext.Current.CancellationToken))
                 registros.Add(registro);
 
             registros.Should().NotBeEmpty(because: $"fixture {Path.GetFileName(caminhoFixture)} deve produzir registros");
@@ -116,7 +116,7 @@ public sealed class RoundTripFixtureRealTests
     {
         using var entrada = new MemoryStream(bytes, writable: false);
         return await ArquivoEfdContribuicoes.CarregarAsync(
-            parser.LerAsync(entrada, TestContext.Current.CancellationToken),
+            parser.LerStreamingAsync(entrada, TestContext.Current.CancellationToken),
             TestContext.Current.CancellationToken);
     }
 

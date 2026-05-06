@@ -39,7 +39,7 @@ public sealed class LeitorSpedTxt : ILeitorSped
         _catalogo = catalogo;
     }
 
-    public async IAsyncEnumerable<RegistroSped> LerAsync(
+    public async IAsyncEnumerable<RegistroSped> LerStreamingAsync(
         Stream entrada,
         [EnumeratorCancellation] CancellationToken cancelamento = default)
     {

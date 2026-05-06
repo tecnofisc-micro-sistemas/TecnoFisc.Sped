@@ -101,7 +101,7 @@ public sealed class ArquivoEfdContribuicoesTests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var arquivo = await ArquivoEfdContribuicoes.CarregarAsync(
-            parser.LerAsync(entrada, TestContext.Current.CancellationToken),
+            parser.LerStreamingAsync(entrada, TestContext.Current.CancellationToken),
             TestContext.Current.CancellationToken);
 
         using var saida = new MemoryStream();

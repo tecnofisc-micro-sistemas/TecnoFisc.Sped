@@ -273,12 +273,12 @@ Block headers are informational; numbering is global and contiguous (4.001 → 4
 | Feito | Sub-stage | Registro | Descrição | Página PDF |
 | --- | --- | --- | --- | --- |
 | [x] | 4.169 | Registro P001 | Abertura do Bloco P | 366 |
-| [ ] | 4.170 | Registro P010 | Identificação do Estabelecimento | 367 |
-| [ ] | 4.171 | Registro P100 | Contribuição Previdenciária sobre a Receita Bruta | 367 |
-| [ ] | 4.172 | Registro P110 | Detalhamento da Apuração da Contribuição | 369 |
-| [ ] | 4.173 | Registro P199 | Processo Referenciado | 370 |
-| [ ] | 4.174 | Registro P200 | Consolidação da Contribuição Previdenciária Sobre a Receita Bruta | 371 |
-| [ ] | 4.175 | Registro P210 | Ajuste da Contribuição Previdenciária Apurada Sobre a Receita Bruta | 373 |
+| [x] | 4.170 | Registro P010 | Identificação do Estabelecimento | 367 |
+| [x] | 4.171 | Registro P100 | Contribuição Previdenciária sobre a Receita Bruta | 367 |
+| [x] | 4.172 | Registro P110 | Detalhamento da Apuração da Contribuição | 369 |
+| [x] | 4.173 | Registro P199 | Processo Referenciado | 370 |
+| [x] | 4.174 | Registro P200 | Consolidação da Contribuição Previdenciária Sobre a Receita Bruta | 371 |
+| [x] | 4.175 | Registro P210 | Ajuste da Contribuição Previdenciária Apurada Sobre a Receita Bruta | 373 |
 | [x] | 4.176 | Registro P990 | Encerramento do Bloco P | 374 |
 
 ### Bloco 1 — Complemento da Escrituração

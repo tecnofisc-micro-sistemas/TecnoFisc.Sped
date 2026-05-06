@@ -264,8 +264,8 @@ Block headers are informational; numbering is global and contiguous (4.001 → 4
 | [x] | 4.163 | Registro M625 | Detalhamento dos Ajustes da Cofins Apurada | 356 |
 | [x] | 4.164 | Registro M630 | Informações Adicionais de Diferimento | 357 |
 | [x] | 4.165 | Registro M700 | Cofins Diferida em Períodos Anteriores – Valores a Pagar | 358 |
-| [ ] | 4.166 | Registro M800 | Receitas Isentas / Alíquota Zero / Suspensão – Cofins | 359 |
-| [ ] | 4.167 | Registro M810 | Detalhamento das Receitas Isentas / Alíquota Zero / Suspensão – Cofins | 361 |
+| [x] | 4.166 | Registro M800 | Receitas Isentas / Alíquota Zero / Suspensão – Cofins | 359 |
+| [x] | 4.167 | Registro M810 | Detalhamento das Receitas Isentas / Alíquota Zero / Suspensão – Cofins | 361 |
 | [x] | 4.168 | Registro M990 | Encerramento do Bloco M | 362 |
 
 ### Bloco P — Apuração da Contribuição Previdenciária Sobre a Receita Bruta (CPRB)

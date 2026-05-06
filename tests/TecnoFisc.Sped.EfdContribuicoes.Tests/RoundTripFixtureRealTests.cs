@@ -22,28 +22,31 @@ namespace TecnoFisc.Sped.EfdContribuicoes.Tests;
 /// </summary>
 public sealed class RoundTripFixtureRealTests
 {
-    public static TheoryData<string> Fixtures()
+    [Fact]
+    public async Task ParserESerializadorSaoEstaveisSobReSerializacao()
     {
-        var data = new TheoryData<string>();
-        var diretorio = LocalizarPastaFixtures();
-        if (diretorio is null)
-            return data;
-
-        foreach (var arquivo in Directory.EnumerateFiles(diretorio, "*.txt", SearchOption.TopDirectoryOnly))
-            data.Add(arquivo);
-        return data;
-    }
-
-    [Theory]
-    [MemberData(nameof(Fixtures))]
-    public async Task ParserESerializadorSaoEstaveisSobReSerializacao(string caminhoFixture)
-    {
-        if (string.IsNullOrEmpty(caminhoFixture) || !File.Exists(caminhoFixture))
+        var fixtures = EnumerarFixtures().ToList();
+        if (fixtures.Count == 0)
         {
-            Assert.Skip($"Fixture não encontrada: {caminhoFixture}");
+            Assert.Skip("Nenhuma fixture .txt presente em sped/fixtures/. Adicione um arquivo SPED real para exercitar o round-trip.");
             return;
         }
 
+        foreach (var caminhoFixture in fixtures)
+            await ExercitarFixtureAsync(caminhoFixture);
+    }
+
+    private static IEnumerable<string> EnumerarFixtures()
+    {
+        var diretorio = LocalizarPastaFixtures();
+        if (diretorio is null)
+            return [];
+
+        return Directory.EnumerateFiles(diretorio, "*.txt", SearchOption.TopDirectoryOnly);
+    }
+
+    private static async Task ExercitarFixtureAsync(string caminhoFixture)
+    {
         var bytesOriginais = ExtrairPorcaoTextual(
             await File.ReadAllBytesAsync(caminhoFixture, TestContext.Current.CancellationToken));
 
@@ -76,7 +79,7 @@ public sealed class RoundTripFixtureRealTests
         // linhas vazias). Garante que nada foi engolido em silêncio pelo parser.
         var linhasOriginais = ContarLinhasNaoVazias(bytesOriginais);
         codigos1.Should().HaveCount(linhasOriginais,
-            because: $"parser deve materializar uma instância por linha SPED ({linhasOriginais} linhas no original)");
+            because: $"parser deve materializar uma instância por linha SPED ({linhasOriginais} linhas no original — {Path.GetFileName(caminhoFixture)})");
     }
 
     private static async Task<ArquivoEfdContribuicoes> CarregarAsync(

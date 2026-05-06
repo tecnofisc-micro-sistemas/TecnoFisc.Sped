@@ -1,7 +1,7 @@
 namespace TecnoFisc.Sped.EfdContribuicoes.Enums;
 
 /// <summary>
-/// Indicador da origem do crédito fiscal — campo ORIG_CRED dos Registros 1100 e 1220.
+/// Indicador da origem do crédito fiscal — campo ORIG_CRED dos Registros 1100, 1220 e 1500.
 /// Distingue crédito apurado pela própria pessoa jurídica de crédito transferido por
 /// pessoa jurídica sucedida em evento de incorporação, cisão ou fusão.
 /// Valores conforme Guia Prático EFD Contribuições v1.35.

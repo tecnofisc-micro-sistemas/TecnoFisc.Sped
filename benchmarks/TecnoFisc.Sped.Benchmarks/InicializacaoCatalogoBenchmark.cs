@@ -25,17 +25,17 @@ namespace TecnoFisc.Sped.Benchmarks;
 public class InicializacaoCatalogoBenchmark
 {
     [IterationSetup(Target = nameof(Reflexivo))]
-    public static void LimparCacheReflexivo() => CatalogoBuilder.LimparCache();
+    public void LimparCacheReflexivo() => CatalogoBuilder.LimparCache();
 
     [Benchmark(Baseline = true, Description = "Reflexivo (Assembly.GetTypes)")]
-    public static int Reflexivo()
+    public int Reflexivo()
     {
         var catalogo = CatalogoBuilder.BuildFromAssembly(typeof(ParserEfdContribuicoes).Assembly);
         return catalogo.EnumerarRegistros().Count();
     }
 
     [Benchmark(Description = "Gerado (compile-time)")]
-    public static int Gerado()
+    public int Gerado()
     {
         var catalogo = new CatalogoSpedGerado();
         return catalogo.EnumerarRegistros().Count();

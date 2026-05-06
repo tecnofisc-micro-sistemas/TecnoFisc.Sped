@@ -292,7 +292,7 @@ Block headers are informational; numbering is global and contiguous (4.001 → 4
 | [x] | 4.181 | Registro 1050 | Detalhamento de Ajustes de Base de Cálculo – Valores Extra Apuração | 382 |
 | [x] | 4.182 | Registro 1100 | Controle de Créditos Fiscais – PIS/Pasep | 384 |
 | [x] | 4.183 | Registro 1101 | Apuração de Crédito Extemporâneo – Períodos Anteriores – PIS/Pasep | 387 |
-| [ ] | 4.184 | Registro 1102 | Detalhamento Crédito Extemporâneo Vinculado a Mais de Um Tipo de Receita – PIS/Pasep | 390 |
+| [x] | 4.184 | Registro 1102 | Detalhamento Crédito Extemporâneo Vinculado a Mais de Um Tipo de Receita – PIS/Pasep | 390 |
 | [ ] | 4.185 | Registro 1200 | Contribuição Social Extemporânea – PIS/Pasep | 391 |
 | [ ] | 4.186 | Registro 1210 | Detalhamento da Contribuição Social Extemporânea – PIS/Pasep | 392 |
 | [ ] | 4.187 | Registro 1220 | Demonstração do Crédito a Descontar a Contribuição Extemporânea – PIS/Pasep | 393 |

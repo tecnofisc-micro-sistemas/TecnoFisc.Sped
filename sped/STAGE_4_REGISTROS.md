@@ -286,8 +286,8 @@ Block headers are informational; numbering is global and contiguous (4.001 → 4
 | Feito | Sub-stage | Registro | Descrição | Página PDF |
 | --- | --- | --- | --- | --- |
 | [x] | 4.177 | Registro 1001 | Abertura do Bloco 1 | 375 |
-| [ ] | 4.178 | Registro 1010 | Processo Referenciado – Ação Judicial | 375 |
-| [ ] | 4.179 | Registro 1011 | Detalhamento das Contribuições com Exigibilidade Suspensa | 377 |
+| [x] | 4.178 | Registro 1010 | Processo Referenciado – Ação Judicial | 375 |
+| [x] | 4.179 | Registro 1011 | Detalhamento das Contribuições com Exigibilidade Suspensa | 377 |
 | [ ] | 4.180 | Registro 1020 | Processo Referenciado – Processo Administrativo | 381 |
 | [ ] | 4.181 | Registro 1050 | Detalhamento de Ajustes de Base de Cálculo – Valores Extra Apuração | 382 |
 | [ ] | 4.182 | Registro 1100 | Controle de Créditos Fiscais – PIS/Pasep | 384 |

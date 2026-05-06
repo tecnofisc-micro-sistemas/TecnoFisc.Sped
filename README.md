@@ -40,6 +40,16 @@ pacote afetado é versionado.
 - **Round-trip simétrico.** Ler → gerar → ler precisa devolver o mesmo arquivo
   (modulo normalizações deliberadas). Invariante coberta por testes.
 
+## Arquivos assinados pelo PVA
+
+Arquivos emitidos pelo PVA da Receita Federal trazem um bloco de assinatura
+digital PKCS#7 anexado após o registro `|9999|`. O parser encerra o consumo
+no `|9999|` e descarta silenciosamente todo o conteúdo posterior — não é
+necessário pré-processar o arquivo para remover a assinatura. A geração não
+re-anexa nenhuma assinatura: a saída contém apenas a porção textual de
+registros. Quem precisar reassinar deve fazê-lo fora da biblioteca, com um
+provedor PKCS#7/CMS dedicado.
+
 ## Requisitos
 
 - .NET SDK **10.0** (preview) ou superior

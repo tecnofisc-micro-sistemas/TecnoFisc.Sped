@@ -32,6 +32,12 @@
     Alias ou ID do modelo Claude. Padrão: "sonnet" (claude-sonnet-4-6).
     Use "opus" para maior capacidade em registros complexos.
 
+.PARAMETER AllowBatch
+    Permite que /implementar-registro agrupe múltiplos sub-estágios simples num único PR.
+    Padrão: desligado. Em automação, batch interrompido por limite de sessão deixa
+    estado parcial que não pode ser retomado de forma segura — sempre 1 registro/execução.
+    Habilitar só em execuções manuais com supervisão.
+
 .EXAMPLE
     .\scripts\auto-implement-sped.ps1 -Bloco 0
     Implementa todos os registros pendentes do Bloco 0.
@@ -49,7 +55,8 @@ param(
     [int]   $MaxPRs           = 999,
     [switch]$DryRun,
     [int]   $CiTimeoutMinutes = 25,
-    [string]$Model            = "sonnet"
+    [string]$Model            = "sonnet",
+    [switch]$AllowBatch
 )
 
 Set-StrictMode -Version Latest
@@ -115,6 +122,95 @@ function Get-OpenPRs {
     $json = gh pr list --state open --base dev --json number,headRefName,url --limit 50
     if (-not $json) { return @() }
     return $json | ConvertFrom-Json
+}
+
+function Get-ExpectedBranch {
+    # Convenção observada nos commits: feat/stage-4-XXX-registro-YYYY
+    # SubStage "4.182" → "stage-4-182"; Code "1100" → "registro-1100".
+    param([string]$SubStage, [string]$Code)
+    $sub = $SubStage -replace '\.', '-'
+    return "feat/stage-$sub-registro-$($Code.ToLower())"
+}
+
+function Find-PRByBranch {
+    param([string]$BranchName)
+    $prs = @(Get-OpenPRs)
+    return $prs | Where-Object { $_.headRefName -eq $BranchName } | Select-Object -First 1
+}
+
+function Test-RemoteBranchExists {
+    param([string]$BranchName)
+    $out = git ls-remote --heads origin $BranchName 2>$null
+    return [bool]$out
+}
+
+function Get-CurrentBranch {
+    return (git branch --show-current).Trim()
+}
+
+function Test-WorkingTreeClean {
+    $status = git status --porcelain 2>$null
+    return -not ($status | Where-Object { $_ })
+}
+
+function Find-OrphanFeatureBranches {
+    # Branches feat/stage-* (locais ou remotas) sem PR aberto. Captura estados parciais
+    # de batch/single interrompidos antes de gh pr create — onde Find-PRByBranch falha
+    # porque o nome esperado pelo script difere do que claude criou (ex.: branch de batch).
+    $localOut = git for-each-ref --format='%(refname:short)' 'refs/heads/feat/stage-*' 2>$null
+    $localBranches = @($localOut | Where-Object { $_ })
+
+    $remoteOut = git ls-remote --heads origin 'feat/stage-*' 2>$null
+    $remoteBranches = @($remoteOut | ForEach-Object {
+        if ($_ -match 'refs/heads/(feat/stage-.+)$') { $Matches[1] }
+    } | Where-Object { $_ })
+
+    $allBranches    = @(($localBranches + $remoteBranches) | Sort-Object -Unique)
+    $openPRBranches = @(Get-OpenPRs | ForEach-Object { $_.headRefName })
+
+    $orphans = @()
+    foreach ($b in $allBranches) {
+        if ($openPRBranches -notcontains $b) {
+            $orphans += [pscustomobject]@{
+                Name   = $b
+                Local  = $localBranches  -contains $b
+                Remote = $remoteBranches -contains $b
+            }
+        }
+    }
+    return $orphans
+}
+
+function Wait-ForSessionReset {
+    # Detecta mensagem de limite de sessao do Claude e dorme ate o reset.
+    # Padrao observado: "You've hit your limit · resets 4:10am (America/Sao_Paulo)"
+    # Retorna $true se detectou e aguardou (caller deve repetir iteracao).
+    param([string]$ClaudeOutput)
+
+    if (-not $ClaudeOutput) { return $false }
+    if ($ClaudeOutput -notmatch "(?i)hit your limit.*?resets\s+(\d{1,2}):(\d{2})\s*(am|pm)") {
+        return $false
+    }
+
+    $hour   = [int]$Matches[1]
+    $minute = [int]$Matches[2]
+    $ampm   = $Matches[3].ToLower()
+
+    if     ($ampm -eq 'pm' -and $hour -lt 12) { $hour += 12 }
+    elseif ($ampm -eq 'am' -and $hour -eq 12) { $hour  = 0  }
+
+    $now   = Get-Date
+    $reset = Get-Date -Hour $hour -Minute $minute -Second 0 -Millisecond 0
+    if ($reset -le $now) { $reset = $reset.AddDays(1) }
+
+    # Buffer 5min apos reset para garantir propagacao no backend
+    $resumeAt = $reset.AddMinutes(5)
+    $wait     = $resumeAt - $now
+
+    Write-Step "Limite de sessao atingido. Reset em $($reset.ToString('HH:mm')). Retomando $($resumeAt.ToString('HH:mm')) (~$([int]$wait.TotalMinutes)min)..." "Yellow"
+    Start-Sleep -Seconds ([int]$wait.TotalSeconds)
+    Write-Step "Sessao reiniciada. Retomando execucao." "Green"
+    return $true
 }
 
 function Wait-ForCI {
@@ -219,6 +315,7 @@ try {
     Write-Host "  Modelo    : $Model"
     Write-Host "  MaxPRs    : $MaxPRs"
     Write-Host "  CI timeout: ${CiTimeoutMinutes}min"
+    Write-Host "  Modo      : $(if ($AllowBatch) { 'batch (cap 10/PR)' } else { 'single (1 registro/PR — recomendado p/ automacao)' })"
     Write-Host ""
 
     $mergedCount = 0
@@ -237,43 +334,149 @@ try {
         $next = $pending[0]
         Write-Banner "$($next.SubStage)  Registro $($next.Code) — $($next.Description)" "Cyan"
 
+        # ── verificacao de estado pre-iteracao ─────────────────────────────────
+        # Cobre casos onde execucao anterior foi interrompida (limite de sessao,
+        # crash, Ctrl-C) e deixou: branch checkada != dev, working tree dirty,
+        # ou branches feat/stage-* orfas (sem PR aberto correspondente).
+        $currentBranch = Get-CurrentBranch
+        if ($currentBranch -ne 'dev') {
+            Write-Step "Branch atual '$currentBranch' (esperado 'dev') — possivel execucao anterior interrompida." "Yellow"
+            $prOnCurrent = Find-PRByBranch -BranchName $currentBranch
+            if ($prOnCurrent) {
+                Write-Step "Branch atual tem PR #$($prOnCurrent.number) — voltando para dev (PR sera reutilizado se for do registro atual)." "Cyan"
+                git checkout dev --quiet
+            }
+            else {
+                $diverged = git log "dev..$currentBranch" --oneline 2>$null
+                $dirty    = -not (Test-WorkingTreeClean)
+                Write-Step "Branch '$currentBranch' sem PR. Commits unicos: $([bool]$diverged); working tree dirty: $dirty." "Red"
+                Write-Step "Resolver manualmente para evitar perda de trabalho:" "Yellow"
+                Write-Step "  git status                                # inspecionar mudancas" "Yellow"
+                Write-Step "  git checkout dev && git branch -D $currentBranch  # descartar branch local" "Yellow"
+                Write-Step "  ou 'gh pr create --base dev --head $currentBranch' se trabalho deve virar PR" "Yellow"
+                exit 1
+            }
+        }
+
+        if (-not (Test-WorkingTreeClean)) {
+            Write-Step "Working tree na branch dev tem mudancas nao-commitadas — execucao anterior interrompida." "Red"
+            Write-Step "Inspecionar 'git status' e decidir 'git stash' / 'git checkout .' antes de prosseguir." "Yellow"
+            exit 1
+        }
+
         # ── garantir dev atualizado ────────────────────────────────────────────
         Write-Step "Sincronizando branch dev..."
         git checkout dev --quiet
         git pull --quiet
 
-        # ── snapshot de PRs abertos antes ─────────────────────────────────────
-        $beforePRNumbers = @(Get-OpenPRs | ForEach-Object { $_.number })
-        Write-Step "PRs abertos antes: $(if ($beforePRNumbers.Count -eq 0) { 'nenhum' } else { $beforePRNumbers -join ', ' })"
-
-        # ── invocar Claude ─────────────────────────────────────────────────────
-        Write-Step "Invocando: claude -p /implementar-registro --model $Model"
-        Write-Host ""
-
-        "" | claude --print "/implementar-registro" `
-            --dangerously-skip-permissions `
-            --model $Model `
-            --no-session-persistence
-
-        $claudeExit = $LASTEXITCODE
-        Write-Host ""
-
-        if ($claudeExit -ne 0) {
-            Write-Step "claude terminou com erro (exit code $claudeExit). Parando." "Red"
+        # ── varrer branches feat/stage-* orfas (sem PR aberto) ─────────────────
+        # Isto pega o caso onde claude pushou branch (de single OU batch) mas
+        # o limite cortou antes de `gh pr create`. Find-PRByBranch nao detecta
+        # branches de batch porque seu nome difere de Get-ExpectedBranch.
+        $orphans = @(Find-OrphanFeatureBranches)
+        if ($orphans.Count -gt 0) {
+            Write-Step "Branches feat/stage-* orfas detectadas (sem PR aberto):" "Red"
+            foreach ($o in $orphans) {
+                $loc = if ($o.Local) { 'local' }  else { '' }
+                $rem = if ($o.Remote) { 'remote' } else { '' }
+                $tag = ($loc, $rem | Where-Object { $_ }) -join '+'
+                Write-Step "  - $($o.Name) [$tag]" "Yellow"
+            }
+            Write-Step "Cada uma pode conter trabalho parcial de execucao anterior. Resolver:" "Yellow"
+            Write-Step "  - Se branch tem implementacao completa: 'gh pr create --base dev --head <branch>'" "Yellow"
+            Write-Step "  - Se trabalho parcial descartavel: 'git push origin --delete <branch>' (se remote) e/ou 'git branch -D <branch>' (se local)" "Yellow"
             exit 1
         }
 
-        # ── encontrar novo PR ──────────────────────────────────────────────────
-        Write-Step "Verificando novo PR criado..."
-        Start-Sleep -Seconds 2
+        # ── idempotencia: reutilizar PR/branch ja existente para este registro ─
+        # Recuperacao apos limite de sessao mid-execucao do Claude. Estados possiveis:
+        #   (a) PR aberto p/ branch esperada    → reutilizar (skip claude).
+        #   (b) Branch remota sem PR            → estado ambiguo (push ok, gh pr create falhou).
+        #   (c) Branch local sem PR             → trabalho parcial nao pushed.
+        #   (d) Nada                            → invocar claude normalmente.
+        $expectedBranch = Get-ExpectedBranch -SubStage $next.SubStage -Code $next.Code
+        $existingPR     = Find-PRByBranch    -BranchName $expectedBranch
+        $newPR          = $null
 
-        $afterPRs = @(Get-OpenPRs)
-        $newPR    = $afterPRs | Where-Object { $beforePRNumbers -notcontains $_.number } | Select-Object -First 1
+        if ($existingPR) {
+            Write-Step "PR existente detectado para '$expectedBranch': #$($existingPR.number). Pulando invocacao do Claude." "Cyan"
+            $newPR = $existingPR
+        }
+        else {
+            # (b) branch remota orfa → manual: pode ter commits unicos ou faltar gh pr create.
+            if (Test-RemoteBranchExists -BranchName $expectedBranch) {
+                Write-Step "Branch remota '$expectedBranch' existe sem PR — estado ambiguo." "Red"
+                Write-Step "Resolver manualmente: 'gh pr create --base dev --head $expectedBranch' ou 'git push origin --delete $expectedBranch'." "Yellow"
+                exit 1
+            }
 
-        if (-not $newPR) {
-            Write-Step "Nenhum novo PR encontrado. Claude nao criou PR (possivel falha de build/teste)." "Red"
-            Write-Step "Verifique o output acima e corrija manualmente antes de reiniciar." "Yellow"
-            exit 1
+            # (c) branch local orfa → trabalho parcial. Se diverge de dev, parar; senao apagar.
+            $localExists = git branch --list $expectedBranch
+            if ($localExists) {
+                $diverged = git log "dev..$expectedBranch" --oneline 2>$null
+                if ($diverged) {
+                    Write-Step "Branch local '$expectedBranch' tem commits unicos sem push/PR — estado ambiguo." "Red"
+                    Write-Step "Inspecionar com 'git log dev..$expectedBranch' e resolver manualmente." "Yellow"
+                    exit 1
+                }
+                Write-Step "Branch local '$expectedBranch' sem commits unicos. Removendo p/ retomada limpa." "Yellow"
+                git branch -D $expectedBranch 2>$null | Out-Null
+            }
+
+            # ── snapshot de PRs abertos antes (fallback p/ deteccao de novo PR) ─
+            $beforePRNumbers = @(Get-OpenPRs | ForEach-Object { $_.number })
+            Write-Step "PRs abertos antes: $(if ($beforePRNumbers.Count -eq 0) { 'nenhum' } else { $beforePRNumbers -join ', ' })"
+
+            # ── invocar Claude ─────────────────────────────────────────────────
+            # Default `single` (sem batch) para limitar exposicao a estado parcial em
+            # caso de interrupcao por limite de sessao. `-AllowBatch` libera batch.
+            $slashCmd = if ($AllowBatch) { "/implementar-registro" } else { "/implementar-registro single" }
+            Write-Step "Invocando: claude -p '$slashCmd' --model $Model"
+            Write-Host ""
+
+            $claudeLog = New-TemporaryFile
+            try {
+                "" | claude --print $slashCmd `
+                    --dangerously-skip-permissions `
+                    --model $Model `
+                    --no-session-persistence 2>&1 | Tee-Object -FilePath $claudeLog.FullName
+
+                $claudeExit   = $LASTEXITCODE
+                $claudeOutput = Get-Content $claudeLog.FullName -Raw
+            } finally {
+                Remove-Item $claudeLog.FullName -ErrorAction SilentlyContinue
+            }
+            Write-Host ""
+
+            # Limite de sessao atingido: aguardar reset e repetir mesmo registro.
+            # Proxima iteracao re-detecta PR/branch criado parcialmente (idempotente).
+            if (Wait-ForSessionReset -ClaudeOutput $claudeOutput) {
+                continue
+            }
+
+            if ($claudeExit -ne 0) {
+                Write-Step "claude terminou com erro (exit code $claudeExit). Parando." "Red"
+                exit 1
+            }
+
+            # ── encontrar PR criado ────────────────────────────────────────────
+            Write-Step "Verificando PR criado..."
+            Start-Sleep -Seconds 2
+
+            # Primario: lookup por branch esperada (idempotente).
+            $newPR = Find-PRByBranch -BranchName $expectedBranch
+
+            # Fallback: diff contra snapshot anterior.
+            if (-not $newPR) {
+                $afterPRs = @(Get-OpenPRs)
+                $newPR    = $afterPRs | Where-Object { $beforePRNumbers -notcontains $_.number } | Select-Object -First 1
+            }
+
+            if (-not $newPR) {
+                Write-Step "Nenhum PR encontrado para '$expectedBranch'. Claude nao criou PR (possivel falha de build/teste)." "Red"
+                Write-Step "Verifique o output acima e corrija manualmente antes de reiniciar." "Yellow"
+                exit 1
+            }
         }
 
         $prNumber   = [int]$newPR.number

@@ -244,8 +244,8 @@ Block headers are informational; numbering is global and contiguous (4.001 → 4
 | [x] | 4.143 | Registro M210 | Detalhamento da Contribuição para o PIS/Pasep do Período | 309 |
 | [x] | 4.144 | Registro M211 | Sociedades Cooperativas – Composição da Base de Cálculo – PIS/Pasep | 318 |
 | [x] | 4.145 | Registro M215 | Ajustes da Base de Cálculo da Contribuição para o PIS/Pasep | 319 |
-| [ ] | 4.146 | Registro M220 | Ajustes da Contribuição para o PIS/Pasep Apurada | 321 |
-| [ ] | 4.147 | Registro M225 | Detalhamento dos Ajustes da Contribuição para o PIS/Pasep | 321 |
+| [x] | 4.146 | Registro M220 | Ajustes da Contribuição para o PIS/Pasep Apurada | 321 |
+| [x] | 4.147 | Registro M225 | Detalhamento dos Ajustes da Contribuição para o PIS/Pasep | 321 |
 | [ ] | 4.148 | Registro M230 | Informações Adicionais de Diferimento | 323 |
 | [ ] | 4.149 | Registro M300 | PIS/Pasep Diferida em Períodos Anteriores – Valores a Pagar no Período | 324 |
 | [ ] | 4.150 | Registro M350 | PIS/Pasep – Folha de Salários | 325 |

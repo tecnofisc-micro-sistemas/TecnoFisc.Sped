@@ -197,4 +197,27 @@ public sealed class LeitorSpedTxtTests
 
         await act.Should().ThrowAsync<ArgumentNullException>();
     }
+
+    [Fact]
+    public async Task LerAsync_QuandoBytesAposEncerramento9999_IgnoraSilenciosamente()
+    {
+        // Simula arquivo emitido pelo PVA da Receita: registros válidos terminados por |9999|,
+        // seguidos de bytes binários da assinatura digital PKCS#7. O parser deve encerrar no
+        // |9999| e descartar o resto sem lançar erro de layout/formato.
+        var prefixo = EncodingSped.Latin1.GetBytes(
+            "|0000|006|01012025|31012025|EMPRESA|11222333000181|\r\n" +
+            "|9999|2|\r\n");
+        var lixo = new byte[] { 0x30, 0x82, 0x01, 0xA0, 0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x07, 0x02 };
+        var combinado = new byte[prefixo.Length + lixo.Length];
+        Buffer.BlockCopy(prefixo, 0, combinado, 0, prefixo.Length);
+        Buffer.BlockCopy(lixo, 0, combinado, prefixo.Length, lixo.Length);
+
+        var leitor = new LeitorSpedTxt(_catalogo);
+        var registros = new List<RegistroSped>();
+        await foreach (var registro in leitor.LerAsync(new MemoryStream(combinado), TestContext.Current.CancellationToken))
+            registros.Add(registro);
+
+        registros.Select(r => r.Codigo).Should().Equal(["0000", "9999"]);
+    }
+
 }

@@ -36,6 +36,35 @@ public sealed class RoundTripFixtureRealTests
             await ExercitarFixtureAsync(caminhoFixture);
     }
 
+    [Fact]
+    public async Task ParserAceitaArquivoComBlocoAssinaturaPKCS7Anexo()
+    {
+        // Issue #111: parser deve encerrar consumo no registro |9999| e descartar silenciosamente
+        // qualquer conteúdo posterior (assinatura digital PKCS#7 do PVA da Receita).
+        var fixtures = EnumerarFixtures().ToList();
+        if (fixtures.Count == 0)
+        {
+            Assert.Skip("Nenhuma fixture .txt presente em sped/fixtures/.");
+            return;
+        }
+
+        var parser = new ParserEfdContribuicoes();
+
+        foreach (var caminhoFixture in fixtures)
+        {
+            var bytesCrus = await File.ReadAllBytesAsync(caminhoFixture, TestContext.Current.CancellationToken);
+            using var entrada = new MemoryStream(bytesCrus, writable: false);
+
+            var registros = new List<TecnoFisc.Sped.Core.Abstracoes.RegistroSped>();
+            await foreach (var registro in parser.LerAsync(entrada, TestContext.Current.CancellationToken))
+                registros.Add(registro);
+
+            registros.Should().NotBeEmpty(because: $"fixture {Path.GetFileName(caminhoFixture)} deve produzir registros");
+            registros[^1].Codigo.Should().Be("9999",
+                because: $"parser deve encerrar no |9999| de {Path.GetFileName(caminhoFixture)}, ignorando bloco de assinatura PKCS#7 anexo");
+        }
+    }
+
     private static IEnumerable<string> EnumerarFixtures()
     {
         var diretorio = LocalizarPastaFixtures();

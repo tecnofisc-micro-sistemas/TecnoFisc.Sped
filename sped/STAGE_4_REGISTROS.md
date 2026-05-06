@@ -246,11 +246,11 @@ Block headers are informational; numbering is global and contiguous (4.001 → 4
 | [x] | 4.145 | Registro M215 | Ajustes da Base de Cálculo da Contribuição para o PIS/Pasep | 319 |
 | [x] | 4.146 | Registro M220 | Ajustes da Contribuição para o PIS/Pasep Apurada | 321 |
 | [x] | 4.147 | Registro M225 | Detalhamento dos Ajustes da Contribuição para o PIS/Pasep | 321 |
-| [ ] | 4.148 | Registro M230 | Informações Adicionais de Diferimento | 323 |
-| [ ] | 4.149 | Registro M300 | PIS/Pasep Diferida em Períodos Anteriores – Valores a Pagar no Período | 324 |
-| [ ] | 4.150 | Registro M350 | PIS/Pasep – Folha de Salários | 325 |
-| [ ] | 4.151 | Registro M400 | Receitas Isentas / Alíquota Zero / Suspensão – PIS/Pasep | 326 |
-| [ ] | 4.152 | Registro M410 | Detalhamento das Receitas Isentas / Alíquota Zero / Suspensão – PIS/Pasep | 327 |
+| [x] | 4.148 | Registro M230 | Informações Adicionais de Diferimento | 323 |
+| [x] | 4.149 | Registro M300 | PIS/Pasep Diferida em Períodos Anteriores – Valores a Pagar no Período | 324 |
+| [x] | 4.150 | Registro M350 | PIS/Pasep – Folha de Salários | 325 |
+| [x] | 4.151 | Registro M400 | Receitas Isentas / Alíquota Zero / Suspensão – PIS/Pasep | 326 |
+| [x] | 4.152 | Registro M410 | Detalhamento das Receitas Isentas / Alíquota Zero / Suspensão – PIS/Pasep | 327 |
 | [ ] | 4.153 | Registro M500 | Crédito de Cofins Relativo ao Período | 329 |
 | [ ] | 4.154 | Registro M505 | Detalhamento da Base de Cálculo do Crédito Apurado – Cofins | 332 |
 | [ ] | 4.155 | Registro M510 | Ajustes do Crédito de Cofins Apurado | 337 |

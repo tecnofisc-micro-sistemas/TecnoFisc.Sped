@@ -1,0 +1,96 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Empacota mas não publica (apenas valida)'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+permissions:
+  contents: write
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_GENERATE_ASPNET_CERTIFICATE: false
+  NUGET_XMLDOC_MODE: skip
+
+jobs:
+  release:
+    name: Build, Pack & Push to nuget.org
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET (from global.json)
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+          dotnet-quality: preview
+
+      - name: Validate tag matches Directory.Build.props Version
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          version=$(grep -oP '(?<=<Version>)[^<]+' Directory.Build.props | head -n1)
+          echo "Tag version : $tag"
+          echo "Props version: $version"
+          if [ "$tag" != "$version" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME não bate com <Version>$version</Version> em Directory.Build.props."
+            exit 1
+          fi
+
+      - name: Restore
+        run: dotnet restore TecnoFisc.Sped.slnx
+
+      - name: Build
+        run: dotnet build TecnoFisc.Sped.slnx --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test TecnoFisc.Sped.slnx --configuration Release --no-build --logger "trx;LogFileName=test-results.trx" --results-directory ./TestResults
+
+      - name: Pack
+        run: dotnet pack TecnoFisc.Sped.slnx --configuration Release --no-build --output ./artifacts
+
+      - name: Upload packages (artifact)
+        uses: actions/upload-artifact@v4
+        with:
+          name: nupkgs-${{ github.ref_name }}
+          path: ./artifacts/*
+          retention-days: 30
+
+      - name: Push to nuget.org
+        if: startsWith(github.ref, 'refs/tags/v') && (github.event_name == 'push' || inputs.dry_run == 'false')
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          if [ -z "$NUGET_API_KEY" ]; then
+            echo "::error::Secret NUGET_API_KEY ausente. Configure em Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+          dotnet nuget push "./artifacts/*.nupkg" \
+            --api-key "$NUGET_API_KEY" \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ./artifacts/*
+          generate_release_notes: true
+          fail_on_unmatched_files: true

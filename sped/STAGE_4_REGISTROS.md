@@ -197,7 +197,7 @@ Block headers are informational; numbering is global and contiguous (4.001 → 4
 | [x] | 4.106 | Registro F129 | Processo Referenciado | 240 |
 | [x] | 4.107 | Registro F130 | Bens Incorporados ao Ativo Imobilizado – Créditos por Aquisição/Contribuição | 242 |
 | [x] | 4.108 | Registro F139 | Processo Referenciado | 246 |
-| [ ] | 4.109 | Registro F150 | Crédito Presumido sobre Estoque de Abertura | 247 |
+| [x] | 4.109 | Registro F150 | Crédito Presumido sobre Estoque de Abertura | 247 |
 | [ ] | 4.110 | Registro F200 | Operações da Atividade Imobiliária - Unidade Imobiliária Vendida | 249 |
 | [ ] | 4.111 | Registro F205 | Operações da Atividade Imobiliária – Custo Incorrido da Unidade | 252 |
 | [ ] | 4.112 | Registro F210 | Operações da Atividade Imobiliária - Custo Orçado da Unidade Vendida | 255 |

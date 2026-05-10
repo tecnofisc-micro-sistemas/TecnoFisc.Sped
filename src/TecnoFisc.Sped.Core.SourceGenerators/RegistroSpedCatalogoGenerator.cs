@@ -63,6 +63,7 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
         string? codigo = null;
         string? bloco = null;
         int nivel = 0;
+        int introduzidoEm = 0;
         foreach (KeyValuePair<string, TypedConstant> arg in atributo.NamedArguments)
         {
             switch (arg.Key)
@@ -70,6 +71,7 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
                 case "Codigo": codigo = arg.Value.Value as string; break;
                 case "Nivel": nivel = arg.Value.Value is int n ? n : 0; break;
                 case "Bloco": bloco = arg.Value.Value as string; break;
+                case "IntroduzidoEm": introduzidoEm = arg.Value.Value is int iv ? iv : 0; break;
             }
         }
         if (string.IsNullOrEmpty(codigo) || string.IsNullOrEmpty(bloco))
@@ -78,7 +80,7 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
         ImmutableArray<InfoCampo> campos = ColetarCampos(tipo);
 
         string tipoFq = tipo.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-        return new InfoRegistro(tipoFq, codigo!, nivel, bloco!, campos);
+        return new InfoRegistro(tipoFq, codigo!, nivel, bloco!, campos, introduzidoEm);
     }
 
     private static ImmutableArray<InfoCampo> ColetarCampos(INamedTypeSymbol tipoRegistro)
@@ -98,7 +100,7 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
                 if (campoAttr is null)
                     continue;
 
-                int ordem = 0, tamanho = 0, decimais = 0;
+                int ordem = 0, tamanho = 0, decimais = 0, desdeVersao = 0;
                 bool obrigatorio = false;
                 string? formato = null;
                 foreach (KeyValuePair<string, TypedConstant> arg in campoAttr.NamedArguments)
@@ -110,6 +112,7 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
                         case "Decimais": decimais = arg.Value.Value is int d ? d : 0; break;
                         case "Obrigatorio": obrigatorio = arg.Value.Value is bool b && b; break;
                         case "Formato": formato = arg.Value.Value as string; break;
+                        case "DesdeVersao": desdeVersao = arg.Value.Value is int dv ? dv : 0; break;
                     }
                 }
 
@@ -137,7 +140,8 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
                     tamanho,
                     decimais,
                     obrigatorio,
-                    formato));
+                    formato,
+                    desdeVersao));
             }
         }
 
@@ -274,7 +278,13 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
             EmitirCampo(sb, reg, campo, ultimo: i == reg.Campos.Length - 1);
         }
 
-        sb.AppendLine("            });");
+        sb.Append("            }");
+        if (reg.IntroduzidoEm != 0)
+        {
+            sb.Append(',').AppendLine();
+            sb.Append("            introduzidoEm: ").Append(reg.IntroduzidoEm.ToString(CultureInfo.InvariantCulture));
+        }
+        sb.AppendLine(");");
         sb.AppendLine("    }");
 
         foreach (InfoCampo c in reg.Campos)
@@ -298,7 +308,10 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
         else
             sb.Append('"').Append(campo.Formato).Append("\", ");
         sb.Append("Set_").Append(reg.Codigo).Append('_').Append(campo.Nome).Append(", ");
-        sb.Append("Ser_").Append(reg.Codigo).Append('_').Append(campo.Nome).Append(')');
+        sb.Append("Ser_").Append(reg.Codigo).Append('_').Append(campo.Nome);
+        if (campo.DesdeVersao != 0)
+            sb.Append(", desdeVersao: ").Append(campo.DesdeVersao.ToString(CultureInfo.InvariantCulture));
+        sb.Append(')');
         sb.AppendLine(ultimo ? "" : ",");
     }
 
@@ -664,12 +677,14 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
         int Tamanho,
         int Decimais,
         bool Obrigatorio,
-        string? Formato);
+        string? Formato,
+        int DesdeVersao);
 
     private readonly record struct InfoRegistro(
         string TipoFullyQualified,
         string Codigo,
         int Nivel,
         string Bloco,
-        ImmutableArray<InfoCampo> Campos);
+        ImmutableArray<InfoCampo> Campos,
+        int IntroduzidoEm);
 }

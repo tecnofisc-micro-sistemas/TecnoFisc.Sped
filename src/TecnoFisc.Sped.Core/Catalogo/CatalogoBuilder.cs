@@ -45,7 +45,8 @@ public static class CatalogoBuilder
         string codigo,
         int nivel,
         string bloco,
-        Func<RegistroSped> fabrica)
+        Func<RegistroSped> fabrica,
+        int introduzidoEm = 0)
     {
         ArgumentNullException.ThrowIfNull(tipo);
         ArgumentNullException.ThrowIfNull(codigo);
@@ -57,7 +58,7 @@ public static class CatalogoBuilder
                 $"Tipo {tipo.FullName} precisa ser concreto e herdar de RegistroSped.");
 
         var campos = ConstruirCampos(tipo);
-        return new MetadadosRegistro(codigo, nivel, bloco, tipo, fabrica, campos);
+        return new MetadadosRegistro(codigo, nivel, bloco, tipo, fabrica, campos, introduzidoEm);
     }
 
     private static IRegistroSpedCatalogo ConstruirNovo(Assembly assembly)
@@ -95,7 +96,8 @@ public static class CatalogoBuilder
             atributo.Bloco,
             tipo,
             fabrica,
-            campos);
+            campos,
+            atributo.IntroduzidoEm);
     }
 
     private static Func<RegistroSped> ConstruirFabrica(Type tipo)
@@ -163,7 +165,8 @@ public static class CatalogoBuilder
                 atributo.Obrigatorio,
                 atributo.Formato,
                 definidor,
-                serializadorComposto)));
+                serializadorComposto,
+                atributo.DesdeVersao)));
         }
 
         lista.Sort(static (a, b) => a.Ordem.CompareTo(b.Ordem));

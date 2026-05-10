@@ -169,4 +169,36 @@ public sealed class CatalogoBuilderTests
 
         act.Should().Throw<ArgumentNullException>();
     }
+
+    [Fact]
+    public void Metadados_QuandoRegistroSemVersao_IntroduzidoEmZero()
+    {
+        var catalogo = CatalogoBuilder.BuildFromAssembly(_assembly);
+        catalogo.TentarObter("0000".AsSpan(), out var meta);
+
+        meta!.IntroduzidoEm.Should().Be(0);
+        meta.Campos.Should().OnlyContain(c => c.DesdeVersao == 0);
+    }
+
+    [Fact]
+    public void Metadados_QuandoRegistroVersionado_PropagaIntroduzidoEm()
+    {
+        var catalogo = CatalogoBuilder.BuildFromAssembly(_assembly);
+        catalogo.TentarObter("Z100".AsSpan(), out var meta);
+
+        meta!.IntroduzidoEm.Should().Be(310);
+    }
+
+    [Fact]
+    public void Metadados_QuandoCampoVersionado_PropagaDesdeVersao()
+    {
+        var catalogo = CatalogoBuilder.BuildFromAssembly(_assembly);
+        catalogo.TentarObter("Z100".AsSpan(), out var meta);
+
+        meta!.Campos.Should().HaveCount(2);
+        meta.Campos[0].Nome.Should().Be("CodConf");
+        meta.Campos[0].DesdeVersao.Should().Be(0);
+        meta.Campos[1].Nome.Should().Be("IndComplemento");
+        meta.Campos[1].DesdeVersao.Should().Be(312);
+    }
 }

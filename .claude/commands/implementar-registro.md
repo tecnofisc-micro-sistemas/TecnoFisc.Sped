@@ -1,10 +1,23 @@
 ---
-description: Implementa o próximo registro SPED pendente com testes completos, em commit e PR únicos. Funciona para qualquer módulo SPED (EFD Contribuições, Fiscal, etc.).
-argument-hint: [módulo] [single] (módulo opcional: efd-contribuicoes, fiscal; flag `single` desabilita batch — útil em automação para evitar estado parcial em interrupção)
+description: Implementa o próximo registro SPED pendente com testes completos, em commit e PR únicos. Funciona para qualquer módulo SPED (EFD Contribuições, EFD ICMS-IPI, etc.).
+argument-hint: [módulo] [single] (módulo opcional: efd-contribuicoes, efd-icms-ipi; flag `single` desabilita batch — útil em automação para evitar estado parcial em interrupção)
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent
 ---
 
 Você é um implementador de registros SPED. Identifique o(s) próximo(s) sub-estágio(s) pendente(s), implemente com testes, e entregue em **um único PR**. Siga os passos em ordem.
+
+## Resolução de módulo (PASSO 0.5 — derivar antes de qualquer Glob)
+
+Resolva o módulo lendo `$ARGUMENTS` (primeira palavra que casa com um conhecido). Se ausente, escolha o módulo com mais sub-stages `[ ]` pendentes entre os tracking files de `sped/STAGE_*_REGISTROS*.md`. Da resolução, derive:
+
+| Módulo (`$MODULO`) | `$PROJ_SRC` | `$PROJ_TESTS` | `$TRACKING` | Prefixo commit |
+| --- | --- | --- | --- | --- |
+| `efd-contribuicoes` | `TecnoFisc.Sped.EfdContribuicoes` | `TecnoFisc.Sped.EfdContribuicoes.Tests` | `sped/STAGE_4_REGISTROS.md` | `feat(efd-contribuicoes):` |
+| `efd-icms-ipi` | `TecnoFisc.Sped.EfdIcmsIpi` | `TecnoFisc.Sped.EfdIcmsIpi.Tests` | `sped/STAGE_8_EFD_ICMS_IPI_V306.md` (ou tracking INCR ativo) | `feat(efd-icms-ipi):` |
+
+Para EFD ICMS-IPI, se `$ARGUMENTS` indicar versão (ex.: `efd-icms-ipi v307`), use `sped/STAGE_8_INCR_V307.md` como `$TRACKING` em vez do baseline. Sub-stages do tracking ditam `$STAGE_NUM` (ex.: `4`, `8`, `8.1`).
+
+Substitua qualquer referência a `STAGE_4_REGISTROS.md`, `efd-contribuicoes`, `EfdContribuicoes`, `stage-4` nos PASSOS abaixo pelos valores derivados aqui.
 
 ## Regra dura: 1 PR por execução
 
@@ -155,13 +168,13 @@ No `STAGE_N_REGISTROS.md`, marque cada sub-estágio coberto: `| [ ] |` → `| [x
 git add src/{ProjetoSrc}/Registros/Bloco{X}/Registro{CODE}.cs
 git add tests/{ProjetoTests}/Registros/Bloco{X}/Registro{CODE}Tests.cs
 # + enums/value objects criados
-git add sped/STAGE_4_REGISTROS.md
+git add $TRACKING
 ```
 
 Conventional Commits, título inglês, corpo português:
 
-- 1 registro: `feat(efd-contribuicoes): adiciona Registro{CODE} (sub-stage {N.NNN})`
-- Batch: `feat(efd-contribuicoes): adiciona Registros {CODEs} — Bloco {X} batch (sub-stages {N.NNN}-{N.MMM})`
+- 1 registro: `{Prefixo commit}: adiciona Registro{CODE} (sub-stage {N.NNN})` — ex.: `feat(efd-icms-ipi): adiciona Registro0000 (sub-stage 8.001)`
+- Batch: `{Prefixo commit}: adiciona Registros {CODEs} — Bloco {X} batch (sub-stages {N.NNN}-{N.MMM})`
 
 Mencione enums criados (`Cria enum IndicadorXxx (first-use).`) no corpo.
 

@@ -153,9 +153,11 @@ Whatever the parser produces, the generator must consume back. Round-trip a file
 
 SPED projects publish new layouts approximately yearly. The library handles multiple versions transparently:
 
-- A `LayoutVersao` enum per project.
+- A `LayoutVersao` enum per project (e.g., `LayoutEfdContribuicoes`, `LayoutEfdIcmsIpi`).
 - The parser reads the layout version from `Registro0000` and instantiates appropriate variants.
-- Records that diverge between versions are subclassed; minor changes use version-aware serialization.
+- **Default:** version-aware serialization on a single class per registro. Fields added in later layouts annotated with `DesdeVersao = LayoutXxx.VYYY` on `[CampoSped]`; parser/gerador honor it against the file's layout. New registros annotated with `IntroduzidoEm` on `[RegistroSped]`.
+- **Exception:** structurally divergent registros (rare — order/type/length of an existing field changes) are subclassed `RegistroXxxxVYYY : RegistroXxxx`.
+- Receita Federal layouts são **strict-incremental** — uma versão posterior nunca remove campos nem altera significado dos existentes, apenas acrescenta. Isto autoriza o modelo de uma classe + anotações por versão (em vez de uma classe por versão).
 
 ### 4.8 Zero reflection in hot paths
 
@@ -185,7 +187,7 @@ TecnoFisc.Sped/
 │   ├── TecnoFisc.Sped.Core/                          # Shared parser/generator infrastructure, value objects
 │   ├── TecnoFisc.Sped.Core.SourceGenerators/         # Source generators for catalog and serialization
 │   ├── TecnoFisc.Sped.EfdContribuicoes/                 # EFD Contribuições (.txt)
-│   ├── TecnoFisc.Sped.Fiscal/                        # EFD ICMS-IPI (.txt)
+│   ├── TecnoFisc.Sped.EfdIcmsIpi/                    # EFD ICMS-IPI (.txt)
 │   ├── TecnoFisc.Sped.Reinf/                         # EFD-Reinf
 │   ├── TecnoFisc.Sped.Ecd/                           # ECD
 │   ├── TecnoFisc.Sped.Ecf/                           # ECF
@@ -215,14 +217,14 @@ TecnoFisc.Sped/
 TecnoFisc.Sped.Core                  ← (no dependencies)
 TecnoFisc.Sped.Core.SourceGenerators ← (no dependencies, references Roslyn analyzer APIs)
 TecnoFisc.Sped.EfdContribuicoes         ← TecnoFisc.Sped.Core, TecnoFisc.Sped.Core.SourceGenerators (analyzer)
-TecnoFisc.Sped.Fiscal                ← TecnoFisc.Sped.Core, TecnoFisc.Sped.Core.SourceGenerators (analyzer)
+TecnoFisc.Sped.EfdIcmsIpi            ← TecnoFisc.Sped.Core, TecnoFisc.Sped.Core.SourceGenerators (analyzer)
 TecnoFisc.Sped.NFe                   ← TecnoFisc.Sped.Core, TecnoFisc.Sped.Core.SourceGenerators (analyzer)
 ... and so on
 ```
 
 **Critical rule 1:** No project in TecnoFisc.Sped depends on any database, file system configuration, or external service.
 
-**Critical rule 2:** Format-specific projects (`EfdContribuicoes`, `Fiscal`, etc.) do NOT depend on each other. If `RegistroC100` exists in two projects, it is two distinct classes. **However**, this duplication rule applies only to **registros** (with their leiaute-specific filhos, hierarchy, and validations). Tables and enums regidos pelo Ato COTEPE/ICMS (e.g., `Tabela 4.1.1 - Modelos`, `Tabela 4.1.2 - Situação`) live in `TecnoFisc.Sped.Core` as a single source of truth — EFD ICMS-IPI is the regente; other leiautes reference. Duplicating those would create silent drift (see §4.2).
+**Critical rule 2:** Format-specific projects (`EfdContribuicoes`, `EfdIcmsIpi`, etc.) do NOT depend on each other. If `RegistroC100` exists in two projects, it is two distinct classes. **However**, this duplication rule applies only to **registros** (with their leiaute-specific filhos, hierarchy, and validations). Tables and enums regidos pelo Ato COTEPE/ICMS (e.g., `Tabela 4.1.1 - Modelos`, `Tabela 4.1.2 - Situação`) live in `TecnoFisc.Sped.Core` as a single source of truth — EFD ICMS-IPI is the regente; other leiautes reference. Duplicating those would create silent drift (see §4.2).
 
 **Critical rule 3:** The source generator project is referenced as an analyzer (`<ProjectReference OutputItemType="Analyzer" ReferenceOutputAssembly="false" />`), not as a runtime dependency. It produces code at compile time, ships nothing to the consumer at runtime.
 
@@ -522,18 +524,26 @@ Publishing: SPED arquivos are all-or-nothing — a partial implementation cannot
 - Benchmark comparison: reflection cache vs source-generated.
 - Lands once the registro shape has stabilized — typically after Bloco 0 and Bloco C are complete.
 
-### Stage 7 — Layout V007 (and subsequent)
+### Stage 7 — Layout V007 EFD Contribuições (and subsequent)
 
+- Triggered when the Receita publishes guia v1.36+ (PDF dropped in `sped/guides/`).
 - `LayoutEfdContribuicoes` enum extended.
 - Subclasses or version-aware serialization for changed records.
 - Parser auto-detects from `Registro0000` and instantiates appropriate variants.
 - Tests covering both V006 and V007 round-trips.
 
-### Stage 8 — TecnoFisc.Sped.Fiscal (EFD ICMS-IPI)
+### Stage 8 — TecnoFisc.Sped.EfdIcmsIpi (EFD ICMS-IPI, baseline V306)
 
-- Same internal structure as EfdContribuicoes.
-- Independent set of record classes.
-- Publish v0.3.0 of Fiscal.
+Same internal structure as `EfdContribuicoes`. Independent set of record classes — no inter-project references (per Hard Rule 2). Shared enums/value objects regidos pelo Ato COTEPE migrate to `Core` on first use (EFD ICMS-IPI is the regente — duplication = drift bug).
+
+**Versioning strategy.** The Receita publishes EFD ICMS-IPI layouts approximately yearly. The 5-year fiscal window currently covers **18 layouts: V306 through V322**. Strict-incremental property: a newer layout never removes a field or changes meaning of an existing one — it only adds fields or registros. Strategy:
+
+1. **Baseline V306.** Implement every registro of guia v3.0.6 as Stage 8 sub-stages `8.001` … `8.NNN`. Tracking file: `sped/STAGE_8_EFD_ICMS_IPI_V306.md`. Same conventions as Stage 4.
+2. **Incremental V307 … V322.** Each subsequent layout gets its own tracking file (`sped/STAGE_8_INCR_V307.md`, … `STAGE_8_INCR_V322.md`) listing **only the diffs**: registros novos, campos adicionados, enums extendidos. Sub-stages numbered `8.1.001`, `8.2.001`, etc.
+3. **Code model.** One class per registro (e.g., `RegistroC100`). New fields added in later layouts annotated with `DesdeVersao = LayoutEfdIcmsIpi.VXXX`. Parser/gerador and source generator honor `DesdeVersao` against the version read from `Registro0000`. Structurally divergent registros (rare) → subclass `RegistroXxxxVXXX : RegistroXxxx`. New registros introduced in later layouts → annotated with `IntroduzidoEm = LayoutEfdIcmsIpi.VXXX` on `[RegistroSped]`.
+4. **`LayoutEfdIcmsIpi`** enum in `src/TecnoFisc.Sped.EfdIcmsIpi/Versionamento/` with `V306`, `V307`, …, `V322` (18 values).
+
+Publish v0.3.0 only after baseline V306 is complete and round-trips a real anonymized arquivo. Each incremental layout (V307+) ships as a minor bump (0.3.1, 0.3.2, …).
 
 ### Stage 9 — TecnoFisc.Sped.NFe (XML)
 

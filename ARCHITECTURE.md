@@ -536,12 +536,12 @@ Publishing: SPED arquivos are all-or-nothing — a partial implementation cannot
 
 Same internal structure as `EfdContribuicoes`. Independent set of record classes — no inter-project references (per Hard Rule 2). Shared enums/value objects regidos pelo Ato COTEPE migrate to `Core` on first use (EFD ICMS-IPI is the regente — duplication = drift bug).
 
-**Versioning strategy.** The Receita publishes EFD ICMS-IPI layouts approximately yearly. The 5-year fiscal window currently covers **18 layouts: V306 through V322**. Strict-incremental property: a newer layout never removes a field or changes meaning of an existing one — it only adds fields or registros. Strategy:
+**Versioning strategy.** The Receita publishes EFD ICMS-IPI layouts approximately yearly. The 5-year fiscal window currently covers **17 layouts: V306 through V322** (baseline V306 + 16 incrementos). Strict-incremental property: a newer layout never removes a field or changes meaning of an existing one — it only adds fields or registros. Strategy:
 
 1. **Baseline V306.** Implement every registro of guia v3.0.6 as Stage 8 sub-stages `8.001` … `8.NNN`. Tracking file: `sped/STAGE_8_EFD_ICMS_IPI_V306.md`. Same conventions as Stage 4.
 2. **Incremental V307 … V322.** Each subsequent layout gets its own tracking file (`sped/STAGE_8_INCR_V307.md`, … `STAGE_8_INCR_V322.md`) listing **only the diffs**: registros novos, campos adicionados, enums extendidos. Sub-stages numbered `8.1.001`, `8.2.001`, etc.
 3. **Code model.** One class per registro (e.g., `RegistroC100`). New fields added in later layouts annotated with `DesdeVersao = LayoutEfdIcmsIpi.VXXX`. Parser/gerador and source generator honor `DesdeVersao` against the version read from `Registro0000`. Structurally divergent registros (rare) → subclass `RegistroXxxxVXXX : RegistroXxxx`. New registros introduced in later layouts → annotated with `IntroduzidoEm = LayoutEfdIcmsIpi.VXXX` on `[RegistroSped]`.
-4. **`LayoutEfdIcmsIpi`** enum in `src/TecnoFisc.Sped.EfdIcmsIpi/Versionamento/` with `V306`, `V307`, …, `V322` (18 values).
+4. **`LayoutEfdIcmsIpi`** enum in `src/TecnoFisc.Sped.EfdIcmsIpi/Versionamento/` with `V306`, `V307`, …, `V322` (17 values). Convenção: valor inteiro = versão sem ponto (`V306 = 306`, `V322 = 322`) — permite cast direto em atributos (`DesdeVersao = (int)LayoutEfdIcmsIpi.V310`) e comparação aritmética.
 
 Publish v0.3.0 only after baseline V306 is complete and round-trips a real anonymized arquivo. Each incremental layout (V307+) ships as a minor bump (0.3.1, 0.3.2, …).
 

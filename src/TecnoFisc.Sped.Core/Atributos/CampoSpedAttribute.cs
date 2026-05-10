@@ -28,4 +28,19 @@ public sealed class CampoSpedAttribute : Attribute
     /// ou "MMyyyy" para campos de período. Outros tipos ignoram.
     /// </summary>
     public string? Formato { get; init; }
+
+    /// <summary>
+    /// Versão do leiaute em que o campo passou a existir. Convenção: valor numérico do enum
+    /// <c>LayoutXxx</c> do módulo (ex.: <c>(int)LayoutEfdIcmsIpi.V310</c> = 310). O parser/gerador
+    /// usa este valor para incluir o campo somente quando a versão lida do <c>Registro0000</c>
+    /// for maior ou igual. <c>0</c> (default) significa "presente em todas as versões".
+    /// </summary>
+    /// <remarks>
+    /// Como SPED é strict-incremental por convenção da Receita, não há contraparte
+    /// <c>AteVersao</c> — campos não são removidos em versões posteriores. Caso a Receita quebre
+    /// essa regra no futuro, a estratégia documentada em <c>ARCHITECTURE.md §4.7</c> é
+    /// subclasse de registro (<c>RegistroXxxxVYYY : RegistroXxxx</c>) em vez de extender este
+    /// atributo.
+    /// </remarks>
+    public int DesdeVersao { get; init; }
 }

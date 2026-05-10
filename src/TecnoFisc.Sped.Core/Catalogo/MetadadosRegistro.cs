@@ -14,7 +14,8 @@ public sealed class MetadadosRegistro
         string bloco,
         Type tipoCSharp,
         Func<RegistroSped> fabrica,
-        IReadOnlyList<MetadadosCampo> campos)
+        IReadOnlyList<MetadadosCampo> campos,
+        int introduzidoEm = 0)
     {
         Codigo = codigo;
         Nivel = nivel;
@@ -22,6 +23,7 @@ public sealed class MetadadosRegistro
         TipoCSharp = tipoCSharp;
         Fabrica = fabrica;
         Campos = campos;
+        IntroduzidoEm = introduzidoEm;
     }
 
     public string Codigo { get; }
@@ -32,4 +34,10 @@ public sealed class MetadadosRegistro
 
     /// <summary>Campos ordenados pela posição (1-based, sem incluir REG).</summary>
     public IReadOnlyList<MetadadosCampo> Campos { get; }
+
+    /// <summary>
+    /// Primeira versão de leiaute em que o registro passa a existir. <c>0</c> = sempre presente.
+    /// Origem em <see cref="Atributos.RegistroSpedAttribute.IntroduzidoEm"/>.
+    /// </summary>
+    public int IntroduzidoEm { get; }
 }

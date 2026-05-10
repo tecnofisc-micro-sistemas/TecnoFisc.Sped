@@ -42,6 +42,37 @@ public sealed class AtributosTests
         atributo.Decimais.Should().Be(0);
         atributo.Obrigatorio.Should().BeFalse();
         atributo.Formato.Should().BeNull();
+        atributo.DesdeVersao.Should().Be(0);
+    }
+
+    [Fact]
+    public void CampoSpedAttribute_AceitaDesdeVersao()
+    {
+        var atributo = new CampoSpedAttribute { Ordem = 27, DesdeVersao = 312 };
+
+        atributo.DesdeVersao.Should().Be(312);
+    }
+
+    [Fact]
+    public void RegistroSpedAttribute_DefaultIntroduzidoEmZero()
+    {
+        var atributo = new RegistroSpedAttribute { Codigo = "C100", Nivel = 2, Bloco = "C" };
+
+        atributo.IntroduzidoEm.Should().Be(0);
+    }
+
+    [Fact]
+    public void RegistroSpedAttribute_AceitaIntroduzidoEm()
+    {
+        var atributo = new RegistroSpedAttribute
+        {
+            Codigo = "Z100",
+            Nivel = 2,
+            Bloco = "Z",
+            IntroduzidoEm = 310,
+        };
+
+        atributo.IntroduzidoEm.Should().Be(310);
     }
 
     [Fact]

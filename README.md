@@ -22,7 +22,7 @@ pacote afetado é versionado.
 | Projeto SPED | Pacote NuGet | Status |
 | --- | --- | --- |
 | EFD Contribuições | `TecnoFisc.Sped.EfdContribuicoes` | **0.2.0** — layout V006 completo |
-| EFD ICMS-IPI | `TecnoFisc.Sped.Fiscal` | planejado |
+| EFD ICMS-IPI | `TecnoFisc.Sped.EfdIcmsIpi` | planejado |
 | NF-e / NFC-e / CT-e / MDF-e | `TecnoFisc.Sped.NFe`, etc. | planejado |
 | eSocial / EFD-Reinf / ECD / ECF | pacotes próprios | planejado |
 

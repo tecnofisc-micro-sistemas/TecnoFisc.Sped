@@ -14,6 +14,16 @@
     - Claude não criar PR (erro de build/teste na implementação)
     - git ou gh CLI retornarem erro
 
+.PARAMETER Module
+    Módulo SPED alvo. Valores aceitos: "efd-contribuicoes", "efd-icms-ipi".
+    Padrão: "efd-contribuicoes" (retro-compatibilidade com Stage 4).
+    Determina $TrackingFile e o argumento propagado ao /implementar-registro.
+
+.PARAMETER Version
+    Apenas para -Module efd-icms-ipi. Versão do leiaute incremental (ex.: "v307").
+    Vazio = baseline V306 (sped/STAGE_8_EFD_ICMS_IPI_V306.md).
+    Preenchido = incremento (sped/STAGE_8_INCR_<VERSION>.md).
+
 .PARAMETER Bloco
     Letra ou dígito do bloco SPED (ex.: "0", "A", "C", "D").
     Vazio = processa todos os blocos em ordem de aparição no tracking file.
@@ -40,7 +50,15 @@
 
 .EXAMPLE
     .\scripts\auto-implement-sped.ps1 -Bloco 0
-    Implementa todos os registros pendentes do Bloco 0.
+    Implementa todos os registros pendentes do Bloco 0 do EFD Contribuições (default).
+
+.EXAMPLE
+    .\scripts\auto-implement-sped.ps1 -Module efd-icms-ipi
+    Implementa todos os registros pendentes do baseline V306 do EFD ICMS-IPI.
+
+.EXAMPLE
+    .\scripts\auto-implement-sped.ps1 -Module efd-icms-ipi -Version v307
+    Implementa diffs pendentes do incremento V307 sobre o EFD ICMS-IPI.
 
 .EXAMPLE
     .\scripts\auto-implement-sped.ps1 -Bloco 0 -DryRun
@@ -51,6 +69,9 @@
     Implementa até 3 registros do Bloco A usando Opus.
 #>
 param(
+    [ValidateSet('efd-contribuicoes', 'efd-icms-ipi')]
+    [string]$Module           = "efd-contribuicoes",
+    [string]$Version          = "",
     [string]$Bloco            = "",
     [int]   $MaxPRs           = 999,
     [switch]$DryRun,
@@ -62,8 +83,34 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-$RepoRoot     = Split-Path $PSScriptRoot -Parent
-$TrackingFile = Join-Path $RepoRoot "sped/STAGE_4_REGISTROS.md"
+$RepoRoot = Split-Path $PSScriptRoot -Parent
+
+function Resolve-TrackingFile {
+    param([string]$Module, [string]$Version)
+    switch ($Module.ToLower()) {
+        'efd-contribuicoes' {
+            if ($Version) { throw "Parametro -Version nao se aplica a 'efd-contribuicoes' (layout unico V006)." }
+            return Join-Path $RepoRoot "sped/STAGE_4_REGISTROS.md"
+        }
+        'efd-icms-ipi' {
+            if ($Version) {
+                $upper = $Version.ToUpper()
+                return Join-Path $RepoRoot "sped/STAGE_8_INCR_$upper.md"
+            }
+            return Join-Path $RepoRoot "sped/STAGE_8_EFD_ICMS_IPI_V306.md"
+        }
+        default { throw "Modulo desconhecido: $Module" }
+    }
+}
+
+$TrackingFile = Resolve-TrackingFile -Module $Module -Version $Version
+
+if (-not (Test-Path $TrackingFile)) {
+    Write-Host "ERRO: tracking file nao encontrado: $TrackingFile" -ForegroundColor Red
+    Write-Host "  Modulo : $Module" -ForegroundColor Yellow
+    if ($Version) { Write-Host "  Versao : $Version" -ForegroundColor Yellow }
+    exit 1
+}
 
 # ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -125,8 +172,9 @@ function Get-OpenPRs {
 }
 
 function Get-ExpectedBranch {
-    # Convenção observada nos commits: feat/stage-4-XXX-registro-YYYY
-    # SubStage "4.182" → "stage-4-182"; Code "1100" → "registro-1100".
+    # Convenção: feat/stage-<sub>-registro-<code>
+    # SubStage "4.182" → "stage-4-182"; "8.001" → "stage-8-001"; "8.1.005" → "stage-8-1-005".
+    # Code "1100" → "registro-1100".
     param([string]$SubStage, [string]$Code)
     $sub = $SubStage -replace '\.', '-'
     return "feat/stage-$sub-registro-$($Code.ToLower())"
@@ -312,6 +360,8 @@ try {
     }
 
     Write-Banner "Auto-implementacao SPED — $blocoStr — $($initialPending.Count) registro(s) pendente(s)" "Cyan"
+    Write-Host "  Modulo    : $Module$(if ($Version) { " ($Version)" })"
+    Write-Host "  Tracking  : $TrackingFile"
     Write-Host "  Modelo    : $Model"
     Write-Host "  MaxPRs    : $MaxPRs"
     Write-Host "  CI timeout: ${CiTimeoutMinutes}min"
@@ -430,7 +480,10 @@ try {
             # ── invocar Claude ─────────────────────────────────────────────────
             # Default `single` (sem batch) para limitar exposicao a estado parcial em
             # caso de interrupcao por limite de sessao. `-AllowBatch` libera batch.
-            $slashCmd = if ($AllowBatch) { "/implementar-registro" } else { "/implementar-registro single" }
+            # Modulo (e versao se aplicavel) propagado como primeiro argumento.
+            $moduleArg = $Module
+            if ($Version) { $moduleArg = "$Module $Version" }
+            $slashCmd = if ($AllowBatch) { "/implementar-registro $moduleArg" } else { "/implementar-registro $moduleArg single" }
             Write-Step "Invocando: claude -p '$slashCmd' --model $Model"
             Write-Host ""
 

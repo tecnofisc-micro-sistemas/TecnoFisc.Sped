@@ -81,7 +81,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.012 | Registro 0206 | Código de Produto Conforme Tabela ANP | 36 |
 | [x] | 8.013 | Registro 0210 | Consumo Específico Padronizado | 36 |
 | [x] | 8.014 | Registro 0220 | Fatores de Conversão de Unidades | 37 |
-| [ ] | 8.015 | Registro 0300 | Cadastro de Bens ou Componentes do Ativo Imobilizado | 38 |
+| [x] | 8.015 | Registro 0300 | Cadastro de Bens ou Componentes do Ativo Imobilizado | 38 |
 | [ ] | 8.016 | Registro 0305 | Informação sobre a Utilização do Bem | 39 |
 | [ ] | 8.017 | Registro 0400 | Tabela de Natureza da Operação/Prestação | 40 |
 | [ ] | 8.018 | Registro 0450 | Tabela de Informação Complementar do Documento Fiscal | 41 |

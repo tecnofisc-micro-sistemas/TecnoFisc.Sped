@@ -84,7 +84,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.015 | Registro 0300 | Cadastro de Bens ou Componentes do Ativo Imobilizado | 38 |
 | [x] | 8.016 | Registro 0305 | Informação sobre a Utilização do Bem | 39 |
 | [x] | 8.017 | Registro 0400 | Tabela de Natureza da Operação/Prestação | 40 |
-| [ ] | 8.018 | Registro 0450 | Tabela de Informação Complementar do Documento Fiscal | 41 |
+| [x] | 8.018 | Registro 0450 | Tabela de Informação Complementar do Documento Fiscal | 41 |
 | [ ] | 8.019 | Registro 0460 | Tabela de Observações do Lançamento Fiscal | 41 |
 | [ ] | 8.020 | Registro 0500 | Plano de Contas Contábeis | 42 |
 | [ ] | 8.021 | Registro 0600 | Centro de Custos | 43 |

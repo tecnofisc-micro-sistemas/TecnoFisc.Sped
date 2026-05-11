@@ -1,10 +1,10 @@
-namespace TecnoFisc.Sped.EfdContribuicoes.Enums;
+namespace TecnoFisc.Sped.Core.Enums;
 
 /// <summary>
-/// Código da natureza da conta/grupo de contas — campo COD_NAT_CC do Registro 0500.
-/// Valores válidos pelo Guia Prático v1.35, p. 89: <c>01, 02, 03, 04, 05, 09</c>.
-/// A largura SPED é fixa em dois caracteres (Tam=002*), de modo que o serializador
-/// zero-pad o underlying int.
+/// Código da natureza da conta/grupo de contas — campo COD_NAT_CC dos Registros 0500 do
+/// EFD ICMS-IPI e EFD Contribuições. Valores válidos pelo Guia Prático EFD-ICMS/IPI V3.0.6,
+/// p. 43: <c>01, 02, 03, 04, 05, 09</c>. A largura SPED é fixa em dois caracteres
+/// (Tam=002*), de modo que o serializador zero-pad o underlying int.
 /// </summary>
 public enum CodigoNaturezaContaContabil
 {

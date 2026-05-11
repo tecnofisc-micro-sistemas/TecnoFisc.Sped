@@ -74,7 +74,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.005 | Registro 0015 | Dados do Contribuinte Substituto ou Responsável pelo ICMS Destino | 28 |
 | [x] | 8.006 | Registro 0100 | Dados do Contabilista | 29 |
 | [x] | 8.007 | Registro 0150 | Tabela de Cadastro do Participante | 30 |
-| [ ] | 8.008 | Registro 0175 | Alteração da Tabela de Cadastro de Participante | 31 |
+| [x] | 8.008 | Registro 0175 | Alteração da Tabela de Cadastro de Participante | 31 |
 | [ ] | 8.009 | Registro 0190 | Identificação das Unidades de Medida | 32 |
 | [ ] | 8.010 | Registro 0200 | Tabela de Identificação do Item (Produtos e Serviços) | 33 |
 | [ ] | 8.011 | Registro 0205 | Alteração do Item | 35 |

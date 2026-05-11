@@ -1,0 +1,141 @@
+using System.Reflection;
+
+using TecnoFisc.Sped.Core.Abstracoes;
+using TecnoFisc.Sped.Core.Atributos;
+using TecnoFisc.Sped.Core.Catalogo;
+using TecnoFisc.Sped.Core.Gerador;
+using TecnoFisc.Sped.Core.Parser;
+
+namespace TecnoFisc.Sped.EfdIcmsIpi.Tests.Registros.Bloco0;
+
+/// <summary>
+/// Sub-stage 8.010 — exercita a forma do <see cref="Registro0200"/> contra o Guia Prático
+/// EFD-ICMS/IPI V3.0.6 (p. 33-35): metadados de catálogo, mapeamento de campos e invariante
+/// de round-trip parse → gerar → texto idêntico.
+/// </summary>
+public sealed class Registro0200Tests
+{
+    private static readonly IRegistroSpedCatalogo _catalogo =
+        CatalogoBuilder.BuildFromAssembly(typeof(Registro0200).Assembly);
+
+    private static async Task<string> RoundTripAsync(string sped, CancellationToken cancelamento)
+    {
+        var leitor = new LeitorSpedTxt(_catalogo);
+        var escritor = new EscritorSpedTxt(_catalogo);
+
+        using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
+        var registros = new List<RegistroSped>();
+        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+            registros.Add(registro);
+
+        using var saida = new MemoryStream();
+        await escritor.EscreverAsync(saida, registros, cancelamento);
+
+        return EncodingSped.Latin1.GetString(saida.ToArray());
+    }
+
+    [Fact]
+    public void Atributo_Declara0200_Nivel2_Bloco0()
+    {
+        var atributo = typeof(Registro0200).GetCustomAttribute<RegistroSpedAttribute>();
+
+        atributo.Should().NotBeNull();
+        atributo!.Codigo.Should().Be("0200");
+        atributo.Nivel.Should().Be(2);
+        atributo.Bloco.Should().Be("0");
+    }
+
+    [Fact]
+    public void Catalogo_ExpoeRegistro0200Com12CamposNaOrdem()
+    {
+        _catalogo.TentarObter("0200".AsSpan(), out var meta).Should().BeTrue();
+
+        meta!.Codigo.Should().Be("0200");
+        meta.Campos.Select(c => c.Nome).Should().Equal(
+        [
+            "CodItem",
+            "DescrItem",
+            "CodBarra",
+            "CodAntItem",
+            "UnidInv",
+            "TipoItem",
+            "CodNcm",
+            "ExIpi",
+            "CodGen",
+            "CodLst",
+            "AliqIcms",
+            "Cest",
+        ]);
+        meta.Campos.Select(c => c.Ordem).Should().Equal([2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]);
+    }
+
+    [Fact]
+    public void Definidor_AtribuiTodosOsCampos()
+    {
+        _catalogo.TentarObter("0200".AsSpan(), out var meta);
+        var registro = (Registro0200)meta!.Fabrica();
+
+        meta.Campos[0].Definidor(registro, "ITEM001".AsSpan());
+        meta.Campos[1].Definidor(registro, "Produto Teste".AsSpan());
+        meta.Campos[2].Definidor(registro, "7890000000001".AsSpan());
+        meta.Campos[3].Definidor(registro, Span<char>.Empty);
+        meta.Campos[4].Definidor(registro, "UN".AsSpan());
+        meta.Campos[5].Definidor(registro, "04".AsSpan());
+        meta.Campos[6].Definidor(registro, "12345678".AsSpan());
+        meta.Campos[7].Definidor(registro, "001".AsSpan());
+        meta.Campos[8].Definidor(registro, "12".AsSpan());
+        meta.Campos[9].Definidor(registro, Span<char>.Empty);
+        meta.Campos[10].Definidor(registro, "27,00".AsSpan());
+        meta.Campos[11].Definidor(registro, "0100700".AsSpan());
+
+        registro.CodItem.Should().Be("ITEM001");
+        registro.DescrItem.Should().Be("Produto Teste");
+        registro.CodBarra.Should().Be("7890000000001");
+        registro.CodAntItem.Should().BeNull();
+        registro.UnidInv.Should().Be("UN");
+        registro.TipoItem.Should().Be(TipoItem.ProdutoAcabado);
+        registro.CodNcm.Should().Be(Ncm.Criar("12345678"));
+        registro.ExIpi.Should().Be("001");
+        registro.CodGen.Should().Be(GeneroItem.Criar("12"));
+        registro.CodLst.Should().BeNull();
+        registro.AliqIcms.Should().Be(27.00m);
+        registro.Cest.Should().Be("0100700");
+    }
+
+    [Fact]
+    public void Definidor_CampoVazio_DevolveNulo()
+    {
+        _catalogo.TentarObter("0200".AsSpan(), out var meta);
+        var registro = (Registro0200)meta!.Fabrica();
+
+        meta.Campos[2].Definidor(registro, Span<char>.Empty);
+        meta.Campos[6].Definidor(registro, Span<char>.Empty);
+        meta.Campos[8].Definidor(registro, Span<char>.Empty);
+        meta.Campos[10].Definidor(registro, Span<char>.Empty);
+
+        registro.CodBarra.Should().BeNull();
+        registro.CodNcm.Should().BeNull();
+        registro.CodGen.Should().BeNull();
+        registro.AliqIcms.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task RoundTrip_ComTodosOsCampos_PreservaTextoCanonico()
+    {
+        const string sped = "|0200|ITEM001|Produto Teste|7890000000001||UN|04|12345678|001|12||27,00|0100700|\r\n";
+
+        var resultado = await RoundTripAsync(sped, TestContext.Current.CancellationToken);
+
+        resultado.Should().Be(sped);
+    }
+
+    [Fact]
+    public async Task RoundTrip_ComCamposOpcionaisVazios_PreservaTextoCanonico()
+    {
+        const string sped = "|0200|PROD-001|Mercadoria para Revenda|||UN|00|||||||\r\n";
+
+        var resultado = await RoundTripAsync(sped, TestContext.Current.CancellationToken);
+
+        resultado.Should().Be(sped);
+    }
+}

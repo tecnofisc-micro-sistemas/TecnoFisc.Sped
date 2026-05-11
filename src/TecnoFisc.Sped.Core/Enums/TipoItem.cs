@@ -1,7 +1,8 @@
-namespace TecnoFisc.Sped.EfdContribuicoes.Enums;
+namespace TecnoFisc.Sped.Core.Enums;
 
 /// <summary>
-/// Tipo do item — campo TIPO_ITEM do Registro 0200. Valores válidos pelo Guia Prático v1.35, p. 83-85.
+/// Tipo do item — campo TIPO_ITEM do Registro 0200. Campo transversal ao EFD ICMS-IPI e ao
+/// EFD Contribuições; valores definidos pelo Ato COTEPE/ICMS nº 44/2018.
 /// </summary>
 public enum TipoItem
 {

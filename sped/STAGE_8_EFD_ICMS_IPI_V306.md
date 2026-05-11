@@ -67,7 +67,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 
 | Feito | Sub-stage | Registro | Descrição | Página PDF |
 | --- | --- | --- | --- | --- |
-| [ ] | 8.001 | Registro 0000 | Abertura do Arquivo Digital e Identificação da Entidade | 26 |
+| [x] | 8.001 | Registro 0000 | Abertura do Arquivo Digital e Identificação da Entidade | 26 |
 | [ ] | 8.002 | Registro 0001 | Abertura do Bloco 0 | 27 |
 | [ ] | 8.003 | Registro 0002 | Classificação do Estabelecimento Industrial ou Equiparado a Industrial | 27 |
 | [ ] | 8.004 | Registro 0005 | Dados Complementares da Entidade | 28 |

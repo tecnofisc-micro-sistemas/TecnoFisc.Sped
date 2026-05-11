@@ -87,7 +87,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.018 | Registro 0450 | Tabela de Informação Complementar do Documento Fiscal | 41 |
 | [x] | 8.019 | Registro 0460 | Tabela de Observações do Lançamento Fiscal | 41 |
 | [x] | 8.020 | Registro 0500 | Plano de Contas Contábeis | 42 |
-| [ ] | 8.021 | Registro 0600 | Centro de Custos | 43 |
+| [x] | 8.021 | Registro 0600 | Centro de Custos | 43 |
 | [ ] | 8.022 | Registro 0990 | Encerramento do Bloco 0 | 43 |
 
 ### Bloco B — ISS (Contribuintes do DF) (13 registros)

@@ -137,7 +137,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.058 | Registro C175 | Complemento de Item — Operações com Veículos Novos (cód. 01, 55) | 89 |
 | [x] | 8.059 | Registro C176 | Complemento de Item — Ressarcimento de ICMS e FCP em Operações com ST (cód. 01, 55) | 90 |
 | [x] | 8.060 | Registro C177 | Complemento de Item — Outras Informações (cód. 01, 55) | 89 |
-| [ ] | 8.061 | Registro C178 | Complemento de Item — Operações com Produtos Sujeitos a IPI por Unidade ou Quantidade | 92 |
+| [x] | 8.061 | Registro C178 | Complemento de Item — Operações com Produtos Sujeitos a IPI por Unidade ou Quantidade | 92 |
 | [ ] | 8.062 | Registro C179 | Complemento de Item — Informações Complementares ST (cód. 01) | 93 |
 | [ ] | 8.063 | Registro C180 | Informações Complementares de Entrada de Mercadorias Sujeitas a ST (cód. 01, 1B, 04 e 55) | 94 |
 | [ ] | 8.064 | Registro C181 | Informações Complementares de Devolução de Saída de Mercadorias Sujeitas a ST (cód. 01, 1B, 04 e 55) | 95 |

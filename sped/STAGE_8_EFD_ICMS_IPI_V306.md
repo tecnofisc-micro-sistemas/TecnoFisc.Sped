@@ -94,7 +94,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 
 | Feito | Sub-stage | Registro | Descrição | Página PDF |
 | --- | --- | --- | --- | --- |
-| [ ] | 8.023 | Registro B001 | Abertura do Bloco B | 44 |
+| [x] | 8.023 | Registro B001 | Abertura do Bloco B | 44 |
 | [ ] | 8.024 | Registro B020 | NF (cód. 01), NFS (03), NFS-Avulsa (3B), NF-Produtor (04), CT-Rod-Cargas (08), NF-e (55), NFC-e (65) | 45 |
 | [ ] | 8.025 | Registro B025 | Detalhamento por Combinação de Alíquota e Item da Lista de Serviços (LC 116/2003) | 47 |
 | [ ] | 8.026 | Registro B030 | Nota Fiscal de Serviços Simplificada (código 3A) | 48 |

@@ -121,7 +121,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.042 | Registro C112 | Complemento — Documento de Arrecadação Referenciado | 68 |
 | [x] | 8.043 | Registro C113 | Complemento — Documento Fiscal Referenciado | 69 |
 | [x] | 8.044 | Registro C114 | Complemento — Cupom Fiscal Referenciado | 70 |
-| [ ] | 8.045 | Registro C115 | Local de Coleta e/ou Entrega (cód. 01, 1B e 04) | 70 |
+| [x] | 8.045 | Registro C115 | Local de Coleta e/ou Entrega (cód. 01, 1B e 04) | 70 |
 | [ ] | 8.046 | Registro C116 | Cupom Fiscal Eletrônico — CF-e Referenciado | 71 |
 | [ ] | 8.047 | Registro C120 | Complemento — Operações de Importação (cód. 01 e 55) | 72 |
 | [ ] | 8.048 | Registro C130 | Complemento — ISSQN, IRRF e Previdência Social | 73 |

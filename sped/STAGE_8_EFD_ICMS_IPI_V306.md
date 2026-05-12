@@ -103,7 +103,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.029 | Registro B420 | Totalização dos Valores de Serviços Prestados por Combinação de Alíquota e Item da Lista (LC 116/2003) | 52 |
 | [x] | 8.030 | Registro B440 | Totalização dos Valores Retidos | 53 |
 | [x] | 8.031 | Registro B460 | Deduções do ISS | 54 |
-| [ ] | 8.032 | Registro B470 | Apuração do ISS | 55 |
+| [x] | 8.032 | Registro B470 | Apuração do ISS | 55 |
 | [ ] | 8.033 | Registro B500 | Apuração do ISS Sociedade Uniprofissional | 56 |
 | [ ] | 8.034 | Registro B510 | Uniprofissional — Empregados e Sócios | 57 |
 | [ ] | 8.035 | Registro B990 | Encerramento do Bloco B | 58 |

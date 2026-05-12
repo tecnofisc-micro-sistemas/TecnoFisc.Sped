@@ -179,7 +179,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.100 | Registro C610 | Itens do Documento Consolidado — NF/Contas (06, 29, 28) — Empresas Não Obrigadas ao Convênio 115/03 | 139 |
 | [x] | 8.101 | Registro C690 | Registro Analítico dos Documentos — NF/Contas (06, 29, 28) | 147 |
 | [x] | 8.102 | Registro C700 | Consolidação dos Documentos NF/Conta Energia (06) Emitidas em Via Única — Convênio 115/03 e NF/Conta Gás (28) | 148 |
-| [ ] | 8.103 | Registro C790 | Registro Analítico dos Documentos — NF/Conta Energia (06) Emitidas em Via Única | 144 |
+| [x] | 8.103 | Registro C790 | Registro Analítico dos Documentos — NF/Conta Energia (06) Emitidas em Via Única | 144 |
 | [ ] | 8.104 | Registro C791 | Registro de Informações de ICMS ST por UF | 145 |
 | [ ] | 8.105 | Registro C800 | Registro Cupom Fiscal Eletrônico — CF-e-SAT (cód. 59) | 146 |
 | [ ] | 8.106 | Registro C810 | Itens do Documento do Cupom Fiscal Eletrônico — SAT (CF-E-SAT) (cód. 59) | 148 |

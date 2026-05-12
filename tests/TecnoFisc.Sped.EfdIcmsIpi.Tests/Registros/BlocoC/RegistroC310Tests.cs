@@ -1,0 +1,99 @@
+using System.Reflection;
+
+using TecnoFisc.Sped.Core.Abstracoes;
+using TecnoFisc.Sped.Core.Atributos;
+using TecnoFisc.Sped.Core.Catalogo;
+using TecnoFisc.Sped.Core.Gerador;
+using TecnoFisc.Sped.Core.Parser;
+
+namespace TecnoFisc.Sped.EfdIcmsIpi.Tests.Registros.BlocoC;
+
+/// <summary>
+/// Sub-stage 8.072 — exercita a forma do <see cref="RegistroC310"/> contra o Guia Prático
+/// EFD-ICMS/IPI V3.0.6 (p. 108): metadados de catálogo, mapeamento de campos e invariante
+/// de round-trip parse → gerar → texto idêntico.
+/// </summary>
+public sealed class RegistroC310Tests
+{
+    private static readonly IRegistroSpedCatalogo _catalogo =
+        CatalogoBuilder.BuildFromAssembly(typeof(RegistroC310).Assembly);
+
+    private static async Task<string> RoundTripAsync(string sped, CancellationToken cancelamento)
+    {
+        var leitor = new LeitorSpedTxt(_catalogo);
+        var escritor = new EscritorSpedTxt(_catalogo);
+
+        using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
+        var registros = new List<RegistroSped>();
+        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+            registros.Add(registro);
+
+        using var saida = new MemoryStream();
+        await escritor.EscreverAsync(saida, registros, cancelamento);
+
+        return EncodingSped.Latin1.GetString(saida.ToArray());
+    }
+
+    [Fact]
+    public void Atributo_DeclaraC310_Nivel3_BlocoC()
+    {
+        var atributo = typeof(RegistroC310).GetCustomAttribute<RegistroSpedAttribute>();
+
+        atributo.Should().NotBeNull();
+        atributo!.Codigo.Should().Be("C310");
+        atributo.Nivel.Should().Be(3);
+        atributo.Bloco.Should().Be("C");
+    }
+
+    [Fact]
+    public void Catalogo_ExpoeRegistroC310Com1CampoNaOrdem()
+    {
+        _catalogo.TentarObter("C310".AsSpan(), out var meta).Should().BeTrue();
+
+        meta!.Codigo.Should().Be("C310");
+        meta.Campos.Select(c => c.Nome).Should().Equal(["NumDocCanc"]);
+        meta.Campos.Select(c => c.Ordem).Should().Equal([2]);
+    }
+
+    [Fact]
+    public void Definidor_AtribuiTodosOsCampos()
+    {
+        _catalogo.TentarObter("C310".AsSpan(), out var meta);
+        var registro = (RegistroC310)meta!.Fabrica();
+
+        meta.Campos[0].Definidor(registro, "12345".AsSpan()); // NumDocCanc
+
+        registro.NumDocCanc.Should().Be(12345);
+    }
+
+    [Fact]
+    public void Definidor_CampoVazio_DevolveNulo()
+    {
+        _catalogo.TentarObter("C310".AsSpan(), out var meta);
+        var registro = (RegistroC310)meta!.Fabrica();
+
+        meta.Campos[0].Definidor(registro, Span<char>.Empty); // NumDocCanc
+
+        registro.NumDocCanc.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task RoundTrip_ComTodosOsCampos_PreservaTextoCanonico()
+    {
+        const string sped = "|C310|12345|\r\n";
+
+        var resultado = await RoundTripAsync(sped, TestContext.Current.CancellationToken);
+
+        resultado.Should().Be(sped);
+    }
+
+    [Fact]
+    public async Task RoundTrip_ComPrimeiroDocumentoDaSerie_PreservaTextoCanonico()
+    {
+        const string sped = "|C310|1|\r\n";
+
+        var resultado = await RoundTripAsync(sped, TestContext.Current.CancellationToken);
+
+        resultado.Should().Be(sped);
+    }
+}

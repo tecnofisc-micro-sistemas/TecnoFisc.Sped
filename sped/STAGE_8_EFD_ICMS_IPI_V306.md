@@ -148,7 +148,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.069 | Registro C195 | Complemento do Registro Analítico — Observações do Lançamento Fiscal (cód. 01, 1B, 04, 55 e 65) | 101 |
 | [x] | 8.070 | Registro C197 | Outras Obrigações Tributárias, Ajustes e Informações Provenientes do Documento Fiscal | 102 |
 | [x] | 8.071 | Registro C300 | Documento — Resumo Diário das NF de Venda a Consumidor (cód. 02) | 103 |
-| [ ] | 8.072 | Registro C310 | Documentos Cancelados de NF de Venda a Consumidor (cód. 02) | 104 |
+| [x] | 8.072 | Registro C310 | Documentos Cancelados de NF de Venda a Consumidor (cód. 02) | 108 |
 | [ ] | 8.073 | Registro C320 | Registro Analítico das NF de Venda a Consumidor (cód. 02) | 105 |
 | [ ] | 8.074 | Registro C321 | Itens dos Resumos Diários dos Documentos (cód. 02) | 106 |
 | [ ] | 8.075 | Registro C330 | Informações Complementares das Operações de Saída de Mercadorias Sujeitas a ST (cód. 02) | 107 |

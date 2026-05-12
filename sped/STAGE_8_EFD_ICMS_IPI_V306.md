@@ -159,7 +159,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.080 | Registro C400 | Equipamento ECF (cód. 02, 2D e 60) | 112 |
 | [x] | 8.081 | Registro C405 | Redução Z (cód. 02, 2D e 60) | 113 |
 | [x] | 8.082 | Registro C410 | PIS e COFINS Totalizados no Dia (cód. 02 e 2D) | 114 |
-| [ ] | 8.083 | Registro C420 | Registro dos Totalizadores Parciais da Redução Z (cód. 02, 2D e 60) | 115 |
+| [x] | 8.083 | Registro C420 | Registro dos Totalizadores Parciais da Redução Z (cód. 02, 2D e 60) | 115 |
 | [ ] | 8.084 | Registro C425 | Resumo de Itens do Movimento Diário (cód. 02 e 2D) | 116 |
 | [ ] | 8.085 | Registro C430 | Informações Complementares das Operações de Saída de Mercadorias Sujeitas a ST (cód. 02, 2D e 60) | 117 |
 | [ ] | 8.086 | Registro C460 | Documento Fiscal Emitido por ECF (cód. 02, 2D e 60) | 118 |

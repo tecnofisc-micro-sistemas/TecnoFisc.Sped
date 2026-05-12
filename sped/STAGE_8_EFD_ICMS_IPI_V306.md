@@ -101,7 +101,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.027 | Registro B035 | Detalhamento por Combinação de Alíquota e Item da Lista de Serviços (LC 116/2003) | 50 |
 | [x] | 8.028 | Registro B350 | Serviços Prestados por Instituições Financeiras | 51 |
 | [x] | 8.029 | Registro B420 | Totalização dos Valores de Serviços Prestados por Combinação de Alíquota e Item da Lista (LC 116/2003) | 52 |
-| [ ] | 8.030 | Registro B440 | Totalização dos Valores Retidos | 53 |
+| [x] | 8.030 | Registro B440 | Totalização dos Valores Retidos | 53 |
 | [ ] | 8.031 | Registro B460 | Deduções do ISS | 54 |
 | [ ] | 8.032 | Registro B470 | Apuração do ISS | 55 |
 | [ ] | 8.033 | Registro B500 | Apuração do ISS Sociedade Uniprofissional | 56 |

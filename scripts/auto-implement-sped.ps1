@@ -231,31 +231,52 @@ function Find-OrphanFeatureBranches {
 
 function Wait-ForSessionReset {
     # Detecta mensagem de limite de sessao do Claude e dorme ate o reset.
-    # Padrao observado: "You've hit your limit · resets 4:10am (America/Sao_Paulo)"
+    # Formatos observados (mudam entre versoes do CLI):
+    #   (1) "You've hit your limit . resets 4:10am (America/Sao_Paulo)"
+    #   (2) "Claude AI usage limit reached|1731234567"   (epoch unix do reset)
+    #   (3) Mensagens genericas de rate limit sem hora ("rate_limit_error",
+    #       "429", "usage limit", "rate limit", "limit reached")
     # Retorna $true se detectou e aguardou (caller deve repetir iteracao).
     param([string]$ClaudeOutput)
 
     if (-not $ClaudeOutput) { return $false }
-    if ($ClaudeOutput -notmatch "(?i)hit your limit.*?resets\s+(\d{1,2}):(\d{2})\s*(am|pm)") {
+
+    $now      = Get-Date
+    $resumeAt = $null
+    $matchedPattern = ""
+
+    # (2) Epoch unix: "Claude AI usage limit reached|<seconds>"
+    if ($ClaudeOutput -match "(?i)usage limit reached\s*\|\s*(\d+)") {
+        $epoch    = [int64]$Matches[1]
+        $reset    = [DateTimeOffset]::FromUnixTimeSeconds($epoch).LocalDateTime
+        $resumeAt = $reset.AddMinutes(5)
+        $matchedPattern = "epoch ($epoch -> $($reset.ToString('yyyy-MM-dd HH:mm')))"
+    }
+    # (1) Formato "resets H:MM am/pm"
+    elseif ($ClaudeOutput -match "(?i)resets?\s+(\d{1,2}):(\d{2})\s*(am|pm)") {
+        $hour   = [int]$Matches[1]
+        $minute = [int]$Matches[2]
+        $ampm   = $Matches[3].ToLower()
+        if     ($ampm -eq 'pm' -and $hour -lt 12) { $hour += 12 }
+        elseif ($ampm -eq 'am' -and $hour -eq 12) { $hour  = 0  }
+        $reset = Get-Date -Hour $hour -Minute $minute -Second 0 -Millisecond 0
+        if ($reset -le $now) { $reset = $reset.AddDays(1) }
+        $resumeAt = $reset.AddMinutes(5)
+        $matchedPattern = "HH:MM ($($reset.ToString('HH:mm')))"
+    }
+    # (3) Generico — sem hora extraivel. Fallback: dormir 60min e tentar de novo.
+    elseif ($ClaudeOutput -match "(?i)(usage limit|rate.?limit|limit reached|rate_limit_error|\b429\b|too many requests)") {
+        $resumeAt = $now.AddMinutes(60)
+        $matchedPattern = "generico ('$($Matches[1])') -> retry fixo +60min"
+    }
+    else {
         return $false
     }
 
-    $hour   = [int]$Matches[1]
-    $minute = [int]$Matches[2]
-    $ampm   = $Matches[3].ToLower()
+    $wait = $resumeAt - $now
+    if ($wait.TotalSeconds -lt 60) { $wait = [TimeSpan]::FromMinutes(5) ; $resumeAt = $now.Add($wait) }
 
-    if     ($ampm -eq 'pm' -and $hour -lt 12) { $hour += 12 }
-    elseif ($ampm -eq 'am' -and $hour -eq 12) { $hour  = 0  }
-
-    $now   = Get-Date
-    $reset = Get-Date -Hour $hour -Minute $minute -Second 0 -Millisecond 0
-    if ($reset -le $now) { $reset = $reset.AddDays(1) }
-
-    # Buffer 5min apos reset para garantir propagacao no backend
-    $resumeAt = $reset.AddMinutes(5)
-    $wait     = $resumeAt - $now
-
-    Write-Step "Limite de sessao atingido. Reset em $($reset.ToString('HH:mm')). Retomando $($resumeAt.ToString('HH:mm')) (~$([int]$wait.TotalMinutes)min)..." "Yellow"
+    Write-Step "Limite de sessao detectado [$matchedPattern]. Retomando $($resumeAt.ToString('HH:mm')) (~$([int]$wait.TotalMinutes)min)..." "Yellow"
     Start-Sleep -Seconds ([int]$wait.TotalSeconds)
     Write-Step "Sessao reiniciada. Retomando execucao." "Green"
     return $true
@@ -509,6 +530,9 @@ try {
 
             if ($claudeExit -ne 0) {
                 Write-Step "claude terminou com erro (exit code $claudeExit). Parando." "Red"
+                $tail = ($claudeOutput -split "`n" | Select-Object -Last 20) -join "`n"
+                Write-Step "Ultimas linhas do output (p/ diagnose; se for rate limit nao reconhecido, ampliar regex em Wait-ForSessionReset):" "Yellow"
+                Write-Host $tail -ForegroundColor DarkGray
                 exit 1
             }
 

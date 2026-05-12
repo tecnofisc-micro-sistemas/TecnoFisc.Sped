@@ -106,7 +106,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.032 | Registro B470 | Apuração do ISS | 55 |
 | [x] | 8.033 | Registro B500 | Apuração do ISS Sociedade Uniprofissional | 56 |
 | [x] | 8.034 | Registro B510 | Uniprofissional — Empregados e Sócios | 57 |
-| [ ] | 8.035 | Registro B990 | Encerramento do Bloco B | 58 |
+| [x] | 8.035 | Registro B990 | Encerramento do Bloco B | 58 |
 
 ### Bloco C — Documentos Fiscais I — Mercadorias (78 registros)
 

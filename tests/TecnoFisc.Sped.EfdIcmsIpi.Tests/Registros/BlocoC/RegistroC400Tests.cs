@@ -1,0 +1,126 @@
+using System.Reflection;
+
+using TecnoFisc.Sped.Core.Abstracoes;
+using TecnoFisc.Sped.Core.Atributos;
+using TecnoFisc.Sped.Core.Catalogo;
+using TecnoFisc.Sped.Core.Gerador;
+using TecnoFisc.Sped.Core.Parser;
+
+namespace TecnoFisc.Sped.EfdIcmsIpi.Tests.Registros.BlocoC;
+
+/// <summary>
+/// Sub-stage 8.080 — exercita a forma do <see cref="RegistroC400"/> contra o Guia Prático
+/// EFD-ICMS/IPI V3.0.6 (p. 119): metadados de catálogo, mapeamento de campos e invariante
+/// de round-trip parse → gerar → texto idêntico.
+/// </summary>
+public sealed class RegistroC400Tests
+{
+    private static readonly IRegistroSpedCatalogo _catalogo =
+        CatalogoBuilder.BuildFromAssembly(typeof(RegistroC400).Assembly);
+
+    private static async Task<string> RoundTripAsync(string sped, CancellationToken cancelamento)
+    {
+        var leitor = new LeitorSpedTxt(_catalogo);
+        var escritor = new EscritorSpedTxt(_catalogo);
+
+        using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
+        var registros = new List<RegistroSped>();
+        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+            registros.Add(registro);
+
+        using var saida = new MemoryStream();
+        await escritor.EscreverAsync(saida, registros, cancelamento);
+
+        return EncodingSped.Latin1.GetString(saida.ToArray());
+    }
+
+    [Fact]
+    public void Atributo_DeclaraC400_Nivel2_BlocoC()
+    {
+        var atributo = typeof(RegistroC400).GetCustomAttribute<RegistroSpedAttribute>();
+
+        atributo.Should().NotBeNull();
+        atributo!.Codigo.Should().Be("C400");
+        atributo.Nivel.Should().Be(2);
+        atributo.Bloco.Should().Be("C");
+    }
+
+    [Fact]
+    public void Catalogo_ExpoeRegistroC400Com4CamposNaOrdem()
+    {
+        _catalogo.TentarObter("C400".AsSpan(), out var meta).Should().BeTrue();
+
+        meta!.Codigo.Should().Be("C400");
+        meta.Campos.Select(c => c.Nome).Should().Equal([
+            "CodMod", "EcfMod", "EcfFab", "EcfCx"
+        ]);
+        meta.Campos.Select(c => c.Ordem).Should().Equal([2, 3, 4, 5]);
+    }
+
+    [Fact]
+    public void Definidor_AtribuiTodosOsCampos()
+    {
+        _catalogo.TentarObter("C400".AsSpan(), out var meta);
+        var registro = (RegistroC400)meta!.Fabrica();
+
+        meta.Campos[0].Definidor(registro, "02".AsSpan());                    // CodMod
+        meta.Campos[1].Definidor(registro, "MX2150T".AsSpan());               // EcfMod
+        meta.Campos[2].Definidor(registro, "BR10000000000000001".AsSpan());   // EcfFab
+        meta.Campos[3].Definidor(registro, "001".AsSpan());                   // EcfCx
+
+        registro.CodMod.Should().Be("02");
+        registro.EcfMod.Should().Be("MX2150T");
+        registro.EcfFab.Should().Be("BR10000000000000001");
+        registro.EcfCx.Should().Be(1);
+    }
+
+    [Fact]
+    public void Definidor_CampoVazio_DevolveNulo()
+    {
+        _catalogo.TentarObter("C400".AsSpan(), out var meta);
+        var registro = (RegistroC400)meta!.Fabrica();
+
+        foreach (var campo in meta.Campos)
+            campo.Definidor(registro, ReadOnlySpan<char>.Empty);
+
+        registro.CodMod.Should().BeNull();
+        registro.EcfMod.Should().BeNull();
+        registro.EcfFab.Should().BeNull();
+        registro.EcfCx.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task RoundTrip_ComTodosOsCampos_PreservaTextoCanonico()
+    {
+        const string sped =
+            "|C400|02|MX2150T|BR10000000000000001|1|\r\n";
+
+        var resultado = await RoundTripAsync(sped, TestContext.Current.CancellationToken);
+
+        resultado.Should().Be(sped);
+    }
+
+    [Fact]
+    public async Task RoundTrip_ComModeloCupomFiscal_PreservaTextoCanonico()
+    {
+        // Cupom Fiscal (2D) emitido por ECF — código alfanumérico no COD_MOD.
+        const string sped =
+            "|C400|2D|DARUMA-DR700|SN98765432100000001|2|\r\n";
+
+        var resultado = await RoundTripAsync(sped, TestContext.Current.CancellationToken);
+
+        resultado.Should().Be(sped);
+    }
+
+    [Fact]
+    public async Task RoundTrip_ComCupomFiscalEletronico_PreservaTextoCanonico()
+    {
+        // CF-e-ECF (60).
+        const string sped =
+            "|C400|60|BEMATECH-MP4200|FAB00000000000000001|10|\r\n";
+
+        var resultado = await RoundTripAsync(sped, TestContext.Current.CancellationToken);
+
+        resultado.Should().Be(sped);
+    }
+}

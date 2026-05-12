@@ -166,7 +166,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.087 | Registro C465 | Complemento do Cupom Fiscal Eletrônico Emitido por ECF — CF-e-ECF (cód. 60) | 119 |
 | [x] | 8.088 | Registro C470 | Itens do Documento Fiscal Emitido por ECF (cód. 02 e 2D) | 120 |
 | [x] | 8.089 | Registro C480 | Informações Complementares das Operações de Saída de Mercadorias Sujeitas a ST (cód. 02, 2D e 60) | 121 |
-| [ ] | 8.090 | Registro C490 | Registro Analítico do Movimento Diário (cód. 02, 2D e 60) | 122 |
+| [x] | 8.090 | Registro C490 | Registro Analítico do Movimento Diário (cód. 02, 2D e 60) | 131 |
 | [ ] | 8.091 | Registro C495 | Resumo Mensal de Itens do ECF por Estabelecimento (cód. 02, 2D e 2E) | 123 |
 | [ ] | 8.092 | Registro C500 | NF/Conta de Energia Elétrica (cód. 06), NF-e Eletrônica (66), NF/Conta de Água Canalizada (29), NF/Consumo Gás (28) | 124 |
 | [ ] | 8.093 | Registro C510 | Itens do Documento — NF/Conta de Energia Elétrica (cód. 06), Água (29), Gás (28) | 128 |

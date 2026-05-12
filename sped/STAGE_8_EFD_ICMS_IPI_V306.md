@@ -125,7 +125,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.046 | Registro C116 | Cupom Fiscal Eletrônico — CF-e Referenciado | 71 |
 | [x] | 8.047 | Registro C120 | Complemento — Operações de Importação (cód. 01 e 55) | 72 |
 | [x] | 8.048 | Registro C130 | Complemento — ISSQN, IRRF e Previdência Social | 73 |
-| [ ] | 8.049 | Registro C140 | Complemento — Fatura (cód. 01) | 74 |
+| [x] | 8.049 | Registro C140 | Complemento — Fatura (cód. 01) | 74 |
 | [ ] | 8.050 | Registro C141 | Complemento — Vencimento da Fatura (cód. 01) | 74 |
 | [ ] | 8.051 | Registro C160 | Complemento — Volumes Transportados (cód. 01 e 04) Exceto Combustíveis | 75 |
 | [ ] | 8.052 | Registro C165 | Complemento — Operações com Combustíveis (cód. 01) | 76 |

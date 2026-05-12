@@ -98,7 +98,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.024 | Registro B020 | NF (cód. 01), NFS (03), NFS-Avulsa (3B), NF-Produtor (04), CT-Rod-Cargas (08), NF-e (55), NFC-e (65) | 45 |
 | [x] | 8.025 | Registro B025 | Detalhamento por Combinação de Alíquota e Item da Lista de Serviços (LC 116/2003) | 47 |
 | [x] | 8.026 | Registro B030 | Nota Fiscal de Serviços Simplificada (código 3A) | 48 |
-| [ ] | 8.027 | Registro B035 | Detalhamento por Combinação de Alíquota e Item da Lista de Serviços (LC 116/2003) | 50 |
+| [x] | 8.027 | Registro B035 | Detalhamento por Combinação de Alíquota e Item da Lista de Serviços (LC 116/2003) | 50 |
 | [ ] | 8.028 | Registro B350 | Serviços Prestados por Instituições Financeiras | 51 |
 | [ ] | 8.029 | Registro B420 | Totalização dos Valores de Serviços Prestados por Combinação de Alíquota e Item da Lista (LC 116/2003) | 52 |
 | [ ] | 8.030 | Registro B440 | Totalização dos Valores Retidos | 53 |

@@ -145,7 +145,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.066 | Registro C186 | Informações Complementares de Devolução de Entrada de Mercadorias Sujeitas a ST (cód. 01, 1B, 04 e 55) | 97 |
 | [x] | 8.067 | Registro C190 | Registro Analítico do Documento (cód. 01, 1B, 04, 55 e 65) | 98 |
 | [x] | 8.068 | Registro C191 | Informações do Fundo de Combate à Pobreza — FCP na NF-e (cód. 55) e NFC-e (cód. 65) | 100 |
-| [ ] | 8.069 | Registro C195 | Complemento do Registro Analítico — Observações do Lançamento Fiscal (cód. 01, 1B, 04, 55 e 65) | 101 |
+| [x] | 8.069 | Registro C195 | Complemento do Registro Analítico — Observações do Lançamento Fiscal (cód. 01, 1B, 04, 55 e 65) | 101 |
 | [ ] | 8.070 | Registro C197 | Outras Obrigações Tributárias, Ajustes e Informações Provenientes do Documento Fiscal | 102 |
 | [ ] | 8.071 | Registro C300 | Documento — Resumo Diário das NF de Venda a Consumidor (cód. 02) | 103 |
 | [ ] | 8.072 | Registro C310 | Documentos Cancelados de NF de Venda a Consumidor (cód. 02) | 104 |

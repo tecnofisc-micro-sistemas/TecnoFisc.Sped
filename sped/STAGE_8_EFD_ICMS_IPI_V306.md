@@ -129,7 +129,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.050 | Registro C141 | Complemento — Vencimento da Fatura (cód. 01) | 74 |
 | [x] | 8.051 | Registro C160 | Complemento — Volumes Transportados (cód. 01 e 04) Exceto Combustíveis | 75 |
 | [x] | 8.052 | Registro C165 | Complemento — Operações com Combustíveis (cód. 01) | 76 |
-| [ ] | 8.053 | Registro C170 | Complemento — Itens do Documento (cód. 01, 1B, 04 e 55) | 77 |
+| [x] | 8.053 | Registro C170 | Complemento — Itens do Documento (cód. 01, 1B, 04 e 55) | 77 |
 | [ ] | 8.054 | Registro C171 | Complemento de Item — Armazenamento de Combustíveis (cód. 01, 55) | 85 |
 | [ ] | 8.055 | Registro C172 | Complemento de Item — Operações com ISSQN (cód. 01) | 86 |
 | [ ] | 8.056 | Registro C173 | Complemento de Item — Operações com Medicamentos (cód. 01, 55) | 87 |

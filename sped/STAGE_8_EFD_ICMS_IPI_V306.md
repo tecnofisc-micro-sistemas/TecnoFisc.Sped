@@ -169,7 +169,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.090 | Registro C490 | Registro Analítico do Movimento Diário (cód. 02, 2D e 60) | 131 |
 | [x] | 8.091 | Registro C495 | Resumo Mensal de Itens do ECF por Estabelecimento (cód. 02, 2D e 2E) | 132 |
 | [x] | 8.092 | Registro C500 | NF/Conta de Energia Elétrica (cód. 06), NF-e Eletrônica (66), NF/Conta de Água Canalizada (29), NF/Consumo Gás (28) | 124 |
-| [ ] | 8.093 | Registro C510 | Itens do Documento — NF/Conta de Energia Elétrica (cód. 06), Água (29), Gás (28) | 128 |
+| [x] | 8.093 | Registro C510 | Itens do Documento — NF/Conta de Energia Elétrica (cód. 06), Água (29), Gás (28) | 128 |
 | [ ] | 8.094 | Registro C590 | Registro Analítico — NF/Conta de Energia Elétrica (06, 66), Água (29), Gás (28) | 130 |
 | [ ] | 8.095 | Registro C591 | Informações do Fundo de Combate à Pobreza — FCP na NF3e (cód. 66) | 132 |
 | [ ] | 8.096 | Registro C595 | Observações do Lançamento Fiscal (cód. 06, 28, 29 e 66) | 133 |

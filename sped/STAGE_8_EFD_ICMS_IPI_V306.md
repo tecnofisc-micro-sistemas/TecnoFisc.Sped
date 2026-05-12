@@ -131,7 +131,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.052 | Registro C165 | Complemento — Operações com Combustíveis (cód. 01) | 76 |
 | [x] | 8.053 | Registro C170 | Complemento — Itens do Documento (cód. 01, 1B, 04 e 55) | 77 |
 | [x] | 8.054 | Registro C171 | Complemento de Item — Armazenamento de Combustíveis (cód. 01, 55) | 85 |
-| [ ] | 8.055 | Registro C172 | Complemento de Item — Operações com ISSQN (cód. 01) | 86 |
+| [x] | 8.055 | Registro C172 | Complemento de Item — Operações com ISSQN (cód. 01) | 82 |
 | [ ] | 8.056 | Registro C173 | Complemento de Item — Operações com Medicamentos (cód. 01, 55) | 87 |
 | [ ] | 8.057 | Registro C174 | Complemento de Item — Operações com Armas de Fogo (cód. 01) | 88 |
 | [ ] | 8.058 | Registro C175 | Complemento de Item — Operações com Veículos Novos (cód. 01, 55) | 89 |

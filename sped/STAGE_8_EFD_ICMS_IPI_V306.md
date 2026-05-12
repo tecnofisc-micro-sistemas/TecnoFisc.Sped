@@ -173,7 +173,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.094 | Registro C590 | Registro Analítico — NF/Conta de Energia Elétrica (06, 66), Água (29), Gás (28) | 130 |
 | [x] | 8.095 | Registro C591 | Informações do Fundo de Combate à Pobreza — FCP na NF3e (cód. 66) | 132 |
 | [x] | 8.096 | Registro C595 | Observações do Lançamento Fiscal (cód. 06, 28, 29 e 66) | 133 |
-| [ ] | 8.097 | Registro C597 | Outras Obrigações Tributárias, Ajustes e Informações de Valores Provenientes do Documento Fiscal | 134 |
+| [x] | 8.097 | Registro C597 | Outras Obrigações Tributárias, Ajustes e Informações de Valores Provenientes do Documento Fiscal | 134 |
 | [ ] | 8.098 | Registro C600 | Consolidação Diária de NF/Contas (06, 29, 28) — Empresas Não Obrigadas ao Convênio ICMS 115/03 | 135 |
 | [ ] | 8.099 | Registro C601 | Documentos Cancelados — Consolidação Diária (06, 29, 28) | 138 |
 | [ ] | 8.100 | Registro C610 | Itens do Documento Consolidado — NF/Contas (06, 29, 28) — Empresas Não Obrigadas ao Convênio 115/03 | 139 |

@@ -156,7 +156,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.077 | Registro C370 | Itens do Documento (cód. 02) | 109 |
 | [x] | 8.078 | Registro C380 | Informações Complementares das Operações de Saída de Mercadorias Sujeitas a ST (cód. 02) | 110 |
 | [x] | 8.079 | Registro C390 | Registro Analítico das NF de Venda a Consumidor (cód. 02) | 118 |
-| [ ] | 8.080 | Registro C400 | Equipamento ECF (cód. 02, 2D e 60) | 112 |
+| [x] | 8.080 | Registro C400 | Equipamento ECF (cód. 02, 2D e 60) | 112 |
 | [ ] | 8.081 | Registro C405 | Redução Z (cód. 02, 2D e 60) | 113 |
 | [ ] | 8.082 | Registro C410 | PIS e COFINS Totalizados no Dia (cód. 02 e 2D) | 114 |
 | [ ] | 8.083 | Registro C420 | Registro dos Totalizadores Parciais da Redução Z (cód. 02, 2D e 60) | 115 |

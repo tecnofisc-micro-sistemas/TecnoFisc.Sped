@@ -114,7 +114,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | --- | --- | --- | --- | --- |
 | [x] | 8.036 | Registro C001 | Abertura do Bloco C | 58 |
 | [x] | 8.037 | Registro C100 | NF (cód. 01), NF Avulsa (1B), NF-Produtor (04), NF-e (55), NF-e ao Consumidor Final (65) | 59 |
-| [ ] | 8.038 | Registro C101 | Informação Complementar — Operações Interestaduais a Consumidor Final Não Contribuinte EC 87/15 (cód. 55) | 65 |
+| [x] | 8.038 | Registro C101 | Informação Complementar — Operações Interestaduais a Consumidor Final Não Contribuinte EC 87/15 (cód. 55) | 65 |
 | [ ] | 8.039 | Registro C105 | Operações com ICMS ST Recolhido para UF Diversa do Destinatário (cód. 55) | 66 |
 | [ ] | 8.040 | Registro C110 | Complemento — Informação Complementar da Nota Fiscal (cód. 01, 1B, 55) | 67 |
 | [ ] | 8.041 | Registro C111 | Complemento — Processo Referenciado | 68 |

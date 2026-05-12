@@ -162,7 +162,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.083 | Registro C420 | Registro dos Totalizadores Parciais da Redução Z (cód. 02, 2D e 60) | 115 |
 | [x] | 8.084 | Registro C425 | Resumo de Itens do Movimento Diário (cód. 02 e 2D) | 116 |
 | [x] | 8.085 | Registro C430 | Informações Complementares das Operações de Saída de Mercadorias Sujeitas a ST (cód. 02, 2D e 60) | 117 |
-| [ ] | 8.086 | Registro C460 | Documento Fiscal Emitido por ECF (cód. 02, 2D e 60) | 118 |
+| [x] | 8.086 | Registro C460 | Documento Fiscal Emitido por ECF (cód. 02, 2D e 60) | 118 |
 | [ ] | 8.087 | Registro C465 | Complemento do Cupom Fiscal Eletrônico Emitido por ECF — CF-e-ECF (cód. 60) | 119 |
 | [ ] | 8.088 | Registro C470 | Itens do Documento Fiscal Emitido por ECF (cód. 02 e 2D) | 120 |
 | [ ] | 8.089 | Registro C480 | Informações Complementares das Operações de Saída de Mercadorias Sujeitas a ST (cód. 02, 2D e 60) | 121 |

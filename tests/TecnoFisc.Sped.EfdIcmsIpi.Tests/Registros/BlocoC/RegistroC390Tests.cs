@@ -1,0 +1,141 @@
+using System.Reflection;
+
+using TecnoFisc.Sped.Core.Abstracoes;
+using TecnoFisc.Sped.Core.Atributos;
+using TecnoFisc.Sped.Core.Catalogo;
+using TecnoFisc.Sped.Core.Gerador;
+using TecnoFisc.Sped.Core.Parser;
+
+namespace TecnoFisc.Sped.EfdIcmsIpi.Tests.Registros.BlocoC;
+
+/// <summary>
+/// Sub-stage 8.079 — exercita a forma do <see cref="RegistroC390"/> contra o Guia Prático
+/// EFD-ICMS/IPI V3.0.6 (p. 118): metadados de catálogo, mapeamento de campos e invariante
+/// de round-trip parse → gerar → texto idêntico.
+/// </summary>
+public sealed class RegistroC390Tests
+{
+    private static readonly IRegistroSpedCatalogo _catalogo =
+        CatalogoBuilder.BuildFromAssembly(typeof(RegistroC390).Assembly);
+
+    private static async Task<string> RoundTripAsync(string sped, CancellationToken cancelamento)
+    {
+        var leitor = new LeitorSpedTxt(_catalogo);
+        var escritor = new EscritorSpedTxt(_catalogo);
+
+        using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
+        var registros = new List<RegistroSped>();
+        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+            registros.Add(registro);
+
+        using var saida = new MemoryStream();
+        await escritor.EscreverAsync(saida, registros, cancelamento);
+
+        return EncodingSped.Latin1.GetString(saida.ToArray());
+    }
+
+    [Fact]
+    public void Atributo_DeclaraC390_Nivel3_BlocoC()
+    {
+        var atributo = typeof(RegistroC390).GetCustomAttribute<RegistroSpedAttribute>();
+
+        atributo.Should().NotBeNull();
+        atributo!.Codigo.Should().Be("C390");
+        atributo.Nivel.Should().Be(3);
+        atributo.Bloco.Should().Be("C");
+    }
+
+    [Fact]
+    public void Catalogo_ExpoeRegistroC390Com8CamposNaOrdem()
+    {
+        _catalogo.TentarObter("C390".AsSpan(), out var meta).Should().BeTrue();
+
+        meta!.Codigo.Should().Be("C390");
+        meta.Campos.Select(c => c.Nome).Should().Equal([
+            "CstIcms", "Cfop", "AliqIcms",
+            "VlOpr", "VlBcIcms", "VlIcms",
+            "VlRedBc", "CodObs"
+        ]);
+        meta.Campos.Select(c => c.Ordem).Should().Equal([2, 3, 4, 5, 6, 7, 8, 9]);
+    }
+
+    [Fact]
+    public void Definidor_AtribuiTodosOsCampos()
+    {
+        _catalogo.TentarObter("C390".AsSpan(), out var meta);
+        var registro = (RegistroC390)meta!.Fabrica();
+
+        meta.Campos[0].Definidor(registro, "060".AsSpan());         // CstIcms
+        meta.Campos[1].Definidor(registro, "5102".AsSpan());        // Cfop
+        meta.Campos[2].Definidor(registro, "18,00".AsSpan());       // AliqIcms
+        meta.Campos[3].Definidor(registro, "5000,00".AsSpan());     // VlOpr
+        meta.Campos[4].Definidor(registro, "4237,29".AsSpan());     // VlBcIcms
+        meta.Campos[5].Definidor(registro, "762,71".AsSpan());      // VlIcms
+        meta.Campos[6].Definidor(registro, "0,00".AsSpan());        // VlRedBc
+        meta.Campos[7].Definidor(registro, "OBS001".AsSpan());      // CodObs
+
+        registro.CstIcms.Should().Be(60);
+        registro.Cfop.Should().Be(Cfop.Criar("5102".AsSpan()));
+        registro.AliqIcms.Should().Be(18.00m);
+        registro.VlOpr.Should().Be(5000.00m);
+        registro.VlBcIcms.Should().Be(4237.29m);
+        registro.VlIcms.Should().Be(762.71m);
+        registro.VlRedBc.Should().Be(0.00m);
+        registro.CodObs.Should().Be("OBS001");
+    }
+
+    [Fact]
+    public void Definidor_CampoVazio_DevolveNulo()
+    {
+        _catalogo.TentarObter("C390".AsSpan(), out var meta);
+        var registro = (RegistroC390)meta!.Fabrica();
+
+        foreach (var campo in meta.Campos)
+            campo.Definidor(registro, ReadOnlySpan<char>.Empty);
+
+        registro.CstIcms.Should().BeNull();
+        registro.Cfop.Should().BeNull();
+        registro.AliqIcms.Should().BeNull();
+        registro.VlOpr.Should().BeNull();
+        registro.VlBcIcms.Should().BeNull();
+        registro.VlIcms.Should().BeNull();
+        registro.VlRedBc.Should().BeNull();
+        registro.CodObs.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task RoundTrip_ComTodosOsCampos_PreservaTextoCanonico()
+    {
+        // CST_ICMS int? serializa sem zero-padding — forma canônica é "60" não "060".
+        const string sped =
+            "|C390|60|5102|18,00|5000,00|4237,29|762,71|0,00|OBS001|\r\n";
+
+        var resultado = await RoundTripAsync(sped, TestContext.Current.CancellationToken);
+
+        resultado.Should().Be(sped);
+    }
+
+    [Fact]
+    public async Task RoundTrip_ComAliquotaVazia_PreservaTextoCanonico()
+    {
+        // CST 041 (isento): ALIQ_ICMS vazio, BC e ICMS zerados. CST "41" sem zero-padding.
+        const string sped =
+            "|C390|41|5102||500,00|0,00|0,00|0,00||\r\n";
+
+        var resultado = await RoundTripAsync(sped, TestContext.Current.CancellationToken);
+
+        resultado.Should().Be(sped);
+    }
+
+    [Fact]
+    public async Task RoundTrip_SemCamposOpcionais_PreservaTextoCanonico()
+    {
+        // Apenas CST_ICMS, CFOP e VL_OPR preenchidos (demais OC, vazios).
+        const string sped =
+            "|C390|0|5102||1000,00|||||\r\n";
+
+        var resultado = await RoundTripAsync(sped, TestContext.Current.CancellationToken);
+
+        resultado.Should().Be(sped);
+    }
+}

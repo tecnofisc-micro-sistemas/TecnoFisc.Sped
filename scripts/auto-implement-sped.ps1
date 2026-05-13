@@ -203,8 +203,10 @@ function Ensure-PRForBranch {
     if ($existing) { return $existing }
 
     Write-Step "Publicando branch '$BranchName' para origin..." "Yellow"
-    git push -u origin $BranchName
-    if ($LASTEXITCODE -ne 0) {
+    $pushOutput = git push -u origin $BranchName 2>&1
+    $pushExit = $LASTEXITCODE
+    $pushOutput | ForEach-Object { Write-Host $_ }
+    if ($pushExit -ne 0) {
         Write-Step "Falha ao publicar '$BranchName'." "Red"
         exit 1
     }
@@ -213,8 +215,10 @@ function Ensure-PRForBranch {
     if ($existing) { return $existing }
 
     Write-Step "Criando PR para '$BranchName' com gh pr create --fill..." "Yellow"
-    gh pr create --base dev --head $BranchName --fill
-    if ($LASTEXITCODE -ne 0) {
+    $createOutput = gh pr create --base dev --head $BranchName --fill 2>&1
+    $createExit = $LASTEXITCODE
+    $createOutput | ForEach-Object { Write-Host $_ }
+    if ($createExit -ne 0) {
         Write-Step "Falha ao criar PR para '$BranchName'." "Red"
         exit 1
     }
@@ -669,6 +673,18 @@ try {
                 Write-Step "  - Se branch tem implementacao completa: 'gh pr create --base dev --head <branch>'" "Yellow"
                 Write-Step "  - Se trabalho parcial descartavel: 'git push origin --delete <branch>' e/ou 'git branch -D <branch>'" "Yellow"
                 exit 1
+            }
+        }
+
+        if (-not $existingPR -and -not $recoveredPR) {
+            $pendingStagePR = @(Get-OpenPRs |
+                Where-Object { $_.headRefName -like 'feat/stage-*' -and $_.headRefName -ne $expectedBranch } |
+                Sort-Object number |
+                Select-Object -First 1)
+
+            if ($pendingStagePR) {
+                Write-Step "PR aberto de execucao anterior detectado: #$($pendingStagePR.number) ($($pendingStagePR.headRefName)). Processando antes de chamar $Agent para '$expectedBranch'." "Cyan"
+                $recoveredPR = $pendingStagePR
             }
         }
 

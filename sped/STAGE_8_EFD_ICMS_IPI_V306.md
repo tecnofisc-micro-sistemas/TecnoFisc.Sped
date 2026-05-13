@@ -203,7 +203,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.119 | Registro D130 | Complemento do CT Rodoviário de Cargas (cód. 08) e CT Cargas Avulso (8B) | 172 |
 | [x] | 8.120 | Registro D140 | Complemento do CT Aquaviário de Cargas (cód. 09) | 173 |
 | [x] | 8.121 | Registro D150 | Complemento do CT Aéreo de Cargas (cód. 10) | 174 |
-| [ ] | 8.122 | Registro D160 | Carga Transportada (cód. 08, 8B, 09, 10, 11, 26 e 27) | 175 |
+| [x] | 8.122 | Registro D160 | Carga Transportada (cód. 08, 8B, 09, 10, 11, 26 e 27) | 175 |
 | [ ] | 8.123 | Registro D161 | Local de Coleta e Entrega (cód. 08, 8B, 09, 10, 11 e 26) | 176 |
 | [ ] | 8.124 | Registro D162 | Identificação dos Documentos Fiscais (cód. 08, 8B, 09, 10, 11, 26 e 27) | 177 |
 | [ ] | 8.125 | Registro D170 | Complemento do Conhecimento Multimodal de Cargas (cód. 26) | 178 |

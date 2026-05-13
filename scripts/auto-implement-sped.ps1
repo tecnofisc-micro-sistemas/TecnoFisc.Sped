@@ -312,7 +312,10 @@ function Invoke-ImplementationAgent {
                 "" | claude --print $SlashCmd `
                     --dangerously-skip-permissions `
                     --model $effectiveModel `
-                    --no-session-persistence 2>&1 | Tee-Object -FilePath $agentLog.FullName
+                    --no-session-persistence 2>&1 | ForEach-Object {
+                        $_ | Out-File -FilePath $agentLog.FullName -Append
+                        Write-Host $_
+                    }
             }
             'codex' {
                 $argsText = $SlashArgs -join ' '
@@ -339,7 +342,10 @@ Follow the repository instructions and complete the implementation, tests, commi
                 Write-Step "Invocando: codex exec$modelMsg <prompt baseado em .claude/commands/implementar-registro.md>"
                 Write-Host ""
 
-                & codex @codexArgs 2>&1 | Tee-Object -FilePath $agentLog.FullName
+                & codex @codexArgs 2>&1 | ForEach-Object {
+                    $_ | Out-File -FilePath $agentLog.FullName -Append
+                    Write-Host $_
+                }
             }
             default {
                 throw "Agente desconhecido: $Agent"

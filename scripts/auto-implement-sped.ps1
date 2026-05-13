@@ -405,106 +405,135 @@ try {
         $next = $pending[0]
         Write-Banner "$($next.SubStage)  Registro $($next.Code) — $($next.Description)" "Cyan"
 
-        # ── verificacao de estado pre-iteracao ─────────────────────────────────
-        # Cobre casos onde execucao anterior foi interrompida (limite de sessao,
-        # crash, Ctrl-C) e deixou: branch checkada != dev, working tree dirty,
-        # ou branches feat/stage-* orfas (sem PR aberto correspondente).
-        $currentBranch = Get-CurrentBranch
-        if ($currentBranch -ne 'dev') {
-            Write-Step "Branch atual '$currentBranch' (esperado 'dev') — possivel execucao anterior interrompida." "Yellow"
-            $prOnCurrent = Find-PRByBranch -BranchName $currentBranch
-            if ($prOnCurrent) {
-                Write-Step "Branch atual tem PR #$($prOnCurrent.number) — voltando para dev (PR sera reutilizado se for do registro atual)." "Cyan"
-                git checkout dev --quiet
-            }
-            else {
-                $diverged = git log "dev..$currentBranch" --oneline 2>$null
-                $dirty    = -not (Test-WorkingTreeClean)
-                Write-Step "Branch '$currentBranch' sem PR. Commits unicos: $([bool]$diverged); working tree dirty: $dirty." "Red"
-                Write-Step "Resolver manualmente para evitar perda de trabalho:" "Yellow"
-                Write-Step "  git status                                # inspecionar mudancas" "Yellow"
-                Write-Step "  git checkout dev && git branch -D $currentBranch  # descartar branch local" "Yellow"
-                Write-Step "  ou 'gh pr create --base dev --head $currentBranch' se trabalho deve virar PR" "Yellow"
-                exit 1
-            }
-        }
-
-        if (-not (Test-WorkingTreeClean)) {
-            Write-Step "Working tree na branch dev tem mudancas nao-commitadas — execucao anterior interrompida." "Red"
-            Write-Step "Inspecionar 'git status' e decidir 'git stash' / 'git checkout .' antes de prosseguir." "Yellow"
-            exit 1
-        }
-
-        # ── garantir dev atualizado ────────────────────────────────────────────
-        Write-Step "Sincronizando branch dev..."
-        git checkout dev --quiet
-        git pull --quiet
-
-        # ── varrer branches feat/stage-* orfas (sem PR aberto) ─────────────────
-        # Isto pega o caso onde claude pushou branch (de single OU batch) mas
-        # o limite cortou antes de `gh pr create`. Find-PRByBranch nao detecta
-        # branches de batch porque seu nome difere de Get-ExpectedBranch.
-        $orphans = @(Find-OrphanFeatureBranches)
-        if ($orphans.Count -gt 0) {
-            Write-Step "Branches feat/stage-* orfas detectadas (sem PR aberto):" "Red"
-            foreach ($o in $orphans) {
-                $loc = if ($o.Local) { 'local' }  else { '' }
-                $rem = if ($o.Remote) { 'remote' } else { '' }
-                $tag = ($loc, $rem | Where-Object { $_ }) -join '+'
-                Write-Step "  - $($o.Name) [$tag]" "Yellow"
-            }
-            Write-Step "Cada uma pode conter trabalho parcial de execucao anterior. Resolver:" "Yellow"
-            Write-Step "  - Se branch tem implementacao completa: 'gh pr create --base dev --head <branch>'" "Yellow"
-            Write-Step "  - Se trabalho parcial descartavel: 'git push origin --delete <branch>' (se remote) e/ou 'git branch -D <branch>' (se local)" "Yellow"
-            exit 1
-        }
-
-        # ── idempotencia: reutilizar PR/branch ja existente para este registro ─
-        # Recuperacao apos limite de sessao mid-execucao do Claude. Estados possiveis:
-        #   (a) PR aberto p/ branch esperada    → reutilizar (skip claude).
-        #   (b) Branch remota sem PR            → estado ambiguo (push ok, gh pr create falhou).
-        #   (c) Branch local sem PR             → trabalho parcial nao pushed.
-        #   (d) Nada                            → invocar claude normalmente.
+        # Calculado cedo: branch alvo do proximo pendente. Qualquer branch local
+        # ou remota com esse nome (sem PR) eh trabalho parcial deste mesmo registro
+        # que deve ser retomado, NUNCA descartado.
         $expectedBranch = Get-ExpectedBranch -SubStage $next.SubStage -Code $next.Code
-        $existingPR     = Find-PRByBranch    -BranchName $expectedBranch
-        $newPR          = $null
+
+        # ── deteccao de estado: retomada vs. comeco limpo ──────────────────────
+        # $resumeMode = claude foi interrompido mid-implementacao e deve continuar
+        # de onde parou. Estados que disparam retomada:
+        #   - branch corrente == expectedBranch (interrompido antes do commit)
+        #   - branch local expectedBranch existe (interrompido antes do checkout final)
+        #   - branch remota expectedBranch existe sem PR (interrompido antes/durante gh pr create)
+        # Em qualquer um, NAO descartar arquivos/commits, NAO checkout dev.
+        $resumeMode      = $false
+        $currentBranch   = Get-CurrentBranch
+        $existingPR      = Find-PRByBranch -BranchName $expectedBranch
+        $localExpected   = [bool](git branch --list $expectedBranch)
+        $remoteExpected  = Test-RemoteBranchExists -BranchName $expectedBranch
 
         if ($existingPR) {
+            # PR ja existe — pular invocacao do claude, mergear se CI OK.
             Write-Step "PR existente detectado para '$expectedBranch': #$($existingPR.number). Pulando invocacao do Claude." "Cyan"
             $newPR = $existingPR
+
+            # Garantir que estamos em dev (ou em branch limpa qualquer) p/ nao confundir merge.
+            if ($currentBranch -ne 'dev') {
+                if (-not (Test-WorkingTreeClean)) {
+                    Write-Step "Working tree em '$currentBranch' tem mudancas nao-commitadas — resolver antes de mergear PR #$($existingPR.number)." "Red"
+                    exit 1
+                }
+                git checkout dev --quiet
+            }
+        }
+        elseif ($currentBranch -eq $expectedBranch -or $localExpected -or $remoteExpected) {
+            # Retomada: preservar trabalho parcial.
+            $resumeMode = $true
+
+            $diverged = $false
+            $dirty    = $false
+
+            if ($currentBranch -ne $expectedBranch) {
+                # Estamos em outra branch (provavelmente dev). Working tree precisa estar limpo
+                # antes de checkout p/ nao perder/sobrescrever mudancas.
+                if (-not (Test-WorkingTreeClean)) {
+                    Write-Step "Working tree em '$currentBranch' dirty — nao posso fazer checkout '$expectedBranch' sem perda. Resolver manualmente." "Red"
+                    exit 1
+                }
+
+                if ($remoteExpected -and -not $localExpected) {
+                    Write-Step "Branch remota '$expectedBranch' existe sem PR. Buscando p/ retomar." "Yellow"
+                    git fetch origin "${expectedBranch}:${expectedBranch}" --quiet
+                }
+                Write-Step "Fazendo checkout '$expectedBranch' p/ retomar execucao anterior." "Yellow"
+                git checkout $expectedBranch --quiet
+                $currentBranch = $expectedBranch
+            }
+
+            $diverged = [bool](git log "dev..$expectedBranch" --oneline 2>$null)
+            $dirty    = -not (Test-WorkingTreeClean)
+            $pushed   = $remoteExpected
+
+            Write-Step "Modo retomada: branch='$expectedBranch' | commits=$diverged | dirty=$dirty | pushed=$pushed" "Yellow"
         }
         else {
-            # (b) branch remota orfa → manual: pode ter commits unicos ou faltar gh pr create.
-            if (Test-RemoteBranchExists -BranchName $expectedBranch) {
-                Write-Step "Branch remota '$expectedBranch' existe sem PR — estado ambiguo." "Red"
-                Write-Step "Resolver manualmente: 'gh pr create --base dev --head $expectedBranch' ou 'git push origin --delete $expectedBranch'." "Yellow"
+            # Estado limpo esperado. Branch atual != dev sem PR == trabalho de outro registro.
+            if ($currentBranch -ne 'dev') {
+                $prOnCurrent = Find-PRByBranch -BranchName $currentBranch
+                if ($prOnCurrent) {
+                    Write-Step "Branch atual '$currentBranch' tem PR #$($prOnCurrent.number) — voltando para dev." "Cyan"
+                    git checkout dev --quiet
+                }
+                else {
+                    $diverged = git log "dev..$currentBranch" --oneline 2>$null
+                    $dirty    = -not (Test-WorkingTreeClean)
+                    Write-Step "Branch '$currentBranch' nao corresponde ao proximo pendente ($expectedBranch) e nao tem PR. Commits unicos: $([bool]$diverged); dirty: $dirty." "Red"
+                    Write-Step "Resolver manualmente — pode ser trabalho de outro registro:" "Yellow"
+                    Write-Step "  git status                                # inspecionar mudancas" "Yellow"
+                    Write-Step "  git checkout dev && git branch -D $currentBranch  # descartar se irrelevante" "Yellow"
+                    Write-Step "  ou 'gh pr create --base dev --head $currentBranch' se trabalho deve virar PR" "Yellow"
+                    exit 1
+                }
+            }
+
+            if (-not (Test-WorkingTreeClean)) {
+                Write-Step "Working tree na branch dev tem mudancas nao-commitadas." "Red"
+                Write-Step "Inspecionar 'git status' e decidir 'git stash' / 'git checkout .' antes de prosseguir." "Yellow"
                 exit 1
             }
 
-            # (c) branch local orfa → trabalho parcial. Se diverge de dev, parar; senao apagar.
-            $localExists = git branch --list $expectedBranch
-            if ($localExists) {
-                $diverged = git log "dev..$expectedBranch" --oneline 2>$null
-                if ($diverged) {
-                    Write-Step "Branch local '$expectedBranch' tem commits unicos sem push/PR — estado ambiguo." "Red"
-                    Write-Step "Inspecionar com 'git log dev..$expectedBranch' e resolver manualmente." "Yellow"
-                    exit 1
-                }
-                Write-Step "Branch local '$expectedBranch' sem commits unicos. Removendo p/ retomada limpa." "Yellow"
-                git branch -D $expectedBranch 2>$null | Out-Null
-            }
+            # ── garantir dev atualizado ────────────────────────────────────────
+            Write-Step "Sincronizando branch dev..."
+            git checkout dev --quiet
+            git pull --quiet
 
+            # ── varrer branches feat/stage-* orfas de outros registros ─────────
+            # Apenas orfas que NAO sao expectedBranch (essa virou resumeMode acima).
+            # Pega o caso onde batch anterior pushou branch sem PR.
+            $orphans = @(Find-OrphanFeatureBranches | Where-Object { $_.Name -ne $expectedBranch })
+            if ($orphans.Count -gt 0) {
+                Write-Step "Branches feat/stage-* orfas detectadas (sem PR aberto, registro diferente do proximo pendente):" "Red"
+                foreach ($o in $orphans) {
+                    $loc = if ($o.Local) { 'local' }  else { '' }
+                    $rem = if ($o.Remote) { 'remote' } else { '' }
+                    $tag = ($loc, $rem | Where-Object { $_ }) -join '+'
+                    Write-Step "  - $($o.Name) [$tag]" "Yellow"
+                }
+                Write-Step "Cada uma pode conter trabalho parcial. Resolver:" "Yellow"
+                Write-Step "  - Se branch tem implementacao completa: 'gh pr create --base dev --head <branch>'" "Yellow"
+                Write-Step "  - Se trabalho parcial descartavel: 'git push origin --delete <branch>' e/ou 'git branch -D <branch>'" "Yellow"
+                exit 1
+            }
+        }
+
+        $newPR = if ($existingPR) { $existingPR } else { $null }
+
+        if (-not $existingPR) {
             # ── snapshot de PRs abertos antes (fallback p/ deteccao de novo PR) ─
             $beforePRNumbers = @(Get-OpenPRs | ForEach-Object { $_.number })
             Write-Step "PRs abertos antes: $(if ($beforePRNumbers.Count -eq 0) { 'nenhum' } else { $beforePRNumbers -join ', ' })"
 
             # ── invocar Claude ─────────────────────────────────────────────────
-            # Default `single` (sem batch) para limitar exposicao a estado parcial em
-            # caso de interrupcao por limite de sessao. `-AllowBatch` libera batch.
-            # Modulo (e versao se aplicavel) propagado como primeiro argumento.
+            # Default `single` (sem batch). `-AllowBatch` libera batch.
+            # `resume` adicionado quando branch alvo ja existe com trabalho parcial —
+            # comando detecta estado e completa em vez de recriar do zero.
             $moduleArg = $Module
             if ($Version) { $moduleArg = "$Module $Version" }
-            $slashCmd = if ($AllowBatch) { "/implementar-registro $moduleArg" } else { "/implementar-registro $moduleArg single" }
+            $slashArgs = @($moduleArg)
+            if (-not $AllowBatch) { $slashArgs += 'single' }
+            if ($resumeMode)      { $slashArgs += 'resume' }
+            $slashCmd = "/implementar-registro " + ($slashArgs -join ' ')
             Write-Step "Invocando: claude -p '$slashCmd' --model $Model"
             Write-Host ""
 

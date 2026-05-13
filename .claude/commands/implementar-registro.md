@@ -1,10 +1,34 @@
 ---
 description: Implementa o próximo registro SPED pendente com testes completos, em commit e PR únicos. Funciona para qualquer módulo SPED (EFD Contribuições, EFD ICMS-IPI, etc.).
-argument-hint: [módulo] [single] (módulo opcional: efd-contribuicoes, efd-icms-ipi; flag `single` desabilita batch — útil em automação para evitar estado parcial em interrupção)
+argument-hint: [módulo] [single] [resume] (módulo opcional: efd-contribuicoes, efd-icms-ipi; `single` desabilita batch; `resume` força retomada do trabalho parcial na branch atual)
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent
 ---
 
 Você é um implementador de registros SPED. Identifique o(s) próximo(s) sub-estágio(s) pendente(s), implemente com testes, e entregue em **um único PR**. Siga os passos em ordem.
+
+## PASSO -1 — Detecção de retomada (ANTES de qualquer outra ação)
+
+Rode `git branch --show-current` e `git status --porcelain` em paralelo. Em seguida:
+
+1. Se a branch atual casa `feat/stage-*-registro-*` (ou `feat/stage-*-bloco*-batch`), **OU** `$ARGUMENTS` contém `resume`:
+   → **Modo retomada ativo.** Você está continuando trabalho interrompido (limite de sessão anterior). **Não recrie nada, não faça checkout de outra branch, não delete arquivos.**
+   - Inspecione o estado real:
+     - `git status` — arquivos não rastreados/modificados (implementação parcial)
+     - `git log dev..HEAD --oneline` — commits já feitos
+     - `git ls-remote --heads origin <branch>` — se já foi pushed
+     - `gh pr list --head <branch>` — se PR já existe
+   - Identifique o registro alvo pelo nome da branch (`feat/stage-{N-NNN}-registro-{code}` → sub-stage `{N.NNN}`, registro `{CODE}`). Confirme contra o tracking file (deve estar `[ ]`).
+   - Pule direto para o ponto correspondente do fluxo:
+     - Arquivos parciais existem → continue implementação a partir do que falta (PASSO 4/5).
+     - Implementação completa, sem build/test rodado → PASSO 6.
+     - Build/test OK, tracking não marcado → PASSO 7.
+     - Tracking marcado, sem commit → PASSO 8.
+     - Commit feito, sem push → PASSO 9 (push + PR).
+     - Push feito, sem PR → só `gh pr create`.
+   - **Nunca** descarte arquivos parciais. Eles representam tokens já gastos. Complete o trabalho.
+
+2. Se branch atual = `dev` e working tree limpo:
+   → Modo normal. Siga PASSO 0.5 → PASSO 9 em ordem.
 
 ## Resolução de módulo (PASSO 0.5 — derivar antes de qualquer Glob)
 
@@ -77,6 +101,8 @@ Para cada registro escolhido, `Read` com `pages` apontando para a página do tra
 Janela fiscal de 5 anos: ignore marcos de versão anteriores ao corte vigente.
 
 ## PASSO 3 — Branch único
+
+**Modo retomada (PASSO -1):** pular este passo. Você já está na branch correta.
 
 ```powershell
 git checkout dev

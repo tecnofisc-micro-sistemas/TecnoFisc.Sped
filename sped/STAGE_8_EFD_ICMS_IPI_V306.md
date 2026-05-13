@@ -277,7 +277,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.183 | Registro G126 | Outros Créditos CIAP | 241 |
 | [x] | 8.184 | Registro G130 | Identificação do Documento Fiscal | 242 |
 | [x] | 8.185 | Registro G140 | Identificação do Item do Documento Fiscal | 243 |
-| [ ] | 8.186 | Registro G990 | Encerramento do Bloco G | 244 |
+| [x] | 8.186 | Registro G990 | Encerramento do Bloco G | 244 |
 
 ### Bloco H — Inventário Físico (6 registros)
 

@@ -249,7 +249,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.160 | Registro E115 | Informações Adicionais da Apuração do ICMS — Valores Declaratórios | 212 |
 | [x] | 8.161 | Registro E116 | Obrigações do ICMS a Recolher — Obrigações Próprias | 213 |
 | [x] | 8.162 | Registro E200 | Período de Apuração do ICMS — Substituição Tributária | 214 |
-| [ ] | 8.163 | Registro E210 | Apuração do ICMS — Substituição Tributária | 215 |
+| [x] | 8.163 | Registro E210 | Apuração do ICMS — Substituição Tributária | 215 |
 | [ ] | 8.164 | Registro E220 | Ajuste/Benefício/Incentivo da Apuração do ICMS — Substituição Tributária | 217 |
 | [ ] | 8.165 | Registro E230 | Informações Adicionais dos Ajustes da Apuração do ICMS Substituição Tributária | 218 |
 | [ ] | 8.166 | Registro E240 | Informações Adicionais dos Ajustes da Apuração do ICMS ST — Identificação dos Documentos Fiscais | 219 |

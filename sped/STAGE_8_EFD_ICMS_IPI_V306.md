@@ -226,7 +226,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.142 | Registro D420 | Complemento dos Documentos Informados (cód. 13, 14, 15 e 16) | 195 |
 | [x] | 8.143 | Registro D500 | NF de Serviço de Comunicação (cód. 21) e Serviço de Telecomunicação (cód. 22) | 196 |
 | [x] | 8.144 | Registro D510 | Itens do Documento — NF Serviço Comunicação (21) e Telecomunicação (22) | 198 |
-| [ ] | 8.145 | Registro D530 | Terminal Faturado | 199 |
+| [x] | 8.145 | Registro D530 | Terminal Faturado | 199 |
 | [ ] | 8.146 | Registro D590 | Registro Analítico do Documento (cód. 21 e 22) | 200 |
 | [ ] | 8.147 | Registro D600 | Consolidação da Prestação de Serviços — NF Serviço Comunicação (21) e Telecomunicação (22) | 201 |
 | [ ] | 8.148 | Registro D610 | Itens do Documento Consolidado (cód. 21 e 22) | 202 |

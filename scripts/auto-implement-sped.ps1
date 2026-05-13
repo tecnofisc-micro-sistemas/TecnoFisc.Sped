@@ -5,13 +5,13 @@
     Automatiza implementação de registros SPED pendentes.
 
 .DESCRIPTION
-    Loop por bloco: invoca Claude para implementar o próximo registro pendente,
+    Loop por bloco: invoca Claude ou Codex para implementar o próximo registro pendente,
     aguarda CI no GitHub, mergeia o PR, limpa branches, e repete até o bloco
     estar completo ou atingir o limite de PRs.
 
     Para imediatamente se:
     - CI falhar (requer revisão manual)
-    - Claude não criar PR (erro de build/teste na implementação)
+    - agente não criar PR (erro de build/teste na implementação)
     - git ou gh CLI retornarem erro
 
 .PARAMETER Module
@@ -38,9 +38,13 @@
     Minutos de espera pelo CI antes de falhar. Padrão: 25.
     (build-test ubuntu + windows leva ~5-8min normalmente)
 
+.PARAMETER Agent
+    Agente usado para implementar o registro. Valores aceitos: "claude", "codex".
+    Padrão: "claude" (mantém o comportamento anterior).
+
 .PARAMETER Model
-    Alias ou ID do modelo Claude. Padrão: "sonnet" (claude-sonnet-4-6).
-    Use "opus" para maior capacidade em registros complexos.
+    Alias ou ID do modelo para o agente escolhido. Padrão: Claude usa "sonnet";
+    Codex usa o modelo configurado no CLI quando -Model não é informado.
 
 .PARAMETER AllowBatch
     Permite que /implementar-registro agrupe múltiplos sub-estágios simples num único PR.
@@ -67,6 +71,10 @@
 .EXAMPLE
     .\scripts\auto-implement-sped.ps1 -Bloco A -MaxPRs 3 -Model opus
     Implementa até 3 registros do Bloco A usando Opus.
+
+.EXAMPLE
+    .\scripts\auto-implement-sped.ps1 -Module efd-icms-ipi -Agent codex
+    Implementa registros pendentes usando Codex em vez de Claude.
 #>
 param(
     [ValidateSet('efd-contribuicoes', 'efd-icms-ipi')]
@@ -76,7 +84,9 @@ param(
     [int]   $MaxPRs           = 999,
     [switch]$DryRun,
     [int]   $CiTimeoutMinutes = 25,
-    [string]$Model            = "sonnet",
+    [ValidateSet('claude', 'codex')]
+    [string]$Agent            = "claude",
+    [string]$Model            = "",
     [switch]$AllowBatch
 )
 
@@ -230,30 +240,30 @@ function Find-OrphanFeatureBranches {
 }
 
 function Wait-ForSessionReset {
-    # Detecta mensagem de limite de sessao do Claude e dorme ate o reset.
+    # Detecta mensagem de limite de sessao/rate limit do agente e dorme ate o reset.
     # Formatos observados (mudam entre versoes do CLI):
     #   (1) "You've hit your limit . resets 4:10am (America/Sao_Paulo)"
     #   (2) "Claude AI usage limit reached|1731234567"   (epoch unix do reset)
     #   (3) Mensagens genericas de rate limit sem hora ("rate_limit_error",
     #       "429", "usage limit", "rate limit", "limit reached")
     # Retorna $true se detectou e aguardou (caller deve repetir iteracao).
-    param([string]$ClaudeOutput)
+    param([string]$AgentOutput)
 
-    if (-not $ClaudeOutput) { return $false }
+    if (-not $AgentOutput) { return $false }
 
     $now      = Get-Date
     $resumeAt = $null
     $matchedPattern = ""
 
     # (2) Epoch unix: "Claude AI usage limit reached|<seconds>"
-    if ($ClaudeOutput -match "(?i)usage limit reached\s*\|\s*(\d+)") {
+    if ($AgentOutput -match "(?i)usage limit reached\s*\|\s*(\d+)") {
         $epoch    = [int64]$Matches[1]
         $reset    = [DateTimeOffset]::FromUnixTimeSeconds($epoch).LocalDateTime
         $resumeAt = $reset.AddMinutes(5)
         $matchedPattern = "epoch ($epoch -> $($reset.ToString('yyyy-MM-dd HH:mm')))"
     }
     # (1) Formato "resets H:MM am/pm"
-    elseif ($ClaudeOutput -match "(?i)resets?\s+(\d{1,2}):(\d{2})\s*(am|pm)") {
+    elseif ($AgentOutput -match "(?i)resets?\s+(\d{1,2}):(\d{2})\s*(am|pm)") {
         $hour   = [int]$Matches[1]
         $minute = [int]$Matches[2]
         $ampm   = $Matches[3].ToLower()
@@ -265,7 +275,7 @@ function Wait-ForSessionReset {
         $matchedPattern = "HH:MM ($($reset.ToString('HH:mm')))"
     }
     # (3) Generico — sem hora extraivel. Fallback: dormir 60min e tentar de novo.
-    elseif ($ClaudeOutput -match "(?i)(usage limit|rate.?limit|limit reached|rate_limit_error|\b429\b|too many requests)") {
+    elseif ($AgentOutput -match "(?i)(usage limit|rate.?limit|limit reached|rate_limit_error|\b429\b|too many requests|quota exceeded)") {
         $resumeAt = $now.AddMinutes(60)
         $matchedPattern = "generico ('$($Matches[1])') -> retry fixo +60min"
     }
@@ -280,6 +290,69 @@ function Wait-ForSessionReset {
     Start-Sleep -Seconds ([int]$wait.TotalSeconds)
     Write-Step "Sessao reiniciada. Retomando execucao." "Green"
     return $true
+}
+
+function Invoke-ImplementationAgent {
+    param(
+        [string]$Agent,
+        [string]$SlashCmd,
+        [string[]]$SlashArgs,
+        [string]$Model,
+        [string]$RepoRoot
+    )
+
+    $agentLog = New-TemporaryFile
+    try {
+        switch ($Agent) {
+            'claude' {
+                $effectiveModel = if ($Model) { $Model } else { "sonnet" }
+                Write-Step "Invocando: claude -p '$SlashCmd' --model $effectiveModel"
+                Write-Host ""
+
+                "" | claude --print $SlashCmd `
+                    --dangerously-skip-permissions `
+                    --model $effectiveModel `
+                    --no-session-persistence 2>&1 | Tee-Object -FilePath $agentLog.FullName
+            }
+            'codex' {
+                $argsText = $SlashArgs -join ' '
+                $prompt = @"
+Read `.claude/commands/implementar-registro.md` and execute those instructions as the active command.
+
+Command arguments: $argsText
+Equivalent Claude slash command: $SlashCmd
+
+Follow the repository instructions and complete the implementation, tests, commit, push, and PR exactly as the command file requires.
+"@
+                $codexArgs = @(
+                    'exec',
+                    '--cd', $RepoRoot,
+                    '--dangerously-bypass-approvals-and-sandbox',
+                    '--ephemeral'
+                )
+                if ($Model) {
+                    $codexArgs += @('--model', $Model)
+                }
+                $codexArgs += $prompt
+
+                $modelMsg = if ($Model) { " --model $Model" } else { "" }
+                Write-Step "Invocando: codex exec$modelMsg <prompt baseado em .claude/commands/implementar-registro.md>"
+                Write-Host ""
+
+                & codex @codexArgs 2>&1 | Tee-Object -FilePath $agentLog.FullName
+            }
+            default {
+                throw "Agente desconhecido: $Agent"
+            }
+        }
+
+        return [pscustomobject]@{
+            ExitCode = $LASTEXITCODE
+            Output   = Get-Content $agentLog.FullName -Raw
+        }
+    } finally {
+        Remove-Item $agentLog.FullName -ErrorAction SilentlyContinue
+    }
 }
 
 function Wait-ForCI {
@@ -347,7 +420,7 @@ function Wait-ForCI {
 # ─── validacao ───────────────────────────────────────────────────────────────
 
 Assert-Tool "gh"
-Assert-Tool "claude"
+Assert-Tool $Agent
 Assert-Tool "git"
 
 Push-Location $RepoRoot
@@ -383,7 +456,8 @@ try {
     Write-Banner "Auto-implementacao SPED — $blocoStr — $($initialPending.Count) registro(s) pendente(s)" "Cyan"
     Write-Host "  Modulo    : $Module$(if ($Version) { " ($Version)" })"
     Write-Host "  Tracking  : $TrackingFile"
-    Write-Host "  Modelo    : $Model"
+    Write-Host "  Agente    : $Agent"
+    Write-Host "  Modelo    : $(if ($Model) { $Model } elseif ($Agent -eq 'claude') { 'sonnet (default)' } else { 'configurado no Codex CLI' })"
     Write-Host "  MaxPRs    : $MaxPRs"
     Write-Host "  CI timeout: ${CiTimeoutMinutes}min"
     Write-Host "  Modo      : $(if ($AllowBatch) { 'batch (cap 10/PR)' } else { 'single (1 registro/PR — recomendado p/ automacao)' })"
@@ -411,7 +485,7 @@ try {
         $expectedBranch = Get-ExpectedBranch -SubStage $next.SubStage -Code $next.Code
 
         # ── deteccao de estado: retomada vs. comeco limpo ──────────────────────
-        # $resumeMode = claude foi interrompido mid-implementacao e deve continuar
+        # $resumeMode = agente foi interrompido mid-implementacao e deve continuar
         # de onde parou. Estados que disparam retomada:
         #   - branch corrente == expectedBranch (interrompido antes do commit)
         #   - branch local expectedBranch existe (interrompido antes do checkout final)
@@ -424,8 +498,8 @@ try {
         $remoteExpected  = Test-RemoteBranchExists -BranchName $expectedBranch
 
         if ($existingPR) {
-            # PR ja existe — pular invocacao do claude, mergear se CI OK.
-            Write-Step "PR existente detectado para '$expectedBranch': #$($existingPR.number). Pulando invocacao do Claude." "Cyan"
+            # PR ja existe — pular invocacao do agente, mergear se CI OK.
+            Write-Step "PR existente detectado para '$expectedBranch': #$($existingPR.number). Pulando invocacao do agente." "Cyan"
             $newPR = $existingPR
 
             # Garantir que estamos em dev (ou em branch limpa qualquer) p/ nao confundir merge.
@@ -524,7 +598,7 @@ try {
             $beforePRNumbers = @(Get-OpenPRs | ForEach-Object { $_.number })
             Write-Step "PRs abertos antes: $(if ($beforePRNumbers.Count -eq 0) { 'nenhum' } else { $beforePRNumbers -join ', ' })"
 
-            # ── invocar Claude ─────────────────────────────────────────────────
+            # ── invocar agente ─────────────────────────────────────────────────
             # Default `single` (sem batch). `-AllowBatch` libera batch.
             # `resume` adicionado quando branch alvo ja existe com trabalho parcial —
             # comando detecta estado e completa em vez de recriar do zero.
@@ -534,32 +608,20 @@ try {
             if (-not $AllowBatch) { $slashArgs += 'single' }
             if ($resumeMode)      { $slashArgs += 'resume' }
             $slashCmd = "/implementar-registro " + ($slashArgs -join ' ')
-            Write-Step "Invocando: claude -p '$slashCmd' --model $Model"
-            Write-Host ""
-
-            $claudeLog = New-TemporaryFile
-            try {
-                "" | claude --print $slashCmd `
-                    --dangerously-skip-permissions `
-                    --model $Model `
-                    --no-session-persistence 2>&1 | Tee-Object -FilePath $claudeLog.FullName
-
-                $claudeExit   = $LASTEXITCODE
-                $claudeOutput = Get-Content $claudeLog.FullName -Raw
-            } finally {
-                Remove-Item $claudeLog.FullName -ErrorAction SilentlyContinue
-            }
+            $agentResult = Invoke-ImplementationAgent -Agent $Agent -SlashCmd $slashCmd -SlashArgs $slashArgs -Model $Model -RepoRoot $RepoRoot
+            $agentExit   = $agentResult.ExitCode
+            $agentOutput = $agentResult.Output
             Write-Host ""
 
             # Limite de sessao atingido: aguardar reset e repetir mesmo registro.
             # Proxima iteracao re-detecta PR/branch criado parcialmente (idempotente).
-            if (Wait-ForSessionReset -ClaudeOutput $claudeOutput) {
+            if (Wait-ForSessionReset -AgentOutput $agentOutput) {
                 continue
             }
 
-            if ($claudeExit -ne 0) {
-                Write-Step "claude terminou com erro (exit code $claudeExit). Parando." "Red"
-                $tail = ($claudeOutput -split "`n" | Select-Object -Last 20) -join "`n"
+            if ($agentExit -ne 0) {
+                Write-Step "$Agent terminou com erro (exit code $agentExit). Parando." "Red"
+                $tail = ($agentOutput -split "`n" | Select-Object -Last 20) -join "`n"
                 Write-Step "Ultimas linhas do output (p/ diagnose; se for rate limit nao reconhecido, ampliar regex em Wait-ForSessionReset):" "Yellow"
                 Write-Host $tail -ForegroundColor DarkGray
                 exit 1
@@ -579,7 +641,7 @@ try {
             }
 
             if (-not $newPR) {
-                Write-Step "Nenhum PR encontrado para '$expectedBranch'. Claude nao criou PR (possivel falha de build/teste)." "Red"
+                Write-Step "Nenhum PR encontrado para '$expectedBranch'. $Agent nao criou PR (possivel falha de build/teste)." "Red"
                 Write-Step "Verifique o output acima e corrija manualmente antes de reiniciar." "Yellow"
                 exit 1
             }

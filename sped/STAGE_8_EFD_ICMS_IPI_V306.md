@@ -210,7 +210,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.126 | Registro D180 | Modais (cód. 26) | 179 |
 | [x] | 8.127 | Registro D190 | Registro Analítico dos Documentos (cód. 07, 08, 8B, 09, 10, 11, 26, 27, 57, 63 e 67) | 180 |
 | [x] | 8.128 | Registro D195 | Observações do Lançamento Fiscal | 181 |
-| [ ] | 8.129 | Registro D197 | Outras Obrigações Tributárias, Ajustes e Informações de Valores Provenientes do Documento Fiscal | 182 |
+| [x] | 8.129 | Registro D197 | Outras Obrigações Tributárias, Ajustes e Informações de Valores Provenientes do Documento Fiscal | 182 |
 | [ ] | 8.130 | Registro D300 | Registro Analítico dos Bilhetes Consolidados de Passagem Rodoviário (13), Aquaviário (14), Passagem e Bagagem (15), Ferroviário (16) | 183 |
 | [ ] | 8.131 | Registro D301 | Documentos Cancelados dos Bilhetes (13, 14, 15, 16) | 184 |
 | [ ] | 8.132 | Registro D310 | Complemento dos Bilhetes (cód. 13, 14, 15 e 16) | 185 |

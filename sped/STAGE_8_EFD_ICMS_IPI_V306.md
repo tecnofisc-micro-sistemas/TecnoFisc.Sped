@@ -283,7 +283,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 
 | Feito | Sub-stage | Registro | Descrição | Página PDF |
 | --- | --- | --- | --- | --- |
-| [ ] | 8.187 | Registro H001 | Abertura do Bloco H | 245 |
+| [x] | 8.187 | Registro H001 | Abertura do Bloco H | 245 |
 | [ ] | 8.188 | Registro H005 | Totais do Inventário | 245 |
 | [ ] | 8.189 | Registro H010 | Inventário | 246 |
 | [ ] | 8.190 | Registro H020 | Informação Complementar do Inventário | 248 |

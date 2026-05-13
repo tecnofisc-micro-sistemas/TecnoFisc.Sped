@@ -215,7 +215,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.131 | Registro D301 | Documentos Cancelados dos Bilhetes (13, 14, 15, 16) | 184 |
 | [x] | 8.132 | Registro D310 | Complemento dos Bilhetes (cód. 13, 14, 15 e 16) | 185 |
 | [x] | 8.133 | Registro D350 | Equipamento ECF (cód. 2E, 13, 14, 15 e 16) | 186 |
-| [ ] | 8.134 | Registro D355 | Redução Z (cód. 2E, 13, 14, 15 e 16) | 187 |
+| [x] | 8.134 | Registro D355 | Redução Z (cód. 2E, 13, 14, 15 e 16) | 184 |
 | [ ] | 8.135 | Registro D360 | PIS e COFINS Totalizados no Dia (cód. 2E, 13, 14, 15 e 16) | 188 |
 | [ ] | 8.136 | Registro D365 | Registro dos Totalizadores Parciais da Redução Z (cód. 2E, 13, 14, 15 e 16) | 189 |
 | [ ] | 8.137 | Registro D370 | Complemento dos Documentos Informados (cód. 13, 14, 15, 16 e 2E) | 190 |

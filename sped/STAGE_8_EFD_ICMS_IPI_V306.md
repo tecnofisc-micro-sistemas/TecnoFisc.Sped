@@ -264,7 +264,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.175 | Registro E510 | Consolidação dos Valores de IPI | 232 |
 | [x] | 8.176 | Registro E520 | Apuração do IPI | 233 |
 | [x] | 8.177 | Registro E530 | Ajustes da Apuração do IPI | 235 |
-| [ ] | 8.178 | Registro E531 | Informações Adicionais dos Ajustes da Apuração do IPI — Identificação dos Documentos Fiscais (01 e 55) | 237 |
+| [x] | 8.178 | Registro E531 | Informações Adicionais dos Ajustes da Apuração do IPI — Identificação dos Documentos Fiscais (01 e 55) | 237 |
 | [ ] | 8.179 | Registro E990 | Encerramento do Bloco E | 238 |
 
 ### Bloco G — CIAP — Controle de Crédito de ICMS do Ativo Permanente (7 registros)

@@ -272,7 +272,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | Feito | Sub-stage | Registro | Descrição | Página PDF |
 | --- | --- | --- | --- | --- |
 | [x] | 8.180 | Registro G001 | Abertura do Bloco G | 239 |
-| [ ] | 8.181 | Registro G110 | ICMS — Ativo Permanente — CIAP | 239 |
+| [x] | 8.181 | Registro G110 | ICMS — Ativo Permanente — CIAP | 239 |
 | [ ] | 8.182 | Registro G125 | Movimentação de Bem do Ativo Imobilizado | 240 |
 | [ ] | 8.183 | Registro G126 | Outros Créditos CIAP | 241 |
 | [ ] | 8.184 | Registro G130 | Identificação do Documento Fiscal | 242 |

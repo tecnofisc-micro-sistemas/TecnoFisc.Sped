@@ -299,7 +299,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.195 | Registro K200 | Estoque Escriturado | 250 |
 | [x] | 8.196 | Registro K210 | Desmontagem de Mercadorias — Item de Origem | 251 |
 | [x] | 8.197 | Registro K215 | Desmontagem de Mercadorias — Item de Destino | 252 |
-| [ ] | 8.198 | Registro K220 | Outras Movimentações Internas entre Mercadorias | 253 |
+| [x] | 8.198 | Registro K220 | Outras Movimentações Internas entre Mercadorias | 253 |
 | [ ] | 8.199 | Registro K230 | Itens Produzidos | 254 |
 | [ ] | 8.200 | Registro K235 | Insumos Consumidos | 255 |
 | [ ] | 8.201 | Registro K250 | Industrialização Efetuada por Terceiros — Itens Produzidos | 256 |

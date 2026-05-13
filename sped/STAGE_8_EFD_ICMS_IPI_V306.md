@@ -242,7 +242,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | --- | --- | --- | --- | --- |
 | [x] | 8.154 | Registro E001 | Abertura do Bloco E | 206 |
 | [x] | 8.155 | Registro E100 | Período de Apuração do ICMS | 206 |
-| [ ] | 8.156 | Registro E110 | Apuração do ICMS — Operações Próprias | 207 |
+| [x] | 8.156 | Registro E110 | Apuração do ICMS — Operações Próprias | 207 |
 | [ ] | 8.157 | Registro E111 | Ajuste/Benefício/Incentivo da Apuração do ICMS | 209 |
 | [ ] | 8.158 | Registro E112 | Informações Adicionais dos Ajustes da Apuração do ICMS | 210 |
 | [ ] | 8.159 | Registro E113 | Informações Adicionais dos Ajustes da Apuração do ICMS — Identificação dos Documentos Fiscais | 211 |

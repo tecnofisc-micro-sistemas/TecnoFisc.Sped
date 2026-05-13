@@ -1,0 +1,109 @@
+using System.Reflection;
+
+using TecnoFisc.Sped.Core.Abstracoes;
+using TecnoFisc.Sped.Core.Atributos;
+using TecnoFisc.Sped.Core.Catalogo;
+using TecnoFisc.Sped.Core.Gerador;
+using TecnoFisc.Sped.Core.Parser;
+using TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoD;
+
+namespace TecnoFisc.Sped.EfdIcmsIpi.Tests.Registros.BlocoD;
+
+/// <summary>
+/// Sub-stage 8.142 — exercita a forma do <see cref="RegistroD420"/> contra o Guia Prático
+/// EFD-ICMS/IPI V3.2.2 (p. 198): metadados de catálogo, mapeamento de campos e invariante
+/// de round-trip parse → gerar → texto idêntico.
+/// </summary>
+public sealed class RegistroD420Tests
+{
+    private static readonly IRegistroSpedCatalogo _catalogo =
+        CatalogoBuilder.BuildFromAssembly(typeof(RegistroD420).Assembly);
+
+    private static async Task<string> RoundTripAsync(string sped, CancellationToken cancelamento)
+    {
+        var leitor = new LeitorSpedTxt(_catalogo);
+        var escritor = new EscritorSpedTxt(_catalogo);
+
+        using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
+        var registros = new List<RegistroSped>();
+        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+            registros.Add(registro);
+
+        using var saida = new MemoryStream();
+        await escritor.EscreverAsync(saida, registros, cancelamento);
+
+        return EncodingSped.Latin1.GetString(saida.ToArray());
+    }
+
+    [Fact]
+    public void Atributo_DeclaraD420_Nivel3_BlocoD()
+    {
+        var atributo = typeof(RegistroD420).GetCustomAttribute<RegistroSpedAttribute>();
+
+        atributo.Should().NotBeNull();
+        atributo!.Codigo.Should().Be("D420");
+        atributo.Nivel.Should().Be(3);
+        atributo.Bloco.Should().Be("D");
+    }
+
+    [Fact]
+    public void Catalogo_ExpoeRegistroD420Com4CamposNaOrdem()
+    {
+        _catalogo.TentarObter("D420".AsSpan(), out var meta).Should().BeTrue();
+
+        meta!.Codigo.Should().Be("D420");
+        meta.Campos.Select(c => c.Nome).Should().Equal(["CodMunOrig", "VlServ", "VlBcIcms", "VlIcms"]);
+        meta.Campos.Select(c => c.Ordem).Should().Equal([2, 3, 4, 5]);
+    }
+
+    [Fact]
+    public void Definidor_AtribuiTodosOsCampos()
+    {
+        _catalogo.TentarObter("D420".AsSpan(), out var meta);
+        var registro = (RegistroD420)meta!.Fabrica();
+
+        meta.Campos[0].Definidor(registro, "3550308".AsSpan());   // CodMunOrig
+        meta.Campos[1].Definidor(registro, "1500,00".AsSpan());   // VlServ
+        meta.Campos[2].Definidor(registro, "1000,00".AsSpan());   // VlBcIcms
+        meta.Campos[3].Definidor(registro, "120,00".AsSpan());    // VlIcms
+
+        registro.CodMunOrig.Should().Be(3550308);
+        registro.VlServ.Should().Be(1500.00m);
+        registro.VlBcIcms.Should().Be(1000.00m);
+        registro.VlIcms.Should().Be(120.00m);
+    }
+
+    [Fact]
+    public void Definidor_CampoVazio_DevolveNulo()
+    {
+        _catalogo.TentarObter("D420".AsSpan(), out var meta);
+        var registro = (RegistroD420)meta!.Fabrica();
+
+        meta.Campos[2].Definidor(registro, Span<char>.Empty);   // VlBcIcms
+        meta.Campos[3].Definidor(registro, Span<char>.Empty);   // VlIcms
+
+        registro.VlBcIcms.Should().BeNull();
+        registro.VlIcms.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task RoundTrip_ComTodosOsCampos_PreservaTextoCanonico()
+    {
+        const string sped = "|D420|3550308|1500,00|1000,00|120,00|\r\n";
+
+        var resultado = await RoundTripAsync(sped, TestContext.Current.CancellationToken);
+
+        resultado.Should().Be(sped);
+    }
+
+    [Fact]
+    public async Task RoundTrip_CamposOpcionaisVazios_PreservaTextoCanonico()
+    {
+        // Município sem base de cálculo nem ICMS (operação não tributada).
+        const string sped = "|D420|1100205|2500,00|||\r\n";
+
+        var resultado = await RoundTripAsync(sped, TestContext.Current.CancellationToken);
+
+        resultado.Should().Be(sped);
+    }
+}

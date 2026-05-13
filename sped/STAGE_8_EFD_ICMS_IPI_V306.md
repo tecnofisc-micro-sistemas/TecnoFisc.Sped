@@ -257,7 +257,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.168 | Registro E300 | Período de Apuração do ICMS Diferencial de Alíquota — UF Origem/Destino EC 87/15 | 222 |
 | [x] | 8.169 | Registro E310 | Apuração do ICMS Diferencial de Alíquota — UF Origem/Destino EC 87/15 | 223 |
 | [x] | 8.170 | Registro E311 | Ajuste/Benefício/Incentivo da Apuração do ICMS Diferencial de Alíquota — UF Origem/Destino EC 87/15 | 225 |
-| [ ] | 8.171 | Registro E312 | Informações Adicionais dos Ajustes da Apuração do ICMS Diferencial de Alíquota — EC 87/15 | 226 |
+| [x] | 8.171 | Registro E312 | Informações Adicionais dos Ajustes da Apuração do ICMS Diferencial de Alíquota — EC 87/15 | 226 |
 | [ ] | 8.172 | Registro E313 | Informações Adicionais da Apuração do ICMS Difal — EC 87/15 Identificação dos Documentos Fiscais | 227 |
 | [ ] | 8.173 | Registro E316 | Obrigações do ICMS Recolhido ou a Recolher — Diferencial de Alíquota — UF Origem/Destino EC 87/15 | 228 |
 | [ ] | 8.174 | Registro E500 | Período de Apuração do IPI | 230 |

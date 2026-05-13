@@ -287,7 +287,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.188 | Registro H005 | Totais do Inventário | 245 |
 | [x] | 8.189 | Registro H010 | Inventário | 246 |
 | [x] | 8.190 | Registro H020 | Informação Complementar do Inventário | 248 |
-| [ ] | 8.191 | Registro H030 | Informações Complementares do Inventário de Mercadorias Sujeitas ao Regime de ST | 248 |
+| [x] | 8.191 | Registro H030 | Informações Complementares do Inventário de Mercadorias Sujeitas ao Regime de ST | 248 |
 | [ ] | 8.192 | Registro H990 | Encerramento do Bloco H | 249 |
 
 ### Bloco K — Controle da Produção e do Estoque (22 registros)

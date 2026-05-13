@@ -195,7 +195,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 
 | Feito | Sub-stage | Registro | Descrição | Página PDF |
 | --- | --- | --- | --- | --- |
-| [ ] | 8.114 | Registro D001 | Abertura do Bloco D | 164 |
+| [x] | 8.114 | Registro D001 | Abertura do Bloco D | 164 |
 | [ ] | 8.115 | Registro D100 | NF Serviço de Transporte (07), CT (08, 8B, 09, 10, 11, 26, 27), CT-e (57, 67), Bilhete Passagem (63) | 165 |
 | [ ] | 8.116 | Registro D101 | Informação Complementar — Prestações Interestaduais a Consumidor Final Não Contribuinte EC 87/15 (57, 63, 67) | 169 |
 | [ ] | 8.117 | Registro D110 | Itens do Documento — NF Serviço de Transporte (cód. 07) | 170 |

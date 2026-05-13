@@ -213,7 +213,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.129 | Registro D197 | Outras Obrigações Tributárias, Ajustes e Informações de Valores Provenientes do Documento Fiscal | 182 |
 | [x] | 8.130 | Registro D300 | Registro Analítico dos Bilhetes Consolidados de Passagem Rodoviário (13), Aquaviário (14), Passagem e Bagagem (15), Ferroviário (16) | 183 |
 | [x] | 8.131 | Registro D301 | Documentos Cancelados dos Bilhetes (13, 14, 15, 16) | 184 |
-| [ ] | 8.132 | Registro D310 | Complemento dos Bilhetes (cód. 13, 14, 15 e 16) | 185 |
+| [x] | 8.132 | Registro D310 | Complemento dos Bilhetes (cód. 13, 14, 15 e 16) | 185 |
 | [ ] | 8.133 | Registro D350 | Equipamento ECF (cód. 2E, 13, 14, 15 e 16) | 186 |
 | [ ] | 8.134 | Registro D355 | Redução Z (cód. 2E, 13, 14, 15 e 16) | 187 |
 | [ ] | 8.135 | Registro D360 | PIS e COFINS Totalizados no Dia (cód. 2E, 13, 14, 15 e 16) | 188 |

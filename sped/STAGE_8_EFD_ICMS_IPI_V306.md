@@ -184,7 +184,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.105 | Registro C800 | Registro Cupom Fiscal Eletrônico — CF-e-SAT (cód. 59) | 146 |
 | [x] | 8.106 | Registro C810 | Itens do Documento do Cupom Fiscal Eletrônico — SAT (CF-E-SAT) (cód. 59) | 148 |
 | [x] | 8.107 | Registro C815 | Informações Complementares das Operações de Saída de Mercadorias Sujeitas a ST (CF-SAT) (cód. 59) | 149 |
-| [ ] | 8.108 | Registro C850 | Registro Analítico do CF-e-SAT (cód. 59) | 150 |
+| [x] | 8.108 | Registro C850 | Registro Analítico do CF-e-SAT (cód. 59) | 150 |
 | [ ] | 8.109 | Registro C860 | Identificação do Equipamento SAT-CF-e (cód. 59) | 151 |
 | [ ] | 8.110 | Registro C870 | Itens do Documento do Cupom Fiscal Eletrônico — SAT (CF-E-SAT) (cód. 59) | 152 |
 | [ ] | 8.111 | Registro C880 | Informações Complementares das Operações de Saída de Mercadorias Sujeitas a ST (CF-E-SAT) (cód. 59) | 153 |

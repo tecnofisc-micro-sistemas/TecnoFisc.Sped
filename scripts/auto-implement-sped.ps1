@@ -196,6 +196,37 @@ function Find-PRByBranch {
     return $prs | Where-Object { $_.headRefName -eq $BranchName } | Select-Object -First 1
 }
 
+function Ensure-PRForBranch {
+    param([string]$BranchName)
+
+    $existing = Find-PRByBranch -BranchName $BranchName
+    if ($existing) { return $existing }
+
+    Write-Step "Publicando branch '$BranchName' para origin..." "Yellow"
+    $pushOutput = git push -u origin $BranchName 2>&1
+    $pushExit = $LASTEXITCODE
+    $pushOutput | ForEach-Object { Write-Host $_ }
+    if ($pushExit -ne 0) {
+        Write-Step "Falha ao publicar '$BranchName'." "Red"
+        exit 1
+    }
+
+    $existing = Find-PRByBranch -BranchName $BranchName
+    if ($existing) { return $existing }
+
+    Write-Step "Criando PR para '$BranchName' com gh pr create --fill..." "Yellow"
+    $createOutput = gh pr create --base dev --head $BranchName --fill 2>&1
+    $createExit = $LASTEXITCODE
+    $createOutput | ForEach-Object { Write-Host $_ }
+    if ($createExit -ne 0) {
+        Write-Step "Falha ao criar PR para '$BranchName'." "Red"
+        exit 1
+    }
+
+    Start-Sleep -Seconds 2
+    return Find-PRByBranch -BranchName $BranchName
+}
+
 function Test-RemoteBranchExists {
     param([string]$BranchName)
     $out = git ls-remote --heads origin $BranchName 2>$null
@@ -209,6 +240,38 @@ function Get-CurrentBranch {
 function Test-WorkingTreeClean {
     $status = git status --porcelain 2>$null
     return -not ($status | Where-Object { $_ })
+}
+
+function Get-PartialBranchState {
+    param([string]$BranchName)
+
+    $currentBranch = Get-CurrentBranch
+    $localExists   = [bool](git branch --list $BranchName)
+    $remoteExists  = Test-RemoteBranchExists -BranchName $BranchName
+    $dirty         = $false
+    $hasCommits    = $false
+
+    if ($currentBranch -eq $BranchName) {
+        $dirty      = -not (Test-WorkingTreeClean)
+        $hasCommits = [bool](git log "dev..$BranchName" --oneline 2>$null)
+    }
+    elseif ($localExists) {
+        $hasCommits = [bool](git log "dev..$BranchName" --oneline 2>$null)
+    }
+    elseif ($remoteExists) {
+        $hasCommits = $true
+    }
+
+    return [pscustomobject]@{
+        Branch     = $BranchName
+        Current    = ($currentBranch -eq $BranchName)
+        Local      = $localExists
+        Remote     = $remoteExists
+        Dirty      = $dirty
+        HasCommits = $hasCommits
+        Exists     = (($currentBranch -eq $BranchName) -or $localExists -or $remoteExists)
+        Partial    = (($currentBranch -eq $BranchName -and $dirty) -or $hasCommits -or $remoteExists)
+    }
 }
 
 function Find-OrphanFeatureBranches {
@@ -326,6 +389,7 @@ Command arguments: $argsText
 Equivalent Claude slash command: $SlashCmd
 
 Follow the repository instructions and complete the implementation, tests, commit, push, and PR exactly as the command file requires.
+If this is a resume run, treat the existing branch as authoritative: inspect the current state, keep completed work, finish any missing steps, push, and create the PR if it does not exist.
 "@
                 $codexArgs = @(
                     'exec',
@@ -470,6 +534,7 @@ try {
     Write-Host ""
 
     $mergedCount = 0
+    $resumeAttemptsByBranch = @{}
 
     # ── loop principal ─────────────────────────────────────────────────────────
     while ($mergedCount -lt $MaxPRs) {
@@ -502,6 +567,7 @@ try {
         $existingPR      = Find-PRByBranch -BranchName $expectedBranch
         $localExpected   = [bool](git branch --list $expectedBranch)
         $remoteExpected  = Test-RemoteBranchExists -BranchName $expectedBranch
+        $recoveredPR     = $null
 
         if ($existingPR) {
             # PR ja existe — pular invocacao do agente, mergear se CI OK.
@@ -558,16 +624,29 @@ try {
                 else {
                     $diverged = git log "dev..$currentBranch" --oneline 2>$null
                     $dirty    = -not (Test-WorkingTreeClean)
-                    Write-Step "Branch '$currentBranch' nao corresponde ao proximo pendente ($expectedBranch) e nao tem PR. Commits unicos: $([bool]$diverged); dirty: $dirty." "Red"
-                    Write-Step "Resolver manualmente — pode ser trabalho de outro registro:" "Yellow"
-                    Write-Step "  git status                                # inspecionar mudancas" "Yellow"
-                    Write-Step "  git checkout dev && git branch -D $currentBranch  # descartar se irrelevante" "Yellow"
-                    Write-Step "  ou 'gh pr create --base dev --head $currentBranch' se trabalho deve virar PR" "Yellow"
-                    exit 1
+                    if ($currentBranch -like 'feat/stage-*' -and [bool]$diverged -and -not $dirty) {
+                        Write-Step "Branch '$currentBranch' tem commits, esta limpa e nao tem PR. Criando PR antes de seguir para '$expectedBranch'." "Yellow"
+                        $recoveredPR = Ensure-PRForBranch -BranchName $currentBranch
+                        if (-not $recoveredPR) {
+                            Write-Step "PR criado para '$currentBranch', mas nao consegui localiza-lo em seguida." "Red"
+                            exit 1
+                        }
+                    }
+                    else {
+                        Write-Step "Branch '$currentBranch' nao corresponde ao proximo pendente ($expectedBranch) e nao tem PR. Commits unicos: $([bool]$diverged); dirty: $dirty." "Red"
+                        Write-Step "Resolver manualmente — pode ser trabalho de outro registro:" "Yellow"
+                        Write-Step "  git status                                # inspecionar mudancas" "Yellow"
+                        Write-Step "  git checkout dev && git branch -D $currentBranch  # descartar se irrelevante" "Yellow"
+                        Write-Step "  ou 'gh pr create --base dev --head $currentBranch' se trabalho deve virar PR" "Yellow"
+                        exit 1
+                    }
                 }
             }
 
-            if (-not (Test-WorkingTreeClean)) {
+            if ($recoveredPR) {
+                $newPR = $recoveredPR
+            }
+            elseif (-not (Test-WorkingTreeClean)) {
                 Write-Step "Working tree na branch dev tem mudancas nao-commitadas." "Red"
                 Write-Step "Inspecionar 'git status' e decidir 'git stash' / 'git checkout .' antes de prosseguir." "Yellow"
                 exit 1
@@ -597,9 +676,21 @@ try {
             }
         }
 
-        $newPR = if ($existingPR) { $existingPR } else { $null }
+        if (-not $existingPR -and -not $recoveredPR) {
+            $pendingStagePR = @(Get-OpenPRs |
+                Where-Object { $_.headRefName -like 'feat/stage-*' -and $_.headRefName -ne $expectedBranch } |
+                Sort-Object number |
+                Select-Object -First 1)
 
-        if (-not $existingPR) {
+            if ($pendingStagePR) {
+                Write-Step "PR aberto de execucao anterior detectado: #$($pendingStagePR.number) ($($pendingStagePR.headRefName)). Processando antes de chamar $Agent para '$expectedBranch'." "Cyan"
+                $recoveredPR = $pendingStagePR
+            }
+        }
+
+        $newPR = if ($existingPR) { $existingPR } elseif ($recoveredPR) { $recoveredPR } else { $null }
+
+        if (-not $newPR) {
             # ── snapshot de PRs abertos antes (fallback p/ deteccao de novo PR) ─
             $beforePRNumbers = @(Get-OpenPRs | ForEach-Object { $_.number })
             Write-Step "PRs abertos antes: $(if ($beforePRNumbers.Count -eq 0) { 'nenhum' } else { $beforePRNumbers -join ', ' })"
@@ -625,7 +716,43 @@ try {
                 continue
             }
 
+            # Mesmo com exit code != 0, o agente pode ter deixado trabalho valido:
+            # branch criada, commits locais, push feito ou working tree dirty antes do PR.
+            # Nesses casos a execucao precisa ser idempotente: repetir a mesma iteracao
+            # em modo resume em vez de abandonar o batch.
             if ($agentExit -ne 0) {
+                Write-Step "$Agent terminou com erro (exit code $agentExit). Verificando se ha estado parcial retomavel..." "Yellow"
+
+                Start-Sleep -Seconds 2
+                $newPR = Find-PRByBranch -BranchName $expectedBranch
+                if (-not $newPR) {
+                    $afterPRs = @(Get-OpenPRs)
+                    $newPR    = $afterPRs | Where-Object { $beforePRNumbers -notcontains $_.number } | Select-Object -First 1
+                }
+
+                if (-not $newPR) {
+                    $partialState = Get-PartialBranchState -BranchName $expectedBranch
+                    if ($partialState.Exists) {
+                        if (-not $resumeAttemptsByBranch.ContainsKey($expectedBranch)) {
+                            $resumeAttemptsByBranch[$expectedBranch] = 0
+                        }
+                        $resumeAttemptsByBranch[$expectedBranch]++
+
+                        Write-Step "Estado parcial detectado para '$expectedBranch': current=$($partialState.Current) local=$($partialState.Local) remote=$($partialState.Remote) commits=$($partialState.HasCommits) dirty=$($partialState.Dirty)." "Yellow"
+                        if ($resumeAttemptsByBranch[$expectedBranch] -gt 3) {
+                            Write-Step "Limite de retomadas automaticas atingido para '$expectedBranch' apos falhas repetidas do $Agent." "Red"
+                            $tail = ($agentOutput -split "`n" | Select-Object -Last 20) -join "`n"
+                            Write-Step "Ultimas linhas do output:" "Yellow"
+                            Write-Host $tail -ForegroundColor DarkGray
+                            exit 1
+                        }
+                        Write-Step "Retomando a mesma iteracao; a proxima chamada usara 'resume' e deve criar o PR ausente." "Yellow"
+                        continue
+                    }
+                }
+            }
+
+            if ($agentExit -ne 0 -and -not $newPR) {
                 Write-Step "$Agent terminou com erro (exit code $agentExit). Parando." "Red"
                 $tail = ($agentOutput -split "`n" | Select-Object -Last 20) -join "`n"
                 Write-Step "Ultimas linhas do output (p/ diagnose; se for rate limit nao reconhecido, ampliar regex em Wait-ForSessionReset):" "Yellow"

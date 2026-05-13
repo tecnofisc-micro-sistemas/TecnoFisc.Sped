@@ -1,0 +1,21 @@
+using TecnoFisc.Sped.Core.Abstracoes;
+using TecnoFisc.Sped.Core.Atributos;
+using TecnoFisc.Sped.Core.Enums;
+
+namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoH;
+
+/// <summary>
+/// Registro H001 — Abertura do Bloco H (Inventário Físico).
+/// Nível hierárquico 1, ocorrência única por arquivo. Conforme Guia Prático EFD-ICMS/IPI
+/// V3.0.6, p. 245.
+/// </summary>
+[RegistroSped(Codigo = "H001", Nivel = 1, Bloco = "H")]
+public sealed partial class RegistroH001 : RegistroSped
+{
+    /// <inheritdoc />
+    public override string Codigo => "H001";
+
+    /// <summary>Indicador de movimento do bloco — 0 com dados, 1 sem dados.</summary>
+    [CampoSped(Ordem = 2, Tamanho = 1, Obrigatorio = true)]
+    public IndicadorMovimentoBloco IndMov { get; set; }
+}

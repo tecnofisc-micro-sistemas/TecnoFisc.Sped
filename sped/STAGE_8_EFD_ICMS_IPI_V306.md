@@ -232,7 +232,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.148 | Registro D610 | Itens do Documento Consolidado (cód. 21 e 22) | 198 |
 | [x] | 8.149 | Registro D690 | Registro Analítico dos Documentos (cód. 21 e 22) | 200 |
 | [x] | 8.150 | Registro D695 | Consolidação da Prestação de Serviços — NF Serviço Comunicação (21) e Telecomunicação (22) | 201 |
-| [ ] | 8.151 | Registro D696 | Registro Analítico dos Documentos (cód. 21 e 22) | 203 |
+| [x] | 8.151 | Registro D696 | Registro Analítico dos Documentos (cód. 21 e 22) | 203 |
 | [ ] | 8.152 | Registro D697 | Informações de Outras UFs — Serviços "Não Medidos" de Televisão por Assinatura via Satélite | 204 |
 | [ ] | 8.153 | Registro D990 | Encerramento do Bloco D | 205 |
 

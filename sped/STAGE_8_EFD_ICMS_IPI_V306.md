@@ -205,7 +205,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.121 | Registro D150 | Complemento do CT Aéreo de Cargas (cód. 10) | 174 |
 | [x] | 8.122 | Registro D160 | Carga Transportada (cód. 08, 8B, 09, 10, 11, 26 e 27) | 175 |
 | [x] | 8.123 | Registro D161 | Local de Coleta e Entrega (cód. 08, 8B, 09, 10, 11 e 26) | 176 |
-| [ ] | 8.124 | Registro D162 | Identificação dos Documentos Fiscais (cód. 08, 8B, 09, 10, 11, 26 e 27) | 177 |
+| [x] | 8.124 | Registro D162 | Identificação dos Documentos Fiscais (cód. 08, 8B, 09, 10, 11, 26 e 27) | 177 |
 | [ ] | 8.125 | Registro D170 | Complemento do Conhecimento Multimodal de Cargas (cód. 26) | 178 |
 | [ ] | 8.126 | Registro D180 | Modais (cód. 26) | 179 |
 | [ ] | 8.127 | Registro D190 | Registro Analítico dos Documentos (cód. 07, 08, 8B, 09, 10, 11, 26, 27, 57, 63 e 67) | 180 |

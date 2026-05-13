@@ -261,7 +261,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.172 | Registro E313 | Informações Adicionais da Apuração do ICMS Difal — EC 87/15 Identificação dos Documentos Fiscais | 227 |
 | [x] | 8.173 | Registro E316 | Obrigações do ICMS Recolhido ou a Recolher — Diferencial de Alíquota — UF Origem/Destino EC 87/15 | 228 |
 | [x] | 8.174 | Registro E500 | Período de Apuração do IPI | 230 |
-| [ ] | 8.175 | Registro E510 | Consolidação dos Valores de IPI | 232 |
+| [x] | 8.175 | Registro E510 | Consolidação dos Valores de IPI | 232 |
 | [ ] | 8.176 | Registro E520 | Apuração do IPI | 233 |
 | [ ] | 8.177 | Registro E530 | Ajustes da Apuração do IPI | 235 |
 | [ ] | 8.178 | Registro E531 | Informações Adicionais dos Ajustes da Apuração do IPI — Identificação dos Documentos Fiscais (01 e 55) | 237 |

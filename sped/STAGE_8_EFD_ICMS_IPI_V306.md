@@ -295,7 +295,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | Feito | Sub-stage | Registro | Descrição | Página PDF |
 | --- | --- | --- | --- | --- |
 | [x] | 8.193 | Registro K001 | Abertura do Bloco K | 249 |
-| [ ] | 8.194 | Registro K100 | Período de Apuração do ICMS/IPI | 250 |
+| [x] | 8.194 | Registro K100 | Período de Apuração do ICMS/IPI | 250 |
 | [ ] | 8.195 | Registro K200 | Estoque Escriturado | 250 |
 | [ ] | 8.196 | Registro K210 | Desmontagem de Mercadorias — Item de Origem | 251 |
 | [ ] | 8.197 | Registro K215 | Desmontagem de Mercadorias — Item de Destino | 252 |

@@ -211,6 +211,38 @@ function Test-WorkingTreeClean {
     return -not ($status | Where-Object { $_ })
 }
 
+function Get-PartialBranchState {
+    param([string]$BranchName)
+
+    $currentBranch = Get-CurrentBranch
+    $localExists   = [bool](git branch --list $BranchName)
+    $remoteExists  = Test-RemoteBranchExists -BranchName $BranchName
+    $dirty         = $false
+    $hasCommits    = $false
+
+    if ($currentBranch -eq $BranchName) {
+        $dirty      = -not (Test-WorkingTreeClean)
+        $hasCommits = [bool](git log "dev..$BranchName" --oneline 2>$null)
+    }
+    elseif ($localExists) {
+        $hasCommits = [bool](git log "dev..$BranchName" --oneline 2>$null)
+    }
+    elseif ($remoteExists) {
+        $hasCommits = $true
+    }
+
+    return [pscustomobject]@{
+        Branch     = $BranchName
+        Current    = ($currentBranch -eq $BranchName)
+        Local      = $localExists
+        Remote     = $remoteExists
+        Dirty      = $dirty
+        HasCommits = $hasCommits
+        Exists     = (($currentBranch -eq $BranchName) -or $localExists -or $remoteExists)
+        Partial    = (($currentBranch -eq $BranchName -and $dirty) -or $hasCommits -or $remoteExists)
+    }
+}
+
 function Find-OrphanFeatureBranches {
     # Branches feat/stage-* (locais ou remotas) sem PR aberto. Captura estados parciais
     # de batch/single interrompidos antes de gh pr create — onde Find-PRByBranch falha
@@ -326,6 +358,7 @@ Command arguments: $argsText
 Equivalent Claude slash command: $SlashCmd
 
 Follow the repository instructions and complete the implementation, tests, commit, push, and PR exactly as the command file requires.
+If this is a resume run, treat the existing branch as authoritative: inspect the current state, keep completed work, finish any missing steps, push, and create the PR if it does not exist.
 "@
                 $codexArgs = @(
                     'exec',
@@ -470,6 +503,7 @@ try {
     Write-Host ""
 
     $mergedCount = 0
+    $resumeAttemptsByBranch = @{}
 
     # ── loop principal ─────────────────────────────────────────────────────────
     while ($mergedCount -lt $MaxPRs) {
@@ -625,7 +659,43 @@ try {
                 continue
             }
 
+            # Mesmo com exit code != 0, o agente pode ter deixado trabalho valido:
+            # branch criada, commits locais, push feito ou working tree dirty antes do PR.
+            # Nesses casos a execucao precisa ser idempotente: repetir a mesma iteracao
+            # em modo resume em vez de abandonar o batch.
             if ($agentExit -ne 0) {
+                Write-Step "$Agent terminou com erro (exit code $agentExit). Verificando se ha estado parcial retomavel..." "Yellow"
+
+                Start-Sleep -Seconds 2
+                $newPR = Find-PRByBranch -BranchName $expectedBranch
+                if (-not $newPR) {
+                    $afterPRs = @(Get-OpenPRs)
+                    $newPR    = $afterPRs | Where-Object { $beforePRNumbers -notcontains $_.number } | Select-Object -First 1
+                }
+
+                if (-not $newPR) {
+                    $partialState = Get-PartialBranchState -BranchName $expectedBranch
+                    if ($partialState.Exists) {
+                        if (-not $resumeAttemptsByBranch.ContainsKey($expectedBranch)) {
+                            $resumeAttemptsByBranch[$expectedBranch] = 0
+                        }
+                        $resumeAttemptsByBranch[$expectedBranch]++
+
+                        Write-Step "Estado parcial detectado para '$expectedBranch': current=$($partialState.Current) local=$($partialState.Local) remote=$($partialState.Remote) commits=$($partialState.HasCommits) dirty=$($partialState.Dirty)." "Yellow"
+                        if ($resumeAttemptsByBranch[$expectedBranch] -gt 3) {
+                            Write-Step "Limite de retomadas automaticas atingido para '$expectedBranch' apos falhas repetidas do $Agent." "Red"
+                            $tail = ($agentOutput -split "`n" | Select-Object -Last 20) -join "`n"
+                            Write-Step "Ultimas linhas do output:" "Yellow"
+                            Write-Host $tail -ForegroundColor DarkGray
+                            exit 1
+                        }
+                        Write-Step "Retomando a mesma iteracao; a proxima chamada usara 'resume' e deve criar o PR ausente." "Yellow"
+                        continue
+                    }
+                }
+            }
+
+            if ($agentExit -ne 0 -and -not $newPR) {
                 Write-Step "$Agent terminou com erro (exit code $agentExit). Parando." "Red"
                 $tail = ($agentOutput -split "`n" | Select-Object -Last 20) -join "`n"
                 Write-Step "Ultimas linhas do output (p/ diagnose; se for rate limit nao reconhecido, ampliar regex em Wait-ForSessionReset):" "Yellow"

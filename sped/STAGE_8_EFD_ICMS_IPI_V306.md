@@ -222,7 +222,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.138 | Registro D390 | Registro Analítico do Movimento Diário (cód. 13, 14, 15, 16 e 2E) | 191 |
 | [x] | 8.139 | Registro D400 | Resumo do Movimento Diário (cód. 18) | 192 |
 | [x] | 8.140 | Registro D410 | Documentos Informados (cód. 13, 14, 15 e 16) | 193 |
-| [ ] | 8.141 | Registro D411 | Documentos Cancelados dos Documentos Informados (cód. 13, 14, 15 e 16) | 194 |
+| [x] | 8.141 | Registro D411 | Documentos Cancelados dos Documentos Informados (cód. 13, 14, 15 e 16) | 194 |
 | [ ] | 8.142 | Registro D420 | Complemento dos Documentos Informados (cód. 13, 14, 15 e 16) | 195 |
 | [ ] | 8.143 | Registro D500 | NF de Serviço de Comunicação (cód. 21) e Serviço de Telecomunicação (cód. 22) | 196 |
 | [ ] | 8.144 | Registro D510 | Itens do Documento — NF Serviço Comunicação (21) e Telecomunicação (22) | 198 |

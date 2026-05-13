@@ -182,7 +182,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.103 | Registro C790 | Registro Analítico dos Documentos — NF/Conta Energia (06) Emitidas em Via Única | 144 |
 | [x] | 8.104 | Registro C791 | Registro de Informações de ICMS ST por UF | 150 |
 | [x] | 8.105 | Registro C800 | Registro Cupom Fiscal Eletrônico — CF-e-SAT (cód. 59) | 146 |
-| [ ] | 8.106 | Registro C810 | Itens do Documento do Cupom Fiscal Eletrônico — SAT (CF-E-SAT) (cód. 59) | 148 |
+| [x] | 8.106 | Registro C810 | Itens do Documento do Cupom Fiscal Eletrônico — SAT (CF-E-SAT) (cód. 59) | 148 |
 | [ ] | 8.107 | Registro C815 | Informações Complementares das Operações de Saída de Mercadorias Sujeitas a ST (CF-SAT) (cód. 59) | 149 |
 | [ ] | 8.108 | Registro C850 | Registro Analítico do CF-e-SAT (cód. 59) | 150 |
 | [ ] | 8.109 | Registro C860 | Identificação do Equipamento SAT-CF-e (cód. 59) | 151 |

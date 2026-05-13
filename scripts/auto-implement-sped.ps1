@@ -196,6 +196,33 @@ function Find-PRByBranch {
     return $prs | Where-Object { $_.headRefName -eq $BranchName } | Select-Object -First 1
 }
 
+function Ensure-PRForBranch {
+    param([string]$BranchName)
+
+    $existing = Find-PRByBranch -BranchName $BranchName
+    if ($existing) { return $existing }
+
+    Write-Step "Publicando branch '$BranchName' para origin..." "Yellow"
+    git push -u origin $BranchName
+    if ($LASTEXITCODE -ne 0) {
+        Write-Step "Falha ao publicar '$BranchName'." "Red"
+        exit 1
+    }
+
+    $existing = Find-PRByBranch -BranchName $BranchName
+    if ($existing) { return $existing }
+
+    Write-Step "Criando PR para '$BranchName' com gh pr create --fill..." "Yellow"
+    gh pr create --base dev --head $BranchName --fill
+    if ($LASTEXITCODE -ne 0) {
+        Write-Step "Falha ao criar PR para '$BranchName'." "Red"
+        exit 1
+    }
+
+    Start-Sleep -Seconds 2
+    return Find-PRByBranch -BranchName $BranchName
+}
+
 function Test-RemoteBranchExists {
     param([string]$BranchName)
     $out = git ls-remote --heads origin $BranchName 2>$null
@@ -536,6 +563,7 @@ try {
         $existingPR      = Find-PRByBranch -BranchName $expectedBranch
         $localExpected   = [bool](git branch --list $expectedBranch)
         $remoteExpected  = Test-RemoteBranchExists -BranchName $expectedBranch
+        $recoveredPR     = $null
 
         if ($existingPR) {
             # PR ja existe — pular invocacao do agente, mergear se CI OK.
@@ -592,16 +620,29 @@ try {
                 else {
                     $diverged = git log "dev..$currentBranch" --oneline 2>$null
                     $dirty    = -not (Test-WorkingTreeClean)
-                    Write-Step "Branch '$currentBranch' nao corresponde ao proximo pendente ($expectedBranch) e nao tem PR. Commits unicos: $([bool]$diverged); dirty: $dirty." "Red"
-                    Write-Step "Resolver manualmente — pode ser trabalho de outro registro:" "Yellow"
-                    Write-Step "  git status                                # inspecionar mudancas" "Yellow"
-                    Write-Step "  git checkout dev && git branch -D $currentBranch  # descartar se irrelevante" "Yellow"
-                    Write-Step "  ou 'gh pr create --base dev --head $currentBranch' se trabalho deve virar PR" "Yellow"
-                    exit 1
+                    if ($currentBranch -like 'feat/stage-*' -and [bool]$diverged -and -not $dirty) {
+                        Write-Step "Branch '$currentBranch' tem commits, esta limpa e nao tem PR. Criando PR antes de seguir para '$expectedBranch'." "Yellow"
+                        $recoveredPR = Ensure-PRForBranch -BranchName $currentBranch
+                        if (-not $recoveredPR) {
+                            Write-Step "PR criado para '$currentBranch', mas nao consegui localiza-lo em seguida." "Red"
+                            exit 1
+                        }
+                    }
+                    else {
+                        Write-Step "Branch '$currentBranch' nao corresponde ao proximo pendente ($expectedBranch) e nao tem PR. Commits unicos: $([bool]$diverged); dirty: $dirty." "Red"
+                        Write-Step "Resolver manualmente — pode ser trabalho de outro registro:" "Yellow"
+                        Write-Step "  git status                                # inspecionar mudancas" "Yellow"
+                        Write-Step "  git checkout dev && git branch -D $currentBranch  # descartar se irrelevante" "Yellow"
+                        Write-Step "  ou 'gh pr create --base dev --head $currentBranch' se trabalho deve virar PR" "Yellow"
+                        exit 1
+                    }
                 }
             }
 
-            if (-not (Test-WorkingTreeClean)) {
+            if ($recoveredPR) {
+                $newPR = $recoveredPR
+            }
+            elseif (-not (Test-WorkingTreeClean)) {
                 Write-Step "Working tree na branch dev tem mudancas nao-commitadas." "Red"
                 Write-Step "Inspecionar 'git status' e decidir 'git stash' / 'git checkout .' antes de prosseguir." "Yellow"
                 exit 1
@@ -631,9 +672,9 @@ try {
             }
         }
 
-        $newPR = if ($existingPR) { $existingPR } else { $null }
+        $newPR = if ($existingPR) { $existingPR } elseif ($recoveredPR) { $recoveredPR } else { $null }
 
-        if (-not $existingPR) {
+        if (-not $newPR) {
             # ── snapshot de PRs abertos antes (fallback p/ deteccao de novo PR) ─
             $beforePRNumbers = @(Get-OpenPRs | ForEach-Object { $_.number })
             Write-Step "PRs abertos antes: $(if ($beforePRNumbers.Count -eq 0) { 'nenhum' } else { $beforePRNumbers -join ', ' })"

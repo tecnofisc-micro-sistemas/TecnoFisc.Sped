@@ -328,7 +328,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.219 | Registro 1110 | Operações de Exportação Indireta — Mercadorias de Terceiros | 278 |
 | [x] | 8.220 | Registro 1200 | Controle de Créditos Fiscais — ICMS | 279 |
 | [x] | 8.221 | Registro 1210 | Utilização de Créditos Fiscais — ICMS | 280 |
-| [ ] | 8.222 | Registro 1250 | Informações Consolidadas de Saldos de Restituição, Ressarcimento e Complementação do ICMS | 281 |
+| [x] | 8.222 | Registro 1250 | Informações Consolidadas de Saldos de Restituição, Ressarcimento e Complementação do ICMS | 281 |
 | [ ] | 8.223 | Registro 1255 | Informações Consolidadas de Saldos de Restituição, Ressarcimento e Complementação do ICMS por Motivo | 281 |
 | [ ] | 8.224 | Registro 1300 | Movimentação Diária de Combustíveis | 282 |
 | [ ] | 8.225 | Registro 1310 | Movimentação Diária de Combustíveis por Tanque | 282 |

@@ -312,7 +312,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.208 | Registro K290 | Produção Conjunta — Ordem de Produção | 265 |
 | [x] | 8.209 | Registro K291 | Produção Conjunta — Itens Produzidos | 266 |
 | [x] | 8.210 | Registro K292 | Produção Conjunta — Insumos Consumidos | 267 |
-| [ ] | 8.211 | Registro K300 | Produção Conjunta — Industrialização Efetuada por Terceiros | 268 |
+| [x] | 8.211 | Registro K300 | Produção Conjunta — Industrialização Efetuada por Terceiros | 268 |
 | [ ] | 8.212 | Registro K301 | Produção Conjunta — Industrialização Efetuada por Terceiros — Itens Produzidos | 270 |
 | [ ] | 8.213 | Registro K302 | Produção Conjunta — Industrialização Efetuada por Terceiros — Insumos Consumidos | 271 |
 | [ ] | 8.214 | Registro K990 | Encerramento do Bloco K | 273 |

@@ -302,7 +302,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.198 | Registro K220 | Outras Movimentações Internas entre Mercadorias | 253 |
 | [x] | 8.199 | Registro K230 | Itens Produzidos | 254 |
 | [x] | 8.200 | Registro K235 | Insumos Consumidos | 255 |
-| [ ] | 8.201 | Registro K250 | Industrialização Efetuada por Terceiros — Itens Produzidos | 256 |
+| [x] | 8.201 | Registro K250 | Industrialização Efetuada por Terceiros — Itens Produzidos | 256 |
 | [ ] | 8.202 | Registro K255 | Industrialização em Terceiros — Insumos Consumidos | 257 |
 | [ ] | 8.203 | Registro K260 | Reprocessamento/Reparo de Produto/Insumo | 258 |
 | [ ] | 8.204 | Registro K265 | Reprocessamento/Reparo — Mercadorias Consumidas e/ou Retornadas | 259 |

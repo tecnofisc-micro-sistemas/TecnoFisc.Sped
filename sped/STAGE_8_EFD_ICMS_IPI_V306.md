@@ -344,7 +344,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.235 | Registro 1600 | Total das Operações com Cartão de Crédito e/ou Débito | 286 |
 | [x] | 8.236 | Registro 1700 | Documentos Fiscais Utilizados | 286 |
 | [x] | 8.237 | Registro 1710 | Documentos Fiscais Cancelados/Inutilizados | 287 |
-| [ ] | 8.238 | Registro 1800 | DCTA — Demonstrativo de Crédito do ICMS Sobre Transporte Aéreo | 288 |
+| [x] | 8.238 | Registro 1800 | DCTA — Demonstrativo de Crédito do ICMS Sobre Transporte Aéreo | 288 |
 | [ ] | 8.239 | Registro 1900 | Indicador de Sub-Apuração do ICMS | 288 |
 | [ ] | 8.240 | Registro 1910 | Período da Sub-Apuração do ICMS | 290 |
 | [ ] | 8.241 | Registro 1920 | Sub-Apuração do ICMS | 290 |

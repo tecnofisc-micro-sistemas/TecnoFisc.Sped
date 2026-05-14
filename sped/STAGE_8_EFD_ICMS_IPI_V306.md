@@ -338,7 +338,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.229 | Registro 1370 | Bicos da Bomba | 284 |
 | [x] | 8.230 | Registro 1390 | Controle de Produção de Usina | 284 |
 | [x] | 8.231 | Registro 1391 | Produção Diária da Usina | 285 |
-| [ ] | 8.232 | Registro 1400 | Informação sobre Valor Agregado | 285 |
+| [x] | 8.232 | Registro 1400 | Informação sobre Valor Agregado | 285 |
 | [ ] | 8.233 | Registro 1500 | NF/Conta de Energia Elétrica (cód. 06) — Operações Interestaduais | 285 |
 | [ ] | 8.234 | Registro 1510 | Itens do Documento NF/Conta de Energia Elétrica (cód. 06) | 285 |
 | [ ] | 8.235 | Registro 1600 | Total das Operações com Cartão de Crédito e/ou Débito | 286 |

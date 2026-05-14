@@ -333,7 +333,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.224 | Registro 1300 | Movimentação Diária de Combustíveis | 282 |
 | [x] | 8.225 | Registro 1310 | Movimentação Diária de Combustíveis por Tanque | 282 |
 | [x] | 8.226 | Registro 1320 | Volume de Vendas | 283 |
-| [ ] | 8.227 | Registro 1350 | Bombas | 283 |
+| [x] | 8.227 | Registro 1350 | Bombas | 283 |
 | [ ] | 8.228 | Registro 1360 | Lacres das Bombas | 284 |
 | [ ] | 8.229 | Registro 1370 | Bicos da Bomba | 284 |
 | [ ] | 8.230 | Registro 1390 | Controle de Produção de Usina | 284 |

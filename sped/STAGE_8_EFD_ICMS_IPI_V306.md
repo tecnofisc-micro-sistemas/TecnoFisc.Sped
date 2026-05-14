@@ -340,7 +340,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.231 | Registro 1391 | Produção Diária da Usina | 285 |
 | [x] | 8.232 | Registro 1400 | Informação sobre Valor Agregado | 285 |
 | [x] | 8.233 | Registro 1500 | NF/Conta de Energia Elétrica (cód. 06) — Operações Interestaduais | 285 |
-| [ ] | 8.234 | Registro 1510 | Itens do Documento NF/Conta de Energia Elétrica (cód. 06) | 285 |
+| [x] | 8.234 | Registro 1510 | Itens do Documento NF/Conta de Energia Elétrica (cód. 06) | 285 |
 | [ ] | 8.235 | Registro 1600 | Total das Operações com Cartão de Crédito e/ou Débito | 286 |
 | [ ] | 8.236 | Registro 1700 | Documentos Fiscais Utilizados | 286 |
 | [ ] | 8.237 | Registro 1710 | Documentos Fiscais Cancelados/Inutilizados | 287 |

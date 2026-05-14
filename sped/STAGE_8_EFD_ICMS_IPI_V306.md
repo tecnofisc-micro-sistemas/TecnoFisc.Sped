@@ -326,7 +326,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.217 | Registro 1100 | Registro de Informações sobre Exportação | 276 |
 | [x] | 8.218 | Registro 1105 | Documentos Fiscais de Exportação | 277 |
 | [x] | 8.219 | Registro 1110 | Operações de Exportação Indireta — Mercadorias de Terceiros | 278 |
-| [ ] | 8.220 | Registro 1200 | Controle de Créditos Fiscais — ICMS | 279 |
+| [x] | 8.220 | Registro 1200 | Controle de Créditos Fiscais — ICMS | 279 |
 | [ ] | 8.221 | Registro 1210 | Utilização de Créditos Fiscais — ICMS | 280 |
 | [ ] | 8.222 | Registro 1250 | Informações Consolidadas de Saldos de Restituição, Ressarcimento e Complementação do ICMS | 281 |
 | [ ] | 8.223 | Registro 1255 | Informações Consolidadas de Saldos de Restituição, Ressarcimento e Complementação do ICMS por Motivo | 281 |

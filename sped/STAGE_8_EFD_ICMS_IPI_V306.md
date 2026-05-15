@@ -363,7 +363,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 
 | Feito | Sub-stage | Registro | Descrição | Página PDF |
 | --- | --- | --- | --- | --- |
-| [ ] | 8.252 | Registro 9001 | Abertura do Bloco 9 | 302 |
+| [x] | 8.252 | Registro 9001 | Abertura do Bloco 9 | 302 |
 | [ ] | 8.253 | Registro 9900 | Registros do Arquivo | 302 |
 | [ ] | 8.254 | Registro 9990 | Encerramento do Bloco 9 | 302 |
 | [ ] | 8.255 | Registro 9999 | Encerramento do Arquivo Digital | 303 |

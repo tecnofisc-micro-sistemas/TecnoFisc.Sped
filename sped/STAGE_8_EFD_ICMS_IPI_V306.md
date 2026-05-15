@@ -347,7 +347,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.238 | Registro 1800 | DCTA — Demonstrativo de Crédito do ICMS Sobre Transporte Aéreo | 288 |
 | [x] | 8.239 | Registro 1900 | Indicador de Sub-Apuração do ICMS | 288 |
 | [x] | 8.240 | Registro 1910 | Período da Sub-Apuração do ICMS | 290 |
-| [ ] | 8.241 | Registro 1920 | Sub-Apuração do ICMS | 290 |
+| [x] | 8.241 | Registro 1920 | Sub-Apuração do ICMS | 290 |
 | [ ] | 8.242 | Registro 1921 | Ajuste/Benefício/Incentivo da Sub-Apuração do ICMS | 293 |
 | [ ] | 8.243 | Registro 1922 | Informações Adicionais dos Ajustes da Sub-Apuração do ICMS | 293 |
 | [ ] | 8.244 | Registro 1923 | Informações Adicionais dos Ajustes da Sub-Apuração do ICMS — Identificação dos Documentos Fiscais | 294 |

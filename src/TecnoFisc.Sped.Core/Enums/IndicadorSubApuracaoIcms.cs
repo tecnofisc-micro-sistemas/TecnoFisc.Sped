@@ -6,6 +6,9 @@ namespace TecnoFisc.Sped.Core.Enums;
 /// </summary>
 public enum IndicadorSubApuracaoIcms
 {
+    /// <summary>2 — Central de distribuicao.</summary>
+    CentralDistribuicao = 2,
+
     /// <summary>3 — Apuracao em separado 1.</summary>
     Apuracao1 = 3,
 

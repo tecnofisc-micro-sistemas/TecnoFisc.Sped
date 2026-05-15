@@ -349,7 +349,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.240 | Registro 1910 | Período da Sub-Apuração do ICMS | 290 |
 | [x] | 8.241 | Registro 1920 | Sub-Apuração do ICMS | 290 |
 | [x] | 8.242 | Registro 1921 | Ajuste/Benefício/Incentivo da Sub-Apuração do ICMS | 293 |
-| [ ] | 8.243 | Registro 1922 | Informações Adicionais dos Ajustes da Sub-Apuração do ICMS | 293 |
+| [x] | 8.243 | Registro 1922 | Informações Adicionais dos Ajustes da Sub-Apuração do ICMS | 293 |
 | [ ] | 8.244 | Registro 1923 | Informações Adicionais dos Ajustes da Sub-Apuração do ICMS — Identificação dos Documentos Fiscais | 294 |
 | [ ] | 8.245 | Registro 1925 | Informações Adicionais da Sub-Apuração — Valores Declaratórios | 295 |
 | [ ] | 8.246 | Registro 1926 | Obrigações do ICMS a Recolher — Operações Referentes à Sub-Apuração | 295 |

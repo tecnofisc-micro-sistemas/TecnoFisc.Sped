@@ -351,7 +351,7 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | [x] | 8.242 | Registro 1921 | Ajuste/Benefício/Incentivo da Sub-Apuração do ICMS | 293 |
 | [x] | 8.243 | Registro 1922 | Informações Adicionais dos Ajustes da Sub-Apuração do ICMS | 293 |
 | [x] | 8.244 | Registro 1923 | Informações Adicionais dos Ajustes da Sub-Apuração do ICMS — Identificação dos Documentos Fiscais | 294 |
-| [ ] | 8.245 | Registro 1925 | Informações Adicionais da Sub-Apuração — Valores Declaratórios | 295 |
+| [x] | 8.245 | Registro 1925 | Informações Adicionais da Sub-Apuração — Valores Declaratórios | 295 |
 | [ ] | 8.246 | Registro 1926 | Obrigações do ICMS a Recolher — Operações Referentes à Sub-Apuração | 295 |
 | [ ] | 8.247 | Registro 1960 | GIAF 1 — Guia de Informação e Apuração de Incentivos Fiscais e Financeiros: Indústria (Crédito Presumido) | 296 |
 | [ ] | 8.248 | Registro 1970 | GIAF 3 — Importação (Diferimento na Entrada e Crédito Presumido na Saída Subsequente) | 298 |

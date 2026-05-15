@@ -274,10 +274,45 @@ function Get-PartialBranchState {
     }
 }
 
+function Test-BranchMergedIntoDev {
+    # Retorna $true se branch nao tem commits unicos vs dev (origin/dev preferido).
+    # Cobre os dois cenarios pos-merge:
+    #   (a) merge commit (gh pr merge --merge): a branch de origem nao existe mais em dev
+    #       como ancestral linear, mas todos os commits dela estao acessiveis via dev.
+    #   (b) squash/rebase: idem — commits originais nao aparecem em `dev..branch`.
+    param([string]$BranchName, [bool]$IsLocal, [bool]$IsRemote)
+
+    $ref = if ($IsRemote) { "origin/$BranchName" } elseif ($IsLocal) { $BranchName } else { return $false }
+    $base = if (git show-ref --verify --quiet refs/remotes/origin/dev) { 'origin/dev' } else { 'dev' }
+
+    $unique = git log "$base..$ref" --oneline 2>$null
+    return -not [bool]$unique
+}
+
+function Remove-MergedOrphanBranch {
+    # Deleta branch (local e/ou remota) que ja foi mergeada em dev. gh pr merge --delete-branch
+    # falha silenciosamente quando o repo nao tem auto-delete habilitado ou em race conditions —
+    # restos ficam como branches sem PR e o script os lia como trabalho parcial.
+    param([string]$BranchName, [bool]$IsLocal, [bool]$IsRemote)
+
+    if ($IsRemote) {
+        Write-Step "Deletando branch remota mergeada: origin/$BranchName" "DarkGray"
+        git push origin --delete $BranchName 2>&1 | Out-Null
+    }
+    if ($IsLocal) {
+        Write-Step "Deletando branch local mergeada: $BranchName" "DarkGray"
+        git branch -D $BranchName 2>&1 | Out-Null
+    }
+}
+
 function Find-OrphanFeatureBranches {
     # Branches feat/stage-* (locais ou remotas) sem PR aberto. Captura estados parciais
     # de batch/single interrompidos antes de gh pr create — onde Find-PRByBranch falha
     # porque o nome esperado pelo script difere do que claude criou (ex.: branch de batch).
+    #
+    # Filtra automaticamente branches ja mergeadas em dev (sem commits unicos) — essas
+    # sao restos de gh pr merge --delete-branch que falhou silenciosamente; deletadas
+    # in-place. So retorna orfas com trabalho real (commits unicos vs dev).
     $localOut = git for-each-ref --format='%(refname:short)' 'refs/heads/feat/stage-*' 2>$null
     $localBranches = @($localOut | Where-Object { $_ })
 
@@ -291,12 +326,20 @@ function Find-OrphanFeatureBranches {
 
     $orphans = @()
     foreach ($b in $allBranches) {
-        if ($openPRBranches -notcontains $b) {
-            $orphans += [pscustomobject]@{
-                Name   = $b
-                Local  = $localBranches  -contains $b
-                Remote = $remoteBranches -contains $b
-            }
+        if ($openPRBranches -contains $b) { continue }
+
+        $isLocal  = $localBranches  -contains $b
+        $isRemote = $remoteBranches -contains $b
+
+        if (Test-BranchMergedIntoDev -BranchName $b -IsLocal $isLocal -IsRemote $isRemote) {
+            Remove-MergedOrphanBranch -BranchName $b -IsLocal $isLocal -IsRemote $isRemote
+            continue
+        }
+
+        $orphans += [pscustomobject]@{
+            Name   = $b
+            Local  = $isLocal
+            Remote = $isRemote
         }
     }
     return $orphans

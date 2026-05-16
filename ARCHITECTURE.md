@@ -651,8 +651,9 @@ When starting a session in this repository:
 10. **5-year fiscal window:** ignore versionamento de campos com vigência anterior a `(hoje - 5 anos)`. Dentro da janela, marcos temporais antigos não são modelados em código (vide §4.3).
 11. **EFD ICMS-IPI é o regente do Ato COTEPE.** Quando uma tabela/enum aparecer referenciada em múltiplos leiautes, extrair uma vez no leiaute-origem (EFD ICMS-IPI) e tratar como compartilhada.
 12. Performance-sensitive code requires a BenchmarkDotNet benchmark.
-13. When in doubt about scope, ask before coding.
-14. Write tests alongside code, not after.
+13. **Merges into `dev` are always Squash and Merge.** Feature branches may contain granular commits while work is in progress, but the integration commit that lands on `dev` must be a single squashed PR merge.
+14. When in doubt about scope, ask before coding.
+15. Write tests alongside code, not after.
 
 Update this document when:
 

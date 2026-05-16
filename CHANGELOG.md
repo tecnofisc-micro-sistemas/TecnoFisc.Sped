@@ -6,16 +6,23 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ## [Não publicado]
 
+### TecnoFisc.Sped.EfdIcmsIpi
+
+#### Adicionado
+
+- API pública de parser/gerador para o baseline V306: `ArquivoEfdIcmsIpi`, `BlocoEfdIcmsIpi`, `ParserEfdIcmsIpi` e `GeradorEfdIcmsIpi`, com leitura streaming, leitura buffered e escrita pipe-delimitada.
+- Testes smoke e round-trip mínimo para parser, gerador e modelo raiz de arquivo EFD ICMS-IPI.
+
 ### Documentação
 
 #### Alterado
 
-- README e instruções operacionais passam a refletir o estado atual do desenvolvimento: registros EFD ICMS-IPI V306 completos, com API pública de parser/gerador ainda pendente antes da release 0.3.0.
+- README e instruções operacionais passam a refletir o estado atual do desenvolvimento: registros EFD ICMS-IPI V306 completos, com API pública de parser/gerador implementada e validação round-trip real ainda pendente antes da release 0.3.0.
 - Registrada regra dura de integração: merges para `dev` devem usar sempre Squash and Merge; branches de trabalho podem manter commits granulares.
 
 #### Nota operacional
 
-- A Stage 8 baseline V306 está completa no tracking local (`sped/STAGE_8_EFD_ICMS_IPI_V306.md`), mas a publicação 0.3.0 ainda depende da API pública de parser/gerador e de validação round-trip com fixture real anonimizada de EFD ICMS-IPI quando disponível.
+- A Stage 8 baseline V306 está completa no tracking local (`sped/STAGE_8_EFD_ICMS_IPI_V306.md`), mas a publicação 0.3.0 ainda depende de validação round-trip com fixture real anonimizada de EFD ICMS-IPI quando disponível.
 
 ## [0.2.0] — 2026-05-06
 

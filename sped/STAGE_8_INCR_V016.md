@@ -48,7 +48,7 @@ Numeração: `8.{versão}.{seq}`. Sequência é local da versão (V016: 8.016.00
 
 | Feito | Sub-stage | Tipo | Registro | Bloco | Delta | Fonte |
 | --- | --- | --- | --- | --- | --- | --- |
-| [ ] | 8.016.004 | UPDATE/Descontinuado | Registro 1600 | 1 | Término da utilização. Substituído por Registro 1601 a partir de V016. | 3.0.7 item 6 |
+| [x] | 8.016.004 | UPDATE/Descontinuado | Registro 1600 | 1 | Término da utilização. Substituído por Registro 1601 a partir de V016. | 3.0.7 item 6 |
 | [ ] | 8.016.005 | UPDATE/Descontinuado | Registro 0210 | 0 | Término da utilização. | 3.0.7 item 22 |
 | [ ] | 8.016.006 | UPDATE/Subclasse | Registro C120 | C | Campo 03 tamanho 12→15. Subclasse `RegistroC120V016 : RegistroC120`. | 3.0.7 item 4 |
 | [ ] | 8.016.007 | UPDATE/Obrig | Registro D100 | D | Campos 24 `VL_PIS` e 25 `VL_COFINS` OC→O. Inclui validação alterada do campo 11. | 3.0.7 itens 1-2, 29 |

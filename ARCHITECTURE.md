@@ -74,26 +74,28 @@ Published as private NuGet packages on Azure Artifacts (or GitHub Packages — t
 
 ---
 
-## 3. SPED context
+## 3. SPED context and library scope
 
-**SPED (Sistema Público de Escrituração Digital)** is the umbrella system, encompassing all of the following official projects:
+**SPED (Sistema Público de Escrituração Digital)** é o sistema-guarda-chuva da Receita Federal que abrange uma família grande de projetos (EFD Contribuições, EFD ICMS-IPI, ECD, ECF, EFD-Reinf, eSocial, e-Financeira, DeRE, Central de Balanços, NF-e, NFC-e, NFS-e, CT-e, MDF-e, etc.).
 
-- Central de Balanços
-- CT-e (Conhecimento de Transporte Eletrônico)
-- DeRE
-- ECD (Escrituração Contábil Digital)
-- ECF (Escrituração Contábil Fiscal)
-- EFD Contribuições
-- EFD ICMS-IPI
-- EFD-Reinf
-- e-Financeira
-- eSocial
-- MDF-e (Manifesto Eletrônico de Documentos Fiscais)
-- NFC-e (Nota Fiscal de Consumidor Eletrônica)
-- NF-e (Nota Fiscal Eletrônica)
-- NFS-e (Nota Fiscal de Serviços Eletrônica)
+**Library scope (definitive).** TecnoFisc.Sped cobre apenas o subset abaixo. Outros projetos SPED **não** serão implementados e qualquer referência a eles no repositório deve ser removida quando encontrada:
 
-The library family covers all of these (incrementally, prioritizing EFD Contribuições first), each as its own package.
+| Projeto SPED | Pacote NuGet | Tipo |
+| --- | --- | --- |
+| EFD Contribuições | `TecnoFisc.Sped.EfdContribuicoes` | `.txt` (Latin1) |
+| EFD ICMS-IPI | `TecnoFisc.Sped.EfdIcmsIpi` | `.txt` (Latin1) |
+| ECD | `TecnoFisc.Sped.Ecd` | `.txt` (Latin1) |
+| ECF | `TecnoFisc.Sped.Ecf` | `.txt` (Latin1) |
+| NF-e | `TecnoFisc.Sped.NFe` | XML (UTF-8) |
+| NFC-e | `TecnoFisc.Sped.NFCe` | XML (UTF-8) |
+| CT-e | `TecnoFisc.Sped.CTe` | XML (UTF-8) |
+
+Além desses, dois pacotes transversais completam a família:
+
+- `TecnoFisc.Sped.Core` — infraestrutura compartilhada (value objects fiscais, parser/gerador genérico, abstrações de catálogo, identificador dinâmico de arquivos SPED que reconhece o leiaute pela primeira linha — ver §12).
+- `TecnoFisc.Sped` — metapacote que referencia todos os leiautes acima em uma única dependência (ver Stage 13).
+
+Todos os outros projetos SPED listados no parágrafo de contexto ficam **explicitamente fora do escopo** e não devem ganhar pacote, stage no roadmap, nem entrada em tracking files.
 
 ---
 
@@ -184,19 +186,16 @@ Reflection at startup (once) for catalog discovery is acceptable. Reflection dur
 ```text
 TecnoFisc.Sped/
 ├── src/
-│   ├── TecnoFisc.Sped.Core/                          # Shared parser/generator infrastructure, value objects
-│   ├── TecnoFisc.Sped.Core.SourceGenerators/         # Source generators for catalog and serialization
-│   ├── TecnoFisc.Sped.EfdContribuicoes/                 # EFD Contribuições (.txt)
+│   ├── TecnoFisc.Sped/                               # Metapacote (referencia todos os leiautes)
+│   ├── TecnoFisc.Sped.Core/                          # Infra compartilhada + sniffer de arquivos SPED
+│   ├── TecnoFisc.Sped.Core.SourceGenerators/         # Source generators (catalog + serialization)
+│   ├── TecnoFisc.Sped.EfdContribuicoes/              # EFD Contribuições (.txt)
 │   ├── TecnoFisc.Sped.EfdIcmsIpi/                    # EFD ICMS-IPI (.txt)
-│   ├── TecnoFisc.Sped.Reinf/                         # EFD-Reinf
-│   ├── TecnoFisc.Sped.Ecd/                           # ECD
-│   ├── TecnoFisc.Sped.Ecf/                           # ECF
+│   ├── TecnoFisc.Sped.Ecd/                           # ECD (.txt)
+│   ├── TecnoFisc.Sped.Ecf/                           # ECF (.txt)
 │   ├── TecnoFisc.Sped.NFe/                           # NF-e XML
 │   ├── TecnoFisc.Sped.NFCe/                          # NFC-e XML
-│   ├── TecnoFisc.Sped.NFSe/                          # NFS-e
-│   ├── TecnoFisc.Sped.CTe/                           # CT-e
-│   ├── TecnoFisc.Sped.MDFe/                          # MDF-e
-│   └── TecnoFisc.Sped.ESocial/                       # eSocial
+│   └── TecnoFisc.Sped.CTe/                           # CT-e XML
 │
 ├── tests/
 │   ├── TecnoFisc.Sped.Core.Tests/
@@ -216,10 +215,14 @@ TecnoFisc.Sped/
 ```text
 TecnoFisc.Sped.Core                  ← (no dependencies)
 TecnoFisc.Sped.Core.SourceGenerators ← (no dependencies, references Roslyn analyzer APIs)
-TecnoFisc.Sped.EfdContribuicoes         ← TecnoFisc.Sped.Core, TecnoFisc.Sped.Core.SourceGenerators (analyzer)
-TecnoFisc.Sped.EfdIcmsIpi            ← TecnoFisc.Sped.Core, TecnoFisc.Sped.Core.SourceGenerators (analyzer)
-TecnoFisc.Sped.NFe                   ← TecnoFisc.Sped.Core, TecnoFisc.Sped.Core.SourceGenerators (analyzer)
-... and so on
+TecnoFisc.Sped.EfdContribuicoes      ← Core, Core.SourceGenerators (analyzer)
+TecnoFisc.Sped.EfdIcmsIpi            ← Core, Core.SourceGenerators (analyzer)
+TecnoFisc.Sped.Ecd                   ← Core, Core.SourceGenerators (analyzer)
+TecnoFisc.Sped.Ecf                   ← Core, Core.SourceGenerators (analyzer)
+TecnoFisc.Sped.NFe                   ← Core, Core.SourceGenerators (analyzer)
+TecnoFisc.Sped.NFCe                  ← Core, Core.SourceGenerators (analyzer)
+TecnoFisc.Sped.CTe                   ← Core, Core.SourceGenerators (analyzer)
+TecnoFisc.Sped (metapacote)          ← todos os pacotes de leiaute acima
 ```
 
 **Critical rule 1:** No project in TecnoFisc.Sped depends on any database, file system configuration, or external service.
@@ -276,7 +279,7 @@ TecnoFisc.Sped.Core/
 │   └── TotalizadorBlocos.cs                 # Generates X990 closers and 9999
 │
 ├── Xml/
-│   ├── LeitorXmlBase.cs                     # For NF-e, NFC-e, CT-e, MDF-e
+│   ├── LeitorXmlBase.cs                     # For NF-e, NFC-e, CT-e
 │   └── ValidadorAssinaturaDigital.cs
 │
 └── Erros/
@@ -524,13 +527,15 @@ Publishing: SPED arquivos are all-or-nothing — a partial implementation cannot
 - Benchmark comparison: reflection cache vs source-generated.
 - Lands once the registro shape has stabilized — typically after Bloco 0 and Bloco C are complete.
 
-### Stage 7 — Layout V007 EFD Contribuições (and subsequent)
+### Stage 7 — EFD Contribuições V007+ (placeholder, sem trigger ativo)
 
-- Triggered when the Receita publishes guia v1.36+ (PDF dropped in `sped/guides/`).
-- `LayoutEfdContribuicoes` enum extended.
-- Subclasses or version-aware serialization for changed records.
-- Parser auto-detects from `Registro0000` and instantiates appropriate variants.
-- Tests covering both V006 and V007 round-trips.
+A Receita não publicou novo leiaute de EFD Contribuições desde V006 (vigente desde 2020-01). Stage permanece em standby até que um novo leiaute apareça. Quando ativado, segue o mesmo padrão de Stage 9 (incrementos EFD ICMS-IPI):
+
+- PDF do novo Guia Prático dropado em `sped/guides/`.
+- Constante adicionada ao enum `LayoutEfdContribuicoes` (`V007 = 7`, …).
+- Tracking file `sped/STAGE_7_EFD_CONTRIBUICOES_INCR_V0XX.md` listando apenas o delta.
+- Novos campos com `[CampoSped(DesdeVersao = (int)LayoutEfdContribuicoes.V0XX)]`; novos registros com `[RegistroSped(IntroduzidoEm = (int)LayoutEfdContribuicoes.V0XX)]`.
+- Tests cobrindo round-trip de V006 e do novo leiaute.
 
 ### Stage 8 — TecnoFisc.Sped.EfdIcmsIpi (EFD ICMS-IPI, baseline V015)
 
@@ -545,25 +550,76 @@ Same internal structure as `EfdContribuicoes`. Independent set of record classes
 
 Publish v0.3.0 only after baseline V015 is complete and round-trips a real anonymized arquivo. Each incremental layout (V016+) ships as a minor bump (0.3.x).
 
-### Stage 9 — TecnoFisc.Sped.NFe (XML)
+### Stage 9 — EFD ICMS-IPI incrementos V016 … V020
 
-- XML parser using `System.Xml.Linq`.
-- Strongly-typed model classes mapping NF-e XML schema.
-- Digital signature validation (validation only — not signing).
-- Generator for NF-e XML (for retificadoras and similar use cases).
+Implementa cumulativamente os leiautes posteriores ao baseline V015, até o leiaute vigente em 2026 (V020). Para cada novo leiaute publicado pela Receita (uma Nota Técnica por ano):
 
-### Stage 10 — Additional projects (incremental)
+- Tracking file próprio sob `sped/STAGE_8_INCR_V0XX.md` listando **apenas o delta** sobre o leiaute anterior (novos registros, novos campos, alterações de obrigatoriedade, descontinuações).
+- Constante adicionada ao enum `LayoutEfdIcmsIpi` (`V016 = 16` … `V020 = 20`) — valor inteiro = `COD_VER` do registro `0000`.
+- Novos campos anotados com `[CampoSped(DesdeVersao = (int)LayoutEfdIcmsIpi.V0XX)]`; novos registros com `[RegistroSped(IntroduzidoEm = (int)LayoutEfdIcmsIpi.V0XX)]`. Parser/gerador respeitam essas anotações contra o `COD_VER` lido do `0000`.
+- Round-trip real para cada leiaute novo: fixture anonimizada exercitando registros adicionados.
+- Cada leiaute implementado entra como minor bump (`0.3.x`) do pacote `TecnoFisc.Sped.EfdIcmsIpi`.
 
-- TecnoFisc.Sped.Reinf
-- TecnoFisc.Sped.Ecd
-- TecnoFisc.Sped.Ecf
-- TecnoFisc.Sped.NFCe
-- TecnoFisc.Sped.NFSe
-- TecnoFisc.Sped.CTe
-- TecnoFisc.Sped.MDFe
-- TecnoFisc.Sped.ESocial
+Sub-stages numbered `9.1.001…` (V016), `9.2.001…` (V017), etc. Ordem dentro de cada leiaute: registros novos antes de campos novos antes de mudanças de obrigatoriedade.
 
-Each follows the same pattern: records, enums, parser, generator, tests.
+### Stage 10 — TecnoFisc.Sped.Ecd (baseline leiaute 2021)
+
+Novo pacote para ECD (Escrituração Contábil Digital). Estrutura interna idêntica a `EfdContribuicoes` / `EfdIcmsIpi`: pasta `Registros/` por bloco, `Enums/`, `Versionamento/`, `Parser/`, `Gerador/`, `Arquivo*.cs`.
+
+**Baseline:** o leiaute vigente em 2021 (versão exata será confirmada lendo o `COD_VER` do registro `0000` do guia oficial no momento da implementação). PDF do Manual de Orientação deve ser dropado em `sped/guides/`. Tracking file: `sped/STAGE_10_ECD_BASELINE.md` com a tabela completa de sub-stages na ordem da Seção 2.6.1 do manual.
+
+**Compartilhamento com Core.** Value objects fiscais (`Cnpj`, `Cpf`, `InscricaoEstadual`, etc.) e enums regidos por Ato COTEPE já vivem em `TecnoFisc.Sped.Core` (Stage 1) e são reutilizados — não duplicar. Enums específicos da ECD (planos de contas, naturezas contábeis) ficam no pacote.
+
+**Independência por registro.** `Registro0000` da ECD é distinto dos `Registro0000` de outros leiautes (Hard Rule 2). Apenas tabelas/enums verdadeiramente transversais migram para Core.
+
+Publica `TecnoFisc.Sped.Ecd 0.4.0` quando baseline 2021 completo e round-trip real estiver validado.
+
+### Stage 11 — ECD incrementos até leiaute vigente
+
+Mesmo padrão de Stage 9: para cada leiaute publicado depois de 2021 até o vigente em 2026, um tracking file `sped/STAGE_10_INCR_V0XX.md` descrevendo apenas o delta. Constantes incrementais no enum `LayoutEcd`. Cada leiaute = minor bump (`0.4.x`).
+
+### Stage 12 — Identificador dinâmico de arquivos SPED (sniffer)
+
+Componente novo em `TecnoFisc.Sped.Core` que **identifica o leiaute SPED a partir da primeira linha do arquivo**. A primeira linha de qualquer arquivo SPED é sempre o `|0000|...|`, e os campos imediatamente seguintes (especialmente `COD_VER`) permitem inferir o projeto (EFD Contribuições vs ICMS-IPI vs ECD vs ECF) e a versão exata do leiaute.
+
+Funcionamento:
+
+- API `SnifferSped.IdentificarAsync(Stream)` lê **apenas a primeira linha não vazia** sem consumir o resto. Devolve `MetadadosArquivoSped { ProjetoSped, VersaoLeiaute, EncodingDetectado, ... }`.
+- Caso o consumidor queira prosseguir, expõe `SnifferSped.AbrirParserAsync(Stream)` que devolve o `ILeitorSped` específico do leiaute identificado e o stream posicionado na origem (replay-safe). Internamente delega para `ParserEfdContribuicoes`, `ParserEfdIcmsIpi`, `ParserEcd`, `ParserEcf` conforme apropriado.
+- Heurística: combinação `(Bloco do primeiro registro, COD_VER, layout do `0000`)`. Registros `0000` divergem entre leiautes em campos e tamanhos, então o discriminator é sólido.
+- Sem reflexão no hot path — o despacho é via `switch` gerado em compile time pelo source generator (extensão de Stage 6) ou tabela estática.
+
+Tests cobrem todos os leiautes suportados + arquivo malformado + EOF prematuro + encoding mismatch.
+
+### Stage 13 — Metapacote TecnoFisc.Sped
+
+Pacote agregador (`TecnoFisc.Sped`) que referencia todos os pacotes de leiaute em uma única dependência NuGet. Útil para consumidores que querem suporte abrangente sem listar cada pacote no `csproj`.
+
+- Sem código próprio — apenas `<PackageReference>` para cada um dos pacotes de leiaute (`EfdContribuicoes`, `EfdIcmsIpi`, `Ecd`, `Ecf`, `NFe`, `NFCe`, `CTe`).
+- Versão acompanha a mais alta dos pacotes referenciados; bumps coordenados por release notes consolidados.
+- Documentação no README do pacote orienta consumidores a preferir o metapacote quando não souberem antecipadamente qual leiaute vão consumir, ou quando o sniffer (Stage 12) for o ponto de entrada.
+
+Publica `TecnoFisc.Sped 0.5.0` na primeira vez que todos os leiautes textuais estiverem em uso (EFD Contribuições + EFD ICMS-IPI + ECD; ECF pode ser placeholder até Stage 17).
+
+### Stage 14 — TecnoFisc.Sped.NFe (XML)
+
+- XML parser baseado em `System.Xml.Linq` (ou `XmlReader` para arquivos grandes em modo streaming).
+- Classes de modelo fortemente tipadas mapeando o schema NF-e (procNFe, infNFe, det, total, transp, cobr, infAdic, etc.).
+- Validação de assinatura digital (apenas validação — não assinatura).
+- Generator de NF-e XML para casos de retificadora e geração in-house.
+- Encoding canônico do XML = UTF-8 (diferente dos `.txt` SPED que são Latin1).
+
+### Stage 15 — TecnoFisc.Sped.NFCe (XML)
+
+Estrutura idêntica a Stage 14, schema NFC-e (Nota Fiscal de Consumidor Eletrônica, modelo 65). Muito código pode ser compartilhado com NF-e via base classes em `TecnoFisc.Sped.Core/Xml/`, mas os tipos públicos do leiaute ficam no pacote NFCe.
+
+### Stage 16 — TecnoFisc.Sped.CTe (XML)
+
+Estrutura idêntica a Stage 14, schema CT-e (Conhecimento de Transporte Eletrônico, modelo 57). Mesmas regras de assinatura digital. Específico do transporte: modais, carga, valores prestados.
+
+### Stage 17 — TecnoFisc.Sped.Ecf (baseline + incrementos)
+
+Pacote para ECF (Escrituração Contábil Fiscal). Padrão `.txt` igual EFD/ECD. Baseline = leiaute vigente quando a stage começar; incrementos seguem o mesmo modelo de Stages 9 e 11 (constantes no enum `LayoutEcf`, tracking files por leiaute, minor bumps por versão).
 
 ---
 

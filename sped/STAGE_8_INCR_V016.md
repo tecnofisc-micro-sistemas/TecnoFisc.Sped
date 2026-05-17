@@ -42,7 +42,7 @@ Numeração: `8.{versão}.{seq}`. Sequência é local da versão (V016: 8.016.00
 | Feito | Sub-stage | Tipo | Registro | Bloco | Campos novos | Fonte |
 | --- | --- | --- | --- | --- | --- | --- |
 | [x] | 8.016.002 | UPDATE/Campo | Registro 0220 | 0 | 04 `COD_BARRA` | Subseção 11 (p.16) + 3.0.7 item 10 |
-| [ ] | 8.016.003 | UPDATE/Campo | Registro C500 | C | 34 `COD_MOD_DOC_REF`, 35 `HASH_DOC_REF`, 36 `SER_DOC_REF`, 37 `NUM_DOC_REF`, 38 `MES_DOC_REF`, 39 `ENER_INJET`, 40 `OUTRAS_DED` | Subseção 11 (p.16) + 3.0.7 itens 11-12 |
+| [x] | 8.016.003 | UPDATE/Campo | Registro C500 | C | 34 `COD_MOD_DOC_REF`, 35 `HASH_DOC_REF`, 36 `SER_DOC_REF`, 37 `NUM_DOC_REF`, 38 `MES_DOC_REF`, 39 `ENER_INJET`, 40 `OUTRAS_DED` | Subseção 11 (p.16) + 3.0.7 itens 11-12 |
 
 ### Mudanças estruturais (UPDATE)
 

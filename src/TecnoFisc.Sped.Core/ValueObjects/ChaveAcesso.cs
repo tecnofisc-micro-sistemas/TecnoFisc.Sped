@@ -1,7 +1,7 @@
 namespace TecnoFisc.Sped.Core.ValueObjects;
 
 /// <summary>
-/// Chave de Acesso de DF-e (NF-e, NFC-e, CT-e, MDF-e). 44 dígitos com DV módulo 11.
+/// Chave de Acesso de DF-e (NF-e, NFC-e, CT-e). 44 dígitos com DV módulo 11.
 /// Estrutura: cUF(2) AAMM(4) CNPJ(14) mod(2) serie(3) nNF(9) tpEmis(1) cNF(8) cDV(1).
 /// </summary>
 public readonly struct ChaveAcesso : IEquatable<ChaveAcesso>
@@ -84,7 +84,7 @@ public readonly struct ChaveAcesso : IEquatable<ChaveAcesso>
     /// <summary>CNPJ do emitente (posições 6-19).</summary>
     public Cnpj CnpjEmitente => _valor is null ? default : Cnpj.Criar(_valor.AsSpan(6, 14));
 
-    /// <summary>Modelo do documento fiscal: 55 = NF-e, 65 = NFC-e, 57 = CT-e, 58 = MDF-e (posições 20-21).</summary>
+    /// <summary>Modelo do documento fiscal: 55 = NF-e, 65 = NFC-e, 57 = CT-e (posições 20-21).</summary>
     public int Modelo => _valor is null ? 0 : (_valor[20] - '0') * 10 + (_valor[21] - '0');
 
     /// <summary>Série do documento (posições 22-24).</summary>

@@ -2,6 +2,7 @@ using TecnoFisc.Sped.Core.Abstracoes;
 using TecnoFisc.Sped.Core.Atributos;
 using TecnoFisc.Sped.Core.Enums;
 using TecnoFisc.Sped.EfdIcmsIpi.Enums;
+using TecnoFisc.Sped.EfdIcmsIpi.Versionamento;
 
 namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoC;
 
@@ -165,4 +166,32 @@ public sealed partial class RegistroC500 : RegistroSped
     /// <summary>Código da conta analítica contábil debitada/creditada.</summary>
     [CampoSped(Ordem = 33, Tamanho = 0)]
     public string? CodCta { get; set; }
+
+    /// <summary>Código do modelo do documento fiscal referenciado, conforme a Tabela 4.1.1.</summary>
+    [CampoSped(Ordem = 34, Tamanho = 2, DesdeVersao = (int)LayoutEfdIcmsIpi.V016)]
+    public string? CodModDocRef { get; set; }
+
+    /// <summary>Código de autenticação digital do registro (Convênio 115/2003).</summary>
+    [CampoSped(Ordem = 35, Tamanho = 32, DesdeVersao = (int)LayoutEfdIcmsIpi.V016)]
+    public string? HashDocRef { get; set; }
+
+    /// <summary>Série do documento fiscal referenciado.</summary>
+    [CampoSped(Ordem = 36, Tamanho = 4, DesdeVersao = (int)LayoutEfdIcmsIpi.V016)]
+    public string? SerDocRef { get; set; }
+
+    /// <summary>Número do documento fiscal referenciado.</summary>
+    [CampoSped(Ordem = 37, Tamanho = 9, DesdeVersao = (int)LayoutEfdIcmsIpi.V016)]
+    public int? NumDocRef { get; set; }
+
+    /// <summary>Mês e ano da emissão do documento fiscal referenciado (formato MMAAAA).</summary>
+    [CampoSped(Ordem = 38, Tamanho = 6, DesdeVersao = (int)LayoutEfdIcmsIpi.V016)]
+    public string? MesDocRef { get; set; }
+
+    /// <summary>Energia injetada.</summary>
+    [CampoSped(Ordem = 39, Tamanho = 0, Decimais = 2, DesdeVersao = (int)LayoutEfdIcmsIpi.V016)]
+    public decimal? EnerInjet { get; set; }
+
+    /// <summary>Outras deduções.</summary>
+    [CampoSped(Ordem = 40, Tamanho = 0, Decimais = 2, DesdeVersao = (int)LayoutEfdIcmsIpi.V016)]
+    public decimal? OutrasDed { get; set; }
 }

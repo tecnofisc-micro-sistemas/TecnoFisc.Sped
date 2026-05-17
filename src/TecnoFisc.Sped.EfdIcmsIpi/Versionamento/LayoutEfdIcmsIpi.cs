@@ -33,4 +33,7 @@ public enum LayoutEfdIcmsIpi
 {
     /// <summary>Leiaute 015 — vigente a partir do período de apuração de janeiro/2021 (NT 2020.001, Guia Prático 3.0.6 em diante).</summary>
     V015 = 15,
+
+    /// <summary>Leiaute 016 — vigente a partir do período de apuração de janeiro/2022 (Guia Prático 3.0.7/3.0.8/3.0.9).</summary>
+    V016 = 16,
 }

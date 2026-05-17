@@ -20,8 +20,8 @@
     Determina $TrackingFile e o argumento propagado ao /implementar-registro.
 
 .PARAMETER Version
-    Apenas para -Module efd-icms-ipi. Versão do leiaute incremental (ex.: "v307").
-    Vazio = baseline V306 (sped/STAGE_8_EFD_ICMS_IPI_V306.md).
+    Apenas para -Module efd-icms-ipi. Versão do leiaute incremental (ex.: "v016").
+    Vazio = baseline V015 (sped/STAGE_8_EFD_ICMS_IPI_V015.md).
     Preenchido = incremento (sped/STAGE_8_INCR_<VERSION>.md).
 
 .PARAMETER Bloco
@@ -58,11 +58,11 @@
 
 .EXAMPLE
     .\scripts\auto-implement-sped.ps1 -Module efd-icms-ipi
-    Implementa todos os registros pendentes do baseline V306 do EFD ICMS-IPI.
+    Implementa todos os registros pendentes do baseline V015 do EFD ICMS-IPI.
 
 .EXAMPLE
-    .\scripts\auto-implement-sped.ps1 -Module efd-icms-ipi -Version v307
-    Implementa diffs pendentes do incremento V307 sobre o EFD ICMS-IPI.
+    .\scripts\auto-implement-sped.ps1 -Module efd-icms-ipi -Version v016
+    Implementa diffs pendentes do incremento V016 sobre o EFD ICMS-IPI.
 
 .EXAMPLE
     .\scripts\auto-implement-sped.ps1 -Bloco 0 -DryRun
@@ -107,7 +107,7 @@ function Resolve-TrackingFile {
                 $upper = $Version.ToUpper()
                 return Join-Path $RepoRoot "sped/STAGE_8_INCR_$upper.md"
             }
-            return Join-Path $RepoRoot "sped/STAGE_8_EFD_ICMS_IPI_V306.md"
+            return Join-Path $RepoRoot "sped/STAGE_8_EFD_ICMS_IPI_V015.md"
         }
         default { throw "Modulo desconhecido: $Module" }
     }

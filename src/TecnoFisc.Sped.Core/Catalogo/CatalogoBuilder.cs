@@ -90,6 +90,7 @@ public static class CatalogoBuilder
     {
         var fabrica = ConstruirFabrica(tipo);
         var campos = ConstruirCampos(tipo);
+        var descontinuado = tipo.GetCustomAttribute<DescontinuadoAttribute>(inherit: false);
         return new MetadadosRegistro(
             atributo.Codigo,
             atributo.Nivel,
@@ -97,7 +98,8 @@ public static class CatalogoBuilder
             tipo,
             fabrica,
             campos,
-            atributo.IntroduzidoEm);
+            atributo.IntroduzidoEm,
+            descontinuado?.EmVersao ?? 0);
     }
 
     private static Func<RegistroSped> ConstruirFabrica(Type tipo)

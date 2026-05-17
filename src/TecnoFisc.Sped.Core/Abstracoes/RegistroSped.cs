@@ -12,6 +12,15 @@ public abstract class RegistroSped
     /// <summary>Código do registro como aparece no arquivo SPED (ex.: "0000", "C100").</summary>
     public abstract string Codigo { get; }
 
+    /// <summary>
+    /// Versão do leiaute declarada no arquivo, extraída do campo <c>COD_VER</c> do
+    /// <c>Registro0000</c>. Retorna <c>0</c> para todos os demais registros; o
+    /// <c>Registro0000</c> de cada módulo faz override retornando o valor numérico real.
+    /// O parser usa este valor para aplicar restrições de versão (ex.: rejeitar registros
+    /// descontinuados marcados com <see cref="Atributos.DescontinuadoAttribute"/>).
+    /// </summary>
+    public virtual int VersaoLeiaute => 0;
+
     /// <summary>Registro pai na hierarquia, ou <c>null</c> se este é o raiz.</summary>
     public RegistroSped? Pai { get; internal set; }
 

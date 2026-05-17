@@ -1,14 +1,21 @@
 using TecnoFisc.Sped.Core.Abstracoes;
 using TecnoFisc.Sped.Core.Atributos;
+using TecnoFisc.Sped.EfdIcmsIpi.Versionamento;
 
 namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.Bloco1;
 
 /// <summary>
-/// Registro 1600 - Total das operacoes com cartao de credito e/ou debito, loja
-/// (private label) e demais instrumentos de pagamentos eletronicos.
-/// Nivel hierarquico 2, ocorrencia 1:N. Conforme Guia Pratico EFD-ICMS/IPI V3.0.6, p. 286.
+/// Registro 1600 — Total das operações com cartão de crédito e/ou débito, loja
+/// (private label) e demais instrumentos de pagamentos eletrônicos.
+/// Nível hierárquico 2, ocorrência 1:N. Conforme Guia Prático EFD-ICMS/IPI V3.0.6, p. 286.
 /// </summary>
+/// <remarks>
+/// <b>Descontinuado a partir de V016</b> (Guia Prático 3.0.7, item 6). Substituído pelo
+/// <see cref="Registro1601"/> para arquivos com <c>COD_VER ≥ 016</c>. O parser rejeita este
+/// registro em arquivos de versão V016 ou superior.
+/// </remarks>
 [RegistroSped(Codigo = "1600", Nivel = 2, Bloco = "1")]
+[Descontinuado(EmVersao = (int)LayoutEfdIcmsIpi.V016)]
 public sealed partial class Registro1600 : RegistroSped
 {
     /// <inheritdoc />

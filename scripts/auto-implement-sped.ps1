@@ -20,9 +20,10 @@
     Determina $TrackingFile e o argumento propagado ao /implementar-registro.
 
 .PARAMETER Version
-    Apenas para -Module efd-icms-ipi. Versão do leiaute incremental (ex.: "v016").
+    Apenas para -Module efd-icms-ipi. Versão do leiaute incremental (ex.: "v016", "v017", "v018", "v019", "v020").
     Vazio = baseline V015 (sped/STAGE_8_EFD_ICMS_IPI_V015.md).
-    Preenchido = incremento (sped/STAGE_8_INCR_<VERSION>.md).
+    Preenchido = incremento (sped/STAGE_8_INCR_<VERSION>.md). Incrementos têm sub-stages
+    de 3 segmentos (8.016.001) e suportam modo UPDATE além de CREATE.
 
 .PARAMETER Bloco
     Letra ou dígito do bloco SPED (ex.: "0", "A", "C", "D").
@@ -146,6 +147,15 @@ function Assert-Tool {
 }
 
 function Get-PendingRegistros {
+    # Suporta dois schemas de tracking:
+    #   A. Baseline (5 colunas): | Feito | Sub-stage | Registro X | Descrição | Página |
+    #      Sub-stage com 2 segmentos (e.g., 4.005, 8.001). Bloco vem do header "### Bloco X".
+    #      Tipo implícito = CREATE.
+    #   B. Incremento (7 colunas): | Feito | Sub-stage | Tipo | Registro X | Bloco | Resumo | Fonte |
+    #      Sub-stage com 3 segmentos (e.g., 8.016.001). Tipo explícito (NEW, UPDATE/*, ...).
+    #      Bloco vem da própria linha. Sem coluna Página.
+    # Linhas non-registry (enum, tabela CST, cabeçalho de seção) são puladas com aviso —
+    # exigem implementação manual fora do auto-loop.
     param([string]$TargetBloco = "")
 
     $lines        = Get-Content $TrackingFile
@@ -153,22 +163,66 @@ function Get-PendingRegistros {
     $result       = [System.Collections.Generic.List[hashtable]]::new()
 
     foreach ($line in $lines) {
-        # Match bloco header, e.g.: "### Bloco 0 — Abertura..."
+        # Header "### Bloco X" (baseline only)
         if ($line -match '^### Bloco (\S+)') {
             $currentBloco = $Matches[1].TrimEnd('—').Trim()
         }
 
-        # Match pending row: | [ ] | 4.005 | Registro 0110 | Descrição | 71 |
-        if ($line -match '^\| \[ \] \| (\d+\.\d+) \| Registro (\w+) \| (.+?) \| (\d+) \|') {
-            if ($TargetBloco -eq "" -or $currentBloco -eq $TargetBloco) {
-                $result.Add(@{
-                    SubStage    = $Matches[1]
-                    Code        = $Matches[2]
-                    Description = $Matches[3].Trim()
-                    Page        = [int]$Matches[4]
-                    Bloco       = $currentBloco
-                })
+        # Pre-filter: only pending rows with table structure
+        if ($line -notmatch '^\|\s*\[\s\]\s*\|') { continue }
+
+        $cols = ($line -split '\|') | ForEach-Object { $_.Trim() }
+        # $cols[0] = '' (antes do primeiro |)
+        # $cols[1] = '[ ]' ou '[x]'
+        # $cols[2] = sub-stage
+
+        if ($cols.Count -lt 5) { continue }
+
+        $subStage = $cols[2]
+        if ($subStage -notmatch '^\d+(?:\.\d+){1,2}$') { continue }
+
+        # Detect schema: baseline tem $cols[3] começando com "Registro ".
+        # Incremento tem $cols[3] = Tipo (NEW/UPDATE/...) e $cols[4] = "Registro CODE".
+        $tipo        = ""
+        $registroCol = ""
+        $blocoCol    = $currentBloco
+        $description = ""
+        $page        = 0
+
+        if ($cols[3] -match '^Registro\s+\S+') {
+            # Schema A (baseline)
+            $tipo        = "CREATE"
+            $registroCol = $cols[3]
+            $description = if ($cols.Count -ge 5) { $cols[4] } else { "" }
+            if ($cols.Count -ge 6 -and $cols[5] -match '^\d+$') {
+                $page = [int]$cols[5]
             }
+        }
+        elseif ($cols[4] -match '^Registro\s+\S+') {
+            # Schema B (incremento)
+            $tipo        = $cols[3]
+            $registroCol = $cols[4]
+            if ($cols.Count -ge 6) { $blocoCol    = $cols[5] }
+            if ($cols.Count -ge 7) { $description = $cols[6] }
+        }
+        else {
+            # Linha pendente sem "Registro CODE" (enum, tabela, cabeçalho de seção, etc.)
+            Write-Host "  [skip] Sub-stage $subStage não-registro (item manual): $line" -ForegroundColor DarkGray
+            continue
+        }
+
+        if ($registroCol -notmatch '^Registro\s+(\S+)$') { continue }
+        $code = $Matches[1]
+
+        if ($TargetBloco -eq "" -or $blocoCol -eq $TargetBloco) {
+            $result.Add(@{
+                SubStage    = $subStage
+                Code        = $code
+                Tipo        = $tipo
+                Description = $description
+                Page        = $page
+                Bloco       = $blocoCol
+            })
         }
     }
     return $result
@@ -551,7 +605,8 @@ try {
         } else {
             Write-Host "Registros pendentes${blocoStr}: $($pending.Count) total" -ForegroundColor Cyan
             foreach ($r in $pending) {
-                Write-Host ("  {0,-8}  Registro {1,-6}  {2,-60}  p.{3}" -f $r.SubStage, $r.Code, $r.Description, $r.Page)
+                $pageStr = if ($r.Page -gt 0) { "p.$($r.Page)" } else { "" }
+                Write-Host ("  {0,-12}  {1,-22}  Registro {2,-6}  {3,-55}  {4}" -f $r.SubStage, $r.Tipo, $r.Code, $r.Description, $pageStr)
             }
         }
         exit 0
@@ -591,7 +646,8 @@ try {
         }
 
         $next = $pending[0]
-        Write-Banner "$($next.SubStage)  Registro $($next.Code) — $($next.Description)" "Cyan"
+        $tipoStr = if ($next.Tipo -and $next.Tipo -ne 'CREATE') { " [$($next.Tipo)]" } else { "" }
+        Write-Banner "$($next.SubStage)$tipoStr  Registro $($next.Code) — $($next.Description)" "Cyan"
 
         # Calculado cedo: branch alvo do proximo pendente. Qualquer branch local
         # ou remota com esse nome (sem PR) eh trabalho parcial deste mesmo registro
@@ -842,8 +898,11 @@ try {
         }
 
         # ── mergear PR ─────────────────────────────────────────────────────────
-        Write-Step "Mergeando PR #$prNumber..."
-        gh pr merge $prNumber --merge --delete-branch
+        # Squash-Merge eh regra dura do repo (CLAUDE.md item 7): commits granulares
+        # no branch consolidam em UM commit no dev. Nunca usar --merge ou --rebase
+        # aqui sem mudar tambem a politica documentada.
+        Write-Step "Mergeando PR #$prNumber (squash)..."
+        gh pr merge $prNumber --squash --delete-branch
 
         # ── sincronizar dev e limpar branch local ──────────────────────────────
         Write-Step "Sincronizando dev apos merge..."

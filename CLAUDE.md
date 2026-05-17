@@ -49,7 +49,7 @@ When the user upgrades to a newer layout, expect newer PDF dropped alongside the
 
 ## Repository state
 
-Current development has passed EFD Contribuições V006 and the EFD ICMS-IPI V306 record baseline. Before starting new work, use `ARCHITECTURE.md` §12 and the tracking files under `sped/` to identify the next stage or increment. Do not jump ahead in the staged plan without an explicit ask.
+Current development has passed EFD Contribuições V006 and the EFD ICMS-IPI V015 record baseline. The numbers `006` (EFD Contribuições) and `015` (EFD ICMS-IPI) são `COD_VER` do registro `0000` — **não** confundir com versão do Guia Prático (1.35 do EFD Contribuições, 3.2.2 do EFD ICMS-IPI). Before starting new work, use `ARCHITECTURE.md` §12 and the tracking files under `sped/` to identify the next stage or increment. Do not jump ahead in the staged plan without an explicit ask.
 
 ## Hard rules (failing these blocks the change)
 

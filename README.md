@@ -4,11 +4,13 @@ Família de bibliotecas .NET para leitura, geração e manipulação tipada de a
 publicados pelos projetos do **SPED — Sistema Público de Escrituração Digital**
 (Receita Federal do Brasil).
 
-> Status atual: **0.3.0** publicado. Cobre EFD Contribuições V006 e EFD ICMS-IPI
-> baseline V306 — ambos com registros tipados, API pública de parser/gerador e
-> round-trip validado contra arquivos reais emitidos pelo PVA. Próximos passos
-> rastreados no `ARCHITECTURE.md` (incrementos V307+ do EFD ICMS-IPI e demais
-> projetos SPED). Veja o `CHANGELOG.md` para detalhes.
+> Status atual: **0.3.1** publicado. Cobre EFD Contribuições V006 e EFD ICMS-IPI
+> baseline V015 — ambos com registros tipados, API pública de parser/gerador e
+> round-trip validado contra arquivos reais emitidos pelo PVA. Os números `006`
+> (EFD Contribuições) e `015` (EFD ICMS-IPI) são o `COD_VER` do registro `0000`
+> de cada leiaute (não devem ser confundidos com a versão do Guia Prático).
+> Próximos passos rastreados no `ARCHITECTURE.md` (incrementos V016+ do EFD
+> ICMS-IPI e demais projetos SPED). Veja o `CHANGELOG.md` para detalhes.
 
 ## Visão geral
 
@@ -23,8 +25,8 @@ pacote afetado é versionado.
 
 | Projeto SPED | Pacote NuGet | Status |
 | --- | --- | --- |
-| EFD Contribuições | `TecnoFisc.Sped.EfdContribuicoes` | **0.3.0** — layout V006 completo |
-| EFD ICMS-IPI | `TecnoFisc.Sped.EfdIcmsIpi` | **0.3.0** — baseline V306 completo, round-trip validado contra arquivo real |
+| EFD Contribuições | `TecnoFisc.Sped.EfdContribuicoes` | **0.3.1** — leiaute V006 completo |
+| EFD ICMS-IPI | `TecnoFisc.Sped.EfdIcmsIpi` | **0.3.1** — baseline V015 completo, round-trip validado contra arquivo real |
 | NF-e / NFC-e / CT-e / MDF-e | `TecnoFisc.Sped.NFe`, etc. | planejado |
 | eSocial / EFD-Reinf / ECD / ECF | pacotes próprios | planejado |
 
@@ -146,8 +148,8 @@ TecnoFisc.Sped/
 ├── src/
 │   ├── TecnoFisc.Sped.Core/                  # Value objects fiscais + infra compartilhada
 │   ├── TecnoFisc.Sped.Core.SourceGenerators/ # Source generator do catálogo (analyzer)
-│   ├── TecnoFisc.Sped.EfdContribuicoes/      # Layout EFD Contribuições V006
-│   └── TecnoFisc.Sped.EfdIcmsIpi/            # Layout EFD ICMS-IPI baseline V306
+│   ├── TecnoFisc.Sped.EfdContribuicoes/      # Leiaute EFD Contribuições V006
+│   └── TecnoFisc.Sped.EfdIcmsIpi/            # Leiaute EFD ICMS-IPI baseline V015
 ├── tests/
 │   ├── TecnoFisc.Sped.Core.Tests/
 │   ├── TecnoFisc.Sped.EfdContribuicoes.Tests/

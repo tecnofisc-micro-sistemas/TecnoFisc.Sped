@@ -8,7 +8,7 @@ using TecnoFisc.Sped.EfdIcmsIpi.Registros.Bloco9;
 namespace TecnoFisc.Sped.EfdIcmsIpi.Tests.Parser;
 
 /// <summary>
-/// Smoke do <see cref="ParserEfdIcmsIpi"/>: fachada do leiaute V306 que monta o
+/// Smoke do <see cref="ParserEfdIcmsIpi"/>: fachada do leiaute V015 que monta o
 /// catálogo de EFD ICMS-IPI e delega ao <see cref="LeitorSpedTxt"/> do Core.
 /// </summary>
 public sealed class ParserEfdIcmsIpiTests

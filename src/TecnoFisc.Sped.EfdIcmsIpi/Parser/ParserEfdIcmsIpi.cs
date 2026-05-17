@@ -5,7 +5,7 @@ using TecnoFisc.Sped.EfdIcmsIpi.Generated;
 namespace TecnoFisc.Sped.EfdIcmsIpi.Parser;
 
 /// <summary>
-/// Leitor especializado do leiaute EFD ICMS-IPI (baseline V306). Resolve o catálogo
+/// Leitor especializado do leiaute EFD ICMS-IPI (baseline V015). Resolve o catálogo
 /// dos registros declarados em <see cref="TecnoFisc.Sped.EfdIcmsIpi"/> e delega a leitura
 /// ao <see cref="LeitorSpedTxt"/> compartilhado pelo Core.
 /// </summary>

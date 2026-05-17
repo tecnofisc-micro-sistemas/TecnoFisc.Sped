@@ -4,10 +4,11 @@ Família de bibliotecas .NET para leitura, geração e manipulação tipada de a
 publicados pelos projetos do **SPED — Sistema Público de Escrituração Digital**
 (Receita Federal do Brasil).
 
-> Status atual: **0.2.0** publicado. No ramo de desenvolvimento, EFD ICMS-IPI
-> baseline V306 já possui os registros tipados e a API pública de parser/gerador;
-> a validação round-trip com fixture real anonimizada ainda é etapa pendente antes
-> da release 0.3.0. Veja o `CHANGELOG.md` para detalhes.
+> Status atual: **0.3.0** publicado. Cobre EFD Contribuições V006 e EFD ICMS-IPI
+> baseline V306 — ambos com registros tipados, API pública de parser/gerador e
+> round-trip validado contra arquivos reais emitidos pelo PVA. Próximos passos
+> rastreados no `ARCHITECTURE.md` (incrementos V307+ do EFD ICMS-IPI e demais
+> projetos SPED). Veja o `CHANGELOG.md` para detalhes.
 
 ## Visão geral
 
@@ -22,8 +23,8 @@ pacote afetado é versionado.
 
 | Projeto SPED | Pacote NuGet | Status |
 | --- | --- | --- |
-| EFD Contribuições | `TecnoFisc.Sped.EfdContribuicoes` | **0.2.0** — layout V006 completo |
-| EFD ICMS-IPI | `TecnoFisc.Sped.EfdIcmsIpi` | **não publicado** — registros V306 completos; parser/gerador implementados; fixture real pendente |
+| EFD Contribuições | `TecnoFisc.Sped.EfdContribuicoes` | **0.3.0** — layout V006 completo |
+| EFD ICMS-IPI | `TecnoFisc.Sped.EfdIcmsIpi` | **0.3.0** — baseline V306 completo, round-trip validado contra arquivo real |
 | NF-e / NFC-e / CT-e / MDF-e | `TecnoFisc.Sped.NFe`, etc. | planejado |
 | eSocial / EFD-Reinf / ECD / ECF | pacotes próprios | planejado |
 

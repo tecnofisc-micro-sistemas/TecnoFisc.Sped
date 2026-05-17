@@ -1,17 +1,18 @@
 using TecnoFisc.Sped.Core.Parser;
-using TecnoFisc.Sped.EfdContribuicoes.Gerador;
-using TecnoFisc.Sped.EfdContribuicoes.Parser;
+using TecnoFisc.Sped.EfdIcmsIpi.Gerador;
+using TecnoFisc.Sped.EfdIcmsIpi.Parser;
 
-namespace TecnoFisc.Sped.EfdContribuicoes.Tests;
+namespace TecnoFisc.Sped.EfdIcmsIpi.Tests;
 
 /// <summary>
 /// Round-trip end-to-end contra arquivos SPED reais armazenados em <c>sped/fixtures/</c>
-/// (gitignored). Os arquivos são emitidos pelo PVA da Receita e contêm assinatura digital
+/// (gitignored). Os arquivos são emitidos pelo PVA da Receita e podem trazer assinatura digital
 /// PKCS#7 anexada após o último registro <c>9999</c> — a parte binária é descartada antes
 /// do round-trip; o teste exercita apenas a porção textual de registros SPED.
 ///
-/// Pula automaticamente quando nenhuma fixture estiver presente (CI público, máquina sem
-/// arquivo de cliente). Quando um <c>.txt</c> existir na pasta, exercita-o por completo.
+/// Pula automaticamente quando nenhuma fixture EFD ICMS-IPI estiver presente (CI público,
+/// máquina sem arquivo de cliente). Fixtures de outros leiautes (EFD Contribuições) são
+/// distinguidas pelo cabeçalho do <c>Registro0000</c> e ignoradas.
 ///
 /// Invariante exigida: <b>parse → serialize é idempotente</b> — o segundo passo de serialização
 /// produz exatamente os mesmos bytes do primeiro. Não assertamos byte-equality contra o arquivo
@@ -25,10 +26,10 @@ public sealed class RoundTripFixtureRealTests
     [Fact]
     public async Task ParserESerializadorSaoEstaveisSobReSerializacao()
     {
-        var fixtures = EnumerarFixtures().ToList();
+        var fixtures = EnumerarFixturesEfdIcmsIpi().ToList();
         if (fixtures.Count == 0)
         {
-            Assert.Skip("Nenhuma fixture .txt presente em sped/fixtures/. Adicione um arquivo SPED real para exercitar o round-trip.");
+            Assert.Skip("Nenhuma fixture EFD ICMS-IPI presente em sped/fixtures/. Adicione um arquivo SPED real para exercitar o round-trip.");
             return;
         }
 
@@ -39,16 +40,14 @@ public sealed class RoundTripFixtureRealTests
     [Fact]
     public async Task ParserAceitaArquivoComBlocoAssinaturaPKCS7Anexo()
     {
-        // Issue #111: parser deve encerrar consumo no registro |9999| e descartar silenciosamente
-        // qualquer conteúdo posterior (assinatura digital PKCS#7 do PVA da Receita).
-        var fixtures = EnumerarFixtures().ToList();
+        var fixtures = EnumerarFixturesEfdIcmsIpi().ToList();
         if (fixtures.Count == 0)
         {
-            Assert.Skip("Nenhuma fixture .txt presente em sped/fixtures/.");
+            Assert.Skip("Nenhuma fixture EFD ICMS-IPI presente em sped/fixtures/.");
             return;
         }
 
-        var parser = new ParserEfdContribuicoes();
+        var parser = new ParserEfdIcmsIpi();
 
         foreach (var caminhoFixture in fixtures)
         {
@@ -65,23 +64,25 @@ public sealed class RoundTripFixtureRealTests
         }
     }
 
-    private static IEnumerable<string> EnumerarFixtures()
+    private static IEnumerable<string> EnumerarFixturesEfdIcmsIpi()
     {
         var diretorio = LocalizarPastaFixtures();
         if (diretorio is null)
             return [];
 
         return Directory.EnumerateFiles(diretorio, "*.txt", SearchOption.TopDirectoryOnly)
-            .Where(EhFixtureEfdContribuicoes);
+            .Where(EhFixtureEfdIcmsIpi);
     }
 
     /// <summary>
-    /// Discrimina EFD Contribuições de outros leiautes pelo <c>Registro0000</c>. Em EFD
-    /// Contribuições o segundo campo (<c>COD_VER</c>) é numérico curto como <c>"005"</c>,
-    /// <c>"006"</c>, etc.; em EFD ICMS-IPI o segundo campo é <c>"015"</c>+ e o total de pipes
-    /// difere (16 vs 18+ para Contribuições V006). Filtra fixtures de outros leiautes.
+    /// Discrimina EFD ICMS-IPI de outros leiautes pelo <c>Registro0000</c>: o segundo campo
+    /// (logo após <c>|0000|</c>) é o código de versão do leiaute. EFD ICMS-IPI usa códigos
+    /// numéricos (<c>015</c>, <c>016</c>, …); EFD Contribuições usa <c>006</c> em layout
+    /// diferente (segundo campo é o código da operação, depois CNPJ etc.). Heurística simples:
+    /// se a contagem de campos do <c>0000</c> casar com EFD ICMS-IPI (15 campos delimitados =
+    /// 16 pipes) tratamos como nosso; senão, ignora.
     /// </summary>
-    private static bool EhFixtureEfdContribuicoes(string caminho)
+    private static bool EhFixtureEfdIcmsIpi(string caminho)
     {
         using var fs = File.OpenRead(caminho);
         using var leitor = new StreamReader(fs, EncodingSped.Latin1);
@@ -89,12 +90,18 @@ public sealed class RoundTripFixtureRealTests
         if (string.IsNullOrEmpty(primeiraLinha) || !primeiraLinha.StartsWith("|0000|", StringComparison.Ordinal))
             return false;
 
-        var campos = primeiraLinha.Split('|');
-        // campos[0] = "", campos[1] = "0000", campos[2] = COD_VER.
-        if (campos.Length < 3)
+        // |0000|COD_VER|COD_FIN|DT_INI|DT_FIN|NOME|CNPJ|CPF|UF|IE|COD_MUN|IM|SUFRAMA|IND_PERFIL|IND_ATIV|
+        // 16 pipes total no leiaute EFD ICMS-IPI. EFD Contribuições tem layout muito diferente
+        // (campo 14 = "VL_CONS_NEAJ" etc., totalizando mais pipes), e o segundo campo lá é
+        // "0" ou "1" (código de operação) e não "015"/"016".
+        var totalPipes = primeiraLinha.Count(c => c == '|');
+        if (totalPipes != 16)
             return false;
+
+        var campos = primeiraLinha.Split('|');
+        // campos[0] = "" (antes do primeiro pipe), campos[1] = "0000", campos[2] = COD_VER.
         var codVer = campos[2];
-        return codVer is "001" or "002" or "003" or "004" or "005" or "006" or "007";
+        return codVer is "014" or "015" or "016" or "017" or "018" or "019" or "020" or "021" or "022";
     }
 
     private static async Task ExercitarFixtureAsync(string caminhoFixture)
@@ -102,8 +109,8 @@ public sealed class RoundTripFixtureRealTests
         var bytesOriginais = ExtrairPorcaoTextual(
             await File.ReadAllBytesAsync(caminhoFixture, TestContext.Current.CancellationToken));
 
-        var parser = new ParserEfdContribuicoes();
-        var gerador = new GeradorEfdContribuicoes();
+        var parser = new ParserEfdIcmsIpi();
+        var gerador = new GeradorEfdIcmsIpi();
 
         var arquivo1 = await CarregarAsync(parser, bytesOriginais);
         var bytesGerados = await SerializarAsync(gerador, arquivo1);
@@ -111,12 +118,10 @@ public sealed class RoundTripFixtureRealTests
         var arquivo2 = await CarregarAsync(parser, bytesGerados);
         var bytesDuplos = await SerializarAsync(gerador, arquivo2);
 
-        // Parser não perde registros entre os dois passes.
         var codigos1 = arquivo1.EnumerarRegistros().Select(r => r.Codigo).ToList();
         var codigos2 = arquivo2.EnumerarRegistros().Select(r => r.Codigo).ToList();
         codigos2.Should().Equal(codigos1, because: "segundo parse deve produzir a mesma sequência de registros");
 
-        // Serialização é idempotente.
         if (!bytesGerados.AsSpan().SequenceEqual(bytesDuplos))
         {
             var (linha, esperada, obtida) = LocalizarPrimeiraDivergencia(bytesGerados, bytesDuplos);
@@ -127,24 +132,22 @@ public sealed class RoundTripFixtureRealTests
                 $"  Bytes 1ª: {bytesGerados.Length}, 2ª: {bytesDuplos.Length}.");
         }
 
-        // Quantidade de linhas SPED original deve casar com a contagem de registros (descartando
-        // linhas vazias). Garante que nada foi engolido em silêncio pelo parser.
         var linhasOriginais = ContarLinhasNaoVazias(bytesOriginais);
         codigos1.Should().HaveCount(linhasOriginais,
             because: $"parser deve materializar uma instância por linha SPED ({linhasOriginais} linhas no original — {Path.GetFileName(caminhoFixture)})");
     }
 
-    private static async Task<ArquivoEfdContribuicoes> CarregarAsync(
-        ParserEfdContribuicoes parser, byte[] bytes)
+    private static async Task<ArquivoEfdIcmsIpi> CarregarAsync(
+        ParserEfdIcmsIpi parser, byte[] bytes)
     {
         using var entrada = new MemoryStream(bytes, writable: false);
-        return await ArquivoEfdContribuicoes.CarregarAsync(
+        return await ArquivoEfdIcmsIpi.CarregarAsync(
             parser.LerStreamingAsync(entrada, TestContext.Current.CancellationToken),
             TestContext.Current.CancellationToken);
     }
 
     private static async Task<byte[]> SerializarAsync(
-        GeradorEfdContribuicoes gerador, ArquivoEfdContribuicoes arquivo)
+        GeradorEfdIcmsIpi gerador, ArquivoEfdIcmsIpi arquivo)
     {
         using var saida = new MemoryStream();
         await gerador.EscreverAsync(saida, arquivo.EnumerarRegistros(), TestContext.Current.CancellationToken);
@@ -222,5 +225,4 @@ public sealed class RoundTripFixtureRealTests
             linhasEsperadas.Length > min ? linhasEsperadas[min] : "<EOF>",
             linhasObtidas.Length > min ? linhasObtidas[min] : "<EOF>");
     }
-
 }

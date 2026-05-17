@@ -6,23 +6,32 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ## [Não publicado]
 
-### TecnoFisc.Sped.EfdIcmsIpi
+## [0.3.0] — 2026-05-17
+
+Conclui a Stage 8 baseline do `ARCHITECTURE.md`: EFD ICMS-IPI layout V306 com todos os 255 registros tipados, API pública de parser/gerador e validação round-trip end-to-end contra arquivo real emitido pelo PVA da Receita.
+
+### TecnoFisc.Sped.EfdIcmsIpi 0.3.0
 
 #### Adicionado
 
-- API pública de parser/gerador para o baseline V306: `ArquivoEfdIcmsIpi`, `BlocoEfdIcmsIpi`, `ParserEfdIcmsIpi` e `GeradorEfdIcmsIpi`, com leitura streaming, leitura buffered e escrita pipe-delimitada.
-- Testes smoke e round-trip mínimo para parser, gerador e modelo raiz de arquivo EFD ICMS-IPI.
+- Pacote novo. Cobre a Stage 8 baseline V306 (Ato COTEPE/ICMS nº 44/2018, Guia Prático v3.0.6): 255 registros distribuídos nos 10 blocos (`0`, `B`, `C`, `D`, `E`, `G`, `H`, `K`, `1`, `9`), com `[RegistroSped]`/`[CampoSped]` declarados, validação de níveis hierárquicos e fixtures por bloco.
+- API pública: `ArquivoEfdIcmsIpi`, `BlocoEfdIcmsIpi`, `ParserEfdIcmsIpi`, `GeradorEfdIcmsIpi`. Espelha o contrato de `EfdContribuicoes` — leitura streaming via `IAsyncEnumerable<RegistroSped>`, leitura buffered para o modelo tipado, escrita pipe-delimitada em Latin1/Windows-1252.
+- Validação round-trip end-to-end (`RoundTripFixtureRealTests`) contra arquivo SPED real emitido pelo PVA, exercitando os 10 blocos. Invariante: `parse → serialize → parse → serialize` é byte-idêntica entre as duas passagens de serialização.
+- Suporte para o registro `9999` final seguido de bloco PKCS#7 anexo: parser encerra silenciosamente no marcador `|9999|` e descarta o trailer binário da assinatura digital do PVA, sem perder registros nem cuspir erro de layout.
+
+### TecnoFisc.Sped.Core.SourceGenerators 0.3.0
+
+#### Corrigido
+
+- `RegistroSpedCatalogoGenerator` agora honra `[SpedValor("S")]`/`[SpedValor("N")]` em membros de enum. Setter emitido vira sequência de `valor.SequenceEqual("X".AsSpan())` com despacho para o membro do enum; serializador vira `switch` por valor. Antes da correção, o gerador sempre emitia `int.Parse(valor)` para qualquer enum, o que quebrava em runtime qualquer campo SPED textual (`IndicadorSimNao` no EFD ICMS-IPI, descoberto via round-trip real). O caminho integral via `EnumUnderlyingType` continua intacto para enums sem `[SpedValor]`.
+- Teste de regressão: `CatalogoSpedGeradoEnumTextualTests` exercita o `CatalogoSpedGerado` direto (não o builder reflexivo) com `Registro1010.IndExp`, garantindo que o caminho gerado lê/escreve `"S"`/`"N"` corretamente.
 
 ### Documentação
 
 #### Alterado
 
-- README e instruções operacionais passam a refletir o estado atual do desenvolvimento: registros EFD ICMS-IPI V306 completos, com API pública de parser/gerador implementada e validação round-trip real ainda pendente antes da release 0.3.0.
+- README e tabela de status do repositório passam a refletir EFD ICMS-IPI 0.3.0 publicada.
 - Registrada regra dura de integração: merges para `dev` devem usar sempre Squash and Merge; branches de trabalho podem manter commits granulares.
-
-#### Nota operacional
-
-- A Stage 8 baseline V306 está completa no tracking local (`sped/STAGE_8_EFD_ICMS_IPI_V306.md`), mas a publicação 0.3.0 ainda depende de validação round-trip com fixture real anonimizada de EFD ICMS-IPI quando disponível.
 
 ## [0.2.0] — 2026-05-06
 

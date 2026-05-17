@@ -23,6 +23,7 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
 {
     private const string AttributeRegistro = "TecnoFisc.Sped.Core.Atributos.RegistroSpedAttribute";
     private const string AttributeCampo = "TecnoFisc.Sped.Core.Atributos.CampoSpedAttribute";
+    private const string AttributeSpedValor = "TecnoFisc.Sped.Core.Atributos.SpedValorAttribute";
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -129,6 +130,11 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
                 string tipoFq = tipoPropriedade.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
                 string tipoFqDeclarado = propriedade.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
+                ImmutableArray<string> enumValoresSped = categoria == CategoriaCampo.Enum
+                    && tipoPropriedade is INamedTypeSymbol enumTipo
+                    ? ColetarMapeamentoSpedValor(enumTipo)
+                    : ImmutableArray<string>.Empty;
+
                 lista.Add(new InfoCampo(
                     propriedade.Name,
                     ordem,
@@ -141,7 +147,8 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
                     decimais,
                     obrigatorio,
                     formato,
-                    desdeVersao));
+                    desdeVersao,
+                    enumValoresSped));
             }
         }
 
@@ -150,6 +157,35 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
             .Select(g => g.First())
             .OrderBy(c => c.Ordem)
             .ToImmutableArray();
+    }
+
+    /// <summary>
+    /// Coleta membros do enum decorados com <c>[SpedValor("X")]</c> no formato
+    /// <c>"NomeMembro\0ValorSped"</c>. Vazio se nenhum membro tem o atributo — nesse caso o
+    /// gerador trata o campo como enum integral (parse via <c>int.Parse</c>).
+    /// </summary>
+    private static ImmutableArray<string> ColetarMapeamentoSpedValor(INamedTypeSymbol enumSym)
+    {
+        if (enumSym.TypeKind != TypeKind.Enum)
+            return ImmutableArray<string>.Empty;
+
+        ImmutableArray<string>.Builder builder = ImmutableArray.CreateBuilder<string>();
+        foreach (ISymbol membro in enumSym.GetMembers())
+        {
+            if (membro is not IFieldSymbol campo || !campo.IsConst)
+                continue;
+
+            AttributeData? attr = campo.GetAttributes()
+                .FirstOrDefault(a => a.AttributeClass?.ToDisplayString() == AttributeSpedValor);
+            if (attr is null || attr.ConstructorArguments.Length == 0)
+                continue;
+
+            if (attr.ConstructorArguments[0].Value is not string valor)
+                continue;
+
+            builder.Add(campo.Name + "\0" + valor);
+        }
+        return builder.ToImmutable();
     }
 
     private static CategoriaCampo ClassificarTipo(ITypeSymbol tipo, out string? underlyingPrimitivo)
@@ -446,6 +482,12 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
 
     private static void EmitirSetterEnum(StringBuilder sb, InfoCampo c)
     {
+        if (!c.EnumValoresSped.IsDefaultOrEmpty)
+        {
+            EmitirSetterEnumTextual(sb, c);
+            return;
+        }
+
         string under = c.UnderlyingPrimitivo ?? "int";
         if (c.Nullable)
         {
@@ -466,6 +508,41 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
             sb.Append("        alvo.").Append(c.Nome).Append(" = (").Append(c.TipoFq).AppendLine(")bruto;");
         }
     }
+
+    /// <summary>
+    /// Emite setter para enum cujos membros declaram <c>[SpedValor("...")]</c> — usado quando
+    /// o leiaute representa o valor como texto (ex.: <c>"S"</c>/<c>"N"</c>) e não como inteiro.
+    /// </summary>
+    private static void EmitirSetterEnumTextual(StringBuilder sb, InfoCampo c)
+    {
+        sb.AppendLine("        if (valor.IsEmpty)");
+        sb.AppendLine("        {");
+        if (c.Nullable)
+            sb.Append("            alvo.").Append(c.Nome).AppendLine(" = null;");
+        else
+            sb.Append("            alvo.").Append(c.Nome).AppendLine(" = default;");
+        sb.AppendLine("            return;");
+        sb.AppendLine("        }");
+
+        foreach (string entrada in c.EnumValoresSped)
+        {
+            int sep = entrada.IndexOf('\0');
+            string membro = entrada.Substring(0, sep);
+            string valorSped = entrada.Substring(sep + 1);
+            sb.Append("        if (valor.SequenceEqual(\"").Append(EscaparLiteral(valorSped)).Append("\".AsSpan()))");
+            sb.AppendLine();
+            sb.AppendLine("        {");
+            sb.Append("            alvo.").Append(c.Nome).Append(" = ").Append(c.TipoFq).Append('.').Append(membro).AppendLine(";");
+            sb.AppendLine("            return;");
+            sb.AppendLine("        }");
+        }
+
+        sb.Append("        throw new FormatException(\"Valor '\" + valor.ToString() + \"' não mapeado para ")
+            .Append(c.TipoFq).AppendLine(".\");");
+    }
+
+    private static string EscaparLiteral(string valor) =>
+        valor.Replace("\\", "\\\\").Replace("\"", "\\\"");
 
     private static void EmitirSetterValueObject(StringBuilder sb, InfoCampo c)
     {
@@ -621,6 +698,12 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
 
     private static void EmitirSerializadorEnum(StringBuilder sb, InfoCampo c)
     {
+        if (!c.EnumValoresSped.IsDefaultOrEmpty)
+        {
+            EmitirSerializadorEnumTextual(sb, c);
+            return;
+        }
+
         string under = c.UnderlyingPrimitivo ?? "int";
         string padFormat = c.Tamanho > 0
             ? ".PadLeft(" + c.Tamanho.ToString(CultureInfo.InvariantCulture) + ", '0')"
@@ -636,6 +719,35 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
         {
             sb.Append("        return ((").Append(under).Append(")alvo.").Append(c.Nome).AppendLine(").ToString(CultureInfo.InvariantCulture)" + padFormat + ";");
         }
+    }
+
+    /// <summary>
+    /// Emite serializador via switch para enum cujos membros declaram <c>[SpedValor("...")]</c>.
+    /// </summary>
+    private static void EmitirSerializadorEnumTextual(StringBuilder sb, InfoCampo c)
+    {
+        if (c.Nullable)
+        {
+            sb.Append("        var v = alvo.").Append(c.Nome).AppendLine(";");
+            sb.AppendLine("        if (v is null) return string.Empty;");
+            sb.AppendLine("        return v.Value switch");
+        }
+        else
+        {
+            sb.Append("        return alvo.").Append(c.Nome).AppendLine(" switch");
+        }
+        sb.AppendLine("        {");
+        foreach (string entrada in c.EnumValoresSped)
+        {
+            int sep = entrada.IndexOf('\0');
+            string membro = entrada.Substring(0, sep);
+            string valorSped = entrada.Substring(sep + 1);
+            sb.Append("            ").Append(c.TipoFq).Append('.').Append(membro)
+                .Append(" => \"").Append(EscaparLiteral(valorSped)).AppendLine("\",");
+        }
+        sb.Append("            _ => throw new InvalidOperationException(\"Valor enum não mapeado em ")
+            .Append(c.TipoFq).AppendLine(".\"),");
+        sb.AppendLine("        };");
     }
 
     private static void EmitirSerializadorValueObject(StringBuilder sb, InfoCampo c)
@@ -678,7 +790,8 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
         int Decimais,
         bool Obrigatorio,
         string? Formato,
-        int DesdeVersao);
+        int DesdeVersao,
+        ImmutableArray<string> EnumValoresSped);
 
     private readonly record struct InfoRegistro(
         string TipoFullyQualified,

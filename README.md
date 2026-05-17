@@ -5,8 +5,9 @@ publicados pelos projetos do **SPED — Sistema Público de Escrituração Digit
 (Receita Federal do Brasil).
 
 > Status atual: **0.2.0** publicado. No ramo de desenvolvimento, EFD ICMS-IPI
-> baseline V306 já possui os registros tipados; a API pública de parser/gerador
-> ainda é etapa pendente antes da release 0.3.0. Veja o `CHANGELOG.md` para detalhes.
+> baseline V306 já possui os registros tipados e a API pública de parser/gerador;
+> a validação round-trip com fixture real anonimizada ainda é etapa pendente antes
+> da release 0.3.0. Veja o `CHANGELOG.md` para detalhes.
 
 ## Visão geral
 
@@ -22,7 +23,7 @@ pacote afetado é versionado.
 | Projeto SPED | Pacote NuGet | Status |
 | --- | --- | --- |
 | EFD Contribuições | `TecnoFisc.Sped.EfdContribuicoes` | **0.2.0** — layout V006 completo |
-| EFD ICMS-IPI | `TecnoFisc.Sped.EfdIcmsIpi` | **não publicado** — registros V306 completos; parser/gerador pendentes |
+| EFD ICMS-IPI | `TecnoFisc.Sped.EfdIcmsIpi` | **não publicado** — registros V306 completos; parser/gerador implementados; fixture real pendente |
 | NF-e / NFC-e / CT-e / MDF-e | `TecnoFisc.Sped.NFe`, etc. | planejado |
 | eSocial / EFD-Reinf / ECD / ECF | pacotes próprios | planejado |
 

@@ -8,7 +8,7 @@ using TecnoFisc.Sped.EfdIcmsIpi.Registros.Bloco9;
 namespace TecnoFisc.Sped.EfdIcmsIpi.Tests.Gerador;
 
 /// <summary>
-/// Smoke do <see cref="GeradorEfdIcmsIpi"/>: fachada do leiaute V306 que escreve
+/// Smoke do <see cref="GeradorEfdIcmsIpi"/>: fachada do leiaute V015 que escreve
 /// registros declarados no assembly de EFD ICMS-IPI.
 /// </summary>
 public sealed class GeradorEfdIcmsIpiTests

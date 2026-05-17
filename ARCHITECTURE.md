@@ -532,18 +532,18 @@ Publishing: SPED arquivos are all-or-nothing — a partial implementation cannot
 - Parser auto-detects from `Registro0000` and instantiates appropriate variants.
 - Tests covering both V006 and V007 round-trips.
 
-### Stage 8 — TecnoFisc.Sped.EfdIcmsIpi (EFD ICMS-IPI, baseline V306)
+### Stage 8 — TecnoFisc.Sped.EfdIcmsIpi (EFD ICMS-IPI, baseline V015)
 
 Same internal structure as `EfdContribuicoes`. Independent set of record classes — no inter-project references (per Hard Rule 2). Shared enums/value objects regidos pelo Ato COTEPE migrate to `Core` on first use (EFD ICMS-IPI is the regente — duplication = drift bug).
 
-**Versioning strategy.** The Receita publishes EFD ICMS-IPI layouts approximately yearly. The 5-year fiscal window currently covers **17 layouts: V306 through V322** (baseline V306 + 16 incrementos). Strict-incremental property: a newer layout never removes a field or changes meaning of an existing one — it only adds fields or registros. Strategy:
+**Versioning strategy.** Receita publishes EFD ICMS-IPI layouts approximately yearly. **Versão do leiaute ≠ versão do Guia Prático.** O leiaute é identificado pelo `COD_VER` do registro `0000` (Tabela "Versão do Leiaute" da Nota Técnica conforme Ato COTEPE/ICMS nº 44/2018 e alterações); o Guia Prático é a publicação textual que descreve esse leiaute, com numeração própria (3.0.6, 3.1.x, 3.2.x, …). Várias revisões do Guia podem descrever o mesmo leiaute. Layout V015 é o que entra na janela fiscal de 5 anos (vigente desde janeiro/2021, NT 2020.001). Strict-incremental property: a newer layout never removes a field or changes meaning of an existing one — it only adds fields or registros. Strategy:
 
-1. **Baseline V306.** Implement every registro of guia v3.0.6 as Stage 8 sub-stages `8.001` … `8.NNN`. Tracking file: `sped/STAGE_8_EFD_ICMS_IPI_V306.md`. Same conventions as Stage 4.
-2. **Incremental V307 … V322.** Each subsequent layout gets its own tracking file (`sped/STAGE_8_INCR_V307.md`, … `STAGE_8_INCR_V322.md`) listing **only the diffs**: registros novos, campos adicionados, enums extendidos. Sub-stages numbered `8.1.001`, `8.2.001`, etc.
-3. **Code model.** One class per registro (e.g., `RegistroC100`). New fields added in later layouts annotated with `DesdeVersao = LayoutEfdIcmsIpi.VXXX`. Parser/gerador and source generator honor `DesdeVersao` against the version read from `Registro0000`. Structurally divergent registros (rare) → subclass `RegistroXxxxVXXX : RegistroXxxx`. New registros introduced in later layouts → annotated with `IntroduzidoEm = LayoutEfdIcmsIpi.VXXX` on `[RegistroSped]`.
-4. **`LayoutEfdIcmsIpi`** enum in `src/TecnoFisc.Sped.EfdIcmsIpi/Versionamento/` with `V306`, `V307`, …, `V322` (17 values). Convenção: valor inteiro = versão sem ponto (`V306 = 306`, `V322 = 322`) — permite cast direto em atributos (`DesdeVersao = (int)LayoutEfdIcmsIpi.V310`) e comparação aritmética.
+1. **Baseline V015.** Implement every registro do leiaute 015 as Stage 8 sub-stages `8.001` … `8.NNN`. Tracking file: `sped/STAGE_8_EFD_ICMS_IPI_V015.md`. Same conventions as Stage 4. As páginas referenciadas usam o Guia Prático mais recente disponível em `sped/guides/` (atualmente 3.2.2), que descreve esse mesmo leiaute.
+2. **Incremental V016+.** Cada novo leiaute publicado pela Receita ganha seu próprio tracking file (`sped/STAGE_8_INCR_V016.md`, …) listando **only the diffs**: registros novos, campos adicionados, enums extendidos. Sub-stages numbered `8.1.001`, `8.2.001`, etc. Adicionados ao enum `LayoutEfdIcmsIpi` quando o trabalho for iniciado.
+3. **Code model.** One class per registro (e.g., `RegistroC100`). New fields added in later layouts annotated with `DesdeVersao = (int)LayoutEfdIcmsIpi.VXXX`. Parser/gerador and source generator honor `DesdeVersao` against the version read from `Registro0000`. Structurally divergent registros (rare) → subclass `RegistroXxxxVXXX : RegistroXxxx`. New registros introduced in later layouts → annotated with `IntroduzidoEm = (int)LayoutEfdIcmsIpi.VXXX` on `[RegistroSped]`.
+4. **`LayoutEfdIcmsIpi`** enum in `src/TecnoFisc.Sped.EfdIcmsIpi/Versionamento/` começa com `V015 = 15`. Convenção: valor inteiro = `COD_VER` do registro `0000` (`V015 = 15`) — permite cast direto em atributos (`DesdeVersao = (int)LayoutEfdIcmsIpi.V015`) e comparação aritmética. Incrementos (`V016`, `V017`, …) são adicionados conforme novos leiautes são implementados.
 
-Publish v0.3.0 only after baseline V306 is complete and round-trips a real anonymized arquivo. Each incremental layout (V307+) ships as a minor bump (0.3.1, 0.3.2, …).
+Publish v0.3.0 only after baseline V015 is complete and round-trips a real anonymized arquivo. Each incremental layout (V016+) ships as a minor bump (0.3.x).
 
 ### Stage 9 — TecnoFisc.Sped.NFe (XML)
 

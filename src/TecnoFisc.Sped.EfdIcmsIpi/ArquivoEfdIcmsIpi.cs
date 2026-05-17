@@ -3,7 +3,7 @@ using TecnoFisc.Sped.Core.Abstracoes;
 namespace TecnoFisc.Sped.EfdIcmsIpi;
 
 /// <summary>
-/// Modelo raiz do arquivo EFD ICMS-IPI (baseline V306). Agrupa os registros nos dez
+/// Modelo raiz do arquivo EFD ICMS-IPI (baseline V015). Agrupa os registros nos dez
 /// blocos do leiaute na ordem canônica (0, B, C, D, E, G, H, K, 1, 9).
 /// </summary>
 /// <remarks>

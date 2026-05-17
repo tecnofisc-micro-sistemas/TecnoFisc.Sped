@@ -27,14 +27,23 @@ pacote afetado é versionado.
 | --- | --- | --- |
 | EFD Contribuições | `TecnoFisc.Sped.EfdContribuicoes` | **0.3.1** — leiaute V006 completo |
 | EFD ICMS-IPI | `TecnoFisc.Sped.EfdIcmsIpi` | **0.3.1** — baseline V015 completo, round-trip validado contra arquivo real |
-| NF-e / NFC-e / CT-e / MDF-e | `TecnoFisc.Sped.NFe`, etc. | planejado |
-| eSocial / EFD-Reinf / ECD / ECF | pacotes próprios | planejado |
+| ECD | `TecnoFisc.Sped.Ecd` | planejado — baseline 2021 + incrementos até o leiaute vigente |
+| ECF | `TecnoFisc.Sped.Ecf` | planejado |
+| NF-e | `TecnoFisc.Sped.NFe` | planejado (XML) |
+| NFC-e | `TecnoFisc.Sped.NFCe` | planejado (XML) |
+| CT-e | `TecnoFisc.Sped.CTe` | planejado (XML) |
+| Metapacote agregador | `TecnoFisc.Sped` | planejado — referencia todos os leiautes acima em uma única dependência |
 
 `TecnoFisc.Sped.Core` é a infraestrutura compartilhada (value objects fiscais, parser/gerador
-genérico, abstrações de catálogo) consumida por todos os pacotes de leiaute.
-`TecnoFisc.Sped.Core.SourceGenerators` é o source generator que produz, em tempo de
-compilação, o catálogo estático de registros — referenciado como Analyzer pelos
-projetos de leiaute, não embarca no runtime do consumidor.
+genérico, abstrações de catálogo, identificador dinâmico de arquivos SPED) consumida por
+todos os pacotes de leiaute. `TecnoFisc.Sped.Core.SourceGenerators` é o source generator que
+produz, em tempo de compilação, o catálogo estático de registros — referenciado como
+Analyzer pelos projetos de leiaute, não embarca no runtime do consumidor.
+
+**Escopo definitivo.** A biblioteca cobre exatamente os sete leiautes listados na tabela
+acima mais o metapacote agregador. Outros projetos SPED (eSocial, EFD-Reinf, NFS-e, MDF-e,
+e-Financeira, DeRE, Central de Balanços) ficam **fora do escopo** e não serão
+implementados — ver `ARCHITECTURE.md` §3 para a tabela autoritativa.
 
 ## Quickstart
 
@@ -146,10 +155,11 @@ dotnet run -c Release --project benchmarks/TecnoFisc.Sped.Benchmarks -- --probe 
 ```text
 TecnoFisc.Sped/
 ├── src/
-│   ├── TecnoFisc.Sped.Core/                  # Value objects fiscais + infra compartilhada
+│   ├── TecnoFisc.Sped.Core/                  # Value objects fiscais + infra compartilhada + sniffer
 │   ├── TecnoFisc.Sped.Core.SourceGenerators/ # Source generator do catálogo (analyzer)
 │   ├── TecnoFisc.Sped.EfdContribuicoes/      # Leiaute EFD Contribuições V006
 │   └── TecnoFisc.Sped.EfdIcmsIpi/            # Leiaute EFD ICMS-IPI baseline V015
+│   # Stages futuros (planejados): Ecd, Ecf, NFe, NFCe, CTe + metapacote TecnoFisc.Sped
 ├── tests/
 │   ├── TecnoFisc.Sped.Core.Tests/
 │   ├── TecnoFisc.Sped.EfdContribuicoes.Tests/
@@ -157,9 +167,9 @@ TecnoFisc.Sped/
 ├── benchmarks/
 │   └── TecnoFisc.Sped.Benchmarks/            # BenchmarkDotNet (.NET 10)
 ├── sped/
-│   ├── STAGE_4_REGISTROS.md                  # Decomposição do Stage 4 em sub-stages
+│   ├── STAGE_4_REGISTROS.md                  # Decomposição do Stage 4 (EFD Contribuições)
+│   ├── STAGE_8_EFD_ICMS_IPI_V015.md          # Decomposição do Stage 8 (EFD ICMS-IPI V015)
 │   └── guides/                               # PDFs oficiais Receita Federal (gitignored)
-│       └── Guia_Pratico_EFD_Contribuicoes_*.pdf
 ├── ARCHITECTURE.md                           # Documento mestre (inglês, para LLMs)
 ├── CHANGELOG.md                              # Notas de release por pacote
 └── CLAUDE.md                                 # Instruções para Claude Code

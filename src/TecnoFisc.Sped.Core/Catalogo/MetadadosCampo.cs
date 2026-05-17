@@ -32,7 +32,8 @@ public sealed class MetadadosCampo
         bool obrigatorio,
         string? formato,
         Action<RegistroSped, ReadOnlySpan<char>> definidor,
-        Func<RegistroSped, string> serializador)
+        Func<RegistroSped, string> serializador,
+        int desdeVersao = 0)
     {
         ArgumentNullException.ThrowIfNull(nome);
         ArgumentNullException.ThrowIfNull(tipo);
@@ -46,6 +47,7 @@ public sealed class MetadadosCampo
         Decimais = decimais;
         Obrigatorio = obrigatorio;
         Formato = formato;
+        DesdeVersao = desdeVersao;
         _definidor = definidor;
         _serializador = serializador;
     }
@@ -57,6 +59,12 @@ public sealed class MetadadosCampo
     public int Decimais { get; }
     public bool Obrigatorio { get; }
     public string? Formato { get; }
+
+    /// <summary>
+    /// Primeira versão de leiaute em que o campo passa a existir. <c>0</c> = sempre presente.
+    /// Origem em <see cref="Atributos.CampoSpedAttribute.DesdeVersao"/>.
+    /// </summary>
+    public int DesdeVersao { get; }
 
     /// <summary>
     /// Aplica o valor textual ao registro. Recebe o conteúdo do campo entre pipes (sem

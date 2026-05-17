@@ -1,0 +1,126 @@
+using System.Reflection;
+
+using TecnoFisc.Sped.Core.Abstracoes;
+using TecnoFisc.Sped.Core.Atributos;
+using TecnoFisc.Sped.Core.Catalogo;
+using TecnoFisc.Sped.Core.Gerador;
+using TecnoFisc.Sped.Core.Parser;
+
+namespace TecnoFisc.Sped.EfdIcmsIpi.Tests.Registros.BlocoC;
+
+/// <summary>
+/// Sub-stage 8.077 — exercita a forma do <see cref="RegistroC370"/> contra o Guia Prático
+/// EFD-ICMS/IPI V3.0.6 (p. 114): metadados de catálogo, mapeamento de campos e invariante
+/// de round-trip parse → gerar → texto idêntico.
+/// </summary>
+public sealed class RegistroC370Tests
+{
+    private static readonly IRegistroSpedCatalogo _catalogo =
+        CatalogoBuilder.BuildFromAssembly(typeof(RegistroC370).Assembly);
+
+    private static async Task<string> RoundTripAsync(string sped, CancellationToken cancelamento)
+    {
+        var leitor = new LeitorSpedTxt(_catalogo);
+        var escritor = new EscritorSpedTxt(_catalogo);
+
+        using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
+        var registros = new List<RegistroSped>();
+        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+            registros.Add(registro);
+
+        using var saida = new MemoryStream();
+        await escritor.EscreverAsync(saida, registros, cancelamento);
+
+        return EncodingSped.Latin1.GetString(saida.ToArray());
+    }
+
+    [Fact]
+    public void Atributo_DeclaraC370_Nivel3_BlocoC()
+    {
+        var atributo = typeof(RegistroC370).GetCustomAttribute<RegistroSpedAttribute>();
+
+        atributo.Should().NotBeNull();
+        atributo!.Codigo.Should().Be("C370");
+        atributo.Nivel.Should().Be(3);
+        atributo.Bloco.Should().Be("C");
+    }
+
+    [Fact]
+    public void Catalogo_ExpoeRegistroC370Com6CamposNaOrdem()
+    {
+        _catalogo.TentarObter("C370".AsSpan(), out var meta).Should().BeTrue();
+
+        meta!.Codigo.Should().Be("C370");
+        meta.Campos.Select(c => c.Nome).Should().Equal(
+        [
+            "NumItem",
+            "CodItem",
+            "Qtd",
+            "Unid",
+            "VlItem",
+            "VlDesc",
+        ]);
+        meta.Campos.Select(c => c.Ordem).Should().Equal([2, 3, 4, 5, 6, 7]);
+    }
+
+    [Fact]
+    public void Definidor_AtribuiTodosOsCampos()
+    {
+        _catalogo.TentarObter("C370".AsSpan(), out var meta);
+        var registro = (RegistroC370)meta!.Fabrica();
+
+        meta.Campos[0].Definidor(registro, "1".AsSpan());          // NumItem
+        meta.Campos[1].Definidor(registro, "PROD001".AsSpan());    // CodItem
+        meta.Campos[2].Definidor(registro, "10,000".AsSpan());     // Qtd
+        meta.Campos[3].Definidor(registro, "UN".AsSpan());         // Unid
+        meta.Campos[4].Definidor(registro, "500,00".AsSpan());     // VlItem
+        meta.Campos[5].Definidor(registro, "50,00".AsSpan());      // VlDesc
+
+        registro.NumItem.Should().Be(1);
+        registro.CodItem.Should().Be("PROD001");
+        registro.Qtd.Should().Be(10.000m);
+        registro.Unid.Should().Be("UN");
+        registro.VlItem.Should().Be(500.00m);
+        registro.VlDesc.Should().Be(50.00m);
+    }
+
+    [Fact]
+    public void Definidor_CampoVazio_DevolveNulo()
+    {
+        _catalogo.TentarObter("C370".AsSpan(), out var meta);
+        var registro = (RegistroC370)meta!.Fabrica();
+
+        meta.Campos[0].Definidor(registro, Span<char>.Empty); // NumItem
+        meta.Campos[1].Definidor(registro, Span<char>.Empty); // CodItem
+        meta.Campos[3].Definidor(registro, Span<char>.Empty); // Unid
+        meta.Campos[5].Definidor(registro, Span<char>.Empty); // VlDesc
+
+        registro.NumItem.Should().BeNull();
+        registro.CodItem.Should().BeNull();
+        registro.Unid.Should().BeNull();
+        registro.VlDesc.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task RoundTrip_ComTodosOsCampos_PreservaTextoCanonico()
+    {
+        const string sped =
+            "|C370|1|PROD001|10,000|UN|500,00|50,00|\r\n";
+
+        var resultado = await RoundTripAsync(sped, TestContext.Current.CancellationToken);
+
+        resultado.Should().Be(sped);
+    }
+
+    [Fact]
+    public async Task RoundTrip_SemVlDesc_PreservaTextoCanonico()
+    {
+        // VL_DESC é OC — pode ser omitido.
+        const string sped =
+            "|C370|2|PROD002|5,000|KG|250,00||\r\n";
+
+        var resultado = await RoundTripAsync(sped, TestContext.Current.CancellationToken);
+
+        resultado.Should().Be(sped);
+    }
+}

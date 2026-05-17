@@ -1,10 +1,47 @@
 ---
-description: Implementa o próximo registro SPED pendente com testes completos, em commit e PR únicos. Funciona para qualquer módulo SPED (EFD Contribuições, Fiscal, etc.).
-argument-hint: [módulo] [single] (módulo opcional: efd-contribuicoes, fiscal; flag `single` desabilita batch — útil em automação para evitar estado parcial em interrupção)
+description: Implementa o próximo registro SPED pendente com testes completos, em commit e PR únicos. Funciona para qualquer módulo SPED (EFD Contribuições, EFD ICMS-IPI, etc.).
+argument-hint: [módulo] [single] [resume] (módulo opcional: efd-contribuicoes, efd-icms-ipi; `single` desabilita batch; `resume` força retomada do trabalho parcial na branch atual)
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent
 ---
 
 Você é um implementador de registros SPED. Identifique o(s) próximo(s) sub-estágio(s) pendente(s), implemente com testes, e entregue em **um único PR**. Siga os passos em ordem.
+
+## PASSO -1 — Detecção de retomada (ANTES de qualquer outra ação)
+
+Rode `git branch --show-current` e `git status --porcelain` em paralelo. Em seguida:
+
+1. Se a branch atual casa `feat/stage-*-registro-*` (ou `feat/stage-*-bloco*-batch`), **OU** `$ARGUMENTS` contém `resume`:
+   → **Modo retomada ativo.** Você está continuando trabalho interrompido (limite de sessão anterior). **Não recrie nada, não faça checkout de outra branch, não delete arquivos.**
+   - Inspecione o estado real:
+     - `git status` — arquivos não rastreados/modificados (implementação parcial)
+     - `git log dev..HEAD --oneline` — commits já feitos
+     - `git ls-remote --heads origin <branch>` — se já foi pushed
+     - `gh pr list --head <branch>` — se PR já existe
+   - Identifique o registro alvo pelo nome da branch (`feat/stage-{N-NNN}-registro-{code}` → sub-stage `{N.NNN}`, registro `{CODE}`). Confirme contra o tracking file (deve estar `[ ]`).
+   - Pule direto para o ponto correspondente do fluxo:
+     - Arquivos parciais existem → continue implementação a partir do que falta (PASSO 4/5).
+     - Implementação completa, sem build/test rodado → PASSO 6.
+     - Build/test OK, tracking não marcado → PASSO 7.
+     - Tracking marcado, sem commit → PASSO 8.
+     - Commit feito, sem push → PASSO 9 (push + PR).
+     - Push feito, sem PR → só `gh pr create`.
+   - **Nunca** descarte arquivos parciais. Eles representam tokens já gastos. Complete o trabalho.
+
+2. Se branch atual = `dev` e working tree limpo:
+   → Modo normal. Siga PASSO 0.5 → PASSO 9 em ordem.
+
+## Resolução de módulo (PASSO 0.5 — derivar antes de qualquer Glob)
+
+Resolva o módulo lendo `$ARGUMENTS` (primeira palavra que casa com um conhecido). Se ausente, escolha o módulo com mais sub-stages `[ ]` pendentes entre os tracking files de `sped/STAGE_*_REGISTROS*.md`. Da resolução, derive:
+
+| Módulo (`$MODULO`) | `$PROJ_SRC` | `$PROJ_TESTS` | `$TRACKING` | Prefixo commit |
+| --- | --- | --- | --- | --- |
+| `efd-contribuicoes` | `TecnoFisc.Sped.EfdContribuicoes` | `TecnoFisc.Sped.EfdContribuicoes.Tests` | `sped/STAGE_4_REGISTROS.md` | `feat(efd-contribuicoes):` |
+| `efd-icms-ipi` | `TecnoFisc.Sped.EfdIcmsIpi` | `TecnoFisc.Sped.EfdIcmsIpi.Tests` | `sped/STAGE_8_EFD_ICMS_IPI_V306.md` (ou tracking INCR ativo) | `feat(efd-icms-ipi):` |
+
+Para EFD ICMS-IPI, se `$ARGUMENTS` indicar versão (ex.: `efd-icms-ipi v307`), use `sped/STAGE_8_INCR_V307.md` como `$TRACKING` em vez do baseline. Sub-stages do tracking ditam `$STAGE_NUM` (ex.: `4`, `8`, `8.1`).
+
+Substitua qualquer referência a `STAGE_4_REGISTROS.md`, `efd-contribuicoes`, `EfdContribuicoes`, `stage-4` nos PASSOS abaixo pelos valores derivados aqui.
 
 ## Regra dura: 1 PR por execução
 
@@ -64,6 +101,8 @@ Para cada registro escolhido, `Read` com `pages` apontando para a página do tra
 Janela fiscal de 5 anos: ignore marcos de versão anteriores ao corte vigente.
 
 ## PASSO 3 — Branch único
+
+**Modo retomada (PASSO -1):** pular este passo. Você já está na branch correta.
 
 ```powershell
 git checkout dev
@@ -155,13 +194,13 @@ No `STAGE_N_REGISTROS.md`, marque cada sub-estágio coberto: `| [ ] |` → `| [x
 git add src/{ProjetoSrc}/Registros/Bloco{X}/Registro{CODE}.cs
 git add tests/{ProjetoTests}/Registros/Bloco{X}/Registro{CODE}Tests.cs
 # + enums/value objects criados
-git add sped/STAGE_4_REGISTROS.md
+git add $TRACKING
 ```
 
 Conventional Commits, título inglês, corpo português:
 
-- 1 registro: `feat(efd-contribuicoes): adiciona Registro{CODE} (sub-stage {N.NNN})`
-- Batch: `feat(efd-contribuicoes): adiciona Registros {CODEs} — Bloco {X} batch (sub-stages {N.NNN}-{N.MMM})`
+- 1 registro: `{Prefixo commit}: adiciona Registro{CODE} (sub-stage {N.NNN})` — ex.: `feat(efd-icms-ipi): adiciona Registro0000 (sub-stage 8.001)`
+- Batch: `{Prefixo commit}: adiciona Registros {CODEs} — Bloco {X} batch (sub-stages {N.NNN}-{N.MMM})`
 
 Mencione enums criados (`Cria enum IndicadorXxx (first-use).`) no corpo.
 

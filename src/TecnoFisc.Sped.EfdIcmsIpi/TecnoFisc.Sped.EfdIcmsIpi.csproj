@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Implementação .NET do layout EFD ICMS-IPI (Escrituração Fiscal Digital) — leitura, escrita e modelo tipado dos registros publicados pela Receita Federal. Suporta as versões V306 a V322 cobertas pela janela fiscal de 5 anos.</Description>
+    <PackageId>TecnoFisc.Sped.EfdIcmsIpi</PackageId>
+    <PackageTags>sped;efd-icms-ipi;icms;ipi;fiscal;brasil;tecnofisc</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TecnoFisc.Sped.Core\TecnoFisc.Sped.Core.csproj" />
+
+    <!-- Source generator referenciado como Analyzer: emite o catálogo estático em compile-time
+         e não embarca no runtime do consumidor (ReferenceOutputAssembly=false). -->
+    <ProjectReference Include="..\TecnoFisc.Sped.Core.SourceGenerators\TecnoFisc.Sped.Core.SourceGenerators.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+</Project>

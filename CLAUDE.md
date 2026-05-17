@@ -49,9 +49,7 @@ When the user upgrades to a newer layout, expect newer PDF dropped alongside the
 
 ## Repository state
 
-Skeleton only. Two empty SDK-style projects exist: `TecnoFisc.Sped.Core` and `TecnoFisc.Sped.EfdContribuicoes`. No source files, no tests, no `src/`/`tests/` layout yet — the `ARCHITECTURE.md` solution tree describes the **target** structure, not the current one. When adding the first real code, mirror the target tree (move projects under `src/`, add `tests/`, `benchmarks/`, `samples/`).
-
-The current development stage is **Stage 0 → Stage 1** (foundation + core value objects). Do not jump ahead in the staged plan (see ARCHITECTURE.md §12) without an explicit ask.
+Current development has passed EFD Contribuições V006 and the EFD ICMS-IPI V306 record baseline. Before starting new work, use `ARCHITECTURE.md` §12 and the tracking files under `sped/` to identify the next stage or increment. Do not jump ahead in the staged plan without an explicit ask.
 
 ## Hard rules (failing these blocks the change)
 
@@ -61,6 +59,7 @@ The current development stage is **Stage 0 → Stage 1** (foundation + core valu
 4. **No reflection in parsing hot paths.** Reflection at startup (cached) is fine. `Activator.CreateInstance`, `PropertyInfo.SetValue` per-record is forbidden — use source-generated factory delegates (Stage 6) or the cached `CatalogoBuilder` fallback (Stage 2).
 5. **Performance-sensitive code requires a BenchmarkDotNet benchmark.** Performance regressions block merge.
 6. **Janela fiscal de 5 anos.** Receita só permite revisão dos últimos 5 anos. Marcos de versionamento de campos com vigência anterior ao corte (hoje, anteriores a 2021-01) **não são modelados** em código. Versões antigas de enums (`IND_PGTO` pré-2012-07, `IND_FRT` pré-2017-10/2018-01, etc.) ficam de fora — só a versão vigente no corte e a evolução posterior contam. Ver `ARCHITECTURE.md` §4.3.
+7. **Merges em `dev` são sempre Squash and Merge.** Branches de trabalho podem ter commits granulares durante a implementação, mas o merge para `dev` deve entrar como um único commit squashed do PR.
 
 ## Naming convention (CRITICAL — see ARCHITECTURE.md §1.3)
 
@@ -81,7 +80,7 @@ The current development stage is **Stage 0 → Stage 1** (foundation + core valu
 
 ## Commits
 
-Conventional Commits prefixes in English (`feat:`, `fix:`, `refactor:`, `test:`, `docs:`, `perf:`), message body in Portuguese. One commit per cohesive idea.
+Conventional Commits prefixes in English (`feat:`, `fix:`, `refactor:`, `test:`, `docs:`, `perf:`), message body in Portuguese. Branches podem ter commits granulares, um por ideia coesa. Ao integrar em `dev`, usar sempre Squash and Merge.
 
 ## Documentation language
 

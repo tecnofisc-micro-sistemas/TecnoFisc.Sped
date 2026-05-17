@@ -45,7 +45,8 @@ public static class CatalogoBuilder
         string codigo,
         int nivel,
         string bloco,
-        Func<RegistroSped> fabrica)
+        Func<RegistroSped> fabrica,
+        int introduzidoEm = 0)
     {
         ArgumentNullException.ThrowIfNull(tipo);
         ArgumentNullException.ThrowIfNull(codigo);
@@ -57,7 +58,7 @@ public static class CatalogoBuilder
                 $"Tipo {tipo.FullName} precisa ser concreto e herdar de RegistroSped.");
 
         var campos = ConstruirCampos(tipo);
-        return new MetadadosRegistro(codigo, nivel, bloco, tipo, fabrica, campos);
+        return new MetadadosRegistro(codigo, nivel, bloco, tipo, fabrica, campos, introduzidoEm);
     }
 
     private static IRegistroSpedCatalogo ConstruirNovo(Assembly assembly)
@@ -95,7 +96,8 @@ public static class CatalogoBuilder
             atributo.Bloco,
             tipo,
             fabrica,
-            campos);
+            campos,
+            atributo.IntroduzidoEm);
     }
 
     private static Func<RegistroSped> ConstruirFabrica(Type tipo)
@@ -163,7 +165,8 @@ public static class CatalogoBuilder
                 atributo.Obrigatorio,
                 atributo.Formato,
                 definidor,
-                serializadorComposto)));
+                serializadorComposto,
+                atributo.DesdeVersao)));
         }
 
         lista.Sort(static (a, b) => a.Ordem.CompareTo(b.Ordem));
@@ -261,7 +264,7 @@ public static class CatalogoBuilder
                 : throw new FormatException($"Esperado 1 caractere, recebeu '{s}'.");
 
         if (alvo.IsEnum)
-            return s => Enum.Parse(alvo, s, ignoreCase: false);
+            return ConstruirConversorEnum(alvo);
 
         if (ConversoresPrimitivosCatalogo.TentarObter(alvo, out var registrado))
             return registrado;
@@ -310,22 +313,61 @@ public static class CatalogoBuilder
             return static v => ((char)v).ToString();
 
         if (alvo.IsEnum)
-        {
-            // Em SPED o valor de um campo enumerado é sempre o código numérico, com largura
-            // fixa quando o layout declara Tam=NNN*. Serializa pelo underlying e zero-pad até
-            // Tamanho (quando Tamanho > 0).
-            int tamanho = atributo.Tamanho;
-            return v =>
-            {
-                long underlying = ((IConvertible)v).ToInt64(CultureInfo.InvariantCulture);
-                string texto = underlying.ToString(CultureInfo.InvariantCulture);
-                return tamanho > 0 ? texto.PadLeft(tamanho, '0') : texto;
-            };
-        }
+            return ConstruirSerializadorEnum(alvo, atributo);
 
         // Value objects fiscais e demais tipos: usam ToString canônico (responsabilidade do
         // próprio tipo expor a representação SPED). Cnpj, Cfop, Ncm, etc. já fazem isso.
         return static v => v.ToString() ?? string.Empty;
+    }
+
+    private static Func<string, object?> ConstruirConversorEnum(Type alvo)
+    {
+        var porValorSped = alvo
+            .GetFields(BindingFlags.Public | BindingFlags.Static)
+            .Select(campo => new
+            {
+                Valor = campo.GetCustomAttribute<SpedValorAttribute>()?.Valor,
+                Enum = campo.GetValue(null),
+            })
+            .Where(item => item.Valor is not null)
+            .ToDictionary(item => item.Valor!, item => item.Enum, StringComparer.Ordinal);
+
+        if (porValorSped.Count == 0)
+            return s => Enum.Parse(alvo, s, ignoreCase: false);
+
+        return s => porValorSped.TryGetValue(s, out var valor)
+            ? valor
+            : throw new FormatException($"Valor '{s}' não é válido para {alvo.Name}.");
+    }
+
+    private static Func<object, string> ConstruirSerializadorEnum(Type alvo, CampoSpedAttribute atributo)
+    {
+        var porMembro = alvo
+            .GetFields(BindingFlags.Public | BindingFlags.Static)
+            .Select(campo => new
+            {
+                ValorEnum = campo.GetValue(null)!,
+                ValorSped = campo.GetCustomAttribute<SpedValorAttribute>()?.Valor,
+            })
+            .Where(item => item.ValorSped is not null)
+            .ToDictionary(item => item.ValorEnum, item => item.ValorSped!);
+
+        if (porMembro.Count > 0)
+        {
+            return v => porMembro.TryGetValue(v, out var valor)
+                ? valor
+                : throw new FormatException($"Valor '{v}' não tem código SPED em {alvo.Name}.");
+        }
+
+        // Em SPED o valor de um campo enumerado numérico é sempre o código do underlying,
+        // com largura fixa quando o layout declara Tam=NNN*.
+        int tamanho = atributo.Tamanho;
+        return v =>
+        {
+            long underlying = ((IConvertible)v).ToInt64(CultureInfo.InvariantCulture);
+            string texto = underlying.ToString(CultureInfo.InvariantCulture);
+            return tamanho > 0 ? texto.PadLeft(tamanho, '0') : texto;
+        };
     }
 
     private sealed class CatalogoReflexivo(Dictionary<string, MetadadosRegistro> registros)

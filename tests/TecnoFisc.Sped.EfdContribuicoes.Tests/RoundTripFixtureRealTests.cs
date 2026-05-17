@@ -71,7 +71,30 @@ public sealed class RoundTripFixtureRealTests
         if (diretorio is null)
             return [];
 
-        return Directory.EnumerateFiles(diretorio, "*.txt", SearchOption.TopDirectoryOnly);
+        return Directory.EnumerateFiles(diretorio, "*.txt", SearchOption.TopDirectoryOnly)
+            .Where(EhFixtureEfdContribuicoes);
+    }
+
+    /// <summary>
+    /// Discrimina EFD Contribuições de outros leiautes pelo <c>Registro0000</c>. Em EFD
+    /// Contribuições o segundo campo (<c>COD_VER</c>) é numérico curto como <c>"005"</c>,
+    /// <c>"006"</c>, etc.; em EFD ICMS-IPI o segundo campo é <c>"015"</c>+ e o total de pipes
+    /// difere (16 vs 18+ para Contribuições V006). Filtra fixtures de outros leiautes.
+    /// </summary>
+    private static bool EhFixtureEfdContribuicoes(string caminho)
+    {
+        using var fs = File.OpenRead(caminho);
+        using var leitor = new StreamReader(fs, EncodingSped.Latin1);
+        var primeiraLinha = leitor.ReadLine();
+        if (string.IsNullOrEmpty(primeiraLinha) || !primeiraLinha.StartsWith("|0000|", StringComparison.Ordinal))
+            return false;
+
+        var campos = primeiraLinha.Split('|');
+        // campos[0] = "", campos[1] = "0000", campos[2] = COD_VER.
+        if (campos.Length < 3)
+            return false;
+        var codVer = campos[2];
+        return codVer is "001" or "002" or "003" or "004" or "005" or "006" or "007";
     }
 
     private static async Task ExercitarFixtureAsync(string caminhoFixture)

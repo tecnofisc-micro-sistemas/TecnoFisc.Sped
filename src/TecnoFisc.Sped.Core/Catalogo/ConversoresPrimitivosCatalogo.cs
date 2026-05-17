@@ -23,6 +23,8 @@ public static class ConversoresPrimitivosCatalogo
         Registrar(static s => Ncm.Criar(s));
         Registrar(static s => ChaveAcesso.Criar(s));
         Registrar(static s => InscricaoEstadual.Criar(s));
+        Registrar(static s => GeneroItem.Criar(s));
+        Registrar(static s => ModeloDocumento.Criar(s));
         // Cst depende de TipoTributo no momento da construção; o consumidor que precisar
         // dele em um campo SPED automatizado deve registrar um conversor com o tributo
         // adequado para o seu contexto.

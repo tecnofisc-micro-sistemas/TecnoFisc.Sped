@@ -101,3 +101,20 @@ public sealed class Registro9999Sintetico : RegistroSped
     [CampoSped(Ordem = 2)]
     public int QtdLin { get; set; }
 }
+
+/// <summary>
+/// Registro sintético versionado: introduzido na versão 310 do leiaute, com campo que só
+/// passa a existir a partir da versão 312. Exercita <c>IntroduzidoEm</c> no atributo do
+/// registro e <c>DesdeVersao</c> no atributo de campo.
+/// </summary>
+[RegistroSped(Codigo = "Z100", Nivel = 2, Bloco = "Z", IntroduzidoEm = 310)]
+public sealed class RegistroZ100Sintetico : RegistroSped
+{
+    public override string Codigo => "Z100";
+
+    [CampoSped(Ordem = 2)]
+    public string? CodConf { get; set; }
+
+    [CampoSped(Ordem = 3, DesdeVersao = 312)]
+    public string? IndComplemento { get; set; }
+}

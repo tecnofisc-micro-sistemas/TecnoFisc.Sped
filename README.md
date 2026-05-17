@@ -4,9 +4,11 @@ Família de bibliotecas .NET para leitura, geração e manipulação tipada de a
 publicados pelos projetos do **SPED — Sistema Público de Escrituração Digital**
 (Receita Federal do Brasil).
 
-> Status atual: **0.2.0**. EFD Contribuições layout V006 (Guia Prático v1.35) com
-> parser e gerador completos, API streaming pública e catálogo gerado em
-> compile-time por source generator. Veja o `CHANGELOG.md` para detalhes da release.
+> Status atual: **0.3.0** publicado. Cobre EFD Contribuições V006 e EFD ICMS-IPI
+> baseline V306 — ambos com registros tipados, API pública de parser/gerador e
+> round-trip validado contra arquivos reais emitidos pelo PVA. Próximos passos
+> rastreados no `ARCHITECTURE.md` (incrementos V307+ do EFD ICMS-IPI e demais
+> projetos SPED). Veja o `CHANGELOG.md` para detalhes.
 
 ## Visão geral
 
@@ -21,8 +23,8 @@ pacote afetado é versionado.
 
 | Projeto SPED | Pacote NuGet | Status |
 | --- | --- | --- |
-| EFD Contribuições | `TecnoFisc.Sped.EfdContribuicoes` | **0.2.0** — layout V006 completo |
-| EFD ICMS-IPI | `TecnoFisc.Sped.Fiscal` | planejado |
+| EFD Contribuições | `TecnoFisc.Sped.EfdContribuicoes` | **0.3.0** — layout V006 completo |
+| EFD ICMS-IPI | `TecnoFisc.Sped.EfdIcmsIpi` | **0.3.0** — baseline V306 completo, round-trip validado contra arquivo real |
 | NF-e / NFC-e / CT-e / MDF-e | `TecnoFisc.Sped.NFe`, etc. | planejado |
 | eSocial / EFD-Reinf / ECD / ECF | pacotes próprios | planejado |
 
@@ -144,10 +146,12 @@ TecnoFisc.Sped/
 ├── src/
 │   ├── TecnoFisc.Sped.Core/                  # Value objects fiscais + infra compartilhada
 │   ├── TecnoFisc.Sped.Core.SourceGenerators/ # Source generator do catálogo (analyzer)
-│   └── TecnoFisc.Sped.EfdContribuicoes/      # Layout EFD Contribuições V006
+│   ├── TecnoFisc.Sped.EfdContribuicoes/      # Layout EFD Contribuições V006
+│   └── TecnoFisc.Sped.EfdIcmsIpi/            # Layout EFD ICMS-IPI baseline V306
 ├── tests/
 │   ├── TecnoFisc.Sped.Core.Tests/
-│   └── TecnoFisc.Sped.EfdContribuicoes.Tests/
+│   ├── TecnoFisc.Sped.EfdContribuicoes.Tests/
+│   └── TecnoFisc.Sped.EfdIcmsIpi.Tests/
 ├── benchmarks/
 │   └── TecnoFisc.Sped.Benchmarks/            # BenchmarkDotNet (.NET 10)
 ├── sped/

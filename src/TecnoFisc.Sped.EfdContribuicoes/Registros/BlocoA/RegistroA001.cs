@@ -1,6 +1,6 @@
 using TecnoFisc.Sped.Core.Abstracoes;
 using TecnoFisc.Sped.Core.Atributos;
-using TecnoFisc.Sped.EfdContribuicoes.Enums;
+using TecnoFisc.Sped.Core.Enums;
 
 namespace TecnoFisc.Sped.EfdContribuicoes.Registros.BlocoA;
 

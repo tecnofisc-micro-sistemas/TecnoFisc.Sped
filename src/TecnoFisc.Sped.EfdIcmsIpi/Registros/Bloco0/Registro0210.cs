@@ -1,5 +1,6 @@
 using TecnoFisc.Sped.Core.Abstracoes;
 using TecnoFisc.Sped.Core.Atributos;
+using TecnoFisc.Sped.EfdIcmsIpi.Versionamento;
 
 namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.Bloco0;
 
@@ -8,7 +9,12 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.Bloco0;
 /// Registro0200. Informa consumo esperado de insumo/componente para produzir uma unidade do
 /// item composto/resultante. Conforme Guia Prático EFD-ICMS/IPI V3.0.6, p. 37.
 /// </summary>
+/// <remarks>
+/// <b>Descontinuado a partir de V016</b> (Guia Prático 3.0.7, item 22). O parser rejeita este
+/// registro em arquivos com <c>COD_VER ≥ 016</c>.
+/// </remarks>
 [RegistroSped(Codigo = "0210", Nivel = 3, Bloco = "0")]
+[Descontinuado(EmVersao = (int)LayoutEfdIcmsIpi.V016)]
 public sealed partial class Registro0210 : RegistroSped
 {
     /// <inheritdoc />

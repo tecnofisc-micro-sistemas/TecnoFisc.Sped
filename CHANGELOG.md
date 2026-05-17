@@ -6,15 +6,31 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ## [Não publicado]
 
+## [0.3.1] — 2026-05-17
+
+Corrige nomenclatura das versões do leiaute EFD ICMS-IPI: o que estava sendo chamado de `V306` é, na verdade, o leiaute **V015** (`COD_VER` do registro `0000`, conforme Tabela "Versão do Leiaute" da Nota Técnica EFD ICMS-IPI nº 2020.001 — Ato COTEPE/ICMS nº 44/2018). O número `306` é a versão do Guia Prático (3.0.6) que descreve o leiaute, não o leiaute em si. Múltiplas versões do Guia (3.0.6, 3.1.x, 3.2.x) descrevem o mesmo leiaute 015.
+
+### TecnoFisc.Sped.EfdIcmsIpi 0.3.1
+
+#### Alterado (breaking)
+
+- Enum público `LayoutEfdIcmsIpi`: constante `V306` renomeada para `V015` (valor `306` → `15`). As 16 constantes anteriormente listadas como `V307`..`V322` foram removidas — elas mapeavam atualizações textuais do Guia Prático, não leiautes. Incrementos reais (`V016`, `V017`, …) serão adicionados conforme a Receita publicar novas Notas Técnicas com leiaute novo.
+- Documentação (`ARCHITECTURE.md` §12, `README.md`, `CLAUDE.md`, `sped/STAGE_8_EFD_ICMS_IPI_V015.md`) reescrita para distinguir versão do leiaute (`COD_VER` do `0000`) de versão do Guia Prático.
+
+#### Notas de migração
+
+- Consumidores que usavam `LayoutEfdIcmsIpi.V306` devem trocar para `LayoutEfdIcmsIpi.V015`. Nenhum impacto em arquivos SPED gerados/lidos — o `COD_VER` correto no registro `0000` sempre foi `015`.
+- Tracking file `sped/STAGE_8_EFD_ICMS_IPI_V306.md` renomeado para `sped/STAGE_8_EFD_ICMS_IPI_V015.md`.
+
 ## [0.3.0] — 2026-05-17
 
-Conclui a Stage 8 baseline do `ARCHITECTURE.md`: EFD ICMS-IPI layout V306 com todos os 255 registros tipados, API pública de parser/gerador e validação round-trip end-to-end contra arquivo real emitido pelo PVA da Receita.
+Conclui a Stage 8 baseline do `ARCHITECTURE.md`: EFD ICMS-IPI leiaute V015 (`COD_VER` do registro `0000`) com todos os 255 registros tipados, API pública de parser/gerador e validação round-trip end-to-end contra arquivo real emitido pelo PVA da Receita. *Nota: esta release foi originalmente publicada referindo-se ao leiaute como "V306"; ver release 0.3.1 para a correção de nomenclatura.*
 
 ### TecnoFisc.Sped.EfdIcmsIpi 0.3.0
 
 #### Adicionado
 
-- Pacote novo. Cobre a Stage 8 baseline V306 (Ato COTEPE/ICMS nº 44/2018, Guia Prático v3.0.6): 255 registros distribuídos nos 10 blocos (`0`, `B`, `C`, `D`, `E`, `G`, `H`, `K`, `1`, `9`), com `[RegistroSped]`/`[CampoSped]` declarados, validação de níveis hierárquicos e fixtures por bloco.
+- Pacote novo. Cobre a Stage 8 baseline V015 (Ato COTEPE/ICMS nº 44/2018, NT 2020.001, descrito no Guia Prático v3.0.6 e posteriores): 255 registros distribuídos nos 10 blocos (`0`, `B`, `C`, `D`, `E`, `G`, `H`, `K`, `1`, `9`), com `[RegistroSped]`/`[CampoSped]` declarados, validação de níveis hierárquicos e fixtures por bloco.
 - API pública: `ArquivoEfdIcmsIpi`, `BlocoEfdIcmsIpi`, `ParserEfdIcmsIpi`, `GeradorEfdIcmsIpi`. Espelha o contrato de `EfdContribuicoes` — leitura streaming via `IAsyncEnumerable<RegistroSped>`, leitura buffered para o modelo tipado, escrita pipe-delimitada em Latin1/Windows-1252.
 - Validação round-trip end-to-end (`RoundTripFixtureRealTests`) contra arquivo SPED real emitido pelo PVA, exercitando os 10 blocos. Invariante: `parse → serialize → parse → serialize` é byte-idêntica entre as duas passagens de serialização.
 - Suporte para o registro `9999` final seguido de bloco PKCS#7 anexo: parser encerra silenciosamente no marcador `|9999|` e descarta o trailer binário da assinatura digital do PVA, sem perder registros nem cuspir erro de layout.
@@ -126,6 +142,8 @@ Release inicial. Conclui a Stage 4 de `ARCHITECTURE.md`: implementação complet
 - API streaming (`IAsyncEnumerable<RegistroSped>`) é objetivo da Stage 5 e não está disponível neste release.
 - Suporte a leiautes mais novos (V007+) entra na Stage 7.
 
-[Não publicado]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/compare/v0.2.0...HEAD
+[Não publicado]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/releases/tag/v0.3.1
+[0.3.0]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/releases/tag/v0.3.0
 [0.2.0]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/releases/tag/v0.2.0
 [0.1.0]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/releases/tag/v0.1.0

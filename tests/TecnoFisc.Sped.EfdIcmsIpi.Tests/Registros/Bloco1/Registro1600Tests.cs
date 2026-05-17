@@ -3,6 +3,7 @@ using System.Reflection;
 using TecnoFisc.Sped.Core.Abstracoes;
 using TecnoFisc.Sped.Core.Atributos;
 using TecnoFisc.Sped.Core.Catalogo;
+using TecnoFisc.Sped.Core.Erros;
 using TecnoFisc.Sped.Core.Gerador;
 using TecnoFisc.Sped.Core.Parser;
 using TecnoFisc.Sped.EfdIcmsIpi.Registros.Bloco1;
@@ -10,9 +11,11 @@ using TecnoFisc.Sped.EfdIcmsIpi.Registros.Bloco1;
 namespace TecnoFisc.Sped.EfdIcmsIpi.Tests.Registros.Bloco1;
 
 /// <summary>
-/// Sub-stage 8.235 - exercita a forma do <see cref="Registro1600"/> contra o Guia Pratico
-/// EFD-ICMS/IPI V3.0.6 (p. 286): metadados de catalogo, mapeamento de campos e
-/// invariante de round-trip parse -> gerar -> texto identico.
+/// Sub-stage 8.235 — exercita a forma do <see cref="Registro1600"/> contra o Guia Prático
+/// EFD-ICMS/IPI V3.0.6 (p. 286): metadados de catálogo, mapeamento de campos e
+/// invariante de round-trip parse → gerar → texto idêntico.
+/// Sub-stage 8.016.004 — verifica descontinuação em V016: <c>[Descontinuado]</c> aplicado
+/// e parser rejeita o registro quando <c>COD_VER ≥ 016</c>.
 /// </summary>
 public sealed class Registro1600Tests
 {
@@ -111,5 +114,67 @@ public sealed class Registro1600Tests
         var resultado = await RoundTripAsync(sped, TestContext.Current.CancellationToken);
 
         resultado.Should().Be(sped);
+    }
+
+    // ── sub-stage 8.016.004: descontinuação em V016 ──────────────────────────
+
+    [Fact]
+    public void Atributo_Descontinuado_DeclaraEmVersaoV016()
+    {
+        var atributo = typeof(Registro1600).GetCustomAttribute<DescontinuadoAttribute>();
+
+        atributo.Should().NotBeNull();
+        atributo!.EmVersao.Should().Be((int)LayoutEfdIcmsIpi.V016);
+    }
+
+    [Fact]
+    public void Catalogo_Registro1600_ExpoeDescontinuadoEm16()
+    {
+        _catalogo.TentarObter("1600".AsSpan(), out var meta).Should().BeTrue();
+        meta!.DescontinuadoEm.Should().Be((int)LayoutEfdIcmsIpi.V016);
+    }
+
+    [Fact]
+    public async Task Parser_Registro1600_EmArquivoV015_Aceito()
+    {
+        // V015 → ainda válido; 1600 não estava descontinuado
+        const string sped =
+            "|0000|015|0|01012022|31012022|EMPRESA TESTE SA|11222333000181||SP|123456789|3550308|||A|0|\r\n" +
+            "|1600|BANCO001|1000,00|500,00|\r\n" +
+            "|9999|2|\r\n";
+
+        var leitor = new LeitorSpedTxt(_catalogo);
+        using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
+        var registros = new List<RegistroSped>();
+
+        Func<Task> ler = async () =>
+        {
+            await foreach (var r in leitor.LerStreamingAsync(entrada, TestContext.Current.CancellationToken))
+                registros.Add(r);
+        };
+
+        await ler.Should().NotThrowAsync();
+        registros.Should().Contain(r => r.Codigo == "1600");
+    }
+
+    [Fact]
+    public async Task Parser_Registro1600_EmArquivoV016_Rejeitado()
+    {
+        // V016 → descontinuado; parser deve lançar ErroLayoutSpedException
+        const string sped =
+            "|0000|016|0|01012022|31012022|EMPRESA TESTE SA|11222333000181||SP|123456789|3550308|||A|0|\r\n" +
+            "|1600|BANCO001|1000,00|500,00|\r\n" +
+            "|9999|2|\r\n";
+
+        var leitor = new LeitorSpedTxt(_catalogo);
+        using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
+
+        Func<Task> ler = async () =>
+        {
+            await foreach (var _ in leitor.LerStreamingAsync(entrada, TestContext.Current.CancellationToken)) { }
+        };
+
+        await ler.Should().ThrowAsync<ErroLayoutSpedException>()
+            .WithMessage("*descontinuado*");
     }
 }

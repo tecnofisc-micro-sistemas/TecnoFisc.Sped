@@ -35,7 +35,7 @@ Numeração: `8.{versão}.{seq}`. Sequência é local da versão (V016: 8.016.00
 
 | Feito | Sub-stage | Tipo | Registro | Bloco | Resumo | Fonte |
 | --- | --- | --- | --- | --- | --- | --- |
-| [ ] | 8.016.001 | NEW | Registro 1601 | 1 | Operações com instrumentos de pagamentos eletrônicos. Nível 2, 1:N, OC. Substitui Registro 1600. | Subseção 11 (p.16) + 3.0.7 item 6 |
+| [x] | 8.016.001 | NEW | Registro 1601 | 1 | Operações com instrumentos de pagamentos eletrônicos. Nível 2, 1:N, OC. Substitui Registro 1600. | Subseção 11 (p.16) + 3.0.7 item 6 |
 
 ### Campos novos em registros existentes (UPDATE/Campo)
 

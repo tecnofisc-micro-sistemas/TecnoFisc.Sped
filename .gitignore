@@ -86,3 +86,6 @@ sped/guides/
 
 # Arquivos SPED reais para round-trip (anonimizados, mantidos localmente)
 sped/fixtures/
+
+# Claude Code memory (local-only)
+memory/

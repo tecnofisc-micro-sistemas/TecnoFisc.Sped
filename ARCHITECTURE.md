@@ -66,11 +66,31 @@ TecnoFisc.Sped provides .NET classes and parsing/generation infrastructure for a
 - Not a fiscal application. Has no business logic.
 - Not aware of any consuming application's domain.
 - Not coupled to any database, storage, or persistence mechanism.
-- Not a validator of fiscal correctness — it validates only format conformance.
+- Not a validator of fiscal correctness — it validates only format conformance. Regras tributárias, obrigatoriedade condicional, dependências cross-registro e validações cruzadas entre blocos são responsabilidade do consumidor (PVA da Receita, regras próprias). Tracker entries do tipo `UPDATE/Validação` e `UPDATE/Obrig` são tratadas como `UPDATE/Doc` — viram doc-comment XML descrevendo a regra para o consumidor, sem código de validação.
 
 ### 2.4 Distribution
 
 Published as private NuGet packages on Azure Artifacts (or GitHub Packages — to be decided). Independent semantic versioning per package. Eventually may be open-sourced separately.
+
+### 2.5 Modo de operação por pacote (leitura vs leitura+escrita)
+
+Nem todos os pacotes precisam de gerador. A decisão é por caso de uso real:
+
+| Pacote | Parser | Gerador | Justificativa |
+| --- | --- | --- | --- |
+| `TecnoFisc.Sped.EfdContribuicoes` | ✅ | ✅ | Consumidor TecnoFisc emite o arquivo. |
+| `TecnoFisc.Sped.EfdIcmsIpi` | ✅ | ❌ | Uso é ingestão para análise; não há emissão. |
+| `TecnoFisc.Sped.Ecd` | ✅ | ⏸️ | Gerador depende de confirmação externa. Implementar parser primeiro; gerador entra em stage dedicada quando demanda confirmada. |
+| `TecnoFisc.Sped.Ecf` | ✅ | ⏸️ | Mesma regra do ECD. |
+| `TecnoFisc.Sped.NFe` / `NFCe` / `CTe` | ✅ | ✅ | Geração faz parte do caso de uso fiscal (assinatura, emissão SEFAZ). |
+
+**Implicações dos pacotes read-only:**
+
+- Sem `GeradorXxx.cs`, sem `EscritorSpedTxt` instanciado, sem `IEscritorSped` exposto.
+- Sem testes de round-trip (parse → generate → parse).
+- Habilita a estratégia de modelo único do leiaute mais recente (§4.7) — sem subclasses por versão.
+- `[Descontinuado(EmVersao=...)]` vira informacional no read path (registros históricos ainda aparecem em arquivos antigos).
+- Migrar pacote para read+write no futuro = stage dedicada que (i) reativa subclasses por versão quando necessário, (ii) implementa gerador, (iii) restaura testes de round-trip.
 
 ---
 
@@ -153,13 +173,25 @@ Whatever the parser produces, the generator must consume back. Round-trip a file
 
 ### 4.7 Layout versioning
 
-SPED projects publish new layouts approximately yearly. The library handles multiple versions transparently:
+SPED projects publish new layouts approximately yearly. A estratégia depende do **modo de operação do pacote** (§2.5):
 
-- A `LayoutVersao` enum per project (e.g., `LayoutEfdContribuicoes`, `LayoutEfdIcmsIpi`).
+**Pacotes read+write (EFD Contribuições, NFe/NFCe/CTe):**
+
+- A `LayoutVersao` enum per project (e.g., `LayoutEfdContribuicoes`).
 - The parser reads the layout version from `Registro0000` and instantiates appropriate variants.
 - **Default:** version-aware serialization on a single class per registro. Fields added in later layouts annotated with `DesdeVersao = LayoutXxx.VYYY` on `[CampoSped]`; parser/gerador honor it against the file's layout. New registros annotated with `IntroduzidoEm` on `[RegistroSped]`.
-- **Exception:** structurally divergent registros (rare — order/type/length of an existing field changes) are subclassed `RegistroXxxxVYYY : RegistroXxxx`.
+- **Exception:** structurally divergent registros (rare — order/type/length of an existing field changes) are subclassed `RegistroXxxxVYYY : RegistroXxxx`. O catálogo passa a indexar variantes por versão (decisão futura quando esse caso aparecer em pacote read+write).
 - Receita Federal layouts são **strict-incremental** — uma versão posterior nunca remove campos nem altera significado dos existentes, apenas acrescenta. Isto autoriza o modelo de uma classe + anotações por versão (em vez de uma classe por versão).
+
+**Pacotes read-only (EFD ICMS-IPI; ECD/ECF até confirmação de gerador):**
+
+- Existe **uma única modelagem** correspondente ao **leiaute mais recente** dentro da janela fiscal de 5 anos.
+- Sem subclasses por versão. Sem catálogo polimórfico por versão. `Dictionary<string, MetadadosRegistro>` 1:1 permanece.
+- `LayoutXxx` enum existe apenas para representar o `COD_VER` lido do `Registro0000` e expô-lo ao consumidor; **não** filtra propriedades nem registros durante o parse.
+- `[CampoSped(DesdeVersao = V0XX)]` e `[RegistroSped(IntroduzidoEm = V0XX)]` viram **informacionais** (doc/auditoria) — campos novos em arquivos antigos ficam vazios (`null`/`default`), registros novos não aparecem.
+- `[Descontinuado(EmVersao = V0XX)]` vira informacional **no read path** — registros descontinuados continuam sendo reconhecidos pelo parser porque ainda aparecem em arquivos históricos.
+- Campos com **regressão de tipo** (raríssimo — texto → numérico ou vice-versa entre versões dentro da janela) são modelados como `string` lazy; o consumidor converte se precisar. Justificativa: mantém compatibilidade com arquivos de qualquer versão dentro da janela ao custo de tipagem fraca no campo regredido.
+- Migrar pacote para read+write no futuro = reativar a estratégia padrão (subclasses + catálogo polimórfico + atributos com efeito real).
 
 ### 4.8 Zero reflection in hot paths
 
@@ -537,34 +569,41 @@ A Receita não publicou novo leiaute de EFD Contribuições desde V006 (vigente 
 - Novos campos com `[CampoSped(DesdeVersao = (int)LayoutEfdContribuicoes.V0XX)]`; novos registros com `[RegistroSped(IntroduzidoEm = (int)LayoutEfdContribuicoes.V0XX)]`.
 - Tests cobrindo round-trip de V006 e do novo leiaute.
 
-### Stage 8 — TecnoFisc.Sped.EfdIcmsIpi (EFD ICMS-IPI, baseline V015)
+### Stage 8 — TecnoFisc.Sped.EfdIcmsIpi (EFD ICMS-IPI, **read-only**, baseline V015)
 
-Same internal structure as `EfdContribuicoes`. Independent set of record classes — no inter-project references (per Hard Rule 2). Shared enums/value objects regidos pelo Ato COTEPE migrate to `Core` on first use (EFD ICMS-IPI is the regente — duplication = drift bug).
+Same internal structure as `EfdContribuicoes` **menos o gerador** (§2.5). Independent set of record classes — no inter-project references (per Hard Rule 2). Shared enums/value objects regidos pelo Ato COTEPE migrate to `Core` on first use (EFD ICMS-IPI is the regente — duplication = drift bug).
 
-**Versioning strategy.** Receita publishes EFD ICMS-IPI layouts approximately yearly. **Versão do leiaute ≠ versão do Guia Prático.** O leiaute é identificado pelo `COD_VER` do registro `0000` (Tabela "Versão do Leiaute" da Nota Técnica conforme Ato COTEPE/ICMS nº 44/2018 e alterações); o Guia Prático é a publicação textual que descreve esse leiaute, com numeração própria (3.0.6, 3.1.x, 3.2.x, …). Várias revisões do Guia podem descrever o mesmo leiaute. Layout V015 é o que entra na janela fiscal de 5 anos (vigente desde janeiro/2021, NT 2020.001). Strict-incremental property: a newer layout never removes a field or changes meaning of an existing one — it only adds fields or registros. Strategy:
+**Modo read-only.** O pacote expõe apenas parser + modelo tipado. Não existe `GeradorEfdIcmsIpi`. Não existem testes de round-trip parse→generate→parse — apenas testes de fixture-load + asserts sobre o modelo lido. Habilita a estratégia §4.7 read-only de modelo único do leiaute mais recente.
 
-1. **Baseline V015.** Implement every registro do leiaute 015 as Stage 8 sub-stages `8.001` … `8.NNN`. Tracking file: `sped/STAGE_8_EFD_ICMS_IPI_V015.md`. Same conventions as Stage 4. As páginas referenciadas usam o Guia Prático mais recente disponível em `sped/guides/` (atualmente 3.2.2), que descreve esse mesmo leiaute.
-2. **Incremental V016+.** Cada novo leiaute publicado pela Receita ganha seu próprio tracking file (`sped/STAGE_8_INCR_V016.md`, …) listando **only the diffs**: registros novos, campos adicionados, enums extendidos. Sub-stages numbered `8.1.001`, `8.2.001`, etc. Adicionados ao enum `LayoutEfdIcmsIpi` quando o trabalho for iniciado.
-3. **Code model.** One class per registro (e.g., `RegistroC100`). New fields added in later layouts annotated with `DesdeVersao = (int)LayoutEfdIcmsIpi.VXXX`. Parser/gerador and source generator honor `DesdeVersao` against the version read from `Registro0000`. Structurally divergent registros (rare) → subclass `RegistroXxxxVXXX : RegistroXxxx`. New registros introduced in later layouts → annotated with `IntroduzidoEm = (int)LayoutEfdIcmsIpi.VXXX` on `[RegistroSped]`.
-4. **`LayoutEfdIcmsIpi`** enum in `src/TecnoFisc.Sped.EfdIcmsIpi/Versionamento/` começa com `V015 = 15`. Convenção: valor inteiro = `COD_VER` do registro `0000` (`V015 = 15`) — permite cast direto em atributos (`DesdeVersao = (int)LayoutEfdIcmsIpi.V015`) e comparação aritmética. Incrementos (`V016`, `V017`, …) são adicionados conforme novos leiautes são implementados.
+**Versioning strategy.** Receita publishes EFD ICMS-IPI layouts approximately yearly. **Versão do leiaute ≠ versão do Guia Prático.** O leiaute é identificado pelo `COD_VER` do registro `0000` (Tabela "Versão do Leiaute" da Nota Técnica conforme Ato COTEPE/ICMS nº 44/2018 e alterações); o Guia Prático é a publicação textual que descreve esse leiaute, com numeração própria (3.0.6, 3.1.x, 3.2.x, …). Várias revisões do Guia podem descrever o mesmo leiaute. Strict-incremental property: a newer layout never removes a field or changes meaning of an existing one — it only adds fields or registros. Strategy:
 
-Publish v0.3.0 only after baseline V015 is complete and round-trips a real anonymized arquivo. Each incremental layout (V016+) ships as a minor bump (0.3.x).
+1. **Baseline V015 já implementado.** Tracking file: `sped/STAGE_8_EFD_ICMS_IPI_V015.md`. As páginas referenciadas usam o Guia Prático mais recente disponível em `sped/guides/` (atualmente 3.2.2). O modelo evolui no lugar (§4.7 read-only) — campos novos das versões posteriores são acrescentados às classes existentes; o baseline V015 não é "reescrito".
+2. **Incrementos V016 → leiaute vigente (V020).** Cada leiaute novo publicado pela Receita ganha seu próprio tracking file (`sped/STAGE_8_INCR_V016.md`, …, `STAGE_8_INCR_V020.md`) listando **apenas os deltas que afetam o read path**: registros novos, campos adicionados, enums estendidos, campos com regressão de tipo (declarados como `string` lazy). Sub-stages numbered `8.016.001` (V016), `8.017.001` (V017), etc. Adicionados ao enum `LayoutEfdIcmsIpi` no PR do primeiro sub-stage que consumir o membro (first-use).
+3. **Code model (read-only).** Uma única classe por registro (e.g., `RegistroC100`). Campos novos em leiautes posteriores entram como properties novas na mesma classe com `[CampoSped(DesdeVersao = (int)LayoutEfdIcmsIpi.VXXX)]` (anotação informacional — parser não filtra). Novos registros = classes novas com `[RegistroSped(IntroduzidoEm = (int)LayoutEfdIcmsIpi.VXXX)]`. **Sem subclasses** `RegistroXxxxVXXX : RegistroXxxx`. Mudanças de tamanho são aplicadas in-place no atributo. Mudanças de tipo regressivas são modeladas como `string` lazy.
+4. **Categorias de delta que viram `UPDATE/Doc` (sem código de validação):** `UPDATE/Validação`, `UPDATE/Obrig` (mudança S↔OC↔O). Conforme §2.3, validações fiscais ficam com o consumidor. Doc-comment XML registra a regra para referência.
+5. **`LayoutEfdIcmsIpi`** enum em `src/TecnoFisc.Sped.EfdIcmsIpi/Versionamento/` começa com `V015 = 15`. Convenção: valor inteiro = `COD_VER` do registro `0000`. Incrementos (`V016`, `V017`, …, `V020`) são adicionados conforme novos leiautes são consumidos.
 
-### Stage 9 — EFD ICMS-IPI incrementos V016 … V020
+Publish v0.3.0 only after baseline V015 is complete and the parser reads a real anonymized arquivo of cada leiaute coberto. Each incremental layout (V016+) ships as a minor bump (0.3.x).
 
-Implementa cumulativamente os leiautes posteriores ao baseline V015, até o leiaute vigente em 2026 (V020). Para cada novo leiaute publicado pela Receita (uma Nota Técnica por ano):
+### Stage 9 — EFD ICMS-IPI incrementos V016 … V020 (read-only)
 
-- Tracking file próprio sob `sped/STAGE_8_INCR_V0XX.md` listando **apenas o delta** sobre o leiaute anterior (novos registros, novos campos, alterações de obrigatoriedade, descontinuações).
+Implementa cumulativamente os leiautes posteriores ao baseline V015, até o leiaute vigente em 2026 (V020). Modo **read-only** (§2.5) + estratégia de modelo único do leiaute mais recente (§4.7). Para cada novo leiaute publicado pela Receita (uma Nota Técnica por ano):
+
+- Tracking file próprio sob `sped/STAGE_8_INCR_V0XX.md` listando **apenas os deltas relevantes ao read path**: novos registros, novos campos, mudanças de tamanho (in-place), regressões de tipo (lazy `string`), descontinuações (informacionais).
 - Constante adicionada ao enum `LayoutEfdIcmsIpi` (`V016 = 16` … `V020 = 20`) — valor inteiro = `COD_VER` do registro `0000`.
-- Novos campos anotados com `[CampoSped(DesdeVersao = (int)LayoutEfdIcmsIpi.V0XX)]`; novos registros com `[RegistroSped(IntroduzidoEm = (int)LayoutEfdIcmsIpi.V0XX)]`. Parser/gerador respeitam essas anotações contra o `COD_VER` lido do `0000`.
-- Round-trip real para cada leiaute novo: fixture anonimizada exercitando registros adicionados.
+- Novos campos anotados com `[CampoSped(DesdeVersao = (int)LayoutEfdIcmsIpi.V0XX)]` **(informacional)**; novos registros com `[RegistroSped(IntroduzidoEm = (int)LayoutEfdIcmsIpi.V0XX)]` **(informacional)**.
+- Fixture anonimizada por leiaute exercitando o parse dos registros/campos adicionados (sem round-trip de geração).
 - Cada leiaute implementado entra como minor bump (`0.3.x`) do pacote `TecnoFisc.Sped.EfdIcmsIpi`.
 
-Sub-stages numbered `9.1.001…` (V016), `9.2.001…` (V017), etc. Ordem dentro de cada leiaute: registros novos antes de campos novos antes de mudanças de obrigatoriedade.
+Sub-stages numerados `8.016.001…` (V016), `8.017.001…` (V017), etc. Ordem dentro de cada leiaute: registros novos antes de campos novos antes de docs.
 
-### Stage 10 — TecnoFisc.Sped.Ecd (baseline leiaute 2021)
+**Fora do escopo deste Stage 9 (read-only):** `UPDATE/Validação`, `UPDATE/Obrig`, `UPDATE/Subclasse` — viram `UPDATE/Doc` (doc-comment XML) ou `UPDATE/Campo` (mudança in-place no atributo) conforme aplicável. Validações fiscais ficam com o consumidor (§2.3).
 
-Novo pacote para ECD (Escrituração Contábil Digital). Estrutura interna idêntica a `EfdContribuicoes` / `EfdIcmsIpi`: pasta `Registros/` por bloco, `Enums/`, `Versionamento/`, `Parser/`, `Gerador/`, `Arquivo*.cs`.
+### Stage 10 — TecnoFisc.Sped.Ecd (baseline leiaute 2021, read-only inicial)
+
+Novo pacote para ECD (Escrituração Contábil Digital). Estrutura interna idêntica a `EfdIcmsIpi` (read-only — sem `Gerador/`, sem round-trip de geração). Pasta `Registros/` por bloco, `Enums/`, `Versionamento/`, `Parser/`, `Arquivo*.cs`.
+
+**Modo de operação.** Read-only inicialmente (§2.5) — gerador depende de confirmação de necessidade externa. Quando confirmada, criar stage dedicada ativando subclasses por versão + gerador + round-trip.
 
 **Baseline:** o leiaute vigente em 2021 (versão exata será confirmada lendo o `COD_VER` do registro `0000` do guia oficial no momento da implementação). PDF do Manual de Orientação deve ser dropado em `sped/guides/`. Tracking file: `sped/STAGE_10_ECD_BASELINE.md` com a tabela completa de sub-stages na ordem da Seção 2.6.1 do manual.
 
@@ -572,7 +611,7 @@ Novo pacote para ECD (Escrituração Contábil Digital). Estrutura interna idên
 
 **Independência por registro.** `Registro0000` da ECD é distinto dos `Registro0000` de outros leiautes (Hard Rule 2). Apenas tabelas/enums verdadeiramente transversais migram para Core.
 
-Publica `TecnoFisc.Sped.Ecd 0.4.0` quando baseline 2021 completo e round-trip real estiver validado.
+Publica `TecnoFisc.Sped.Ecd 0.4.0` quando baseline 2021 completo e parser lê real anonimizado.
 
 ### Stage 11 — ECD incrementos até leiaute vigente
 
@@ -617,9 +656,9 @@ Estrutura idêntica a Stage 14, schema NFC-e (Nota Fiscal de Consumidor Eletrôn
 
 Estrutura idêntica a Stage 14, schema CT-e (Conhecimento de Transporte Eletrônico, modelo 57). Mesmas regras de assinatura digital. Específico do transporte: modais, carga, valores prestados.
 
-### Stage 17 — TecnoFisc.Sped.Ecf (baseline + incrementos)
+### Stage 17 — TecnoFisc.Sped.Ecf (baseline + incrementos, read-only inicial)
 
-Pacote para ECF (Escrituração Contábil Fiscal). Padrão `.txt` igual EFD/ECD. Baseline = leiaute vigente quando a stage começar; incrementos seguem o mesmo modelo de Stages 9 e 11 (constantes no enum `LayoutEcf`, tracking files por leiaute, minor bumps por versão).
+Pacote para ECF (Escrituração Contábil Fiscal). Padrão `.txt` igual EFD/ECD. Read-only inicialmente (§2.5) — gerador depende de confirmação externa. Baseline = leiaute vigente quando a stage começar; incrementos seguem o mesmo modelo read-only de Stage 9 (constantes no enum `LayoutEcf`, tracking files por leiaute, minor bumps por versão).
 
 ---
 
@@ -706,10 +745,12 @@ When starting a session in this repository:
 9. **Registros duplicate per leiaute; Ato COTEPE-referenced tables/enums (Tabela 4.1.1, 4.1.2, etc.) live in `Core`** — see §4.2.
 10. **5-year fiscal window:** ignore versionamento de campos com vigência anterior a `(hoje - 5 anos)`. Dentro da janela, marcos temporais antigos não são modelados em código (vide §4.3).
 11. **EFD ICMS-IPI é o regente do Ato COTEPE.** Quando uma tabela/enum aparecer referenciada em múltiplos leiautes, extrair uma vez no leiaute-origem (EFD ICMS-IPI) e tratar como compartilhada.
-12. Performance-sensitive code requires a BenchmarkDotNet benchmark.
-13. **Merges into `dev` are always Squash and Merge.** Feature branches may contain granular commits while work is in progress, but the integration commit that lands on `dev` must be a single squashed PR merge.
-14. When in doubt about scope, ask before coding.
-15. Write tests alongside code, not after.
+12. **Modo de operação do pacote dita a estratégia de versionamento (§2.5 + §4.7).** EFD ICMS-IPI, ECD e ECF são read-only por padrão — sem `Gerador/`, sem round-trip de geração, modelo único do leiaute mais recente. EFD Contribuições mantém read+write. Não criar gerador para pacote read-only sem promover oficialmente a stage de migração.
+13. **Validações fiscais ficam com o consumidor (§2.3).** `UPDATE/Validação` e `UPDATE/Obrig` em trackers viram `UPDATE/Doc` — apenas doc-comment XML. Não criar pasta `Validadores/Versionados/` nem `IValidadorVersionado<T>`.
+14. Performance-sensitive code requires a BenchmarkDotNet benchmark.
+15. **Merges into `dev` are always Squash and Merge.** Feature branches may contain granular commits while work is in progress, but the integration commit that lands on `dev` must be a single squashed PR merge.
+16. When in doubt about scope, ask before coding.
+17. Write tests alongside code, not after.
 
 Update this document when:
 

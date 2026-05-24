@@ -11,6 +11,12 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoB;
 /// NF-e (55), NFC-e (65). Nível hierárquico 2, ocorrência vários por arquivo.
 /// Conforme Guia Prático EFD-ICMS/IPI V3.0.6, p. 45-46.
 /// </summary>
+/// <remarks>
+/// <b>V016 (Guide 3.0.7 itens 19-20):</b> inclusão da NF3-e (modelo "66") na lista de
+/// documentos válidos do campo 05 <c>COD_MOD</c>; validações atualizadas nos campos 04
+/// <c>COD_PART</c>, 07 <c>SER</c> e 09 <c>CHV_NFE</c>.
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </remarks>
 [RegistroSped(Codigo = "B020", Nivel = 2, Bloco = "B")]
 public sealed partial class RegistroB020 : RegistroSped
 {

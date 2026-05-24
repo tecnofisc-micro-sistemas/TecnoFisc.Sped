@@ -59,27 +59,27 @@ Conforme ARCHITECTURE §2.3, validações fiscais (obrigatoriedade condicional, 
 
 | Feito | Sub-stage | Registro | Bloco | Delta documentado | Fonte |
 | --- | --- | --- | --- | --- | --- |
-| [ ] | 8.016.029.a | Registro D100 | D | Campos 24 `VL_PIS` e 25 `VL_COFINS` OC→O. Validação alterada do campo 11. | 3.0.7 itens 1-2, 29 |
-| [ ] | 8.016.029.b | Registro D410 | D | `VL_BC_ICMS` e `VL_ICMS` O→OC. | 3.0.7 item 3 |
-| [ ] | 8.016.029.c | Registro D420 | D | `VL_BC_ICMS` e `VL_ICMS` O→OC. | 3.0.7 item 3 |
-| [ ] | 8.016.029.d | Registro D500 | D | `VL_BC_ICMS` e `VL_ICMS` O→OC. | 3.0.7 item 3 |
-| [ ] | 8.016.029.e | Registro D600 | D | `VL_BC_ICMS` e `VL_ICMS` O→OC. | 3.0.7 item 3 |
-| [ ] | 8.016.029.f | Registro C176 | C | Campos 12-15 OC→O. Orientação 12/14/15. Descrição campo 18. Validação retira ">0" e exige `COD_RESP_RET="2"` no campo 14. | 3.0.7 itens 16-18 + 3.0.9 itens 1-2 |
-| [ ] | 8.016.029.g | Registro C170 | C | Validação adicional no campo 06. | 3.0.7 item 8 |
-| [ ] | 8.016.029.h | Registro C425 | C | Validação adicional no campo 04. | 3.0.7 item 9 |
-| [ ] | 8.016.029.i | Registro C500 | C | Validação alterada nos campos 13, 15 e 30. Orientação dos campos 12, 16, 17, 20 e 22. *Coordenar com 8.016.003 — mesmo registro tocado.* | 3.0.7 itens 12-13 |
-| [ ] | 8.016.029.j | Registro C590 | C | Orientação do campo 05 (entrega de NF3-e). | 3.0.7 item 14 |
-| [ ] | 8.016.029.k | Registro 0200 | 0 | Validação alterada. | 3.0.7 item 15 |
-| [ ] | 8.016.029.l | Registro B020 | B | Inclusão de NF3-e (cód. 66). Validações dos campos 04, 07 e 09. | 3.0.7 itens 19-20 |
-| [ ] | 8.016.029.m | Registro 1010 | 1 | Redação do campo 08. | 3.0.7 item 21 |
-| [ ] | 8.016.029.n | Registro C180 | C | Descrição do campo 11. | 3.0.7 item 23 |
-| [ ] | 8.016.029.o | Registro E250 | E | Nova validação do campo 05 (`MES_REF`). | 3.0.7 item 5 |
-| [ ] | 8.016.029.p | Registro E316 | E | Nova validação do campo 05 (`MES_REF`). | 3.0.7 item 5 |
-| [ ] | 8.016.029.q | Registro E530 | E | Validação alterada no campo 04. | 3.0.7 item 7 |
-| [ ] | 8.016.029.r | Registro K235 | K | Regra de validação revisada. | 3.0.9 item 4 |
-| [ ] | 8.016.029.s | Registro K255 | K | Regra de validação revisada. | 3.0.9 item 4 |
-| [ ] | 8.016.029.t | Registro K292 | K | Regra de validação revisada. | 3.0.9 item 4 |
-| [ ] | 8.016.029.u | Registro K302 | K | Regra de validação revisada. | 3.0.9 item 4 |
+| [x] | 8.016.029.a | Registro D100 | D | Campos 24 `VL_PIS` e 25 `VL_COFINS` OC→O. Validação alterada do campo 11. | 3.0.7 itens 1-2, 29 |
+| [x] | 8.016.029.b | Registro D410 | D | `VL_BC_ICMS` e `VL_ICMS` O→OC. | 3.0.7 item 3 |
+| [x] | 8.016.029.c | Registro D420 | D | `VL_BC_ICMS` e `VL_ICMS` O→OC. | 3.0.7 item 3 |
+| [x] | 8.016.029.d | Registro D500 | D | `VL_BC_ICMS` e `VL_ICMS` O→OC. | 3.0.7 item 3 |
+| [x] | 8.016.029.e | Registro D600 | D | `VL_BC_ICMS` e `VL_ICMS` O→OC. | 3.0.7 item 3 |
+| [x] | 8.016.029.f | Registro C176 | C | Campos 12-15 OC→O. Orientação 12/14/15. Descrição campo 18. Validação retira ">0" e exige `COD_RESP_RET="2"` no campo 14. | 3.0.7 itens 16-18 + 3.0.9 itens 1-2 |
+| [x] | 8.016.029.g | Registro C170 | C | Validação adicional no campo 06. | 3.0.7 item 8 |
+| [x] | 8.016.029.h | Registro C425 | C | Validação adicional no campo 04. | 3.0.7 item 9 |
+| [x] | 8.016.029.i | Registro C500 | C | Validação alterada nos campos 13, 15 e 30. Orientação dos campos 12, 16, 17, 20 e 22. *Coordenar com 8.016.003 — mesmo registro tocado.* | 3.0.7 itens 12-13 |
+| [x] | 8.016.029.j | Registro C590 | C | Orientação do campo 05 (entrega de NF3-e). | 3.0.7 item 14 |
+| [x] | 8.016.029.k | Registro 0200 | 0 | Validação alterada. | 3.0.7 item 15 |
+| [x] | 8.016.029.l | Registro B020 | B | Inclusão de NF3-e (cód. 66). Validações dos campos 04, 07 e 09. | 3.0.7 itens 19-20 |
+| [x] | 8.016.029.m | Registro 1010 | 1 | Redação do campo 08. | 3.0.7 item 21 |
+| [x] | 8.016.029.n | Registro C180 | C | Descrição do campo 11. | 3.0.7 item 23 |
+| [x] | 8.016.029.o | Registro E250 | E | Nova validação do campo 05 (`MES_REF`). | 3.0.7 item 5 |
+| [x] | 8.016.029.p | Registro E316 | E | Nova validação do campo 05 (`MES_REF`). | 3.0.7 item 5 |
+| [x] | 8.016.029.q | Registro E530 | E | Validação alterada no campo 04. | 3.0.7 item 7 |
+| [x] | 8.016.029.r | Registro K235 | K | Regra de validação revisada. | 3.0.9 item 4 |
+| [x] | 8.016.029.s | Registro K255 | K | Regra de validação revisada. | 3.0.9 item 4 |
+| [x] | 8.016.029.t | Registro K292 | K | Regra de validação revisada. | 3.0.9 item 4 |
+| [x] | 8.016.029.u | Registro K302 | K | Regra de validação revisada. | 3.0.9 item 4 |
 
 ## Notas arquiteturais
 
@@ -89,5 +89,5 @@ Conforme ARCHITECTURE §2.3, validações fiscais (obrigatoriedade condicional, 
 ## Sumário
 
 - **Total sub-stages:** 7 atômicos (2 NEW + 3 UPDATE/Campo + 2 UPDATE/Descontinuado) + 1 PR agregador (21 itens de doc, todos triviais).
-- **Pendentes:** 1 PR agregador (8.016.029).
-- **Concluídos:** 7 atômicos (8.016.001-006 + 8.016.028).
+- **Pendentes:** 0.
+- **Concluídos:** 7 atômicos + 1 PR agregador (8.016.029, 21 doc-comments).

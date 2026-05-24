@@ -11,6 +11,10 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoC;
 /// Nível hierárquico 4, ocorrência 1:1 (por registro C170).
 /// Conforme Guia Prático EFD-ICMS/IPI V3.0.6, p. 91.
 /// </summary>
+/// <remarks>
+/// <b>V016 (Guide 3.0.7 item 23):</b> descrição do campo 11 <c>NUM_DA</c> reescrita.
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </remarks>
 [RegistroSped(Codigo = "C180", Nivel = 4, Bloco = "C")]
 public sealed partial class RegistroC180 : RegistroSped
 {

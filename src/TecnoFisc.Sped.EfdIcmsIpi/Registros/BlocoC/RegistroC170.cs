@@ -10,6 +10,10 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoC;
 /// Nível hierárquico 3, ocorrência 1:N (por registro C100).
 /// Conforme Guia Prático EFD-ICMS/IPI V3.0.6, p. 76-77.
 /// </summary>
+/// <remarks>
+/// <b>V016 (Guide 3.0.7 item 8):</b> validação adicional no campo 06 <c>UNID</c>.
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </remarks>
 [RegistroSped(Codigo = "C170", Nivel = 3, Bloco = "C")]
 public sealed partial class RegistroC170 : RegistroSped
 {

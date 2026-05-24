@@ -11,6 +11,13 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoC;
 /// Nível hierárquico 4, ocorrência 1:N (por registro C170).
 /// Conforme Guia Prático EFD-ICMS/IPI V3.0.6, p. 85.
 /// </summary>
+/// <remarks>
+/// <b>V016 (Guide 3.0.7 itens 16-18 + 3.0.9 itens 1-2):</b> campos 12-15 passaram de OC para O;
+/// nova orientação de preenchimento para os campos 12, 14 e 15; descrição do campo 18
+/// <c>COD_RESP_RET</c> reescrita; validação do campo 14 <c>VL_UNIT_LIMITE_BC_ICMS_ULT_E</c>
+/// retira a condição "&gt;0" e passa a exigir <c>COD_RESP_RET = "2"</c>.
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </remarks>
 [RegistroSped(Codigo = "C176", Nivel = 4, Bloco = "C")]
 public sealed partial class RegistroC176 : RegistroSped
 {

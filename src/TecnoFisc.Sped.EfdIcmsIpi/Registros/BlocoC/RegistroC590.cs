@@ -12,6 +12,11 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoC;
 /// Nível hierárquico 3, ocorrência 1:N (por registro C500).
 /// Conforme Guia Prático EFD-ICMS/IPI V3.0.6, pp. 139-140.
 /// </summary>
+/// <remarks>
+/// <b>V016 (Guide 3.0.7 item 14):</b> nova orientação de preenchimento para o campo 05
+/// <c>VL_OPR</c> referente à entrega de NF3-e (modelo 66).
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </remarks>
 [RegistroSped(Codigo = "C590", Nivel = 3, Bloco = "C")]
 public sealed partial class RegistroC590 : RegistroSped
 {

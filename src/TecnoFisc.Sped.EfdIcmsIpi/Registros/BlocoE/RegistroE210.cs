@@ -39,6 +39,10 @@ public sealed partial class RegistroE210 : RegistroSped
     public decimal VlAjCreditosSt { get; set; }
 
     /// <summary>Valor total do ICMS retido por Substituição Tributária.</summary>
+    /// <remarks>
+    /// <b>V017 (Guide 3.1.4 item 7):</b> nova validação no campo 08 <c>VL_RETENCAO_ST</c>.
+    /// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+    /// </remarks>
     [CampoSped(Ordem = 8, Tamanho = 0, Decimais = 2, Obrigatorio = true)]
     public decimal VlRetencaoSt { get; set; }
 

@@ -34,6 +34,10 @@ public sealed partial class RegistroC185 : RegistroSped
     public Cfop? Cfop { get; set; }
 
     /// <summary>Código do motivo da restituição ou complementação conforme Tabela 5.7.</summary>
+    /// <remarks>
+    /// <b>V017 (Guide 3.1.0 item 7):</b> nova validação no campo 06 <c>COD_MOT_REST_COMPL</c>.
+    /// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+    /// </remarks>
     [CampoSped(Ordem = 6, Tamanho = 5)]
     public string? CodMotRestCompl { get; set; }
 

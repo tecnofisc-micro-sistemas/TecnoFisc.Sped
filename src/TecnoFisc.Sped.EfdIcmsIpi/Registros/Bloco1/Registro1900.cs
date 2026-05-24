@@ -9,6 +9,11 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.Bloco1;
 /// Nivel hierarquico 2, ocorrencia varios por arquivo. Conforme Guia Pratico EFD-ICMS/IPI
 /// V3.0.6, p. 289.
 /// </summary>
+/// <remarks>
+/// <b>V017 (Guide 3.1.1 item 2):</b> a obrigatoriedade de apresentação deste registro passa
+/// a abranger também os registros filhos C597, C857, C897 e D737.
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </remarks>
 [RegistroSped(Codigo = "1900", Nivel = 2, Bloco = "1")]
 public sealed partial class Registro1900 : RegistroSped
 {

@@ -19,6 +19,11 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoC;
 /// campos 12 <c>DT_E_S</c>, 16 <c>VL_SERV_NT</c>, 17 <c>VL_TERC</c>, 20 <c>VL_ICMS</c>
 /// e 22 <c>VL_ICMS_ST</c>.
 /// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// <para>
+/// <b>V017 (Guide 3.1.4 item 2):</b> nova orientação determinando que NF3-e (<c>COD_MOD</c>
+/// = "66") sem CST e sem energia injetada não deve ser escriturada neste registro.
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </para>
 /// </remarks>
 [RegistroSped(Codigo = "C500", Nivel = 2, Bloco = "C")]
 public sealed partial class RegistroC500 : RegistroSped

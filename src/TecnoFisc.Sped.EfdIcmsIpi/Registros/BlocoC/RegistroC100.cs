@@ -11,6 +11,17 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoC;
 /// Nível hierárquico 2, ocorrência vários por arquivo.
 /// Conforme Guia Prático EFD-ICMS/IPI V3.0.6, p. 59-64.
 /// </summary>
+/// <remarks>
+/// <b>V017 (Guide 3.1.3 item 2):</b> nova orientação de preenchimento sobre escrituração de
+/// operações com ICMS monofásico (Nota Orientativa 01/2023).
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// <para>
+/// <b>V017 (Guide 3.1.4 item 1):</b> nova validação de duplicidade do documento na combinação
+/// (<c>IND_EMIT</c>, <c>COD_SIT</c>, <c>COD_PART</c>, <c>SER</c>, <c>NUM_DOC</c>), com exceção
+/// quando <c>COD_MOD</c> for 55 ou 65.
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </para>
+/// </remarks>
 [RegistroSped(Codigo = "C100", Nivel = 2, Bloco = "C")]
 public sealed partial class RegistroC100 : RegistroSped
 {

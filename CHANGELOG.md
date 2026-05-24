@@ -14,6 +14,10 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ### TecnoFisc.Sped.Core 0.5.0
 
+#### Adicionado
+
+- Namespace `TecnoFisc.Sped.Core.Streaming` com dois extension methods sobre o `IAsyncEnumerable<RegistroSped>` produzido pelos parsers: `OfType<T>()` filtra pelo tipo concreto de registro (zero reflection — pattern matching resolvido em compile-time) e `Batch(int size)` agrupa em lotes para bulk-insert em banco (EF Core `AddRangeAsync`, Dapper, `SqlBulkCopy`). Cobre o caso de uso mais comum de ingestão SPED → banco sem o consumidor precisar implementar boilerplate de cast + buffer manual. Memória continua bounded — só o lote corrente fica em memória. (#414)
+
 #### Alterado (breaking)
 
 - Value objects: `Criar` → `Create` em `Cnpj`, `Cpf`, `Cfop`, `Ncm`, `Cst`, `ChaveAcesso`, `InscricaoEstadual`, `ModeloDocumento`, `GeneroItem`.

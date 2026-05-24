@@ -62,27 +62,27 @@ Registros que tiveram `Tam` aumentado em V017 (15→60 em vários casos). Modelo
 
 | Feito | Sub-stage | Registro | Bloco | Delta documentado | Fonte |
 | --- | --- | --- | --- | --- | --- |
-| [ ] | 8.017.052.a | Registro C100 | C | Orientação ICMS monofásico (Nota Orientativa 01/2023). Validação de duplicidade (`IND_EMIT`, `COD_SIT`, `COD_PART`, `SER`, `NUM_DOC` com exceção `COD_MOD` 55/65). | 3.1.3 item 2 + 3.1.4 item 1 |
-| [ ] | 8.017.052.b | Registro C105 | C | Instrução do registro + valor válido "2" no campo 02. | 3.1.4 itens 4-5 |
-| [ ] | 8.017.052.c | Registro C170 | C | Orientação e validação campos 05-06. | 3.1.0 item 4 + 3.1.3 item 6 |
-| [ ] | 8.017.052.d | Registro C181 | C | Validação campo 02. | 3.1.0 item 6 |
-| [ ] | 8.017.052.e | Registro C185 | C | Validação campo 06. | 3.1.0 item 7 |
-| [ ] | 8.017.052.f | Registro C190 | C | Orientação campo 05 (retira termo FCP). | 3.1.1 item 1 |
-| [ ] | 8.017.052.g | Registro C330 | C | Validação campo 02. | 3.1.0 item 6 |
-| [ ] | 8.017.052.h | Registro C380 | C | Validação campo 02. | 3.1.0 item 6 |
-| [ ] | 8.017.052.i | Registro C430 | C | Validação campo 02. | 3.1.0 item 6 |
-| [ ] | 8.017.052.j | Registro C480 | C | Validação campo 02. | 3.1.0 item 6 |
-| [ ] | 8.017.052.k | Registro C500 | C | NF3-e sem CST não escriturada neste registro. | 3.1.4 item 2 |
-| [ ] | 8.017.052.l | Registro C590 | C | NF3-e sem CST nem energia injetada. | 3.1.4 item 3 |
-| [ ] | 8.017.052.m | Registro C700 | C | Modelo 66 (NF3-e). Campos 08/09 O→OC. Orientação 06-09. NF3-e sem CST não escriturada. | 3.1.2 itens 1-3 + 3.1.4 item 2 |
-| [ ] | 8.017.052.n | Registro C790 | C | Modelo 66. NF3-e sem CST nem energia injetada. | 3.1.2 item 1 + 3.1.4 item 3 |
-| [ ] | 8.017.052.o | Registro C791 | C | Modelo 66. | 3.1.2 item 1 |
-| [ ] | 8.017.052.p | Registro C800 | C | Exceção nº 2 + validação campo 09. | 3.1.0 item 3 + 3.1.4 item 6 |
-| [ ] | 8.017.052.q | Registro C815 | C | Validação campo 02. | 3.1.0 item 6 |
-| [ ] | 8.017.052.r | Registro C880 | C | Validação campo 02. | 3.1.0 item 6 |
-| [ ] | 8.017.052.s | Registro E210 | E | Validação campo 08. | 3.1.4 item 7 |
-| [ ] | 8.017.052.t | Registro 1391 | 1 | Valor válido "4" no campo 09. | 3.1.4 item 8 |
-| [ ] | 8.017.052.u | Registro 1900 | 1 | Obrigatoriedade inclui registros C597, C857, C897, D737. | 3.1.1 item 2 |
+| [x] | 8.017.052.a | Registro C100 | C | Orientação ICMS monofásico (Nota Orientativa 01/2023). Validação de duplicidade (`IND_EMIT`, `COD_SIT`, `COD_PART`, `SER`, `NUM_DOC` com exceção `COD_MOD` 55/65). | 3.1.3 item 2 + 3.1.4 item 1 |
+| [x] | 8.017.052.b | Registro C105 | C | Instrução do registro + valor válido "2" no campo 02. | 3.1.4 itens 4-5 |
+| [x] | 8.017.052.c | Registro C170 | C | Orientação e validação campos 05-06. | 3.1.0 item 4 + 3.1.3 item 6 |
+| [x] | 8.017.052.d | Registro C181 | C | Validação campo 02. | 3.1.0 item 6 |
+| [x] | 8.017.052.e | Registro C185 | C | Validação campo 06. | 3.1.0 item 7 |
+| [x] | 8.017.052.f | Registro C190 | C | Orientação campo 05 (retira termo FCP). | 3.1.1 item 1 |
+| [x] | 8.017.052.g | Registro C330 | C | Validação campo 02. | 3.1.0 item 6 |
+| [x] | 8.017.052.h | Registro C380 | C | Validação campo 02. | 3.1.0 item 6 |
+| [x] | 8.017.052.i | Registro C430 | C | Validação campo 02. | 3.1.0 item 6 |
+| [x] | 8.017.052.j | Registro C480 | C | Validação campo 02. | 3.1.0 item 6 |
+| [x] | 8.017.052.k | Registro C500 | C | NF3-e sem CST não escriturada neste registro. | 3.1.4 item 2 |
+| [x] | 8.017.052.l | Registro C590 | C | NF3-e sem CST nem energia injetada. | 3.1.4 item 3 |
+| [x] | 8.017.052.m | Registro C700 | C | Modelo 66 (NF3-e). Campos 08/09 O→OC. Orientação 06-09. NF3-e sem CST não escriturada. | 3.1.2 itens 1-3 + 3.1.4 item 2 |
+| [x] | 8.017.052.n | Registro C790 | C | Modelo 66. NF3-e sem CST nem energia injetada. | 3.1.2 item 1 + 3.1.4 item 3 |
+| [x] | 8.017.052.o | Registro C791 | C | Modelo 66. | 3.1.2 item 1 |
+| [x] | 8.017.052.p | Registro C800 | C | Exceção nº 2 + validação campo 09. | 3.1.0 item 3 + 3.1.4 item 6 |
+| [x] | 8.017.052.q | Registro C815 | C | Validação campo 02. | 3.1.0 item 6 |
+| [x] | 8.017.052.r | Registro C880 | C | Validação campo 02. | 3.1.0 item 6 |
+| [x] | 8.017.052.s | Registro E210 | E | Validação campo 08. | 3.1.4 item 7 |
+| [x] | 8.017.052.t | Registro 1391 | 1 | Valor válido "4" no campo 09. | 3.1.4 item 8 |
+| [x] | 8.017.052.u | Registro 1900 | 1 | Obrigatoriedade inclui registros C597, C857, C897, D737. | 3.1.1 item 2 |
 
 ## Notas arquiteturais
 
@@ -93,5 +93,5 @@ Registros que tiveram `Tam` aumentado em V017 (15→60 em vários casos). Modelo
 ## Sumário
 
 - **Total sub-stages:** 13 NEW + 9 UPDATE/Campo tamanho (1 PR agregador) + 2 UPDATE/Campo enum Core + 21 UPDATE/Doc (1 PR agregador). Em PRs: ~16 individuais para NEW/enums + 2 agregadores.
-- **Pendentes:** 13 NEW + 2 enums Core + 2 PRs agregadores (tamanho + doc).
-- **Concluídos:** 13 NEW + 2 enums Core + 1 PR agregador tamanho (9 itens) (0221, C855, C857, C895, C897, D700, D730, D731, D735, D737, D750, D760, D761; SituacaoDocumento 04/05; CstIcms doc; tamanho 15→60 em C111, E112, E116, E230, E250, E312, E316, 1922, 1926).
+- **Pendentes:** nenhum.
+- **Concluídos:** 13 NEW + 2 enums Core + 1 PR agregador tamanho (9 itens) + 1 PR agregador doc (21 itens) (0221, C855, C857, C895, C897, D700, D730, D731, D735, D737, D750, D760, D761; SituacaoDocumento 04/05; CstIcms doc; tamanho 15→60 em C111, E112, E116, E230, E250, E312, E316, 1922, 1926; doc-comments V017 em C100, C105, C170, C181, C185, C190, C330, C380, C430, C480, C500, C590, C700, C790, C791, C800, C815, C880, E210, 1391, 1900).

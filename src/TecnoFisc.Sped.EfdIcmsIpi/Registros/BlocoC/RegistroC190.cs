@@ -29,6 +29,11 @@ public sealed partial class RegistroC190 : RegistroSped
     public decimal? AliqIcms { get; set; }
 
     /// <summary>Valor da operação na combinação de CST_ICMS, CFOP e alíquota do ICMS.</summary>
+    /// <remarks>
+    /// <b>V017 (Guide 3.1.1 item 1):</b> orientação do campo 05 <c>VL_OPR</c> reescrita
+    /// removendo a menção ao termo FCP.
+    /// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+    /// </remarks>
     [CampoSped(Ordem = 5, Tamanho = 0, Decimais = 2)]
     public decimal? VlOpr { get; set; }
 

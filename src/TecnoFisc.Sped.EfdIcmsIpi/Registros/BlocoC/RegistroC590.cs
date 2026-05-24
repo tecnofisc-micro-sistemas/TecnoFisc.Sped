@@ -16,6 +16,11 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoC;
 /// <b>V016 (Guide 3.0.7 item 14):</b> nova orientação de preenchimento para o campo 05
 /// <c>VL_OPR</c> referente à entrega de NF3-e (modelo 66).
 /// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// <para>
+/// <b>V017 (Guide 3.1.4 item 3):</b> nova orientação determinando que NF3-e (modelo 66)
+/// sem CST e sem energia injetada não deve ser escriturada neste registro analítico.
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </para>
 /// </remarks>
 [RegistroSped(Codigo = "C590", Nivel = 3, Bloco = "C")]
 public sealed partial class RegistroC590 : RegistroSped

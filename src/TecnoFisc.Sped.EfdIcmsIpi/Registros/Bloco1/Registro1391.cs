@@ -43,6 +43,11 @@ public sealed partial class Registro1391 : RegistroSped
     public decimal? Perda { get; set; }
 
     /// <summary>Consumo proprio.</summary>
+    /// <remarks>
+    /// <b>V017 (Guide 3.1.4 item 8):</b> novo valor válido "4" admitido no campo 09
+    /// <c>CONS</c>.
+    /// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+    /// </remarks>
     [CampoSped(Ordem = 9, Tamanho = 0, Decimais = 2)]
     public decimal? Cons { get; set; }
 

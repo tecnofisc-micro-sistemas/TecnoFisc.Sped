@@ -4,13 +4,13 @@ Família de bibliotecas .NET para leitura, geração e manipulação tipada de a
 publicados pelos projetos do **SPED — Sistema Público de Escrituração Digital**
 (Receita Federal do Brasil).
 
-> Status atual: **0.3.1** publicado. Cobre EFD Contribuições V006 e EFD ICMS-IPI
-> baseline V015 — ambos com registros tipados, API pública de parser/gerador e
-> round-trip validado contra arquivos reais emitidos pelo PVA. Os números `006`
-> (EFD Contribuições) e `015` (EFD ICMS-IPI) são o `COD_VER` do registro `0000`
-> de cada leiaute (não devem ser confundidos com a versão do Guia Prático).
-> Próximos passos rastreados no `ARCHITECTURE.md` (incrementos V016+ do EFD
-> ICMS-IPI e demais projetos SPED). Veja o `CHANGELOG.md` para detalhes.
+> Status atual: **0.4.0** publicado. Cobre EFD Contribuições V006 (leitura + geração,
+> round-trip validado) e EFD ICMS-IPI baseline V015 + incrementos V016 → V020 (leiaute
+> vigente em 2026, **modo read-only** — parser e modelo tipado, sem geração). Os números
+> `006` (EFD Contribuições) e `015`–`020` (EFD ICMS-IPI) são o `COD_VER` do registro `0000`
+> de cada leiaute (não devem ser confundidos com a versão do Guia Prático). Próximos
+> passos rastreados no `ARCHITECTURE.md` (ECD, ECF e pacotes XML — todos planejados como
+> read-only). Veja o `CHANGELOG.md` para detalhes.
 
 ## Visão geral
 
@@ -25,14 +25,20 @@ pacote afetado é versionado.
 
 | Projeto SPED | Pacote NuGet | Status |
 | --- | --- | --- |
-| EFD Contribuições | `TecnoFisc.Sped.EfdContribuicoes` | **0.3.1** — leiaute V006 completo |
-| EFD ICMS-IPI | `TecnoFisc.Sped.EfdIcmsIpi` | **0.3.1** — baseline V015 completo, round-trip validado contra arquivo real |
-| ECD | `TecnoFisc.Sped.Ecd` | planejado — baseline 2021 + incrementos até o leiaute vigente |
-| ECF | `TecnoFisc.Sped.Ecf` | planejado |
-| NF-e | `TecnoFisc.Sped.NFe` | planejado (XML) |
-| NFC-e | `TecnoFisc.Sped.NFCe` | planejado (XML) |
-| CT-e | `TecnoFisc.Sped.CTe` | planejado (XML) |
+| EFD Contribuições | `TecnoFisc.Sped.EfdContribuicoes` | **0.4.0** — leiaute V006 completo (leitura + geração) |
+| EFD ICMS-IPI | `TecnoFisc.Sped.EfdIcmsIpi` | **0.4.0** — baseline V015 + incrementos V016 → V020 (vigente), **read-only** |
+| ECD | `TecnoFisc.Sped.Ecd` | planejado (read-only) — baseline 2021 + incrementos até o leiaute vigente |
+| ECF | `TecnoFisc.Sped.Ecf` | planejado (read-only) |
+| NF-e | `TecnoFisc.Sped.NFe` | planejado (XML, read-only) |
+| NFC-e | `TecnoFisc.Sped.NFCe` | planejado (XML, read-only) |
+| CT-e | `TecnoFisc.Sped.CTe` | planejado (XML, read-only) |
 | Metapacote agregador | `TecnoFisc.Sped` | planejado — referencia todos os leiautes acima em uma única dependência |
+
+> **Modo de operação.** O único pacote com geração de arquivo confirmada é
+> `TecnoFisc.Sped.EfdContribuicoes` (leitura + escrita, round-trip simétrico). Todos
+> os demais — EFD ICMS-IPI, ECD, ECF, NF-e, NFC-e, CT-e — são planejados como
+> **read-only** (parser + modelo tipado). Promoção para read+write em qualquer um
+> deles depende de confirmação externa e entra como stage dedicada (`ARCHITECTURE.md` §2.5).
 
 `TecnoFisc.Sped.Core` é a infraestrutura compartilhada (value objects fiscais, parser/gerador
 genérico, abstrações de catálogo, identificador dinâmico de arquivos SPED) consumida por
@@ -109,8 +115,11 @@ e `9999` (contagem global) — basta entregar a árvore de registros.
   no caminho quente.
 - **Tipagem forte de ponta a ponta.** Consumidores nunca lidam com `string` ou
   `string[]` — recebem `Cnpj`, `Cfop`, `DateOnly`, `decimal`, enums.
-- **Round-trip simétrico.** Ler → gerar → ler precisa devolver o mesmo arquivo
-  (modulo normalizações deliberadas). Invariante coberta por testes.
+- **Round-trip simétrico onde há geração.** Nos pacotes read+write (hoje apenas
+  `EfdContribuicoes`), ler → gerar → ler precisa devolver o mesmo arquivo (modulo
+  normalizações deliberadas). Invariante coberta por testes. Nos pacotes read-only
+  (EFD ICMS-IPI; ECD/ECF/NFe/NFCe/CTe planejados), a invariante é apenas leitura
+  estável: a mesma entrada sempre produz o mesmo modelo tipado.
 
 ## Arquivos assinados pelo PVA
 
@@ -158,7 +167,7 @@ TecnoFisc.Sped/
 │   ├── TecnoFisc.Sped.Core/                  # Value objects fiscais + infra compartilhada + sniffer
 │   ├── TecnoFisc.Sped.Core.SourceGenerators/ # Source generator do catálogo (analyzer)
 │   ├── TecnoFisc.Sped.EfdContribuicoes/      # Leiaute EFD Contribuições V006
-│   └── TecnoFisc.Sped.EfdIcmsIpi/            # Leiaute EFD ICMS-IPI baseline V015
+│   └── TecnoFisc.Sped.EfdIcmsIpi/            # Leiaute EFD ICMS-IPI baseline V015 + V016-V020 (read-only)
 │   # Stages futuros (planejados): Ecd, Ecf, NFe, NFCe, CTe + metapacote TecnoFisc.Sped
 ├── tests/
 │   ├── TecnoFisc.Sped.Core.Tests/

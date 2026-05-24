@@ -82,7 +82,7 @@ Nem todos os pacotes precisam de gerador. A decisão é por caso de uso real:
 | `TecnoFisc.Sped.EfdIcmsIpi` | ✅ | ❌ | Uso é ingestão para análise; não há emissão. |
 | `TecnoFisc.Sped.Ecd` | ✅ | ⏸️ | Gerador depende de confirmação externa. Implementar parser primeiro; gerador entra em stage dedicada quando demanda confirmada. |
 | `TecnoFisc.Sped.Ecf` | ✅ | ⏸️ | Mesma regra do ECD. |
-| `TecnoFisc.Sped.NFe` / `NFCe` / `CTe` | ✅ | ✅ | Geração faz parte do caso de uso fiscal (assinatura, emissão SEFAZ). |
+| `TecnoFisc.Sped.NFe` / `NFCe` / `CTe` | ✅ | ⏸️ | Caso de uso confirmado é ingestão dos XMLs já emitidos (validação de assinatura, leitura tipada). Geração/emissão para SEFAZ depende de confirmação externa não controlada só pelo usuário — entra em stage dedicada quando confirmada. |
 
 **Implicações dos pacotes read-only:**
 
@@ -175,7 +175,7 @@ Whatever the parser produces, the generator must consume back. Round-trip a file
 
 SPED projects publish new layouts approximately yearly. A estratégia depende do **modo de operação do pacote** (§2.5):
 
-**Pacotes read+write (EFD Contribuições, NFe/NFCe/CTe):**
+**Pacotes read+write (EFD Contribuições — único confirmado hoje):**
 
 - A `LayoutVersao` enum per project (e.g., `LayoutEfdContribuicoes`).
 - The parser reads the layout version from `Registro0000` and instantiates appropriate variants.
@@ -183,7 +183,7 @@ SPED projects publish new layouts approximately yearly. A estratégia depende do
 - **Exception:** structurally divergent registros (rare — order/type/length of an existing field changes) are subclassed `RegistroXxxxVYYY : RegistroXxxx`. O catálogo passa a indexar variantes por versão (decisão futura quando esse caso aparecer em pacote read+write).
 - Receita Federal layouts são **strict-incremental** — uma versão posterior nunca remove campos nem altera significado dos existentes, apenas acrescenta. Isto autoriza o modelo de uma classe + anotações por versão (em vez de uma classe por versão).
 
-**Pacotes read-only (EFD ICMS-IPI; ECD/ECF até confirmação de gerador):**
+**Pacotes read-only (EFD ICMS-IPI; ECD/ECF/NFe/NFCe/CTe até confirmação de gerador):**
 
 - Existe **uma única modelagem** correspondente ao **leiaute mais recente** dentro da janela fiscal de 5 anos.
 - Sem subclasses por versão. Sem catálogo polimórfico por versão. `Dictionary<string, MetadadosRegistro>` 1:1 permanece.
@@ -583,7 +583,7 @@ Same internal structure as `EfdContribuicoes` **menos o gerador** (§2.5). Indep
 4. **Categorias de delta que viram `UPDATE/Doc` (sem código de validação):** `UPDATE/Validação`, `UPDATE/Obrig` (mudança S↔OC↔O). Conforme §2.3, validações fiscais ficam com o consumidor. Doc-comment XML registra a regra para referência.
 5. **`LayoutEfdIcmsIpi`** enum em `src/TecnoFisc.Sped.EfdIcmsIpi/Versionamento/` começa com `V015 = 15`. Convenção: valor inteiro = `COD_VER` do registro `0000`. Incrementos (`V016`, `V017`, …, `V020`) são adicionados conforme novos leiautes são consumidos.
 
-Publish v0.3.0 only after baseline V015 is complete and the parser reads a real anonymized arquivo of cada leiaute coberto. Each incremental layout (V016+) ships as a minor bump (0.3.x).
+Publicada `v0.3.0` quando baseline V015 ficou completo e o parser leu um arquivo real anonimizado. Incrementos V016/V017 saíram como minor bumps `0.3.x`. A `v0.4.0` consolida V018+V019+V020 com a flip oficial para read-only (remoção de `GeradorEfdIcmsIpi` e dos testes de round-trip). Incrementos futuros (V021+) voltam ao modelo de minor bump por leiaute (`0.4.x`).
 
 ### Stage 9 — EFD ICMS-IPI incrementos V016 … V020 (read-only)
 
@@ -640,21 +640,21 @@ Pacote agregador (`TecnoFisc.Sped`) que referencia todos os pacotes de leiaute e
 
 Publica `TecnoFisc.Sped 0.5.0` na primeira vez que todos os leiautes textuais estiverem em uso (EFD Contribuições + EFD ICMS-IPI + ECD; ECF pode ser placeholder até Stage 17).
 
-### Stage 14 — TecnoFisc.Sped.NFe (XML)
+### Stage 14 — TecnoFisc.Sped.NFe (XML, **read-only**)
 
 - XML parser baseado em `System.Xml.Linq` (ou `XmlReader` para arquivos grandes em modo streaming).
 - Classes de modelo fortemente tipadas mapeando o schema NF-e (procNFe, infNFe, det, total, transp, cobr, infAdic, etc.).
 - Validação de assinatura digital (apenas validação — não assinatura).
-- Generator de NF-e XML para casos de retificadora e geração in-house.
 - Encoding canônico do XML = UTF-8 (diferente dos `.txt` SPED que são Latin1).
+- **Modo read-only (§2.5).** Sem `GeradorNFe`, sem emissão para SEFAZ, sem round-trip parse→generate→parse. Caso de uso confirmado é ingestão dos XMLs já emitidos. Geração/emissão entra em stage dedicada se confirmada por demanda externa.
 
-### Stage 15 — TecnoFisc.Sped.NFCe (XML)
+### Stage 15 — TecnoFisc.Sped.NFCe (XML, **read-only**)
 
-Estrutura idêntica a Stage 14, schema NFC-e (Nota Fiscal de Consumidor Eletrônica, modelo 65). Muito código pode ser compartilhado com NF-e via base classes em `TecnoFisc.Sped.Core/Xml/`, mas os tipos públicos do leiaute ficam no pacote NFCe.
+Estrutura idêntica a Stage 14, schema NFC-e (Nota Fiscal de Consumidor Eletrônica, modelo 65). Muito código pode ser compartilhado com NF-e via base classes em `TecnoFisc.Sped.Core/Xml/`, mas os tipos públicos do leiaute ficam no pacote NFCe. Modo read-only (§2.5) — sem `GeradorNFCe`.
 
-### Stage 16 — TecnoFisc.Sped.CTe (XML)
+### Stage 16 — TecnoFisc.Sped.CTe (XML, **read-only**)
 
-Estrutura idêntica a Stage 14, schema CT-e (Conhecimento de Transporte Eletrônico, modelo 57). Mesmas regras de assinatura digital. Específico do transporte: modais, carga, valores prestados.
+Estrutura idêntica a Stage 14, schema CT-e (Conhecimento de Transporte Eletrônico, modelo 57). Validação de assinatura digital igual a NFe/NFCe. Específico do transporte: modais, carga, valores prestados. Modo read-only (§2.5) — sem `GeradorCTe`.
 
 ### Stage 17 — TecnoFisc.Sped.Ecf (baseline + incrementos, read-only inicial)
 
@@ -745,7 +745,7 @@ When starting a session in this repository:
 9. **Registros duplicate per leiaute; Ato COTEPE-referenced tables/enums (Tabela 4.1.1, 4.1.2, etc.) live in `Core`** — see §4.2.
 10. **5-year fiscal window:** ignore versionamento de campos com vigência anterior a `(hoje - 5 anos)`. Dentro da janela, marcos temporais antigos não são modelados em código (vide §4.3).
 11. **EFD ICMS-IPI é o regente do Ato COTEPE.** Quando uma tabela/enum aparecer referenciada em múltiplos leiautes, extrair uma vez no leiaute-origem (EFD ICMS-IPI) e tratar como compartilhada.
-12. **Modo de operação do pacote dita a estratégia de versionamento (§2.5 + §4.7).** EFD ICMS-IPI, ECD e ECF são read-only por padrão — sem `Gerador/`, sem round-trip de geração, modelo único do leiaute mais recente. EFD Contribuições mantém read+write. Não criar gerador para pacote read-only sem promover oficialmente a stage de migração.
+12. **Modo de operação do pacote dita a estratégia de versionamento (§2.5 + §4.7).** EFD ICMS-IPI, ECD, ECF, NF-e, NFC-e e CT-e são read-only por padrão — sem `Gerador/`, sem round-trip de geração, modelo único do leiaute mais recente. EFD Contribuições é o único pacote read+write confirmado. Não criar gerador para pacote read-only sem promover oficialmente a stage de migração.
 13. **Validações fiscais ficam com o consumidor (§2.3).** `UPDATE/Validação` e `UPDATE/Obrig` em trackers viram `UPDATE/Doc` — apenas doc-comment XML. Não criar pasta `Validadores/Versionados/` nem `IValidadorVersionado<T>`.
 14. Performance-sensitive code requires a BenchmarkDotNet benchmark.
 15. **Merges into `dev` are always Squash and Merge.** Feature branches may contain granular commits while work is in progress, but the integration commit that lands on `dev` must be a single squashed PR merge.

@@ -25,7 +25,7 @@
 | [ ] | 8.017.009 | NEW | Registro D731 | D | Informações do fundo de combate à pobreza FCP. Nível 4, 1:1, OC. | Subseção 12 + 3.1.0 item 2 |
 | [ ] | 8.017.010 | NEW | Registro D735 | D | Observações do lançamento fiscal (código 62). Nível 3, 1:N, OC. | Subseção 12 + 3.1.0 item 2 |
 | [ ] | 8.017.011 | NEW | Registro D737 | D | Outras obrigações tributárias / ajustes — NFCom. Nível 4, 1:N, OC. | Subseção 12 + 3.1.0 item 2 |
-| [ ] | 8.017.012 | NEW | Registro D750 | D | Escrituração consolidada NFCom (código 62). Nível 2, 1:N, OC. **Campo 03 `COD_MOD` declarar como `string?` lazy** — V018 muda tipo C→N; modelo único aceita texto sempre. | Subseção 12 + 3.1.0 item 2 |
+| [x] | 8.017.012 | NEW | Registro D750 | D | Escrituração consolidada NFCom (código 62). Nível 2, 1:N, OC. **Campo 03 `COD_MOD` declarar como `string?` lazy** — V018 muda tipo C→N; modelo único aceita texto sempre. | Subseção 12 + 3.1.0 item 2 |
 | [ ] | 8.017.013 | NEW | Registro D760 | D | Registro analítico da escrituração consolidada NFCom. Nível 3, 1:N, OC. | Subseção 12 + 3.1.0 item 2 |
 | [ ] | 8.017.014 | NEW | Registro D761 | D | Informações do fundo de combate à pobreza FCP — consolidada. Nível 4, 1:1, OC. | Subseção 12 + 3.1.0 item 2 |
 
@@ -94,4 +94,4 @@ Registros que tiveram `Tam` aumentado em V017 (15→60 em vários casos). Modelo
 
 - **Total sub-stages:** 13 NEW + 9 UPDATE/Campo tamanho (1 PR agregador) + 2 UPDATE/Campo enum Core + 21 UPDATE/Doc (1 PR agregador). Em PRs: ~16 individuais para NEW/enums + 2 agregadores.
 - **Pendentes:** 13 NEW + 2 enums Core + 2 PRs agregadores (tamanho + doc).
-- **Concluídos:** 1 NEW (D700).
+- **Concluídos:** 2 NEW (D700, D750).

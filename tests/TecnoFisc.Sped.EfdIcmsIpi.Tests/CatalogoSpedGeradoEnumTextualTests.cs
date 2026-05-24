@@ -1,7 +1,6 @@
 using TecnoFisc.Sped.Core.Abstracoes;
 using TecnoFisc.Sped.Core.Gerador;
 using TecnoFisc.Sped.Core.Parser;
-using TecnoFisc.Sped.EfdIcmsIpi.Generated;
 using TecnoFisc.Sped.EfdIcmsIpi.Registros.Bloco1;
 
 namespace TecnoFisc.Sped.EfdIcmsIpi.Tests;

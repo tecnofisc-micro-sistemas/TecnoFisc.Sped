@@ -150,6 +150,31 @@ await foreach (var (registro, ctx) in parser.ReadStreamingAsync(stream).WithCont
 import multi-arquivo sem colidir com IDs já persistidos, use o overload
 `WithContext(startAt: <ultimo-id-do-arquivo-anterior + 1>)`.
 
+### Visitor dispatcher tipado (source-generated)
+
+Para processar muitos tipos de registro sem escrever um `switch` de 200+ casos,
+implemente a interface `IRegistroSpedVisitor` (emitida pelo source generator
+no namespace `<Projeto>.Generated`). Cada overload `VisitAsync(TipoConcreto)`
+tem implementação default vazia — sobrescreva só o que importa. O despacho via
+`DispatchAsync()` é resolvido em compile-time (zero reflection).
+
+```csharp
+using TecnoFisc.Sped.EfdContribuicoes.Generated;
+
+public sealed class GravadorBanco : IRegistroSpedVisitor
+{
+    public ValueTask VisitAsync(Registro0000 r, CancellationToken ct) { /* INSERT escrituracoes */ return default; }
+    public ValueTask VisitAsync(RegistroC100 r, CancellationToken ct) { /* INSERT docs */ return default; }
+    public ValueTask VisitAsync(RegistroC170 r, CancellationToken ct) { /* INSERT itens */ return default; }
+    // Demais registros: default vazio, ignorados sem nada a fazer.
+}
+
+await parser.ReadStreamingAsync(stream).DispatchAsync(new GravadorBanco());
+```
+
+Registros de outros assemblies (caso o consumidor componha streams de
+projetos diferentes) caem no `VisitUnknownAsync(RegistroSped)`.
+
 ### Geração
 
 ```csharp

@@ -1,5 +1,6 @@
 using TecnoFisc.Sped.Core.Abstracoes;
 using TecnoFisc.Sped.Core.Atributos;
+using TecnoFisc.Sped.EfdIcmsIpi.Versionamento;
 
 namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.Bloco1;
 
@@ -7,6 +8,10 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.Bloco1;
 /// Registro 1310 - Movimentacao Diaria de Combustiveis por Tanque. Nivel hierarquico 3,
 /// ocorrencia varios por Registro 1300. Conforme Guia Pratico EFD-ICMS/IPI V3.0.6, p. 276-277.
 /// </summary>
+/// <remarks>
+/// <b>V020 (Guide 3.1.9 item 1; vigência fiscal V020 conforme Subseção 15):</b> adicionado o
+/// campo 11 <c>CAP_TANQUE</c> (capacidade do tanque em litros, inteiro, ocorrência condicional).
+/// </remarks>
 [RegistroSped(Codigo = "1310", Nivel = 3, Bloco = "1")]
 public sealed partial class Registro1310 : RegistroSped
 {
@@ -48,4 +53,11 @@ public sealed partial class Registro1310 : RegistroSped
     /// <summary>Volume aferido no tanque, em litros; estoque de fechamento fisico do tanque.</summary>
     [CampoSped(Ordem = 10, Tamanho = 0, Decimais = 3, Obrigatorio = true)]
     public decimal FechFisico { get; set; }
+
+    /// <summary>
+    /// Capacidade do tanque em litros. Introduzido em V020 (Guia Prático 3.1.9 item 1;
+    /// vigência fiscal V020 conforme Subseção 15).
+    /// </summary>
+    [CampoSped(Ordem = 11, Tamanho = 0, Decimais = 0, DesdeVersao = (int)LayoutEfdIcmsIpi.V020)]
+    public int? CapTanque { get; set; }
 }

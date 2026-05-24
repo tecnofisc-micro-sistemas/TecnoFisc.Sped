@@ -47,7 +47,7 @@ public sealed class Registro1310Tests
     }
 
     [Fact]
-    public void Catalogo_ExpoeRegistro1310ComNoveCamposNaOrdem()
+    public void Catalogo_ExpoeRegistro1310ComDezCamposNaOrdem()
     {
         _catalogo.TentarObter("1310".AsSpan(), out var meta).Should().BeTrue();
 
@@ -62,12 +62,27 @@ public sealed class Registro1310Tests
             "ValAjPerda",
             "ValAjGanho",
             "FechFisico",
+            "CapTanque",
         ]);
-        meta.Campos.Select(c => c.Ordem).Should().Equal(Enumerable.Range(2, 9));
-        meta.Campos.Should().OnlyContain(c => c.Obrigatorio);
+        meta.Campos.Select(c => c.Ordem).Should().Equal(Enumerable.Range(2, 10));
+        // Todos os campos originais (1-9) são obrigatórios; CAP_TANQUE (V020) é OC.
+        meta.Campos.Take(9).Should().OnlyContain(c => c.Obrigatorio);
+        meta.Campos[9].Obrigatorio.Should().BeFalse();
         meta.Campos[0].Tamanho.Should().Be(3);
         meta.Campos.Skip(1).Should().OnlyContain(c => c.Tamanho == 0);
-        meta.Campos.Skip(1).Should().OnlyContain(c => c.Decimais == 3);
+        meta.Campos.Skip(1).Take(8).Should().OnlyContain(c => c.Decimais == 3);
+        meta.Campos[9].Decimais.Should().Be(0);
+    }
+
+    [Fact]
+    public void Catalogo_CapTanque_MarcadoComoDesdeVersaoV020()
+    {
+        _catalogo.TentarObter("1310".AsSpan(), out var meta);
+
+        var capTanque = meta!.Campos.Single(c => c.Nome == "CapTanque");
+
+        capTanque.Ordem.Should().Be(11);
+        capTanque.DesdeVersao.Should().Be((int)LayoutEfdIcmsIpi.V020);
     }
 
     [Fact]
@@ -85,6 +100,7 @@ public sealed class Registro1310Tests
         meta.Campos[6].Definidor(registro, "0,500".AsSpan());
         meta.Campos[7].Definidor(registro, "0,250".AsSpan());
         meta.Campos[8].Definidor(registro, "450,025".AsSpan());
+        meta.Campos[9].Definidor(registro, "15000".AsSpan());
 
         registro.NumTanque.Should().Be("001");
         registro.EstqAbert.Should().Be(700.125m);
@@ -95,6 +111,7 @@ public sealed class Registro1310Tests
         registro.ValAjPerda.Should().Be(0.500m);
         registro.ValAjGanho.Should().Be(0.250m);
         registro.FechFisico.Should().Be(450.025m);
+        registro.CapTanque.Should().Be(15000);
     }
 
     [Fact]
@@ -115,12 +132,14 @@ public sealed class Registro1310Tests
         registro.ValAjPerda.Should().Be(0m);
         registro.ValAjGanho.Should().Be(0m);
         registro.FechFisico.Should().Be(0m);
+        registro.CapTanque.Should().BeNull();
     }
 
     [Fact]
     public async Task RoundTrip_ComTodosOsCampos_PreservaTextoCanonico()
     {
-        const string sped = "|1310|001|700,125|150,250|850,375|400,100|450,275|0,500|0,250|450,025|\r\n";
+        // CAP_TANQUE (campo 11, V020) é OC — quando ausente o campo fica vazio entre pipes.
+        const string sped = "|1310|001|700,125|150,250|850,375|400,100|450,275|0,500|0,250|450,025||\r\n";
 
         var resultado = await RoundTripAsync(sped, TestContext.Current.CancellationToken);
 
@@ -130,7 +149,18 @@ public sealed class Registro1310Tests
     [Fact]
     public async Task RoundTrip_TanqueAgrupadoSemAjustes_PreservaTextoCanonico()
     {
-        const string sped = "|1310|T02|1000,000|500,000|1500,000|800,000|700,000|0,000|0,000|700,000|\r\n";
+        const string sped = "|1310|T02|1000,000|500,000|1500,000|800,000|700,000|0,000|0,000|700,000||\r\n";
+
+        var resultado = await RoundTripAsync(sped, TestContext.Current.CancellationToken);
+
+        resultado.Should().Be(sped);
+    }
+
+    [Fact]
+    public async Task RoundTrip_ComCapTanquePopulado_PreservaTextoCanonico()
+    {
+        // CAP_TANQUE = 15000 litros (campo 11, V020).
+        const string sped = "|1310|001|700,125|150,250|850,375|400,100|450,275|0,500|0,250|450,025|15000|\r\n";
 
         var resultado = await RoundTripAsync(sped, TestContext.Current.CancellationToken);
 

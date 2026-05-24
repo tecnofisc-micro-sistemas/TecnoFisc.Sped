@@ -24,6 +24,11 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoD;
 /// regras gerais do registro.
 /// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
 /// </para>
+/// <para>
+/// <b>V020 (Guide 3.2.1 item 5):</b> nova orientação de preenchimento do campo 25
+/// <c>COD_MUN_DEST</c> (código do município de destino do serviço).
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </para>
 /// </remarks>
 [RegistroSped(Codigo = "D100", Nivel = 2, Bloco = "D")]
 public sealed partial class RegistroD100 : RegistroSped

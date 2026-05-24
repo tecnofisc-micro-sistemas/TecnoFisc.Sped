@@ -6,6 +6,10 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ## [Não publicado]
 
+## [0.5.0] — 2026-05-24
+
+Release breaking. Revisa a convenção de nomenclatura da API pública (verbos, factories estáticos e predicados booleanos passam a usar inglês idiomático; substantivos do domínio SPED permanecem em português) e adiciona três helpers de persistência sobre o `IAsyncEnumerable<RegistroSped>` produzido pelos parsers: `OfType<T>()`, `Batch(n)` e `WithContext()`, mais um dispatcher Visitor source-generated por leiaute.
+
 ### Documentação
 
 #### Alterado (breaking)
@@ -216,7 +220,8 @@ Release inicial. Conclui a Stage 4 de `ARCHITECTURE.md`: implementação complet
 - API streaming (`IAsyncEnumerable<RegistroSped>`) é objetivo da Stage 5 e não está disponível neste release.
 - Suporte a leiautes mais novos (V007+) entra na Stage 7.
 
-[Não publicado]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/compare/v0.4.0...HEAD
+[Não publicado]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/releases/tag/v0.5.0
 [0.4.0]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/releases/tag/v0.4.0
 [0.3.1]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/releases/tag/v0.3.1
 [0.3.0]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/releases/tag/v0.3.0

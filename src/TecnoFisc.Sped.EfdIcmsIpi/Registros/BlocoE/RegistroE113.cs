@@ -8,6 +8,12 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoE;
 /// Registro E113 — Informações Adicionais dos Ajustes da Apuração do ICMS — Identificação dos Documentos Fiscais.
 /// Nível hierárquico 5, ocorrência 1:N. Conforme Guia Prático EFD-ICMS/IPI V3.0.6, p. 211.
 /// </summary>
+/// <remarks>
+/// <b>V018 (Guide 3.1.5 item 18):</b> nova orientação e validação do campo 10 <c>CHV_DOCE</c>
+/// (chave do documento eletrônico) cobrindo as novas integrações fiscais (NFCom/NF3-e/escrituração
+/// consolidada).
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </remarks>
 [RegistroSped(Codigo = "E113", Nivel = 5, Bloco = "E")]
 public sealed partial class RegistroE113 : RegistroSped
 {

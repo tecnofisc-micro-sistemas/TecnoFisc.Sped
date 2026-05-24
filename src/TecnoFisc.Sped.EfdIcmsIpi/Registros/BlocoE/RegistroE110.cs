@@ -8,6 +8,15 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoE;
 /// Nível hierárquico 3, ocorrência um por período. Conforme Guia Prático EFD-ICMS/IPI
 /// V3.2.2, p. 223.
 /// </summary>
+/// <remarks>
+/// <b>V018 (Guide 3.1.5 itens 12-17):</b> novas validações cruzadas dos totais com os
+/// registros do bloco D que passam a integrar a apuração da NFCom e da escrituração
+/// consolidada: campo 02 <c>VL_TOT_DEBITOS</c> (inclui D700/D730/D750/D760); campo 03
+/// <c>VL_AJ_DEBITOS</c> (C800/C857/C860/C897/D700/D737); campo 06 <c>VL_TOT_CREDITOS</c>
+/// (D700/D730); campo 07 <c>VL_AJ_CREDITOS</c> (C800/C857/C860/C897/D700/D737); campo 12
+/// <c>VL_TOT_DED</c> (mesmos); campo 15 <c>DEB_ESP</c> (C857/C897/D737).
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </remarks>
 [RegistroSped(Codigo = "E110", Nivel = 3, Bloco = "E")]
 public sealed partial class RegistroE110 : RegistroSped
 {

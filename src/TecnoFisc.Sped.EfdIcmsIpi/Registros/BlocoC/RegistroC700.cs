@@ -22,6 +22,13 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoC;
 /// sem CST e sem energia injetada não deve ser escriturada neste registro.
 /// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
 /// </para>
+/// <para>
+/// <b>V018 (Guide 3.1.5 item 23):</b> nova orientação geral do registro reforçando o uso
+/// para UF cuja legislação permite a escrituração consolidada da NF3-e (modelo 66) e da
+/// NF/Conta de Energia Elétrica (modelo 06) sob o Convênio ICMS 115/2003. Complementa as
+/// alterações V017 acima — não as substitui.
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </para>
 /// </remarks>
 [RegistroSped(Codigo = "C700", Nivel = 2, Bloco = "C")]
 public sealed partial class RegistroC700 : RegistroSped

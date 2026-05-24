@@ -15,6 +15,13 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoD;
 /// <b>V017 (Guide 3.1.0):</b> registro introduzido com 31 campos.
 /// <b>V019:</b> adicionado o campo 32 <c>DED</c> (valor das deduções).
 /// <para>
+/// <b>V018 (Guide 3.1.5 itens 4-6 + 3.1.6 itens 1-3):</b> nova orientação geral; campo 07
+/// <c>SER</c> passa de OC para O (obrigatório); campo 22 <c>CHV_DOCE</c> passa de OC para O;
+/// descrição do campo 10 <c>DT_E_S</c> revisada; nova validação no campo 11 <c>VL_DOC</c>;
+/// exclusão da validação do campo 23 <c>FIN_DOCE</c>.
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </para>
+/// <para>
 /// Pacote read-only — modelo único do leiaute mais recente; atributos <see cref="CampoSpedAttribute.DesdeVersao"/>
 /// e <see cref="RegistroSpedAttribute.IntroduzidoEm"/> são informacionais (ver ARCHITECTURE §2.5 / §4.7).
 /// </para>

@@ -10,7 +10,9 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Tests.Registros.Bloco1;
 /// <summary>
 /// Sub-stage 8.231 - exercita a forma do <see cref="Registro1391"/> contra o Guia Pratico
 /// EFD-ICMS/IPI V3.0.6 (p. 280-281): metadados de catalogo, mapeamento de campos e
-/// invariante de round-trip parse -> gerar -> texto identico.
+/// invariante de round-trip parse -> gerar -> texto identico. Sub-stage 8.018.001 estende
+/// para os campos 21-23 (QTD_RESIDUO_DDG/WDG/CANA) introduzidos em V018 (Guia Prático
+/// 3.1.4 item 9).
 /// </summary>
 public sealed class Registro1391Tests
 {
@@ -47,7 +49,7 @@ public sealed class Registro1391Tests
     }
 
     [Fact]
-    public void Catalogo_ExpoeRegistro1391ComDezenoveCamposNaOrdem()
+    public void Catalogo_ExpoeRegistro1391ComVinteEDoisCamposNaOrdem()
     {
         _catalogo.TentarObter("1391".AsSpan(), out var meta).Should().BeTrue();
 
@@ -72,8 +74,11 @@ public sealed class Registro1391Tests
             "CodItem",
             "TpResiduo",
             "QtdResiduo",
+            "QtdResiduoDdg",
+            "QtdResiduoWdg",
+            "QtdResiduoCana",
         ]);
-        meta.Campos.Select(c => c.Ordem).Should().Equal(Enumerable.Range(2, 19));
+        meta.Campos.Select(c => c.Ordem).Should().Equal(Enumerable.Range(2, 22));
         meta.Campos.Where(c => c.Obrigatorio).Select(c => c.Nome).Should().Equal([
             "DtRegistro",
             "EstqIni",
@@ -86,8 +91,26 @@ public sealed class Registro1391Tests
         meta.Campos[0].Formato.Should().Be("ddMMyyyy");
         meta.Campos[16].Tamanho.Should().Be(60);
         meta.Campos[17].Tamanho.Should().Be(2);
-        meta.Campos.Where(c => c.Nome is not "DtRegistro" and not "Obs" and not "CodItem" and not "TpResiduo")
+        meta.Campos.Where(c => c.Nome is not "DtRegistro" and not "Obs" and not "CodItem" and not "TpResiduo"
+                and not "QtdResiduoDdg" and not "QtdResiduoWdg" and not "QtdResiduoCana")
             .Should().OnlyContain(c => c.Decimais == 2);
+        meta.Campos.Where(c => c.Nome is "QtdResiduoDdg" or "QtdResiduoWdg" or "QtdResiduoCana")
+            .Should().OnlyContain(c => c.Decimais == 3);
+    }
+
+    [Fact]
+    public void Catalogo_NovosCamposV018_DeclaramDesdeVersao()
+    {
+        _catalogo.TentarObter("1391".AsSpan(), out var meta).Should().BeTrue();
+
+        foreach (var nome in new[] { "QtdResiduoDdg", "QtdResiduoWdg", "QtdResiduoCana" })
+        {
+            var prop = typeof(Registro1391).GetProperty(nome);
+            prop.Should().NotBeNull($"campo {nome} deve existir como propriedade");
+            var atributo = (CampoSpedAttribute?)Attribute.GetCustomAttribute(prop!, typeof(CampoSpedAttribute));
+            atributo.Should().NotBeNull();
+            atributo!.DesdeVersao.Should().Be((int)LayoutEfdIcmsIpi.V018, $"campo {nome} foi introduzido em V018");
+        }
     }
 
     [Fact]
@@ -115,6 +138,9 @@ public sealed class Registro1391Tests
         meta.Campos[16].Definidor(registro, "INSUMO-CANA".AsSpan());
         meta.Campos[17].Definidor(registro, "01".AsSpan());
         meta.Campos[18].Definidor(registro, "120,75".AsSpan());
+        meta.Campos[19].Definidor(registro, "1,234".AsSpan());
+        meta.Campos[20].Definidor(registro, "2,345".AsSpan());
+        meta.Campos[21].Definidor(registro, "3,456".AsSpan());
 
         registro.DtRegistro.Should().Be(new DateOnly(2024, 3, 15));
         registro.QtdMoid.Should().Be(1000.50m);
@@ -135,6 +161,9 @@ public sealed class Registro1391Tests
         registro.CodItem.Should().Be("INSUMO-CANA");
         registro.TpResiduo.Should().Be(TipoResiduoProducaoUsina.BagacoCana);
         registro.QtdResiduo.Should().Be(120.75m);
+        registro.QtdResiduoDdg.Should().Be(1.234m);
+        registro.QtdResiduoWdg.Should().Be(2.345m);
+        registro.QtdResiduoCana.Should().Be(3.456m);
     }
 
     [Fact]
@@ -165,6 +194,9 @@ public sealed class Registro1391Tests
         registro.CodItem.Should().BeNull();
         registro.TpResiduo.Should().Be(default(TipoResiduoProducaoUsina));
         registro.QtdResiduo.Should().Be(0m);
+        registro.QtdResiduoDdg.Should().BeNull();
+        registro.QtdResiduoWdg.Should().BeNull();
+        registro.QtdResiduoCana.Should().BeNull();
     }
 
     [Theory]
@@ -184,7 +216,7 @@ public sealed class Registro1391Tests
     [Fact]
     public async Task RoundTrip_ComTodosOsCampos_PreservaTextoCanonico()
     {
-        const string sped = "|1391|15032024|1000,50|200,00|850,25|10,00|20,00|5,25|12,00|8,00|750,00|305,50|30,00|45,00|10,00|15,00|PRODUCAO DIARIA|INSUMO-CANA|01|120,75|\r\n";
+        const string sped = "|1391|15032024|1000,50|200,00|850,25|10,00|20,00|5,25|12,00|8,00|750,00|305,50|30,00|45,00|10,00|15,00|PRODUCAO DIARIA|INSUMO-CANA|01|120,75|1,234|2,345|3,456|\r\n";
 
         var resultado = await RoundTripAsync(sped, TestContext.Current.CancellationToken);
 
@@ -194,7 +226,7 @@ public sealed class Registro1391Tests
     [Fact]
     public async Task RoundTrip_ComCamposCondicionaisVazios_PreservaTextoCanonico()
     {
-        const string sped = "|1391|16032024||200,00||||||||305,50||||||INSUMO-MILHO|03|18,25|\r\n";
+        const string sped = "|1391|16032024||200,00||||||||305,50||||||INSUMO-MILHO|03|18,25||||\r\n";
 
         var resultado = await RoundTripAsync(sped, TestContext.Current.CancellationToken);
 

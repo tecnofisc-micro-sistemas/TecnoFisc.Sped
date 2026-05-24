@@ -8,6 +8,10 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ### TecnoFisc.Sped.EfdIcmsIpi
 
+#### Adicionado
+
+- Suporte ao leiaute **V018** (Guias Práticos 3.1.5/3.1.6, vigência fiscal jan/2024): novos campos 21-23 `QTD_RESIDUO_DDG/WDG/CANA` no `Registro1391` e doc-comments mecânicos cobrindo NF3-e (modelo 66 no `RegistroC700`), Convênio 115/03 e escrituração consolidada NFCom (`D700`/`D730`/`D750`/`D760`), com reflexos nas apurações `E110`/`E113`/`E210`/`E240` e no `Registro1400`.
+
 #### Alterado (breaking)
 
 - Pacote passa a ser **read-only** (ARCHITECTURE §2.5). API pública `GeradorEfdIcmsIpi` removida; `IEscritorSped` deixa de ser implementado neste pacote. Consumidores que precisam emitir arquivos EFD ICMS-IPI devem usar o PVA da Receita ou outro caminho — o propósito do pacote é ingestão rápida + modelo tipado.

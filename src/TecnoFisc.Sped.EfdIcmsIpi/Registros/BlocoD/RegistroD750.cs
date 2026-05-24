@@ -24,6 +24,14 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoD;
 /// se precisar.
 /// </para>
 /// <para>
+/// <b>V018 (Guide 3.1.5 itens 8-10 + 3.1.6 item 6):</b> nova orientação geral do registro; tipo do
+/// campo 03 <c>SER</c> muda de C para N (já modelado como <c>string?</c> lazy desde a criação em
+/// V017 — nada a alterar no código, ver Decisões de tipo acima); chave fiscal do registro deixa de
+/// incluir <c>COD_MUN_DEST</c> (regra de deduplicação fiscal fora do escopo do parser); nova
+/// orientação no campo 07 <c>VL_DOC</c>.
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </para>
+/// <para>
 /// Pacote read-only — modelo único do leiaute mais recente; atributos <see cref="CampoSpedAttribute.DesdeVersao"/>
 /// e <see cref="RegistroSpedAttribute.IntroduzidoEm"/> são informacionais (ver ARCHITECTURE §2.5 / §4.7).
 /// </para>

@@ -46,6 +46,10 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ### TecnoFisc.Sped.Core.SourceGenerators 0.5.0
 
+#### Adicionado
+
+- Source generator passa a emitir, por assembly consumidor, uma interface `IRegistroSpedVisitor` com um overload `VisitAsync(TipoConcreto)` default vazio para cada classe decorada com `[RegistroSped]`, mais `VisitUnknownAsync(RegistroSped)` para registros fora do assembly. Acompanha extension `RegistroSpedVisitorExtensions.DispatchAsync(IAsyncEnumerable<RegistroSped>, IRegistroSpedVisitor, CancellationToken)` que despacha cada registro para o overload correto via `switch` resolvido em compile-time. Permite ao consumidor evitar o `switch` gigante (200+ casos no EFD Contribuições, 255+ no EFD ICMS-IPI) sobrescrevendo apenas os tipos que importam. Zero reflection, zero boxing. (#415)
+
 #### Alterado (breaking)
 
 - Código gerado passa a invocar `Create` em vez de `Criar` nos value objects.

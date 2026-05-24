@@ -13,6 +13,13 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoC;
 /// Nível hierárquico 2, ocorrência vários (por arquivo).
 /// Conforme Guia Prático EFD-ICMS/IPI V3.0.6, pp. 133-137.
 /// </summary>
+/// <remarks>
+/// <b>V016 (Guide 3.0.7 itens 12-13):</b> validação alterada nos campos 13 <c>VL_DOC</c>,
+/// 15 <c>VL_FORN</c> e 30 <c>CHV_DOCe_REF</c>; nova orientação de preenchimento para os
+/// campos 12 <c>DT_E_S</c>, 16 <c>VL_SERV_NT</c>, 17 <c>VL_TERC</c>, 20 <c>VL_ICMS</c>
+/// e 22 <c>VL_ICMS_ST</c>.
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </remarks>
 [RegistroSped(Codigo = "C500", Nivel = 2, Bloco = "C")]
 public sealed partial class RegistroC500 : RegistroSped
 {

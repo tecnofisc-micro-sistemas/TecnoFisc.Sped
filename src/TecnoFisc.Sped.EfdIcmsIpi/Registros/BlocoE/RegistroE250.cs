@@ -8,6 +8,11 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoE;
 /// Registro E250 — Obrigações do ICMS Recolhido ou a Recolher — Substituição Tributária.
 /// Nível hierárquico 4, ocorrência 1:N. Conforme Guia Prático EFD-ICMS/IPI V3.0.6, p. 219-220.
 /// </summary>
+/// <remarks>
+/// <b>V016 (Guide 3.0.7 item 5):</b> nova validação no campo <c>MES_REF</c> (mês de referência
+/// no formato mmaaaa).
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </remarks>
 [RegistroSped(Codigo = "E250", Nivel = 4, Bloco = "E")]
 public sealed partial class RegistroE250 : RegistroSped
 {

@@ -9,6 +9,10 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoC;
 /// Nível hierárquico 5, ocorrência 1:N por C420.
 /// Conforme Guia Prático EFD-ICMS/IPI V3.0.6, p. 121.
 /// </summary>
+/// <remarks>
+/// <b>V016 (Guide 3.0.7 item 9):</b> validação adicional no campo 04 <c>UNID</c>.
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </remarks>
 [RegistroSped(Codigo = "C425", Nivel = 5, Bloco = "C")]
 public sealed partial class RegistroC425 : RegistroSped
 {

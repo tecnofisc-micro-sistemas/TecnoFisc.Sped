@@ -9,6 +9,11 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.Bloco0;
 /// Registro 0200 — Tabela de Identificação do Item (Produtos e Serviços). Nível hierárquico 2,
 /// ocorrência vários por arquivo. Conforme Guia Prático EFD-ICMS/IPI V3.0.6, p. 33-35.
 /// </summary>
+/// <remarks>
+/// <b>V016 (Guide 3.0.7 item 15):</b> validação alterada (cobertura/condições de obrigatoriedade
+/// de campos do registro 0200).
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </remarks>
 [RegistroSped(Codigo = "0200", Nivel = 2, Bloco = "0")]
 public sealed partial class Registro0200 : RegistroSped
 {

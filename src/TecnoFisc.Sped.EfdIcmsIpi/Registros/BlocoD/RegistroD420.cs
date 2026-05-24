@@ -9,6 +9,11 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoD;
 /// Nível hierárquico 3, ocorrência 1:N.
 /// Conforme Guia Prático EFD-ICMS/IPI V3.2.2, p. 198.
 /// </summary>
+/// <remarks>
+/// <b>V016 (Guide 3.0.7 item 3):</b> campos <c>VL_BC_ICMS</c> e <c>VL_ICMS</c> passaram de
+/// O (Obrigatório) para OC (Obrigatório Condicional).
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </remarks>
 [RegistroSped(Codigo = "D420", Nivel = 3, Bloco = "D")]
 public sealed partial class RegistroD420 : RegistroSped
 {

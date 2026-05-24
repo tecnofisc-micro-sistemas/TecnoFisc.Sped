@@ -32,6 +32,11 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoD;
 /// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
 /// </para>
 /// <para>
+/// <b>V019 (Guide 3.1.7 itens 6-7):</b> campos 15 <c>VL_PIS</c> e 16 <c>VL_COFINS</c> passam a
+/// O (Obrigatório), antes OC; validação revisada no campo 07 <c>VL_DOC</c>.
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </para>
+/// <para>
 /// Pacote read-only — modelo único do leiaute mais recente; atributos <see cref="CampoSpedAttribute.DesdeVersao"/>
 /// e <see cref="RegistroSpedAttribute.IntroduzidoEm"/> são informacionais (ver ARCHITECTURE §2.5 / §4.7).
 /// </para>

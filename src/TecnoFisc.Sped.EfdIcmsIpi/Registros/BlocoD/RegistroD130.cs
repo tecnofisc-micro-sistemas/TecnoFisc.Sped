@@ -5,10 +5,18 @@ using TecnoFisc.Sped.EfdIcmsIpi.Enums;
 namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoD;
 
 /// <summary>
-/// Registro D130 — Complemento do CT Rodoviário de Cargas (Código 08) e CT de Cargas Avulso (Código 8B).
+/// Registro D130 — Complemento do CT Rodoviário de Cargas (Código 08), CT de Cargas Avulso
+/// (Código 8B) e do CT-e Simplificado (Código 67) — descrição revisada em V019.
 /// Nível hierárquico 3, ocorrência 1:N.
 /// Conforme Guia Prático EFD-ICMS/IPI V3.0.6, p. 170.
 /// </summary>
+/// <remarks>
+/// <b>V019 (Guide 3.1.7 itens 10-11 + 3.1.8 item 2):</b> descrição do registro alterada para
+/// incluir orientação sobre Conhecimento de Transporte Eletrônico Simplificado (CT-e Simplificado);
+/// nova orientação de preenchimento dos campos 02 <c>COD_PART_CONSG</c>, 03 <c>COD_PART_RED</c>,
+/// 05 <c>COD_MUN_ORIG</c> e 06 <c>COD_MUN_DEST</c>.
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </remarks>
 [RegistroSped(Codigo = "D130", Nivel = 3, Bloco = "D")]
 public sealed partial class RegistroD130 : RegistroSped
 {

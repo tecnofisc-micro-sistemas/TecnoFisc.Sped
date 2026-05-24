@@ -9,6 +9,11 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoC;
 /// Nível hierárquico 3, ocorrência 1:N.
 /// Conforme Guia Prático EFD-ICMS/IPI V3.0.6, p. 72.
 /// </summary>
+/// <remarks>
+/// <b>V019 (Guide 3.1.9 item 2):</b> campo 02 <c>COD_DOC_IMP</c> passa a admitir também o valor
+/// "2" (DSI — Declaração Simplificada de Importação) — ver <see cref="CodigoDocumentoImportacao"/>.
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </remarks>
 [RegistroSped(Codigo = "C120", Nivel = 3, Bloco = "C")]
 public sealed partial class RegistroC120 : RegistroSped
 {

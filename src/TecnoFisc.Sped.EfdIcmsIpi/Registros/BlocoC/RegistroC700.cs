@@ -29,6 +29,11 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoC;
 /// alterações V017 acima — não as substitui.
 /// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
 /// </para>
+/// <para>
+/// <b>V019 (Guide 3.1.7 item 1):</b> validação geral do registro revisada (consolidação da
+/// regra de uso para NF3-e modelo 66 sob Convênio ICMS 115/2003 introduzida em V017/V018).
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </para>
 /// </remarks>
 [RegistroSped(Codigo = "C700", Nivel = 2, Bloco = "C")]
 public sealed partial class RegistroC700 : RegistroSped

@@ -8,6 +8,11 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.Bloco0;
 /// Registro 0150 — Tabela de Cadastro do Participante. Nível hierárquico 2, ocorrência vários por arquivo.
 /// Conforme Guia Prático EFD-ICMS/IPI V3.0.6, p. 30-31.
 /// </summary>
+/// <remarks>
+/// <b>V019 (Guide 3.1.9 item 5):</b> nova orientação adicionada sobre o cadastro de participantes
+/// no contexto do DIFAL (EC 87/2015) — hipótese prevista no § 30 do art. 19 do Convênio SN/1970.
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </remarks>
 [RegistroSped(Codigo = "0150", Nivel = 2, Bloco = "0")]
 public sealed partial class Registro0150 : RegistroSped
 {

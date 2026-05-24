@@ -17,6 +17,13 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoD;
 /// passaram de OC (Obrigatório Condicional) para O (Obrigatório); validação do campo 11
 /// <c>DT_DOC</c> foi alterada.
 /// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// <para>
+/// <b>V019 (Guide 3.1.7 itens 9, 12-13 + 3.1.8 itens 1, 3):</b> nova orientação de preenchimento
+/// dos campos 14 <c>CHV_CTE_REF</c>, 24 <c>COD_MUN_ORIG</c> e 25 <c>COD_MUN_DEST</c>; validações
+/// revisadas nos campos 14 <c>CHV_CTE_REF</c> e 18 <c>VL_SERV</c>; inclusão da exceção nº 4 nas
+/// regras gerais do registro.
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </para>
 /// </remarks>
 [RegistroSped(Codigo = "D100", Nivel = 2, Bloco = "D")]
 public sealed partial class RegistroD100 : RegistroSped

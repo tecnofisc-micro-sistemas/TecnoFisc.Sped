@@ -37,7 +37,7 @@ public class ParserCatalogoBenchmark
         var parser = new ParserEfdContribuicoes(_catalogoReflexivo);
         using var stream = new MemoryStream(_bytesArquivo, writable: false);
         int total = 0;
-        await foreach (var _ in parser.LerStreamingAsync(stream))
+        await foreach (var _ in parser.ReadStreamingAsync(stream))
             total++;
         return total;
     }
@@ -48,7 +48,7 @@ public class ParserCatalogoBenchmark
         var parser = new ParserEfdContribuicoes(_catalogoGerado);
         using var stream = new MemoryStream(_bytesArquivo, writable: false);
         int total = 0;
-        await foreach (var _ in parser.LerStreamingAsync(stream))
+        await foreach (var _ in parser.ReadStreamingAsync(stream))
             total++;
         return total;
     }

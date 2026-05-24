@@ -25,11 +25,11 @@ public sealed class Registro0200Tests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+        await foreach (var registro in leitor.ReadStreamingAsync(entrada, cancelamento))
             registros.Add(registro);
 
         using var saida = new MemoryStream();
-        await escritor.EscreverAsync(saida, registros, cancelamento);
+        await escritor.WriteAsync(saida, registros, cancelamento);
 
         return EncodingSped.Latin1.GetString(saida.ToArray());
     }
@@ -94,9 +94,9 @@ public sealed class Registro0200Tests
         registro.CodAntItem.Should().BeNull();
         registro.UnidInv.Should().Be("UN");
         registro.TipoItem.Should().Be(TipoItem.ProdutoAcabado);
-        registro.CodNcm.Should().Be(Ncm.Criar("12345678"));
+        registro.CodNcm.Should().Be(Ncm.Create("12345678"));
         registro.ExIpi.Should().Be("001");
-        registro.CodGen.Should().Be(GeneroItem.Criar("12"));
+        registro.CodGen.Should().Be(GeneroItem.Create("12"));
         registro.CodLst.Should().BeNull();
         registro.AliqIcms.Should().Be(27.00m);
         registro.Cest.Should().Be("0100700");

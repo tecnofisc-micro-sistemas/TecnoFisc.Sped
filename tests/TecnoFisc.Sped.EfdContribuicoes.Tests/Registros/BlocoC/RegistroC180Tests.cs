@@ -64,7 +64,7 @@ public sealed class RegistroC180Tests
         registro.DtDocIni.Should().Be(new DateOnly(2024, 1, 1));
         registro.DtDocFin.Should().Be(new DateOnly(2024, 1, 31));
         registro.CodItem.Should().Be("PROD001");
-        registro.CodNcm.Should().Be(Ncm.Criar("12345678"));
+        registro.CodNcm.Should().Be(Ncm.Create("12345678"));
         registro.ExIpi.Should().Be("001");
         registro.VlTotItem.Should().Be(50000m);
     }
@@ -111,11 +111,11 @@ public sealed class RegistroC180Tests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+        await foreach (var registro in leitor.ReadStreamingAsync(entrada, cancelamento))
             registros.Add(registro);
 
         using var saida = new MemoryStream();
-        await escritor.EscreverAsync(saida, registros, cancelamento);
+        await escritor.WriteAsync(saida, registros, cancelamento);
 
         return EncodingSped.Latin1.GetString(saida.ToArray());
     }

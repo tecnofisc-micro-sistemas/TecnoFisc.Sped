@@ -20,7 +20,7 @@ public sealed class ParserEfdIcmsIpiTests
         ParserEfdIcmsIpi parser, string sped, CancellationToken cancelamento)
     {
         var registros = new List<RegistroSped>();
-        await foreach (var registro in parser.LerStreamingAsync(Fluxo(sped), cancelamento))
+        await foreach (var registro in parser.ReadStreamingAsync(Fluxo(sped), cancelamento))
             registros.Add(registro);
         return registros;
     }
@@ -121,7 +121,7 @@ public sealed class ParserEfdIcmsIpiTests
             "|9990|2|\r\n" +
             "|9999|6|\r\n";
 
-        var arquivo = await parser.LerAsync(Fluxo(sped), TestContext.Current.CancellationToken);
+        var arquivo = await parser.ReadAsync(Fluxo(sped), TestContext.Current.CancellationToken);
 
         arquivo.Bloco0.EnumerarRegistros().Should().HaveCount(2);
         arquivo.Bloco9.EnumerarRegistros().Should().HaveCount(4);

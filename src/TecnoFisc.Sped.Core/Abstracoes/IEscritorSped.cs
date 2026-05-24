@@ -11,7 +11,7 @@ public interface IEscritorSped
     /// Escreve cada registro na ordem em que vem do <paramref name="registros"/>. O fluxo
     /// não é fechado pelo escritor — o chamador controla seu ciclo de vida.
     /// </summary>
-    public Task EscreverAsync(
+    public Task WriteAsync(
         Stream saida,
         IAsyncEnumerable<RegistroSped> registros,
         CancellationToken cancelamento = default);

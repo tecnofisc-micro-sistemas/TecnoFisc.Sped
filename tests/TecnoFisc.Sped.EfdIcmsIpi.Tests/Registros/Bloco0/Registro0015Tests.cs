@@ -24,11 +24,11 @@ public sealed class Registro0015Tests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+        await foreach (var registro in leitor.ReadStreamingAsync(entrada, cancelamento))
             registros.Add(registro);
 
         using var saida = new MemoryStream();
-        await escritor.EscreverAsync(saida, registros, cancelamento);
+        await escritor.WriteAsync(saida, registros, cancelamento);
 
         return EncodingSped.Latin1.GetString(saida.ToArray());
     }
@@ -68,7 +68,7 @@ public sealed class Registro0015Tests
         meta.Campos[1].Definidor(registro, "123456789".AsSpan());
 
         registro.UfSt.Should().Be("SP");
-        registro.IeSt.Should().Be(InscricaoEstadual.Criar("123456789"));
+        registro.IeSt.Should().Be(InscricaoEstadual.Create("123456789"));
     }
 
     [Fact]

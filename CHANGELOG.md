@@ -6,6 +6,45 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ## [Não publicado]
 
+### Documentação
+
+#### Alterado (breaking)
+
+- Convenção de nomenclatura revisada (ARCHITECTURE §1.3): verbos, factories estáticos e predicados booleanos passam a usar inglês idiomático; substantivos do domínio SPED permanecem em português. API pública renomeada — ver detalhes abaixo.
+
+### TecnoFisc.Sped.Core 0.5.0
+
+#### Alterado (breaking)
+
+- Value objects: `Criar` → `Create` em `Cnpj`, `Cpf`, `Cfop`, `Ncm`, `Cst`, `ChaveAcesso`, `InscricaoEstadual`, `ModeloDocumento`, `GeneroItem`.
+- `Cfop.EhEntrada` / `Cfop.EhSaida` → `Cfop.IsEntrada` / `Cfop.IsSaida`.
+- `InscricaoEstadual.EhIsento` → `IsIsento`.
+- `CodigosUf.EhValido` → `IsValid`.
+- `ILeitorSped.LerStreamingAsync` / `LerAsync` → `ReadStreamingAsync` / `ReadAsync`. `LeitorSpedTxt` segue o mesmo.
+- `IEscritorSped.EscreverAsync` → `WriteAsync`. `EscritorSpedTxt` segue.
+- `CatalogoBuilder.ConstruirMetadadosDoTipo` → `BuildMetadataForType`.
+
+### TecnoFisc.Sped.EfdContribuicoes 0.5.0
+
+#### Alterado (breaking)
+
+- `ParserEfdContribuicoes.LerAsync` / `LerStreamingAsync` → `ReadAsync` / `ReadStreamingAsync`.
+- `GeradorEfdContribuicoes.EscreverAsync` → `WriteAsync`.
+- `ArquivoEfdContribuicoes.CarregarAsync` → `LoadAsync`.
+
+### TecnoFisc.Sped.EfdIcmsIpi 0.5.0
+
+#### Alterado (breaking)
+
+- `ParserEfdIcmsIpi.LerAsync` / `LerStreamingAsync` → `ReadAsync` / `ReadStreamingAsync`.
+- `ArquivoEfdIcmsIpi.CarregarAsync` → `LoadAsync` (se aplicável).
+
+### TecnoFisc.Sped.Core.SourceGenerators 0.5.0
+
+#### Alterado (breaking)
+
+- Código gerado passa a invocar `Create` em vez de `Criar` nos value objects.
+
 ## [0.4.0] — 2026-05-24
 
 Consolida três incrementos do leiaute EFD ICMS-IPI (V018, V019, V020 — vigente em 2026) e oficializa o pacote como **read-only**, alinhado ao caso de uso real (ingestão rápida + modelo tipado). Também esclarece o escopo dos pacotes XML (NF-e, NFC-e, CT-e), que passam a ser planejados também como read-only — o único pacote SPED com geração de arquivo confirmada permanece sendo o `TecnoFisc.Sped.EfdContribuicoes`.

@@ -28,11 +28,11 @@ public sealed class RegistroC181Tests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+        await foreach (var registro in leitor.ReadStreamingAsync(entrada, cancelamento))
             registros.Add(registro);
 
         using var saida = new MemoryStream();
-        await escritor.EscreverAsync(saida, registros, cancelamento);
+        await escritor.WriteAsync(saida, registros, cancelamento);
 
         return EncodingSped.Latin1.GetString(saida.ToArray());
     }
@@ -101,7 +101,7 @@ public sealed class RegistroC181Tests
         registro.SerieSaida.Should().Be("001");
         registro.EcfFabSaida.Should().Be("SERIAL12345678901234");
         registro.NumDocSaida.Should().Be(12345678);
-        registro.ChvDfeSaida.Should().Be(ChaveAcesso.Criar(ChaveNfeValida.AsSpan()));
+        registro.ChvDfeSaida.Should().Be(ChaveAcesso.Create(ChaveNfeValida.AsSpan()));
         registro.DtDocSaida.Should().Be(new DateOnly(2024, 1, 1));
         registro.NumItemSaida.Should().Be(1);
         registro.VlUnitConvSaida.Should().Be(50.000000m);

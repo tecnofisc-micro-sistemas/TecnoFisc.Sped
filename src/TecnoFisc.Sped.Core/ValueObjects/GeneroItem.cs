@@ -25,7 +25,7 @@ public readonly struct GeneroItem : IEquatable<GeneroItem>
     }
 
     /// <exception cref="FormatException">Quando o código não está entre 00 e 99 ou é desconhecido.</exception>
-    public static GeneroItem Criar(ReadOnlySpan<char> codigo)
+    public static GeneroItem Create(ReadOnlySpan<char> codigo)
     {
         if (!TentarCriar(codigo, out var genero))
             throw new FormatException($"Gênero de item desconhecido: '{codigo}'.");

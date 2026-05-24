@@ -36,7 +36,7 @@ public readonly struct Cst : IEquatable<Cst>
     }
 
     /// <exception cref="FormatException">Quando o valor não é um CST válido para o tributo.</exception>
-    public static Cst Criar(ReadOnlySpan<char> valor, TipoTributo tributo)
+    public static Cst Create(ReadOnlySpan<char> valor, TipoTributo tributo)
     {
         if (!TentarCriar(valor, tributo, out var cst))
             throw new FormatException($"Valor não é um CST válido para {tributo}: '{valor}'.");

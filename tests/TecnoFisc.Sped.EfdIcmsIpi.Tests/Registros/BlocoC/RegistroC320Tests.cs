@@ -25,11 +25,11 @@ public sealed class RegistroC320Tests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+        await foreach (var registro in leitor.ReadStreamingAsync(entrada, cancelamento))
             registros.Add(registro);
 
         using var saida = new MemoryStream();
-        await escritor.EscreverAsync(saida, registros, cancelamento);
+        await escritor.WriteAsync(saida, registros, cancelamento);
 
         return EncodingSped.Latin1.GetString(saida.ToArray());
     }
@@ -72,7 +72,7 @@ public sealed class RegistroC320Tests
         meta.Campos[7].Definidor(registro, "OBS01".AsSpan());      // CodObs
 
         registro.CstIcms.Should().Be(20);
-        registro.Cfop.Should().Be(Cfop.Criar("5102".AsSpan()));
+        registro.Cfop.Should().Be(Cfop.Create("5102".AsSpan()));
         registro.AliqIcms.Should().Be(12.00m);
         registro.VlOpr.Should().Be(1000.00m);
         registro.VlBcIcms.Should().Be(800.00m);

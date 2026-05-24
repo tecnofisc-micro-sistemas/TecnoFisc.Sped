@@ -29,11 +29,11 @@ public sealed class Registro1600Tests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+        await foreach (var registro in leitor.ReadStreamingAsync(entrada, cancelamento))
             registros.Add(registro);
 
         using var saida = new MemoryStream();
-        await escritor.EscreverAsync(saida, registros, cancelamento);
+        await escritor.WriteAsync(saida, registros, cancelamento);
 
         return EncodingSped.Latin1.GetString(saida.ToArray());
     }
@@ -149,7 +149,7 @@ public sealed class Registro1600Tests
 
         Func<Task> ler = async () =>
         {
-            await foreach (var r in leitor.LerStreamingAsync(entrada, TestContext.Current.CancellationToken))
+            await foreach (var r in leitor.ReadStreamingAsync(entrada, TestContext.Current.CancellationToken))
                 registros.Add(r);
         };
 
@@ -173,7 +173,7 @@ public sealed class Registro1600Tests
 
         Func<Task> ler = async () =>
         {
-            await foreach (var r in leitor.LerStreamingAsync(entrada, TestContext.Current.CancellationToken))
+            await foreach (var r in leitor.ReadStreamingAsync(entrada, TestContext.Current.CancellationToken))
                 registros.Add(r);
         };
 

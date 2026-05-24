@@ -24,11 +24,11 @@ public sealed class RegistroC430Tests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+        await foreach (var registro in leitor.ReadStreamingAsync(entrada, cancelamento))
             registros.Add(registro);
 
         using var saida = new MemoryStream();
-        await escritor.EscreverAsync(saida, registros, cancelamento);
+        await escritor.WriteAsync(saida, registros, cancelamento);
 
         return EncodingSped.Latin1.GetString(saida.ToArray());
     }
@@ -98,7 +98,7 @@ public sealed class RegistroC430Tests
         registro.VlUnitIcmsStConvCompl.Should().Be(0.000000m);
         registro.VlUnitFcpStConvCompl.Should().Be(0.000000m);
         registro.CstIcms.Should().Be(60);
-        registro.Cfop.Should().Be(Cfop.Criar("5102".AsSpan()));
+        registro.Cfop.Should().Be(Cfop.Create("5102".AsSpan()));
     }
 
     [Fact]

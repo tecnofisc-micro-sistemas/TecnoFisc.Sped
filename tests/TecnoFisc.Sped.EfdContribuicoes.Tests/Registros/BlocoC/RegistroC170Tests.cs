@@ -105,7 +105,7 @@ public sealed class RegistroC170Tests
         registro.VlDesc.Should().Be(50m);
         registro.IndMov.Should().Be(IndicadorMovimentacaoFisica.Sim);
         registro.CstIcms.Should().Be(0);
-        registro.Cfop.Should().Be(Cfop.Criar("5102"));
+        registro.Cfop.Should().Be(Cfop.Create("5102"));
         registro.CodNat.Should().Be("1234");
         registro.VlBcIcms.Should().Be(950m);
         registro.AliqIcms.Should().Be(12m);
@@ -278,11 +278,11 @@ public sealed class RegistroC170Tests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+        await foreach (var registro in leitor.ReadStreamingAsync(entrada, cancelamento))
             registros.Add(registro);
 
         using var saida = new MemoryStream();
-        await escritor.EscreverAsync(saida, registros, cancelamento);
+        await escritor.WriteAsync(saida, registros, cancelamento);
 
         return EncodingSped.Latin1.GetString(saida.ToArray());
     }

@@ -14,11 +14,11 @@ namespace TecnoFisc.Sped.EfdContribuicoes.Tests.Gerador;
 /// </summary>
 public sealed class GeradorEfdContribuicoesTests
 {
-    private static async Task<string> EscreverAsync(
+    private static async Task<string> WriteAsync(
         GeradorEfdContribuicoes gerador, IEnumerable<RegistroSped> registros, CancellationToken cancelamento)
     {
         using var saida = new MemoryStream();
-        await gerador.EscreverAsync(saida, registros, cancelamento);
+        await gerador.WriteAsync(saida, registros, cancelamento);
         return EncodingSped.Latin1.GetString(saida.ToArray());
     }
 
@@ -34,7 +34,7 @@ public sealed class GeradorEfdContribuicoesTests
             new Registro9999 { QtdLin = 4 },
         };
 
-        var texto = await EscreverAsync(gerador, registros, TestContext.Current.CancellationToken);
+        var texto = await WriteAsync(gerador, registros, TestContext.Current.CancellationToken);
 
         texto.Should().Be(
             "|0001|0|\r\n" +
@@ -59,10 +59,10 @@ public sealed class GeradorEfdContribuicoesTests
 
         var registros = new List<RegistroSped>();
         using (var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped)))
-            await foreach (var r in parser.LerStreamingAsync(entrada, TestContext.Current.CancellationToken))
+            await foreach (var r in parser.ReadStreamingAsync(entrada, TestContext.Current.CancellationToken))
                 registros.Add(r);
 
-        var saida = await EscreverAsync(gerador, registros, TestContext.Current.CancellationToken);
+        var saida = await WriteAsync(gerador, registros, TestContext.Current.CancellationToken);
 
         saida.Should().Be(sped);
     }
@@ -73,7 +73,7 @@ public sealed class GeradorEfdContribuicoesTests
         var gerador = new GeradorEfdContribuicoes();
         var registros = new RegistroSped[] { new RegistroDesconhecido() };
 
-        var act = async () => await EscreverAsync(gerador, registros, TestContext.Current.CancellationToken);
+        var act = async () => await WriteAsync(gerador, registros, TestContext.Current.CancellationToken);
 
         await act.Should().ThrowAsync<InvalidOperationException>();
     }
@@ -95,7 +95,7 @@ public sealed class GeradorEfdContribuicoesTests
         var gerador = new GeradorEfdContribuicoes(catalogoCore);
         var registros = new RegistroSped[] { new Registro0001 { IndMov = IndicadorMovimentoBloco.ComDados } };
 
-        var act = async () => await EscreverAsync(gerador, registros, TestContext.Current.CancellationToken);
+        var act = async () => await WriteAsync(gerador, registros, TestContext.Current.CancellationToken);
 
         await act.Should().ThrowAsync<InvalidOperationException>();
     }

@@ -34,7 +34,7 @@ public sealed class TotalizadorBlocosTests
                 DtIni = new DateOnly(2025, 1, 1),
                 DtFin = new DateOnly(2025, 1, 31),
                 Nome = "EMPRESA",
-                Cnpj = Cnpj.Criar("11222333000181"),
+                Cnpj = Cnpj.Create("11222333000181"),
             },
         };
 
@@ -60,7 +60,7 @@ public sealed class TotalizadorBlocosTests
                 DtIni = new DateOnly(2025, 1, 1),
                 DtFin = new DateOnly(2025, 1, 31),
                 Nome = "EMPRESA",
-                Cnpj = Cnpj.Criar("11222333000181"),
+                Cnpj = Cnpj.Create("11222333000181"),
             },
             new RegistroC001Sintetico { IndMov = 0 },
             new RegistroC100Sintetico
@@ -68,7 +68,7 @@ public sealed class TotalizadorBlocosTests
                 IndOper = "0",
                 CodPart = 1,
                 VlDoc = 100m,
-                Cfop = Cfop.Criar("5102"),
+                Cfop = Cfop.Create("5102"),
             },
         };
 
@@ -92,7 +92,7 @@ public sealed class TotalizadorBlocosTests
                 DtIni = new DateOnly(2025, 1, 1),
                 DtFin = new DateOnly(2025, 1, 31),
                 Nome = "X",
-                Cnpj = Cnpj.Criar("11222333000181"),
+                Cnpj = Cnpj.Create("11222333000181"),
             },
             new RegistroC001Sintetico { IndMov = 0 },
         };

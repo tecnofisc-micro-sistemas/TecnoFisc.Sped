@@ -66,7 +66,7 @@ public sealed class RegistroC495Tests
 
         registro.CodItem.Should().Be("PROD001");
         registro.CstCofins.Should().Be(1);
-        registro.Cfop.Should().Be(Cfop.Criar("5102"));
+        registro.Cfop.Should().Be(Cfop.Create("5102"));
         registro.VlItem.Should().Be(1000m);
         registro.VlBcCofins.Should().Be(950m);
         registro.AliqCofins.Should().Be(7.6m);
@@ -139,11 +139,11 @@ public sealed class RegistroC495Tests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+        await foreach (var registro in leitor.ReadStreamingAsync(entrada, cancelamento))
             registros.Add(registro);
 
         using var saida = new MemoryStream();
-        await escritor.EscreverAsync(saida, registros, cancelamento);
+        await escritor.WriteAsync(saida, registros, cancelamento);
 
         return EncodingSped.Latin1.GetString(saida.ToArray());
     }

@@ -40,7 +40,7 @@ public static class CatalogoBuilder
     /// de campos uma única vez na inicialização do catálogo. Reflexão fica fora da hot path
     /// de parsing porque os <see cref="MetadadosCampo"/> internos guardam delegates compilados.
     /// </summary>
-    public static MetadadosRegistro ConstruirMetadadosDoTipo(
+    public static MetadadosRegistro BuildMetadataForType(
         Type tipo,
         string codigo,
         int nivel,

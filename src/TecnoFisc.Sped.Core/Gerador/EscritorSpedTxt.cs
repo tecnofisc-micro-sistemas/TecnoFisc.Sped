@@ -28,7 +28,7 @@ public sealed class EscritorSpedTxt : IEscritorSped
     }
 
     /// <inheritdoc />
-    public async Task EscreverAsync(
+    public async Task WriteAsync(
         Stream saida,
         IAsyncEnumerable<RegistroSped> registros,
         CancellationToken cancelamento = default)
@@ -59,13 +59,13 @@ public sealed class EscritorSpedTxt : IEscritorSped
     /// Sobrecarga síncrona-like sobre <see cref="IEnumerable{RegistroSped}"/>. Útil quando
     /// o consumidor já tem a coleção em memória e não quer construir um async iterator.
     /// </summary>
-    public Task EscreverAsync(
+    public Task WriteAsync(
         Stream saida,
         IEnumerable<RegistroSped> registros,
         CancellationToken cancelamento = default)
     {
         ArgumentNullException.ThrowIfNull(registros);
-        return EscreverAsync(saida, ParaAsync(registros, cancelamento), cancelamento);
+        return WriteAsync(saida, ParaAsync(registros, cancelamento), cancelamento);
     }
 
     private static async IAsyncEnumerable<RegistroSped> ParaAsync(

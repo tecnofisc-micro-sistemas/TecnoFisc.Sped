@@ -26,11 +26,11 @@ public sealed class Registro1320Tests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+        await foreach (var registro in leitor.ReadStreamingAsync(entrada, cancelamento))
             registros.Add(registro);
 
         using var saida = new MemoryStream();
-        await escritor.EscreverAsync(saida, registros, cancelamento);
+        await escritor.WriteAsync(saida, registros, cancelamento);
 
         return EncodingSped.Latin1.GetString(saida.ToArray());
     }
@@ -100,8 +100,8 @@ public sealed class Registro1320Tests
         registro.NrInterv.Should().Be(345);
         registro.MotInterv.Should().Be("MANUTENCAO PREVENTIVA");
         registro.NomInterv.Should().Be("TECNICO AUTORIZADO");
-        registro.CnpjInterv.Should().Be(Cnpj.Criar("11222333000181"));
-        registro.CpfInterv.Should().Be(Cpf.Criar("52998224725"));
+        registro.CnpjInterv.Should().Be(Cnpj.Create("11222333000181"));
+        registro.CpfInterv.Should().Be(Cpf.Create("52998224725"));
         registro.ValFecha.Should().Be(1250.500m);
         registro.ValAbert.Should().Be(1000.000m);
         registro.VolAferi.Should().Be(5.000m);

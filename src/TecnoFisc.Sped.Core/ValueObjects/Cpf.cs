@@ -13,7 +13,7 @@ public readonly struct Cpf : IEquatable<Cpf>
     private Cpf(string valor) => _valor = valor;
 
     /// <exception cref="FormatException">Quando o valor não é um CPF válido.</exception>
-    public static Cpf Criar(ReadOnlySpan<char> valor)
+    public static Cpf Create(ReadOnlySpan<char> valor)
     {
         if (!TentarCriar(valor, out var cpf))
             throw new FormatException($"Valor não é um CPF válido: '{valor}'.");

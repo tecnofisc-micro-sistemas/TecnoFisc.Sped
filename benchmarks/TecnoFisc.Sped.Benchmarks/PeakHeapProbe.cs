@@ -83,7 +83,7 @@ internal static class PeakHeapProbe
         var parser = new ParserEfdContribuicoes();
         using var stream = new MemoryStream(bytes, writable: false);
         int total = 0;
-        await foreach (var _ in parser.LerStreamingAsync(stream))
+        await foreach (var _ in parser.ReadStreamingAsync(stream))
             total++;
         GC.KeepAlive(total);
     }
@@ -92,7 +92,7 @@ internal static class PeakHeapProbe
     {
         var parser = new ParserEfdContribuicoes();
         using var stream = new MemoryStream(bytes, writable: false);
-        var arquivo = await parser.LerAsync(stream);
+        var arquivo = await parser.ReadAsync(stream);
         GC.KeepAlive(arquivo);
     }
 

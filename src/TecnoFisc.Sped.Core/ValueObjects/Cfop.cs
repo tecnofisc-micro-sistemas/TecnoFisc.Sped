@@ -14,7 +14,7 @@ public readonly struct Cfop : IEquatable<Cfop>
     private Cfop(string valor) => _valor = valor;
 
     /// <exception cref="FormatException">Quando o valor não é um CFOP válido.</exception>
-    public static Cfop Criar(ReadOnlySpan<char> valor)
+    public static Cfop Create(ReadOnlySpan<char> valor)
     {
         if (!TentarCriar(valor, out var cfop))
             throw new FormatException($"Valor não é um CFOP válido: '{valor}'.");
@@ -42,10 +42,10 @@ public readonly struct Cfop : IEquatable<Cfop>
     }
 
     /// <summary>Indica se o CFOP representa uma entrada (primeiro dígito 1, 2 ou 3).</summary>
-    public bool EhEntrada => _valor is { Length: > 0 } v && v[0] is '1' or '2' or '3';
+    public bool IsEntrada => _valor is { Length: > 0 } v && v[0] is '1' or '2' or '3';
 
     /// <summary>Indica se o CFOP representa uma saída (primeiro dígito 5, 6 ou 7).</summary>
-    public bool EhSaida => _valor is { Length: > 0 } v && v[0] is '5' or '6' or '7';
+    public bool IsSaida => _valor is { Length: > 0 } v && v[0] is '5' or '6' or '7';
 
     public override string ToString() => _valor ?? "0000";
 

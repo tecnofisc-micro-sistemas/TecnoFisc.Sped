@@ -23,11 +23,11 @@ public sealed class Registro0000RoundTripTests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+        await foreach (var registro in leitor.ReadStreamingAsync(entrada, cancelamento))
             registros.Add(registro);
 
         using var saida = new MemoryStream();
-        await escritor.EscreverAsync(saida, registros, cancelamento);
+        await escritor.WriteAsync(saida, registros, cancelamento);
 
         return EncodingSped.Latin1.GetString(saida.ToArray());
     }
@@ -65,7 +65,7 @@ public sealed class Registro0000RoundTripTests
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
 
         Registro0000? registro = null;
-        await foreach (var r in leitor.LerStreamingAsync(entrada, ct))
+        await foreach (var r in leitor.ReadStreamingAsync(entrada, ct))
             registro = (Registro0000)r;
 
         registro.Should().NotBeNull();
@@ -76,7 +76,7 @@ public sealed class Registro0000RoundTripTests
         registro.DtIni.Should().Be(new DateOnly(2025, 1, 1));
         registro.DtFin.Should().Be(new DateOnly(2025, 1, 31));
         registro.Nome.Should().Be("EMPRESA TESTE");
-        registro.Cnpj.Should().Be(Cnpj.Criar("11222333000181"));
+        registro.Cnpj.Should().Be(Cnpj.Create("11222333000181"));
         registro.Uf.Should().Be("SP");
         registro.CodMun.Should().Be("3550308");
         registro.Suframa.Should().BeNull();

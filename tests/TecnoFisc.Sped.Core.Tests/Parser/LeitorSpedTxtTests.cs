@@ -20,7 +20,7 @@ public sealed class LeitorSpedTxtTests
     {
         var leitor = new LeitorSpedTxt(_catalogo);
         var resultado = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(FluxoSped(conteudo)))
+        await foreach (var registro in leitor.ReadStreamingAsync(FluxoSped(conteudo)))
             resultado.Add(registro);
         return resultado;
     }
@@ -192,7 +192,7 @@ public sealed class LeitorSpedTxtTests
 
         var act = async () =>
         {
-            await foreach (var _ in leitor.LerStreamingAsync(null!)) { }
+            await foreach (var _ in leitor.ReadStreamingAsync(null!)) { }
         };
 
         await act.Should().ThrowAsync<ArgumentNullException>();
@@ -214,7 +214,7 @@ public sealed class LeitorSpedTxtTests
 
         var leitor = new LeitorSpedTxt(_catalogo);
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(new MemoryStream(combinado), TestContext.Current.CancellationToken))
+        await foreach (var registro in leitor.ReadStreamingAsync(new MemoryStream(combinado), TestContext.Current.CancellationToken))
             registros.Add(registro);
 
         registros.Select(r => r.Codigo).Should().Equal(["0000", "9999"]);

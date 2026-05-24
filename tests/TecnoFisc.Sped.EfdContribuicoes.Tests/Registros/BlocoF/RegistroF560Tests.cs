@@ -79,7 +79,7 @@ public sealed class RegistroF560Tests
         registro.AliqCofinsQuant.Should().Be(0.05m);
         registro.VlCofins.Should().Be(500m);
         registro.CodMod.Should().Be("02");
-        registro.Cfop.Should().Be(Cfop.Criar("5102"));
+        registro.Cfop.Should().Be(Cfop.Create("5102"));
         registro.CodCta.Should().Be("3.1.02.001");
         registro.InfoCompl.Should().Be("Bebidas frias");
     }
@@ -146,11 +146,11 @@ public sealed class RegistroF560Tests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+        await foreach (var registro in leitor.ReadStreamingAsync(entrada, cancelamento))
             registros.Add(registro);
 
         using var saida = new MemoryStream();
-        await escritor.EscreverAsync(saida, registros, cancelamento);
+        await escritor.WriteAsync(saida, registros, cancelamento);
 
         return EncodingSped.Latin1.GetString(saida.ToArray());
     }

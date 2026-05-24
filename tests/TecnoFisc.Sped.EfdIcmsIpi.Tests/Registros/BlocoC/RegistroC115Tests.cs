@@ -25,11 +25,11 @@ public sealed class RegistroC115Tests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+        await foreach (var registro in leitor.ReadStreamingAsync(entrada, cancelamento))
             registros.Add(registro);
 
         using var saida = new MemoryStream();
-        await escritor.EscreverAsync(saida, registros, cancelamento);
+        await escritor.WriteAsync(saida, registros, cancelamento);
 
         return EncodingSped.Latin1.GetString(saida.ToArray());
     }
@@ -75,13 +75,13 @@ public sealed class RegistroC115Tests
         meta.Campos[8].Definidor(registro, "3550308".AsSpan());        // CodMunEntg
 
         registro.IndCarga.Should().Be(IndicadorTipoCarga.Rodoviario);
-        registro.CnpjCol.Should().Be(Cnpj.Criar("11222333000181"));
-        registro.IeCol.Should().Be(InscricaoEstadual.Criar("111222333"));
+        registro.CnpjCol.Should().Be(Cnpj.Create("11222333000181"));
+        registro.IeCol.Should().Be(InscricaoEstadual.Create("111222333"));
         registro.CpfCol.Should().BeNull();
         registro.CodMunCol.Should().Be("3550308");
         registro.CnpjEntg.Should().BeNull();
         registro.IeEntg.Should().BeNull();
-        registro.CpfEntg.Should().Be(Cpf.Criar("52998224725"));
+        registro.CpfEntg.Should().Be(Cpf.Create("52998224725"));
         registro.CodMunEntg.Should().Be("3550308");
     }
 

@@ -67,7 +67,7 @@ public sealed class RegistroF800Tests
 
         registro.IndNatEven.Should().Be(IndicadorNaturezaEvento.Incorporacao);
         registro.DtEven.Should().Be(new DateOnly(2023, 6, 15));
-        registro.CnpjSuced.Should().Be(Cnpj.Criar("12345678000195"));
+        registro.CnpjSuced.Should().Be(Cnpj.Create("12345678000195"));
         registro.PaContCred.Should().Be("012023");
         registro.CodCred.Should().Be(CodigoTipoCredito.MercadoInternoTributadoAliquotaBasica);
         registro.VlCredPis.Should().Be(10000m);
@@ -142,11 +142,11 @@ public sealed class RegistroF800Tests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+        await foreach (var registro in leitor.ReadStreamingAsync(entrada, cancelamento))
             registros.Add(registro);
 
         using var saida = new MemoryStream();
-        await escritor.EscreverAsync(saida, registros, cancelamento);
+        await escritor.WriteAsync(saida, registros, cancelamento);
 
         return EncodingSped.Latin1.GetString(saida.ToArray());
     }

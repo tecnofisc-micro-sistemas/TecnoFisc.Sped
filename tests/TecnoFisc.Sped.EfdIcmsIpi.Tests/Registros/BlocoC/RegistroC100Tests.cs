@@ -28,11 +28,11 @@ public sealed class RegistroC100Tests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+        await foreach (var registro in leitor.ReadStreamingAsync(entrada, cancelamento))
             registros.Add(registro);
 
         using var saida = new MemoryStream();
-        await escritor.EscreverAsync(saida, registros, cancelamento);
+        await escritor.WriteAsync(saida, registros, cancelamento);
 
         return EncodingSped.Latin1.GetString(saida.ToArray());
     }
@@ -107,7 +107,7 @@ public sealed class RegistroC100Tests
         registro.CodSit.Should().Be(CodigoSituacaoDocumentoFiscal.DocumentoRegular);
         registro.Ser.Should().Be("001");
         registro.NumDoc.Should().Be(1);
-        registro.ChvNfe.Should().Be(ChaveAcesso.Criar(ChaveNfeValida));
+        registro.ChvNfe.Should().Be(ChaveAcesso.Create(ChaveNfeValida));
         registro.DtDoc.Should().Be(new DateOnly(2024, 1, 1));
         registro.DtES.Should().Be(new DateOnly(2024, 1, 2));
         registro.VlDoc.Should().Be(1500.00m);

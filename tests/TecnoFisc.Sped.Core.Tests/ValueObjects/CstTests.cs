@@ -10,7 +10,7 @@ public sealed class CstTests
     [InlineData(TipoTributo.Cofins, "99", "99")]
     public void Criar_ComCodigoValido_RetornaCst(TipoTributo tributo, string entrada, string esperado)
     {
-        var cst = Cst.Criar(entrada, tributo);
+        var cst = Cst.Create(entrada, tributo);
 
         cst.ToString().Should().Be(esperado);
         cst.Tributo.Should().Be(tributo);
@@ -24,7 +24,7 @@ public sealed class CstTests
     [InlineData(TipoTributo.Ipi, "")]
     public void Criar_ComCodigoInvalidoParaTributo_LancaFormatException(TipoTributo tributo, string entrada)
     {
-        var act = () => Cst.Criar(entrada, tributo);
+        var act = () => Cst.Create(entrada, tributo);
 
         act.Should().Throw<FormatException>();
     }
@@ -32,8 +32,8 @@ public sealed class CstTests
     [Fact]
     public void Equals_DiferenteTributo_RetornaFalse()
     {
-        var pis = Cst.Criar("01", TipoTributo.Pis);
-        var cofins = Cst.Criar("01", TipoTributo.Cofins);
+        var pis = Cst.Create("01", TipoTributo.Pis);
+        var cofins = Cst.Create("01", TipoTributo.Cofins);
 
         pis.Should().NotBe(cofins);
     }
@@ -41,8 +41,8 @@ public sealed class CstTests
     [Fact]
     public void Equals_MesmoTributoMesmoCodigo_RetornaTrue()
     {
-        var a = Cst.Criar("060", TipoTributo.Icms);
-        var b = Cst.Criar("060", TipoTributo.Icms);
+        var a = Cst.Create("060", TipoTributo.Icms);
+        var b = Cst.Create("060", TipoTributo.Icms);
 
         a.Should().Be(b);
         a.GetHashCode().Should().Be(b.GetHashCode());

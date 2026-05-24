@@ -6,7 +6,11 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ## [Não publicado]
 
-### TecnoFisc.Sped.EfdIcmsIpi
+## [0.4.0] — 2026-05-24
+
+Consolida três incrementos do leiaute EFD ICMS-IPI (V018, V019, V020 — vigente em 2026) e oficializa o pacote como **read-only**, alinhado ao caso de uso real (ingestão rápida + modelo tipado). Também esclarece o escopo dos pacotes XML (NF-e, NFC-e, CT-e), que passam a ser planejados também como read-only — o único pacote SPED com geração de arquivo confirmada permanece sendo o `TecnoFisc.Sped.EfdContribuicoes`.
+
+### TecnoFisc.Sped.EfdIcmsIpi 0.4.0
 
 #### Adicionado
 
@@ -19,6 +23,14 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 - Pacote passa a ser **read-only** (ARCHITECTURE §2.5). API pública `GeradorEfdIcmsIpi` removida; `IEscritorSped` deixa de ser implementado neste pacote. Consumidores que precisam emitir arquivos EFD ICMS-IPI devem usar o PVA da Receita ou outro caminho — o propósito do pacote é ingestão rápida + modelo tipado.
 - `[Descontinuado(EmVersao=...)]` vira informacional no read path — registros descontinuados continuam sendo reconhecidos pelo parser para que arquivos históricos sejam lidos sem erro de leiaute.
 - Testes de round-trip parse → generate → parse removidos (`RoundTripFixtureRealTests` renomeado para `ParserFixtureRealTests`, cobrindo apenas o caminho de leitura).
+
+### Documentação
+
+#### Alterado
+
+- `ARCHITECTURE.md` §2.5 e §4.7, `README.md` e `CLAUDE.md` atualizados para refletir que os pacotes XML planejados (`TecnoFisc.Sped.NFe`, `NFCe`, `CTe`) também serão **read-only**. O caso de uso confirmado nos três é ingestão de XMLs já emitidos (parser + validação de assinatura + modelo tipado). Geração/emissão para SEFAZ depende de confirmação externa e, quando ocorrer, entra como stage dedicada (igual a ECD/ECF). Resultado: o único pacote SPED com geração de arquivo confirmada hoje é `TecnoFisc.Sped.EfdContribuicoes`.
+- Stages 14/15/16 (NFe/NFCe/CTe) em `ARCHITECTURE.md` reescritos como pacotes read-only — `GeradorNFe`/`GeradorNFCe`/`GeradorCTe` saem do escopo inicial.
+- README do repositório atualizado para refletir EFD ICMS-IPI 0.4.0 (V015 baseline + V016-V020 incrementos, parser apenas) e marcar pacotes XML como `planejado (XML, read-only)`.
 
 ## [0.3.1] — 2026-05-17
 
@@ -156,7 +168,8 @@ Release inicial. Conclui a Stage 4 de `ARCHITECTURE.md`: implementação complet
 - API streaming (`IAsyncEnumerable<RegistroSped>`) é objetivo da Stage 5 e não está disponível neste release.
 - Suporte a leiautes mais novos (V007+) entra na Stage 7.
 
-[Não publicado]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/compare/v0.3.1...HEAD
+[Não publicado]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/releases/tag/v0.4.0
 [0.3.1]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/releases/tag/v0.3.1
 [0.3.0]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/releases/tag/v0.3.0
 [0.2.0]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/releases/tag/v0.2.0

@@ -4,13 +4,16 @@ Família de bibliotecas .NET para leitura, geração e manipulação tipada de a
 publicados pelos projetos do **SPED — Sistema Público de Escrituração Digital**
 (Receita Federal do Brasil).
 
-> Status atual: **0.4.0** publicado. Cobre EFD Contribuições V006 (leitura + geração,
+> Status atual: **0.5.0** publicado. Cobre EFD Contribuições V006 (leitura + geração,
 > round-trip validado) e EFD ICMS-IPI baseline V015 + incrementos V016 → V020 (leiaute
 > vigente em 2026, **modo read-only** — parser e modelo tipado, sem geração). Os números
 > `006` (EFD Contribuições) e `015`–`020` (EFD ICMS-IPI) são o `COD_VER` do registro `0000`
-> de cada leiaute (não devem ser confundidos com a versão do Guia Prático). Próximos
-> passos rastreados no `ARCHITECTURE.md` (ECD, ECF e pacotes XML — todos planejados como
-> read-only). Veja o `CHANGELOG.md` para detalhes.
+> de cada leiaute (não devem ser confundidos com a versão do Guia Prático). A `0.5.0` é
+> breaking — revisa a convenção de nomenclatura (verbos/factories em inglês, substantivos
+> do domínio em português) e adiciona helpers de persistência (`OfType<T>()`, `Batch(n)`,
+> `WithContext()`, dispatcher `IRegistroSpedVisitor`). Próximos passos rastreados no
+> `ARCHITECTURE.md` (ECD, ECF e pacotes XML — todos planejados como read-only). Veja o
+> `CHANGELOG.md` para detalhes.
 
 ## Visão geral
 
@@ -25,8 +28,8 @@ pacote afetado é versionado.
 
 | Projeto SPED | Pacote NuGet | Status |
 | --- | --- | --- |
-| EFD Contribuições | `TecnoFisc.Sped.EfdContribuicoes` | **0.4.0** — leiaute V006 completo (leitura + geração) |
-| EFD ICMS-IPI | `TecnoFisc.Sped.EfdIcmsIpi` | **0.4.0** — baseline V015 + incrementos V016 → V020 (vigente), **read-only** |
+| EFD Contribuições | `TecnoFisc.Sped.EfdContribuicoes` | **0.5.0** — leiaute V006 completo (leitura + geração) |
+| EFD ICMS-IPI | `TecnoFisc.Sped.EfdIcmsIpi` | **0.5.0** — baseline V015 + incrementos V016 → V020 (vigente), **read-only** |
 | ECD | `TecnoFisc.Sped.Ecd` | planejado (read-only) — baseline 2021 + incrementos até o leiaute vigente |
 | ECF | `TecnoFisc.Sped.Ecf` | planejado (read-only) |
 | NF-e | `TecnoFisc.Sped.NFe` | planejado (XML, read-only) |

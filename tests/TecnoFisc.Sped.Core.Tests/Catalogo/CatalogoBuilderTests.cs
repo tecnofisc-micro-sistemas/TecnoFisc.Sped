@@ -122,7 +122,7 @@ public sealed class CatalogoBuilderTests
         registro.DtIni = new DateOnly(2025, 1, 1);
         registro.DtFin = new DateOnly(2025, 1, 31);
         registro.Nome = "EMPRESA TESTE";
-        registro.Cnpj = Cnpj.Criar("11222333000181");
+        registro.Cnpj = Cnpj.Create("11222333000181");
 
         meta.Campos[0].Serializar(registro).Should().Be("006");
         meta.Campos[1].Serializar(registro).Should().Be("01012025");

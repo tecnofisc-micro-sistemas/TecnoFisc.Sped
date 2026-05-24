@@ -12,6 +12,9 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Tests.Registros.Bloco0;
 /// Sub-stage 8.013 — exercita a forma do <see cref="Registro0210"/> contra o Guia Prático
 /// EFD-ICMS/IPI V3.0.6 (p. 37): metadados de catálogo, mapeamento de campos e invariante
 /// de round-trip parse → gerar → texto idêntico.
+/// Sub-stage 8.016.005 — verifica descontinuação em V016: <c>[Descontinuado]</c> aplicado
+/// como informacional. Parser continua aceitando o registro em V016+ porque arquivos
+/// históricos ainda contêm <c>0210</c> e devem ser lidos (ARCHITECTURE §4.7 read-only).
 /// </summary>
 public sealed class Registro0210Tests
 {
@@ -25,11 +28,11 @@ public sealed class Registro0210Tests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+        await foreach (var registro in leitor.ReadStreamingAsync(entrada, cancelamento))
             registros.Add(registro);
 
         using var saida = new MemoryStream();
-        await escritor.EscreverAsync(saida, registros, cancelamento);
+        await escritor.WriteAsync(saida, registros, cancelamento);
 
         return EncodingSped.Latin1.GetString(saida.ToArray());
     }
@@ -104,5 +107,70 @@ public sealed class Registro0210Tests
         var resultado = await RoundTripAsync(sped, TestContext.Current.CancellationToken);
 
         resultado.Should().Be(sped);
+    }
+
+    // ── sub-stage 8.016.005: descontinuação em V016 ──────────────────────────
+
+    [Fact]
+    public void Atributo_Descontinuado_DeclaraEmVersaoV016()
+    {
+        var atributo = typeof(Registro0210).GetCustomAttribute<DescontinuadoAttribute>();
+
+        atributo.Should().NotBeNull();
+        atributo!.EmVersao.Should().Be((int)LayoutEfdIcmsIpi.V016);
+    }
+
+    [Fact]
+    public void Catalogo_Registro0210_ExpoeDescontinuadoEm16()
+    {
+        _catalogo.TentarObter("0210".AsSpan(), out var meta).Should().BeTrue();
+        meta!.DescontinuadoEm.Should().Be((int)LayoutEfdIcmsIpi.V016);
+    }
+
+    [Fact]
+    public async Task Parser_Registro0210_EmArquivoV015_Aceito()
+    {
+        // V015 → ainda válido; 0210 não estava descontinuado
+        const string sped =
+            "|0000|015|0|01012022|31012022|EMPRESA TESTE SA|11222333000181||SP|123456789|3550308|||A|0|\r\n" +
+            "|0210|MAT-001|2,500000|1,2500|\r\n" +
+            "|9999|2|\r\n";
+
+        var leitor = new LeitorSpedTxt(_catalogo);
+        using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
+        var registros = new List<RegistroSped>();
+
+        Func<Task> ler = async () =>
+        {
+            await foreach (var r in leitor.ReadStreamingAsync(entrada, TestContext.Current.CancellationToken))
+                registros.Add(r);
+        };
+
+        await ler.Should().NotThrowAsync();
+        registros.Should().Contain(r => r.Codigo == "0210");
+    }
+
+    [Fact]
+    public async Task Parser_Registro0210_EmArquivoV016_AceitoComoInformacional()
+    {
+        // V016 → descontinuado, mas leitura mantém-se ativa para arquivos históricos.
+        // Anotação [Descontinuado] é informacional no read path (ARCHITECTURE §4.7).
+        const string sped =
+            "|0000|016|0|01012022|31012022|EMPRESA TESTE SA|11222333000181||SP|123456789|3550308|||A|0|\r\n" +
+            "|0210|MAT-001|2,500000|1,2500|\r\n" +
+            "|9999|2|\r\n";
+
+        var leitor = new LeitorSpedTxt(_catalogo);
+        using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
+        var registros = new List<RegistroSped>();
+
+        Func<Task> ler = async () =>
+        {
+            await foreach (var r in leitor.ReadStreamingAsync(entrada, TestContext.Current.CancellationToken))
+                registros.Add(r);
+        };
+
+        await ler.Should().NotThrowAsync();
+        registros.Should().Contain(r => r.Codigo == "0210");
     }
 }

@@ -73,7 +73,7 @@ public sealed class RegistroM215Tests
         registro.DescrAjBc.Should().Be("Exclusão de receita");
         registro.DtRef.Should().Be(new DateOnly(2024, 1, 31));
         registro.CodCta.Should().Be("1.2.3.001");
-        registro.Cnpj.Should().Be(Cnpj.Criar("11222333000181"));
+        registro.Cnpj.Should().Be(Cnpj.Create("11222333000181"));
         registro.InfoCompl.Should().Be("Ajuste autorizado");
     }
 
@@ -138,11 +138,11 @@ public sealed class RegistroM215Tests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+        await foreach (var registro in leitor.ReadStreamingAsync(entrada, cancelamento))
             registros.Add(registro);
 
         using var saida = new MemoryStream();
-        await escritor.EscreverAsync(saida, registros, cancelamento);
+        await escritor.WriteAsync(saida, registros, cancelamento);
 
         return EncodingSped.Latin1.GetString(saida.ToArray());
     }

@@ -29,11 +29,11 @@ public sealed class RegistroD100Tests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+        await foreach (var registro in leitor.ReadStreamingAsync(entrada, cancelamento))
             registros.Add(registro);
 
         using var saida = new MemoryStream();
-        await escritor.EscreverAsync(saida, registros, cancelamento);
+        await escritor.WriteAsync(saida, registros, cancelamento);
 
         return EncodingSped.Latin1.GetString(saida.ToArray());
     }
@@ -104,11 +104,11 @@ public sealed class RegistroD100Tests
         registro.Ser.Should().Be("001");
         registro.Sub.Should().Be("A");
         registro.NumDoc.Should().Be(123);
-        registro.ChvCte.Should().Be(ChaveAcesso.Criar(ChaveCteValida));
+        registro.ChvCte.Should().Be(ChaveAcesso.Create(ChaveCteValida));
         registro.DtDoc.Should().Be(new DateOnly(2024, 1, 1));
         registro.DtAP.Should().Be(new DateOnly(2024, 1, 1));
         registro.TpCTe.Should().Be(0);
-        registro.ChvCteRef.Should().Be(ChaveAcesso.Criar(ChaveCteValida));
+        registro.ChvCteRef.Should().Be(ChaveAcesso.Create(ChaveCteValida));
         registro.VlDoc.Should().Be(5000.00m);
         registro.VlDesc.Should().Be(50.00m);
         registro.IndFrt.Should().Be(IndicadorFrete.ContaRemetenteCif);

@@ -24,11 +24,11 @@ public sealed class Registro0100Tests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+        await foreach (var registro in leitor.ReadStreamingAsync(entrada, cancelamento))
             registros.Add(registro);
 
         using var saida = new MemoryStream();
-        await escritor.EscreverAsync(saida, registros, cancelamento);
+        await escritor.WriteAsync(saida, registros, cancelamento);
 
         return EncodingSped.Latin1.GetString(saida.ToArray());
     }
@@ -90,9 +90,9 @@ public sealed class Registro0100Tests
         meta.Campos[12].Definidor(registro, "3550308".AsSpan());
 
         registro.Nome.Should().Be("João da Silva");
-        registro.Cpf.Should().Be(Cpf.Criar("52998224725"));
+        registro.Cpf.Should().Be(Cpf.Create("52998224725"));
         registro.Crc.Should().Be("CRC-SP 12345");
-        registro.Cnpj.Should().Be(Cnpj.Criar("11222333000181"));
+        registro.Cnpj.Should().Be(Cnpj.Create("11222333000181"));
         registro.Cep.Should().Be("01310100");
         registro.End.Should().Be("Av. Paulista");
         registro.Num.Should().Be("1000");

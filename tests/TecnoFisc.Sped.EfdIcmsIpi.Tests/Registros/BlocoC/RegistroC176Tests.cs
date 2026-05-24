@@ -27,11 +27,11 @@ public sealed class RegistroC176Tests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+        await foreach (var registro in leitor.ReadStreamingAsync(entrada, cancelamento))
             registros.Add(registro);
 
         using var saida = new MemoryStream();
-        await escritor.EscreverAsync(saida, registros, cancelamento);
+        await escritor.WriteAsync(saida, registros, cancelamento);
 
         return EncodingSped.Latin1.GetString(saida.ToArray());
     }
@@ -107,7 +107,7 @@ public sealed class RegistroC176Tests
         registro.QuantUltE.Should().Be(10.000m);
         registro.VlUnitUltE.Should().Be(100.000m);
         registro.VlUnitBcSt.Should().Be(110.000m);
-        registro.ChaveNfeUltE.Should().Be(ChaveAcesso.Criar(ChaveNfeValida));
+        registro.ChaveNfeUltE.Should().Be(ChaveAcesso.Create(ChaveNfeValida));
         registro.NumItemUltE.Should().Be(1);
         registro.VlUnitBcIcmsUltE.Should().Be(120.00m);
         registro.AliqIcmsUltE.Should().Be(12.00m);
@@ -117,7 +117,7 @@ public sealed class RegistroC176Tests
         registro.VlUnitRes.Should().Be(5.000m);
         registro.CodRespRet.Should().Be(CodigoResponsavelRetencaoSt.RemetenteDireto);
         registro.CodMotRes.Should().Be(CodigoMotivoRessarcimentoSt.SaidaParaOutraUf);
-        registro.ChaveNfeRet.Should().Be(ChaveAcesso.Criar(ChaveNfeValida));
+        registro.ChaveNfeRet.Should().Be(ChaveAcesso.Create(ChaveNfeValida));
         registro.CodPartNfeRet.Should().Be("FORN001");
         registro.SerNfeRet.Should().Be("001");
         registro.NumNfeRet.Should().Be(99999);

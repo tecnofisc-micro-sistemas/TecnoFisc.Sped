@@ -8,6 +8,12 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoE;
 /// Registro E210 — Apuração do ICMS — Substituição Tributária.
 /// Nível hierárquico 3, ocorrência um por período. Conforme Guia Prático EFD-ICMS/IPI V3.0.6, p. 214.
 /// </summary>
+/// <remarks>
+/// <b>V018 (Guide 3.1.5 itens 19-21):</b> novas validações dos campos 07 <c>VL_AJ_CREDITOS_ST</c>
+/// e 10 <c>VL_AJ_DEBITOS_ST</c> (incluem agora C800/C857/C860/C897/D700/D737); nova orientação e
+/// validação do campo 15 <c>DEB_ESP_ST</c> (C857/C897/D737).
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </remarks>
 [RegistroSped(Codigo = "E210", Nivel = 3, Bloco = "E")]
 public sealed partial class RegistroE210 : RegistroSped
 {
@@ -39,6 +45,10 @@ public sealed partial class RegistroE210 : RegistroSped
     public decimal VlAjCreditosSt { get; set; }
 
     /// <summary>Valor total do ICMS retido por Substituição Tributária.</summary>
+    /// <remarks>
+    /// <b>V017 (Guide 3.1.4 item 7):</b> nova validação no campo 08 <c>VL_RETENCAO_ST</c>.
+    /// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+    /// </remarks>
     [CampoSped(Ordem = 8, Tamanho = 0, Decimais = 2, Obrigatorio = true)]
     public decimal VlRetencaoSt { get; set; }
 

@@ -9,6 +9,11 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoC;
 /// Nível hierárquico 3, ocorrência 1:N.
 /// Conforme Guia Prático EFD-ICMS/IPI V3.0.6, p. 72.
 /// </summary>
+/// <remarks>
+/// <b>V019 (Guide 3.1.9 item 2):</b> campo 02 <c>COD_DOC_IMP</c> passa a admitir também o valor
+/// "2" (DSI — Declaração Simplificada de Importação) — ver <see cref="CodigoDocumentoImportacao"/>.
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </remarks>
 [RegistroSped(Codigo = "C120", Nivel = 3, Bloco = "C")]
 public sealed partial class RegistroC120 : RegistroSped
 {
@@ -19,8 +24,12 @@ public sealed partial class RegistroC120 : RegistroSped
     [CampoSped(Ordem = 2, Tamanho = 1, Obrigatorio = true)]
     public CodigoDocumentoImportacao? CodDocImp { get; set; }
 
-    /// <summary>Número do documento de importação (até 12 caracteres).</summary>
-    [CampoSped(Ordem = 3, Tamanho = 12, Obrigatorio = true)]
+    /// <summary>
+    /// Número do documento de importação. Tamanho máximo do leiaute vigente: 15 caracteres
+    /// (Guide 3.0.7 item 4, V016 — aumento de 12 para 15). Pacote read-only mantém o tamanho
+    /// mais recente — arquivos V015 com até 12 caracteres continuam parseáveis.
+    /// </summary>
+    [CampoSped(Ordem = 3, Tamanho = 15, Obrigatorio = true)]
     public string? NumDocImp { get; set; }
 
     /// <summary>Valor pago de PIS na importação.</summary>

@@ -4,11 +4,16 @@ Família de bibliotecas .NET para leitura, geração e manipulação tipada de a
 publicados pelos projetos do **SPED — Sistema Público de Escrituração Digital**
 (Receita Federal do Brasil).
 
-> Status atual: **0.3.0** publicado. Cobre EFD Contribuições V006 e EFD ICMS-IPI
-> baseline V306 — ambos com registros tipados, API pública de parser/gerador e
-> round-trip validado contra arquivos reais emitidos pelo PVA. Próximos passos
-> rastreados no `ARCHITECTURE.md` (incrementos V307+ do EFD ICMS-IPI e demais
-> projetos SPED). Veja o `CHANGELOG.md` para detalhes.
+> Status atual: **0.5.0** publicado. Cobre EFD Contribuições V006 (leitura + geração,
+> round-trip validado) e EFD ICMS-IPI baseline V015 + incrementos V016 → V020 (leiaute
+> vigente em 2026, **modo read-only** — parser e modelo tipado, sem geração). Os números
+> `006` (EFD Contribuições) e `015`–`020` (EFD ICMS-IPI) são o `COD_VER` do registro `0000`
+> de cada leiaute (não devem ser confundidos com a versão do Guia Prático). A `0.5.0` é
+> breaking — revisa a convenção de nomenclatura (verbos/factories em inglês, substantivos
+> do domínio em português) e adiciona helpers de persistência (`OfType<T>()`, `Batch(n)`,
+> `WithContext()`, dispatcher `IRegistroSpedVisitor`). Próximos passos rastreados no
+> `ARCHITECTURE.md` (ECD, ECF e pacotes XML — todos planejados como read-only). Veja o
+> `CHANGELOG.md` para detalhes.
 
 ## Visão geral
 
@@ -23,16 +28,31 @@ pacote afetado é versionado.
 
 | Projeto SPED | Pacote NuGet | Status |
 | --- | --- | --- |
-| EFD Contribuições | `TecnoFisc.Sped.EfdContribuicoes` | **0.3.0** — layout V006 completo |
-| EFD ICMS-IPI | `TecnoFisc.Sped.EfdIcmsIpi` | **0.3.0** — baseline V306 completo, round-trip validado contra arquivo real |
-| NF-e / NFC-e / CT-e / MDF-e | `TecnoFisc.Sped.NFe`, etc. | planejado |
-| eSocial / EFD-Reinf / ECD / ECF | pacotes próprios | planejado |
+| EFD Contribuições | `TecnoFisc.Sped.EfdContribuicoes` | **0.5.0** — leiaute V006 completo (leitura + geração) |
+| EFD ICMS-IPI | `TecnoFisc.Sped.EfdIcmsIpi` | **0.5.0** — baseline V015 + incrementos V016 → V020 (vigente), **read-only** |
+| ECD | `TecnoFisc.Sped.Ecd` | planejado (read-only) — baseline 2021 + incrementos até o leiaute vigente |
+| ECF | `TecnoFisc.Sped.Ecf` | planejado (read-only) |
+| NF-e | `TecnoFisc.Sped.NFe` | planejado (XML, read-only) |
+| NFC-e | `TecnoFisc.Sped.NFCe` | planejado (XML, read-only) |
+| CT-e | `TecnoFisc.Sped.CTe` | planejado (XML, read-only) |
+| Metapacote agregador | `TecnoFisc.Sped` | planejado — referencia todos os leiautes acima em uma única dependência |
+
+> **Modo de operação.** O único pacote com geração de arquivo confirmada é
+> `TecnoFisc.Sped.EfdContribuicoes` (leitura + escrita, round-trip simétrico). Todos
+> os demais — EFD ICMS-IPI, ECD, ECF, NF-e, NFC-e, CT-e — são planejados como
+> **read-only** (parser + modelo tipado). Promoção para read+write em qualquer um
+> deles depende de confirmação externa e entra como stage dedicada (`ARCHITECTURE.md` §2.5).
 
 `TecnoFisc.Sped.Core` é a infraestrutura compartilhada (value objects fiscais, parser/gerador
-genérico, abstrações de catálogo) consumida por todos os pacotes de leiaute.
-`TecnoFisc.Sped.Core.SourceGenerators` é o source generator que produz, em tempo de
-compilação, o catálogo estático de registros — referenciado como Analyzer pelos
-projetos de leiaute, não embarca no runtime do consumidor.
+genérico, abstrações de catálogo, identificador dinâmico de arquivos SPED) consumida por
+todos os pacotes de leiaute. `TecnoFisc.Sped.Core.SourceGenerators` é o source generator que
+produz, em tempo de compilação, o catálogo estático de registros — referenciado como
+Analyzer pelos projetos de leiaute, não embarca no runtime do consumidor.
+
+**Escopo definitivo.** A biblioteca cobre exatamente os sete leiautes listados na tabela
+acima mais o metapacote agregador. Outros projetos SPED (eSocial, EFD-Reinf, NFS-e, MDF-e,
+e-Financeira, DeRE, Central de Balanços) ficam **fora do escopo** e não serão
+implementados — ver `ARCHITECTURE.md` §3 para a tabela autoritativa.
 
 ## Quickstart
 
@@ -51,7 +71,7 @@ using TecnoFisc.Sped.EfdContribuicoes.Parser;
 var parser = new ParserEfdContribuicoes();
 await using var entrada = File.OpenRead("PISCOFINS-202401.txt");
 
-ArquivoEfdContribuicoes arquivo = await parser.LerAsync(entrada);
+ArquivoEfdContribuicoes arquivo = await parser.ReadAsync(entrada);
 
 foreach (var registro in arquivo.Bloco0.EnumerarRegistros())
     Console.WriteLine(registro.Codigo);
@@ -65,11 +85,98 @@ using TecnoFisc.Sped.EfdContribuicoes.Parser;
 var parser = new ParserEfdContribuicoes();
 await using var entrada = File.OpenRead("arquivo-grande.txt");
 
-await foreach (var registro in parser.LerStreamingAsync(entrada))
+await foreach (var registro in parser.ReadStreamingAsync(entrada))
 {
     // Um registro por vez. Memória usada não cresce com o tamanho do arquivo.
 }
 ```
+
+### Persistir em banco com `OfType<T>()` + `Batch(n)`
+
+`TecnoFisc.Sped.Core.Streaming` traz dois helpers que removem o boilerplate comum
+de ingestão SPED → banco. `OfType<T>` filtra o stream pelo tipo concreto sem cast
+manual; `Batch(n)` agrupa em lotes para bulk-insert.
+
+```csharp
+using TecnoFisc.Sped.Core.Streaming;
+using TecnoFisc.Sped.EfdContribuicoes.Parser;
+using TecnoFisc.Sped.EfdContribuicoes.Registros.BlocoC;
+
+var parser = new ParserEfdContribuicoes();
+await using var entrada = File.OpenRead("PISCOFINS-202401.txt");
+
+await foreach (var lote in parser.ReadStreamingAsync(entrada)
+                                 .OfType<RegistroC100>()
+                                 .Batch(1000))
+{
+    // lote é IReadOnlyList<RegistroC100> com até 1.000 registros tipados.
+    // Use com Dapper, EF Core AddRangeAsync, SqlBulkCopy, etc.
+    await conexao.BulkInsertAsync(lote);
+}
+```
+
+Memória continua bounded — `OfType` e `Batch` não bufferizam o arquivo inteiro;
+apenas o lote corrente fica em memória. Pattern matching do `OfType` é resolvido
+em compile-time (zero reflection, zero boxing).
+
+### IDs surrogate para FK com `WithContext()`
+
+Para modelos relacionais é comum precisar de PK/FK consistentes ao inserir o
+registro pai antes do filho. `WithContext()` enriquece o stream com um
+`ContextoPersistencia` contendo o ID surrogate do registro atual e o ID do
+pai já emitido.
+
+```csharp
+using TecnoFisc.Sped.Core.Streaming;
+using TecnoFisc.Sped.EfdContribuicoes.Parser;
+using TecnoFisc.Sped.EfdContribuicoes.Registros.BlocoC;
+
+await foreach (var (registro, ctx) in parser.ReadStreamingAsync(stream).WithContext())
+{
+    switch (registro)
+    {
+        case RegistroC100 c100:
+            await conexao.ExecuteAsync(
+                "INSERT INTO docs (id, num_doc, vl_doc) VALUES (@id, @n, @v)",
+                new { id = ctx.IdRegistroAtual, n = c100.NumDoc, v = c100.VlDoc });
+            break;
+        case RegistroC170 c170:
+            await conexao.ExecuteAsync(
+                "INSERT INTO itens (id, doc_id, num_item) VALUES (@id, @doc, @n)",
+                new { id = ctx.IdRegistroAtual, doc = ctx.IdPai, n = c170.NumItem });
+            break;
+    }
+}
+```
+
+`ctx.IdPai` é `null` para registros raiz (`0000`, `9990`, `9999`). Para retomar
+import multi-arquivo sem colidir com IDs já persistidos, use o overload
+`WithContext(startAt: <ultimo-id-do-arquivo-anterior + 1>)`.
+
+### Visitor dispatcher tipado (source-generated)
+
+Para processar muitos tipos de registro sem escrever um `switch` de 200+ casos,
+implemente a interface `IRegistroSpedVisitor` (emitida pelo source generator
+no namespace `<Projeto>.Generated`). Cada overload `VisitAsync(TipoConcreto)`
+tem implementação default vazia — sobrescreva só o que importa. O despacho via
+`DispatchAsync()` é resolvido em compile-time (zero reflection).
+
+```csharp
+using TecnoFisc.Sped.EfdContribuicoes.Generated;
+
+public sealed class GravadorBanco : IRegistroSpedVisitor
+{
+    public ValueTask VisitAsync(Registro0000 r, CancellationToken ct) { /* INSERT escrituracoes */ return default; }
+    public ValueTask VisitAsync(RegistroC100 r, CancellationToken ct) { /* INSERT docs */ return default; }
+    public ValueTask VisitAsync(RegistroC170 r, CancellationToken ct) { /* INSERT itens */ return default; }
+    // Demais registros: default vazio, ignorados sem nada a fazer.
+}
+
+await parser.ReadStreamingAsync(stream).DispatchAsync(new GravadorBanco());
+```
+
+Registros de outros assemblies (caso o consumidor componha streams de
+projetos diferentes) caem no `VisitUnknownAsync(RegistroSped)`.
 
 ### Geração
 
@@ -80,7 +187,7 @@ using TecnoFisc.Sped.EfdContribuicoes.Gerador;
 var gerador = new GeradorEfdContribuicoes();
 await using var saida = File.Create("saida.txt");
 
-await gerador.EscreverAsync(saida, arquivo);
+await gerador.WriteAsync(saida, arquivo);
 ```
 
 O gerador injeta automaticamente os totalizadores `X990` (encerramento por bloco)
@@ -98,8 +205,11 @@ e `9999` (contagem global) — basta entregar a árvore de registros.
   no caminho quente.
 - **Tipagem forte de ponta a ponta.** Consumidores nunca lidam com `string` ou
   `string[]` — recebem `Cnpj`, `Cfop`, `DateOnly`, `decimal`, enums.
-- **Round-trip simétrico.** Ler → gerar → ler precisa devolver o mesmo arquivo
-  (modulo normalizações deliberadas). Invariante coberta por testes.
+- **Round-trip simétrico onde há geração.** Nos pacotes read+write (hoje apenas
+  `EfdContribuicoes`), ler → gerar → ler precisa devolver o mesmo arquivo (modulo
+  normalizações deliberadas). Invariante coberta por testes. Nos pacotes read-only
+  (EFD ICMS-IPI; ECD/ECF/NFe/NFCe/CTe planejados), a invariante é apenas leitura
+  estável: a mesma entrada sempre produz o mesmo modelo tipado.
 
 ## Arquivos assinados pelo PVA
 
@@ -144,10 +254,11 @@ dotnet run -c Release --project benchmarks/TecnoFisc.Sped.Benchmarks -- --probe 
 ```text
 TecnoFisc.Sped/
 ├── src/
-│   ├── TecnoFisc.Sped.Core/                  # Value objects fiscais + infra compartilhada
+│   ├── TecnoFisc.Sped.Core/                  # Value objects fiscais + infra compartilhada + sniffer
 │   ├── TecnoFisc.Sped.Core.SourceGenerators/ # Source generator do catálogo (analyzer)
-│   ├── TecnoFisc.Sped.EfdContribuicoes/      # Layout EFD Contribuições V006
-│   └── TecnoFisc.Sped.EfdIcmsIpi/            # Layout EFD ICMS-IPI baseline V306
+│   ├── TecnoFisc.Sped.EfdContribuicoes/      # Leiaute EFD Contribuições V006
+│   └── TecnoFisc.Sped.EfdIcmsIpi/            # Leiaute EFD ICMS-IPI baseline V015 + V016-V020 (read-only)
+│   # Stages futuros (planejados): Ecd, Ecf, NFe, NFCe, CTe + metapacote TecnoFisc.Sped
 ├── tests/
 │   ├── TecnoFisc.Sped.Core.Tests/
 │   ├── TecnoFisc.Sped.EfdContribuicoes.Tests/
@@ -155,9 +266,9 @@ TecnoFisc.Sped/
 ├── benchmarks/
 │   └── TecnoFisc.Sped.Benchmarks/            # BenchmarkDotNet (.NET 10)
 ├── sped/
-│   ├── STAGE_4_REGISTROS.md                  # Decomposição do Stage 4 em sub-stages
+│   ├── STAGE_4_REGISTROS.md                  # Decomposição do Stage 4 (EFD Contribuições)
+│   ├── STAGE_8_EFD_ICMS_IPI_V015.md          # Decomposição do Stage 8 (EFD ICMS-IPI V015)
 │   └── guides/                               # PDFs oficiais Receita Federal (gitignored)
-│       └── Guia_Pratico_EFD_Contribuicoes_*.pdf
 ├── ARCHITECTURE.md                           # Documento mestre (inglês, para LLMs)
 ├── CHANGELOG.md                              # Notas de release por pacote
 └── CLAUDE.md                                 # Instruções para Claude Code
@@ -165,10 +276,15 @@ TecnoFisc.Sped/
 
 ## Convenções
 
-- **Português** para conceitos SPED: classes de registro (`Registro0000`,
-  `RegistroC100`), value objects fiscais (`Cnpj`, `Cfop`, `Ncm`),
-  campos (`IndOper`, `VlDoc`), métodos de domínio (`LerArquivo`, `EscreverArquivo`).
-- **Inglês** para infraestrutura técnica universal: `Parser`, `Generator`,
+- **Português** para **substantivos** do domínio SPED: classes de registro
+  (`Registro0000`, `RegistroC100`), value objects fiscais (`Cnpj`, `Cfop`, `Ncm`),
+  enums fiscais (`IndicadorOperacao`, `ModeloDocumento`), campos (`IndOper`, `VlDoc`),
+  tipos top-level (`ArquivoEfdContribuicoes`, `BlocoC`).
+- **Inglês** para **verbos**, factories estáticos e predicados booleanos:
+  `Cnpj.Create(...)`, `parser.ReadAsync(...)`, `parser.ReadStreamingAsync(...)`,
+  `gerador.WriteAsync(...)`, `cfop.IsEntrada`, `inscricao.IsIsento`,
+  `CodigosUf.IsValid(uf)`.
+- **Inglês** também para infraestrutura técnica universal: `Parser`, `Generator`,
   `Reader`, `Writer`, `Builder`, tipos da BCL, palavras-chave de C#.
 - Encoding dos `.txt` SPED: **Latin1 / Windows-1252**. UTF-8 apenas para os
   pacotes XML (família NF-e).

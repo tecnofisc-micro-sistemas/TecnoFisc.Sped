@@ -56,7 +56,7 @@ public sealed class RoundTripFixtureRealTests
             using var entrada = new MemoryStream(bytesCrus, writable: false);
 
             var registros = new List<TecnoFisc.Sped.Core.Abstracoes.RegistroSped>();
-            await foreach (var registro in parser.LerStreamingAsync(entrada, TestContext.Current.CancellationToken))
+            await foreach (var registro in parser.ReadStreamingAsync(entrada, TestContext.Current.CancellationToken))
                 registros.Add(registro);
 
             registros.Should().NotBeEmpty(because: $"fixture {Path.GetFileName(caminhoFixture)} deve produzir registros");
@@ -105,10 +105,10 @@ public sealed class RoundTripFixtureRealTests
         var parser = new ParserEfdContribuicoes();
         var gerador = new GeradorEfdContribuicoes();
 
-        var arquivo1 = await CarregarAsync(parser, bytesOriginais);
+        var arquivo1 = await LoadAsync(parser, bytesOriginais);
         var bytesGerados = await SerializarAsync(gerador, arquivo1);
 
-        var arquivo2 = await CarregarAsync(parser, bytesGerados);
+        var arquivo2 = await LoadAsync(parser, bytesGerados);
         var bytesDuplos = await SerializarAsync(gerador, arquivo2);
 
         // Parser não perde registros entre os dois passes.
@@ -134,12 +134,12 @@ public sealed class RoundTripFixtureRealTests
             because: $"parser deve materializar uma instância por linha SPED ({linhasOriginais} linhas no original — {Path.GetFileName(caminhoFixture)})");
     }
 
-    private static async Task<ArquivoEfdContribuicoes> CarregarAsync(
+    private static async Task<ArquivoEfdContribuicoes> LoadAsync(
         ParserEfdContribuicoes parser, byte[] bytes)
     {
         using var entrada = new MemoryStream(bytes, writable: false);
-        return await ArquivoEfdContribuicoes.CarregarAsync(
-            parser.LerStreamingAsync(entrada, TestContext.Current.CancellationToken),
+        return await ArquivoEfdContribuicoes.LoadAsync(
+            parser.ReadStreamingAsync(entrada, TestContext.Current.CancellationToken),
             TestContext.Current.CancellationToken);
     }
 
@@ -147,7 +147,7 @@ public sealed class RoundTripFixtureRealTests
         GeradorEfdContribuicoes gerador, ArquivoEfdContribuicoes arquivo)
     {
         using var saida = new MemoryStream();
-        await gerador.EscreverAsync(saida, arquivo.EnumerarRegistros(), TestContext.Current.CancellationToken);
+        await gerador.WriteAsync(saida, arquivo.EnumerarRegistros(), TestContext.Current.CancellationToken);
         return saida.ToArray();
     }
 

@@ -25,11 +25,11 @@ public sealed class RoundTripTests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(spedOriginal));
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(entrada, TestContext.Current.CancellationToken))
+        await foreach (var registro in leitor.ReadStreamingAsync(entrada, TestContext.Current.CancellationToken))
             registros.Add(registro);
 
         using var saida = new MemoryStream();
-        await escritor.EscreverAsync(saida, registros, TestContext.Current.CancellationToken);
+        await escritor.WriteAsync(saida, registros, TestContext.Current.CancellationToken);
 
         return EncodingSped.Latin1.GetString(saida.ToArray());
     }
@@ -94,15 +94,15 @@ public sealed class RoundTripTests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var primeira = new List<RegistroSped>();
-        await foreach (var r in leitor.LerStreamingAsync(entrada, ct))
+        await foreach (var r in leitor.ReadStreamingAsync(entrada, ct))
             primeira.Add(r);
 
         using var meio = new MemoryStream();
-        await escritor.EscreverAsync(meio, primeira, ct);
+        await escritor.WriteAsync(meio, primeira, ct);
         meio.Position = 0;
 
         var segunda = new List<RegistroSped>();
-        await foreach (var r in leitor.LerStreamingAsync(meio, ct))
+        await foreach (var r in leitor.ReadStreamingAsync(meio, ct))
             segunda.Add(r);
 
         segunda.Select(r => r.Codigo).Should().Equal(primeira.Select(r => r.Codigo));
@@ -152,7 +152,7 @@ public sealed class RoundTripTests
                 DtIni = new DateOnly(2025, 1, 1),
                 DtFin = new DateOnly(2025, 1, 31),
                 Nome = "EMPRESA",
-                Cnpj = Cnpj.Criar("11222333000181"),
+                Cnpj = Cnpj.Create("11222333000181"),
             },
             new RegistroC001Sintetico { IndMov = 0 },
             new RegistroC100Sintetico
@@ -160,7 +160,7 @@ public sealed class RoundTripTests
                 IndOper = "0",
                 CodPart = 1,
                 VlDoc = 100m,
-                Cfop = Cfop.Criar("5102"),
+                Cfop = Cfop.Create("5102"),
             },
         };
 
@@ -177,7 +177,7 @@ public sealed class RoundTripTests
 
         var escritor = new EscritorSpedTxt(_catalogo);
         using var fluxo = new MemoryStream();
-        await escritor.EscreverAsync(fluxo, comFechadores, TestContext.Current.CancellationToken);
+        await escritor.WriteAsync(fluxo, comFechadores, TestContext.Current.CancellationToken);
 
         var texto = EncodingSped.Latin1.GetString(fluxo.ToArray());
 

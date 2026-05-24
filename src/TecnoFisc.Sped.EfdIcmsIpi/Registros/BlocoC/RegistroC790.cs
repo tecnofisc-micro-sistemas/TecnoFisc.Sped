@@ -11,6 +11,16 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoC;
 /// Filho do C700. Nível hierárquico 3, ocorrência 1:N.
 /// Conforme Guia Prático EFD-ICMS/IPI V3.0.6, pp. 149-150.
 /// </summary>
+/// <remarks>
+/// <b>V017 (Guide 3.1.2 item 1):</b> passa a admitir também a NF3-e (modelo 66) no
+/// agrupamento consolidado do registro pai C700.
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// <para>
+/// <b>V017 (Guide 3.1.4 item 3):</b> nova orientação determinando que NF3-e (modelo 66)
+/// sem CST e sem energia injetada não deve ser escriturada neste registro analítico.
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </para>
+/// </remarks>
 [RegistroSped(Codigo = "C790", Nivel = 3, Bloco = "C")]
 public sealed partial class RegistroC790 : RegistroSped
 {

@@ -6,15 +6,109 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ## [Não publicado]
 
+## [0.5.0] — 2026-05-24
+
+Release breaking. Revisa a convenção de nomenclatura da API pública (verbos, factories estáticos e predicados booleanos passam a usar inglês idiomático; substantivos do domínio SPED permanecem em português) e adiciona três helpers de persistência sobre o `IAsyncEnumerable<RegistroSped>` produzido pelos parsers: `OfType<T>()`, `Batch(n)` e `WithContext()`, mais um dispatcher Visitor source-generated por leiaute.
+
+### Documentação
+
+#### Alterado (breaking)
+
+- Convenção de nomenclatura revisada (ARCHITECTURE §1.3): verbos, factories estáticos e predicados booleanos passam a usar inglês idiomático; substantivos do domínio SPED permanecem em português. API pública renomeada — ver detalhes abaixo.
+
+### TecnoFisc.Sped.Core 0.5.0
+
+#### Adicionado
+
+- Namespace `TecnoFisc.Sped.Core.Streaming` com dois extension methods sobre o `IAsyncEnumerable<RegistroSped>` produzido pelos parsers: `OfType<T>()` filtra pelo tipo concreto de registro (zero reflection — pattern matching resolvido em compile-time) e `Batch(int size)` agrupa em lotes para bulk-insert em banco (EF Core `AddRangeAsync`, Dapper, `SqlBulkCopy`). Cobre o caso de uso mais comum de ingestão SPED → banco sem o consumidor precisar implementar boilerplate de cast + buffer manual. Memória continua bounded — só o lote corrente fica em memória. (#414)
+- `WithContext()` (mesmo namespace) enriquece o stream com `ContextoPersistencia { IdRegistroAtual, IdPai }` contendo IDs surrogate sequenciais já amarrados à hierarquia. Resolve persistência relacional (PK/FK) sem o consumidor precisar manter stack manual de IDs. Overload `WithContext(startAt: ...)` permite retomar import multi-arquivo. (#416)
+
+#### Alterado (breaking)
+
+- Value objects: `Criar` → `Create` em `Cnpj`, `Cpf`, `Cfop`, `Ncm`, `Cst`, `ChaveAcesso`, `InscricaoEstadual`, `ModeloDocumento`, `GeneroItem`.
+- `Cfop.EhEntrada` / `Cfop.EhSaida` → `Cfop.IsEntrada` / `Cfop.IsSaida`.
+- `InscricaoEstadual.EhIsento` → `IsIsento`.
+- `CodigosUf.EhValido` → `IsValid`.
+- `ILeitorSped.LerStreamingAsync` / `LerAsync` → `ReadStreamingAsync` / `ReadAsync`. `LeitorSpedTxt` segue o mesmo.
+- `IEscritorSped.EscreverAsync` → `WriteAsync`. `EscritorSpedTxt` segue.
+- `CatalogoBuilder.ConstruirMetadadosDoTipo` → `BuildMetadataForType`.
+
+### TecnoFisc.Sped.EfdContribuicoes 0.5.0
+
+#### Alterado (breaking)
+
+- `ParserEfdContribuicoes.LerAsync` / `LerStreamingAsync` → `ReadAsync` / `ReadStreamingAsync`.
+- `GeradorEfdContribuicoes.EscreverAsync` → `WriteAsync`.
+- `ArquivoEfdContribuicoes.CarregarAsync` → `LoadAsync`.
+
+### TecnoFisc.Sped.EfdIcmsIpi 0.5.0
+
+#### Alterado (breaking)
+
+- `ParserEfdIcmsIpi.LerAsync` / `LerStreamingAsync` → `ReadAsync` / `ReadStreamingAsync`.
+- `ArquivoEfdIcmsIpi.CarregarAsync` → `LoadAsync` (se aplicável).
+
+### TecnoFisc.Sped.Core.SourceGenerators 0.5.0
+
+#### Adicionado
+
+- Source generator passa a emitir, por assembly consumidor, uma interface `IRegistroSpedVisitor` com um overload `VisitAsync(TipoConcreto)` default vazio para cada classe decorada com `[RegistroSped]`, mais `VisitUnknownAsync(RegistroSped)` para registros fora do assembly. Acompanha extension `RegistroSpedVisitorExtensions.DispatchAsync(IAsyncEnumerable<RegistroSped>, IRegistroSpedVisitor, CancellationToken)` que despacha cada registro para o overload correto via `switch` resolvido em compile-time. Permite ao consumidor evitar o `switch` gigante (200+ casos no EFD Contribuições, 255+ no EFD ICMS-IPI) sobrescrevendo apenas os tipos que importam. Zero reflection, zero boxing. (#415)
+
+#### Alterado (breaking)
+
+- Código gerado passa a invocar `Create` em vez de `Criar` nos value objects.
+
+## [0.4.0] — 2026-05-24
+
+Consolida três incrementos do leiaute EFD ICMS-IPI (V018, V019, V020 — vigente em 2026) e oficializa o pacote como **read-only**, alinhado ao caso de uso real (ingestão rápida + modelo tipado). Também esclarece o escopo dos pacotes XML (NF-e, NFC-e, CT-e), que passam a ser planejados também como read-only — o único pacote SPED com geração de arquivo confirmada permanece sendo o `TecnoFisc.Sped.EfdContribuicoes`.
+
+### TecnoFisc.Sped.EfdIcmsIpi 0.4.0
+
+#### Adicionado
+
+- Suporte ao leiaute **V018** (Guias Práticos 3.1.5/3.1.6, vigência fiscal jan/2024): novos campos 21-23 `QTD_RESIDUO_DDG/WDG/CANA` no `Registro1391` e doc-comments mecânicos cobrindo NF3-e (modelo 66 no `RegistroC700`), Convênio 115/03 e escrituração consolidada NFCom (`D700`/`D730`/`D750`/`D760`), com reflexos nas apurações `E110`/`E113`/`E210`/`E240` e no `Registro1400`.
+- Suporte ao leiaute **V019** (Guias Práticos 3.1.7/3.1.8/3.1.9, vigência fiscal jan/2025): novo campo `DED` (valor das deduções) em `RegistroD700` (32) e `RegistroD750` (17), e doc-comments mecânicos cobrindo CT-e Simplificado (`D130`), DSI no `C120`, observação sobre Reforma Tributária do Consumo (IBS/CBS/IS) no `C100`/`C190`, DIFAL EC 87/2015 no `0150` e revisões de obrigatoriedade/validação em `C700`/`D100`/`E113`/`D700`/`D750`.
+- Suporte ao leiaute **V020** (Guias Práticos 3.2.0/3.2.1/3.2.2, vigência fiscal jan/2026 — leiaute vigente): novo campo `CAP_TANQUE` (capacidade do tanque em litros) em `Registro1310` (11) e doc-comments mecânicos cobrindo Reforma Tributária do Consumo + Ajuste SINIEF 49/25 no `C100`, orientações de preenchimento em `0150`/`D100`/`D700`/`K230` e mudança de tipo N→C do campo `SER` no `D700` (já modelado lazy como `string?` desde V017).
+
+#### Alterado (breaking)
+
+- Pacote passa a ser **read-only** (ARCHITECTURE §2.5). API pública `GeradorEfdIcmsIpi` removida; `IEscritorSped` deixa de ser implementado neste pacote. Consumidores que precisam emitir arquivos EFD ICMS-IPI devem usar o PVA da Receita ou outro caminho — o propósito do pacote é ingestão rápida + modelo tipado.
+- `[Descontinuado(EmVersao=...)]` vira informacional no read path — registros descontinuados continuam sendo reconhecidos pelo parser para que arquivos históricos sejam lidos sem erro de leiaute.
+- Testes de round-trip parse → generate → parse removidos (`RoundTripFixtureRealTests` renomeado para `ParserFixtureRealTests`, cobrindo apenas o caminho de leitura).
+
+### Documentação
+
+#### Alterado
+
+- `ARCHITECTURE.md` §2.5 e §4.7, `README.md` e `CLAUDE.md` atualizados para refletir que os pacotes XML planejados (`TecnoFisc.Sped.NFe`, `NFCe`, `CTe`) também serão **read-only**. O caso de uso confirmado nos três é ingestão de XMLs já emitidos (parser + validação de assinatura + modelo tipado). Geração/emissão para SEFAZ depende de confirmação externa e, quando ocorrer, entra como stage dedicada (igual a ECD/ECF). Resultado: o único pacote SPED com geração de arquivo confirmada hoje é `TecnoFisc.Sped.EfdContribuicoes`.
+- Stages 14/15/16 (NFe/NFCe/CTe) em `ARCHITECTURE.md` reescritos como pacotes read-only — `GeradorNFe`/`GeradorNFCe`/`GeradorCTe` saem do escopo inicial.
+- README do repositório atualizado para refletir EFD ICMS-IPI 0.4.0 (V015 baseline + V016-V020 incrementos, parser apenas) e marcar pacotes XML como `planejado (XML, read-only)`.
+
+## [0.3.1] — 2026-05-17
+
+Corrige nomenclatura das versões do leiaute EFD ICMS-IPI: o que estava sendo chamado de `V306` é, na verdade, o leiaute **V015** (`COD_VER` do registro `0000`, conforme Tabela "Versão do Leiaute" da Nota Técnica EFD ICMS-IPI nº 2020.001 — Ato COTEPE/ICMS nº 44/2018). O número `306` é a versão do Guia Prático (3.0.6) que descreve o leiaute, não o leiaute em si. Múltiplas versões do Guia (3.0.6, 3.1.x, 3.2.x) descrevem o mesmo leiaute 015.
+
+### TecnoFisc.Sped.EfdIcmsIpi 0.3.1
+
+#### Alterado (breaking)
+
+- Enum público `LayoutEfdIcmsIpi`: constante `V306` renomeada para `V015` (valor `306` → `15`). As 16 constantes anteriormente listadas como `V307`..`V322` foram removidas — elas mapeavam atualizações textuais do Guia Prático, não leiautes. Incrementos reais (`V016`, `V017`, …) serão adicionados conforme a Receita publicar novas Notas Técnicas com leiaute novo.
+- Documentação (`ARCHITECTURE.md` §12, `README.md`, `CLAUDE.md`, `sped/STAGE_8_EFD_ICMS_IPI_V015.md`) reescrita para distinguir versão do leiaute (`COD_VER` do `0000`) de versão do Guia Prático.
+
+#### Notas de migração
+
+- Consumidores que usavam `LayoutEfdIcmsIpi.V306` devem trocar para `LayoutEfdIcmsIpi.V015`. Nenhum impacto em arquivos SPED gerados/lidos — o `COD_VER` correto no registro `0000` sempre foi `015`.
+- Tracking file `sped/STAGE_8_EFD_ICMS_IPI_V306.md` renomeado para `sped/STAGE_8_EFD_ICMS_IPI_V015.md`.
+
 ## [0.3.0] — 2026-05-17
 
-Conclui a Stage 8 baseline do `ARCHITECTURE.md`: EFD ICMS-IPI layout V306 com todos os 255 registros tipados, API pública de parser/gerador e validação round-trip end-to-end contra arquivo real emitido pelo PVA da Receita.
+Conclui a Stage 8 baseline do `ARCHITECTURE.md`: EFD ICMS-IPI leiaute V015 (`COD_VER` do registro `0000`) com todos os 255 registros tipados, API pública de parser/gerador e validação round-trip end-to-end contra arquivo real emitido pelo PVA da Receita. *Nota: esta release foi originalmente publicada referindo-se ao leiaute como "V306"; ver release 0.3.1 para a correção de nomenclatura.*
 
 ### TecnoFisc.Sped.EfdIcmsIpi 0.3.0
 
 #### Adicionado
 
-- Pacote novo. Cobre a Stage 8 baseline V306 (Ato COTEPE/ICMS nº 44/2018, Guia Prático v3.0.6): 255 registros distribuídos nos 10 blocos (`0`, `B`, `C`, `D`, `E`, `G`, `H`, `K`, `1`, `9`), com `[RegistroSped]`/`[CampoSped]` declarados, validação de níveis hierárquicos e fixtures por bloco.
+- Pacote novo. Cobre a Stage 8 baseline V015 (Ato COTEPE/ICMS nº 44/2018, NT 2020.001, descrito no Guia Prático v3.0.6 e posteriores): 255 registros distribuídos nos 10 blocos (`0`, `B`, `C`, `D`, `E`, `G`, `H`, `K`, `1`, `9`), com `[RegistroSped]`/`[CampoSped]` declarados, validação de níveis hierárquicos e fixtures por bloco.
 - API pública: `ArquivoEfdIcmsIpi`, `BlocoEfdIcmsIpi`, `ParserEfdIcmsIpi`, `GeradorEfdIcmsIpi`. Espelha o contrato de `EfdContribuicoes` — leitura streaming via `IAsyncEnumerable<RegistroSped>`, leitura buffered para o modelo tipado, escrita pipe-delimitada em Latin1/Windows-1252.
 - Validação round-trip end-to-end (`RoundTripFixtureRealTests`) contra arquivo SPED real emitido pelo PVA, exercitando os 10 blocos. Invariante: `parse → serialize → parse → serialize` é byte-idêntica entre as duas passagens de serialização.
 - Suporte para o registro `9999` final seguido de bloco PKCS#7 anexo: parser encerra silenciosamente no marcador `|9999|` e descarta o trailer binário da assinatura digital do PVA, sem perder registros nem cuspir erro de layout.
@@ -126,6 +220,10 @@ Release inicial. Conclui a Stage 4 de `ARCHITECTURE.md`: implementação complet
 - API streaming (`IAsyncEnumerable<RegistroSped>`) é objetivo da Stage 5 e não está disponível neste release.
 - Suporte a leiautes mais novos (V007+) entra na Stage 7.
 
-[Não publicado]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/compare/v0.2.0...HEAD
+[Não publicado]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/releases/tag/v0.5.0
+[0.4.0]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/releases/tag/v0.4.0
+[0.3.1]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/releases/tag/v0.3.1
+[0.3.0]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/releases/tag/v0.3.0
 [0.2.0]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/releases/tag/v0.2.0
 [0.1.0]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/releases/tag/v0.1.0

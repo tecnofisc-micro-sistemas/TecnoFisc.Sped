@@ -25,11 +25,11 @@ public sealed class RegistroC175Tests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+        await foreach (var registro in leitor.ReadStreamingAsync(entrada, cancelamento))
             registros.Add(registro);
 
         using var saida = new MemoryStream();
-        await escritor.EscreverAsync(saida, registros, cancelamento);
+        await escritor.WriteAsync(saida, registros, cancelamento);
 
         return EncodingSped.Latin1.GetString(saida.ToArray());
     }
@@ -69,7 +69,7 @@ public sealed class RegistroC175Tests
         meta.Campos[3].Definidor(registro, "9BWZZZ377VT004251".AsSpan());    // ChassiVeic
 
         registro.IndVeicOper.Should().Be(IndicadorOperacaoVeiculo.FaturamentoDireto);
-        registro.Cnpj.Should().Be(Cnpj.Criar("11222333000181"));
+        registro.Cnpj.Should().Be(Cnpj.Create("11222333000181"));
         registro.Uf.Should().Be("SP");
         registro.ChassiVeic.Should().Be("9BWZZZ377VT004251");
     }

@@ -26,11 +26,11 @@ public sealed class Registro1926Tests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+        await foreach (var registro in leitor.ReadStreamingAsync(entrada, cancelamento))
             registros.Add(registro);
 
         using var saida = new MemoryStream();
-        await escritor.EscreverAsync(saida, registros, cancelamento);
+        await escritor.WriteAsync(saida, registros, cancelamento);
 
         return EncodingSped.Latin1.GetString(saida.ToArray());
     }
@@ -56,7 +56,8 @@ public sealed class Registro1926Tests
             "CodOr", "VlOr", "DtVcto", "CodRec", "NumProc", "IndProc", "Proc", "TxtCompl", "MesRef",
         ]);
         meta.Campos.Select(c => c.Ordem).Should().Equal(Enumerable.Range(2, 9));
-        meta.Campos.Select(c => c.Tamanho).Should().Equal([3, 0, 8, 0, 15, 1, 0, 0, 6]);
+        // Campo 06 (NumProc) Tam 15→60 em V017 (Guia Pratico 3.1.0 itens 8-10).
+        meta.Campos.Select(c => c.Tamanho).Should().Equal([3, 0, 8, 0, 60, 1, 0, 0, 6]);
         meta.Campos.Select(c => c.Decimais).Should().Equal([0, 2, 0, 0, 0, 0, 0, 0, 0]);
         meta.Campos.Where(c => c.Obrigatorio).Select(c => c.Nome)
             .Should().Equal(["CodOr", "VlOr", "DtVcto", "CodRec", "MesRef"]);

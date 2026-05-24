@@ -17,6 +17,10 @@ public sealed partial class RegistroC480 : RegistroSped
     public override string Codigo => "C480";
 
     /// <summary>Código do motivo da restituição ou complementação conforme Tabela 5.7.</summary>
+    /// <remarks>
+    /// <b>V017 (Guide 3.1.0 item 6):</b> nova validação no campo 02 <c>COD_MOT_REST_COMPL</c>.
+    /// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+    /// </remarks>
     [CampoSped(Ordem = 2, Tamanho = 5, Obrigatorio = true)]
     public string? CodMotRestCompl { get; set; }
 

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>Implementação .NET do layout EFD ICMS-IPI (Escrituração Fiscal Digital) — leitura, escrita e modelo tipado dos registros publicados pela Receita Federal. Suporta as versões V306 a V322 cobertas pela janela fiscal de 5 anos.</Description>
+    <Description>Implementação .NET do layout EFD ICMS-IPI (Escrituração Fiscal Digital) — leitura, escrita e modelo tipado dos registros publicados pela Receita Federal. Cobre o leiaute V015 (Nota Técnica EFD ICMS-IPI nº 2020.001, vigente a partir de janeiro/2021) dentro da janela fiscal de 5 anos. Incrementos posteriores (V016+) entram conforme novas Notas Técnicas são publicadas.</Description>
     <PackageId>TecnoFisc.Sped.EfdIcmsIpi</PackageId>
     <PackageTags>sped;efd-icms-ipi;icms;ipi;fiscal;brasil;tecnofisc</PackageTags>
   </PropertyGroup>

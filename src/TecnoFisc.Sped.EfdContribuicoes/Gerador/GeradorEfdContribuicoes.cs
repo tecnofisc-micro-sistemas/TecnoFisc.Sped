@@ -33,19 +33,19 @@ public sealed class GeradorEfdContribuicoes : IEscritorSped
     }
 
     /// <inheritdoc />
-    public Task EscreverAsync(
+    public Task WriteAsync(
         Stream saida,
         IAsyncEnumerable<RegistroSped> registros,
         CancellationToken cancelamento = default)
-        => _escritor.EscreverAsync(saida, registros, cancelamento);
+        => _escritor.WriteAsync(saida, registros, cancelamento);
 
     /// <summary>
     /// Sobrecarga sobre <see cref="IEnumerable{RegistroSped}"/> para consumidores que já têm
     /// a coleção em memória (vinda, por exemplo, de <c>ArquivoEfdContribuicoes</c>).
     /// </summary>
-    public Task EscreverAsync(
+    public Task WriteAsync(
         Stream saida,
         IEnumerable<RegistroSped> registros,
         CancellationToken cancelamento = default)
-        => _escritor.EscreverAsync(saida, registros, cancelamento);
+        => _escritor.WriteAsync(saida, registros, cancelamento);
 }

@@ -8,7 +8,7 @@ using TecnoFisc.Sped.EfdIcmsIpi.Registros.Bloco9;
 namespace TecnoFisc.Sped.EfdIcmsIpi.Tests.Parser;
 
 /// <summary>
-/// Smoke do <see cref="ParserEfdIcmsIpi"/>: fachada do leiaute V306 que monta o
+/// Smoke do <see cref="ParserEfdIcmsIpi"/>: fachada do leiaute V015 que monta o
 /// catálogo de EFD ICMS-IPI e delega ao <see cref="LeitorSpedTxt"/> do Core.
 /// </summary>
 public sealed class ParserEfdIcmsIpiTests
@@ -20,7 +20,7 @@ public sealed class ParserEfdIcmsIpiTests
         ParserEfdIcmsIpi parser, string sped, CancellationToken cancelamento)
     {
         var registros = new List<RegistroSped>();
-        await foreach (var registro in parser.LerStreamingAsync(Fluxo(sped), cancelamento))
+        await foreach (var registro in parser.ReadStreamingAsync(Fluxo(sped), cancelamento))
             registros.Add(registro);
         return registros;
     }
@@ -121,7 +121,7 @@ public sealed class ParserEfdIcmsIpiTests
             "|9990|2|\r\n" +
             "|9999|6|\r\n";
 
-        var arquivo = await parser.LerAsync(Fluxo(sped), TestContext.Current.CancellationToken);
+        var arquivo = await parser.ReadAsync(Fluxo(sped), TestContext.Current.CancellationToken);
 
         arquivo.Bloco0.EnumerarRegistros().Should().HaveCount(2);
         arquivo.Bloco9.EnumerarRegistros().Should().HaveCount(4);

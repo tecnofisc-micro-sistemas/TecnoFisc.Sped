@@ -9,6 +9,10 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoE;
 /// Nível hierárquico 4, ocorrência 1:N por período. Conforme Guia Prático EFD-ICMS/IPI
 /// V3.0.6, p. 233-235.
 /// </summary>
+/// <remarks>
+/// <b>V016 (Guide 3.0.7 item 7):</b> validação alterada no campo 04 <c>COD_AJ</c>.
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </remarks>
 [RegistroSped(Codigo = "E530", Nivel = 4, Bloco = "E")]
 public sealed partial class RegistroE530 : RegistroSped
 {

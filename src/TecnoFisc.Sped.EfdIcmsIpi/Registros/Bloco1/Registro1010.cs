@@ -8,6 +8,12 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.Bloco1;
 /// Registro 1010 - Obrigatoriedade de Registros do Bloco 1. Nivel hierarquico 2,
 /// ocorrencia unica por arquivo. Conforme Guia Pratico EFD-ICMS/IPI V3.0.6, p. 268-269.
 /// </summary>
+/// <remarks>
+/// <b>V016 (Guide 3.0.7 item 21):</b> redação do campo 08 <c>IND_CART</c> reescrita
+/// (semântica de obrigatoriedade do registro 1600 quanto a vendas com cartão de
+/// crédito/débito — substituído pelo registro 1601 a partir de V016).
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </remarks>
 [RegistroSped(Codigo = "1010", Nivel = 2, Bloco = "1")]
 public sealed partial class Registro1010 : RegistroSped
 {

@@ -14,7 +14,7 @@ public readonly struct Cnpj : IEquatable<Cnpj>
 
     /// <summary>Cria um CNPJ a partir de uma string com ou sem máscara.</summary>
     /// <exception cref="FormatException">Quando o valor não é um CNPJ válido.</exception>
-    public static Cnpj Criar(ReadOnlySpan<char> valor)
+    public static Cnpj Create(ReadOnlySpan<char> valor)
     {
         if (!TentarCriar(valor, out var cnpj))
             throw new FormatException($"Valor não é um CNPJ válido: '{valor}'.");

@@ -1,5 +1,4 @@
 using TecnoFisc.Sped.Core.Catalogo;
-using TecnoFisc.Sped.EfdContribuicoes.Generated;
 
 namespace TecnoFisc.Sped.EfdContribuicoes.Tests.Catalogo;
 

@@ -11,11 +11,11 @@ public sealed class CfopTests
     [InlineData("7101", false, true)]
     public void Criar_ComCodigoValido_ClassificaEntradaOuSaida(string codigo, bool entrada, bool saida)
     {
-        var cfop = Cfop.Criar(codigo);
+        var cfop = Cfop.Create(codigo);
 
         cfop.ToString().Should().Be(codigo);
-        cfop.EhEntrada.Should().Be(entrada);
-        cfop.EhSaida.Should().Be(saida);
+        cfop.IsEntrada.Should().Be(entrada);
+        cfop.IsSaida.Should().Be(saida);
     }
 
     [Theory]
@@ -29,7 +29,7 @@ public sealed class CfopTests
     [InlineData("")]
     public void Criar_ComCodigoInvalido_LancaFormatException(string codigo)
     {
-        var act = () => Cfop.Criar(codigo);
+        var act = () => Cfop.Create(codigo);
 
         act.Should().Throw<FormatException>();
     }
@@ -40,7 +40,7 @@ public sealed class CfopTests
         Cfop cfop = default;
 
         cfop.ToString().Should().Be("0000");
-        cfop.EhEntrada.Should().BeFalse();
-        cfop.EhSaida.Should().BeFalse();
+        cfop.IsEntrada.Should().BeFalse();
+        cfop.IsSaida.Should().BeFalse();
     }
 }

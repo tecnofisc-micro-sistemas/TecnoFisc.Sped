@@ -8,7 +8,7 @@ public sealed class CnpjTests
     [InlineData(" 11.222.333/0001-81 ")]
     public void Criar_ComValorValido_RetornaCnpj(string entrada)
     {
-        var cnpj = Cnpj.Criar(entrada);
+        var cnpj = Cnpj.Create(entrada);
 
         cnpj.ToString().Should().Be("11222333000181");
         cnpj.ToStringFormatado().Should().Be("11.222.333/0001-81");
@@ -25,7 +25,7 @@ public sealed class CnpjTests
     [InlineData("")]
     public void Criar_ComValorInvalido_LancaFormatException(string entrada)
     {
-        var act = () => Cnpj.Criar(entrada);
+        var act = () => Cnpj.Create(entrada);
 
         act.Should().Throw<FormatException>();
     }
@@ -42,8 +42,8 @@ public sealed class CnpjTests
     [Fact]
     public void Equals_ComMesmosDigitos_RetornaTrue()
     {
-        var a = Cnpj.Criar("11222333000181");
-        var b = Cnpj.Criar("11.222.333/0001-81");
+        var a = Cnpj.Create("11222333000181");
+        var b = Cnpj.Create("11.222.333/0001-81");
 
         a.Should().Be(b);
         (a == b).Should().BeTrue();
@@ -53,7 +53,7 @@ public sealed class CnpjTests
     [Fact]
     public void ConversaoImplicita_ParaString_RetornaFormaCanonica()
     {
-        var cnpj = Cnpj.Criar("11.222.333/0001-81");
+        var cnpj = Cnpj.Create("11.222.333/0001-81");
 
         string s = cnpj;
 

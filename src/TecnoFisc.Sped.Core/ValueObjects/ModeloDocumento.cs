@@ -35,7 +35,7 @@ public readonly struct ModeloDocumento : IEquatable<ModeloDocumento>
     }
 
     /// <exception cref="FormatException">Quando o código não corresponde a nenhum modelo conhecido.</exception>
-    public static ModeloDocumento Criar(ReadOnlySpan<char> codigo)
+    public static ModeloDocumento Create(ReadOnlySpan<char> codigo)
     {
         if (!TentarCriar(codigo, out var modelo))
             throw new FormatException($"Modelo de documento desconhecido: '{codigo}'.");

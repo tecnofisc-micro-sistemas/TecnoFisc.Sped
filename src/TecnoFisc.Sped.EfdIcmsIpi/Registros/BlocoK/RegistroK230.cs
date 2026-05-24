@@ -8,6 +8,11 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoK;
 /// Nível hierárquico 3, ocorrência vários por registro K100. Conforme Guia Prático
 /// EFD-ICMS/IPI V3.0.6, p. 254-255.
 /// </summary>
+/// <remarks>
+/// <b>V020 (Guide 3.2.0 item 3):</b> nova orientação de preenchimento adicionada ao registro
+/// (não há mudança estrutural de campos).
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </remarks>
 [RegistroSped(Codigo = "K230", Nivel = 3, Bloco = "K")]
 public sealed partial class RegistroK230 : RegistroSped
 {

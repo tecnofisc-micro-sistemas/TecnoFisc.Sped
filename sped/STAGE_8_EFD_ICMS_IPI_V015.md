@@ -1,15 +1,17 @@
-# Stage 8 — EFD ICMS-IPI registros V306 (sub-stage decomposition)
+# Stage 8 — EFD ICMS-IPI registros V015 (sub-stage decomposition)
 
-> Operational appendix to `ARCHITECTURE.md` §12. **Scope: EFD ICMS-IPI baseline V306 only** (project `TecnoFisc.Sped.EfdIcmsIpi`, layout v3.0.6, guide `sped/guides/Guia Prático EFD - Versão 3.0.6.pdf`). Each row below is one sub-stage of Stage 8 baseline.
+> Operational appendix to `ARCHITECTURE.md` §12. **Scope: EFD ICMS-IPI baseline V015 only** (project `TecnoFisc.Sped.EfdIcmsIpi`, leiaute 015 — `COD_VER` do registro `0000` da Nota Técnica EFD ICMS-IPI nº 2020.001, descrito no Guia Prático `sped/guides/Guia Prático EFD - Versão 3.2.2.pdf`). Each row below is one sub-stage of Stage 8 baseline.
 >
-> Incrementos V307..V322 vivem em arquivos próprios (`STAGE_8_INCR_V307.md`, …, `STAGE_8_INCR_V322.md`), criados conforme cada versão é tackled. Eles **não** repetem a lista de registros; cada incremento descreve apenas o delta sobre a versão anterior (novos campos, novos registros, mudanças de obrigatoriedade) via `[CampoSped(DesdeVersao = (int)LayoutEfdIcmsIpi.VXXX)]` e `[RegistroSped(IntroduzidoEm = (int)LayoutEfdIcmsIpi.VXXX)]`.
+> **Versão do leiaute ≠ versão do Guia Prático.** O número `015` identifica o leiaute (Ato COTEPE/ICMS nº 44/2018 e alterações); a versão do Guia Prático (3.0.6, 3.1.x, 3.2.x) é apenas a publicação textual que descreve esse leiaute. Várias revisões do Guia podem descrever o mesmo leiaute. As páginas listadas referenciam o Guia Prático v3.2.2 (mais recente disponível em `sped/guides/`).
+>
+> Incrementos futuros (V016, V017, …) vivem em arquivos próprios (`STAGE_8_INCR_V016.md`, …), criados conforme cada novo leiaute é publicado pela Receita. Eles **não** repetem a lista de registros; cada incremento descreve apenas o delta sobre o leiaute anterior (novos campos, novos registros, mudanças de obrigatoriedade) via `[CampoSped(DesdeVersao = (int)LayoutEfdIcmsIpi.VXXX)]` e `[RegistroSped(IntroduzidoEm = (int)LayoutEfdIcmsIpi.VXXX)]`.
 >
 > Registros aqui são **independentes** dos homônimos em EFD Contribuições. `RegistroC100` em EFD ICMS-IPI e em EFD Contribuições são duas classes distintas em assemblies diferentes — campos, filhos, hierarquia e validações divergem. Compartilhamento só via `TecnoFisc.Sped.Core` (value objects fiscais transversais, enums regidos pelo Ato COTEPE/ICMS — EFD ICMS-IPI **é** o regente).
 
 ## How to use this document
 
 1. Pick the next un-implemented sub-stage (smallest 8.NNN com status `[ ]`).
-2. Abra `sped/guides/Guia Prático EFD - Versão 3.0.6.pdf` direto na página listada — não leia o guia inteiro. Use `Read` com `pages` (e.g., `pages: "59-64"` para `RegistroC100`). Alguns registros ocupam várias páginas; leia até o próximo header `REGISTRO NNNN`.
+2. Abra `sped/guides/Guia Prático EFD - Versão 3.2.2.pdf` direto na página listada — não leia o guia inteiro. Use `Read` com `pages` (e.g., `pages: "59-64"` para `RegistroC100`). Alguns registros ocupam várias páginas; leia até o próximo header `REGISTRO NNNN`.
 3. As páginas listadas são **anchored** quando observadas diretamente durante o bootstrap (ver "Página PDF" exata) e **estimadas** caso contrário (toleram ±2 páginas). Se a página estimada estiver vazia ou apontar para outro registro, role 1–3 páginas — a Tabela 2.6.1 (p303-320) é a fonte de ordem oficial.
 4. Implemente a classe sob a pasta do bloco correto (`Registros/Bloco0/`, `Registros/BlocoC/`, etc.) seguindo `ARCHITECTURE.md` (Portuguese para domínio, `partial class`, `[RegistroSped]`/`[CampoSped]`).
 5. Tests no projeto `tests/TecnoFisc.Sped.EfdIcmsIpi.Tests/`: validação de campos, round-trip (parse → generate → parse) e pelo menos uma fixture do exemplo do guia.
@@ -55,7 +57,7 @@ Cap: ~10 registros por PR batch. PR description lista todo `8.NNN` coberto.
 
 - **Classe:** `Registro<CODE>` (e.g., `Registro0000`, `RegistroC100`, `Registro1990`).
 - **Pasta:** `src/TecnoFisc.Sped.EfdIcmsIpi/Registros/Bloco<X>/` onde `<X>` é a letra/dígito do bloco.
-- **Layout version (baseline):** todas as linhas são V306. `[CampoSped]` e `[RegistroSped]` sem `DesdeVersao`/`IntroduzidoEm` (zero = baseline).
+- **Layout version (baseline):** todas as linhas são V015. `[CampoSped]` e `[RegistroSped]` sem `DesdeVersao`/`IntroduzidoEm` (zero = baseline).
 - **Encerramento (`X990`, `9990`, `9999`):** contadores triviais; só declaração de campos — `TotalizadorBlocos` (Stage 3) popula. Elegível para batching.
 - **Tests:** cobertura mínima por sub-stage descrita em `ARCHITECTURE.md` §13.3. Round-trip mandatório.
 
@@ -386,4 +388,4 @@ Block headers são informacionais; numeração é global e contígua (8.001 → 
 | 9 | 4 | 8.252 – 8.255 |
 | **Total** | **255** | **8.001 – 8.255** |
 
-Fonte oficial da ordem: Seção 2.6.1 do `Guia Prático EFD - Versão 3.0.6.pdf` (Tabela de Obrigatoriedade dos Registros, p303-320). Sub-stages numerados na ordem em que aparecem na tabela oficial.
+Fonte oficial da ordem: Seção 2.6.1 do `Guia Prático EFD - Versão 3.2.2.pdf` (Tabela de Obrigatoriedade dos Registros). Sub-stages numerados na ordem em que aparecem na tabela oficial.

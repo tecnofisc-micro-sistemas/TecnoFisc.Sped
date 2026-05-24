@@ -1,3 +1,5 @@
+using TecnoFisc.Sped.Core.Atributos;
+
 namespace TecnoFisc.Sped.Core.Enums;
 
 /// <summary>
@@ -24,10 +26,28 @@ public enum CodigoSituacaoDocumentoFiscal
     /// <summary>03 — Documento cancelado (extemporâneo).</summary>
     DocumentoCanceladoExtemporaneo = 3,
 
-    /// <summary>04 — NF-e denegada (somente para emissão própria).</summary>
+    /// <summary>
+    /// 04 — NF-e denegada (somente para emissão própria). Descontinuado em V017 do EFD
+    /// ICMS-IPI (Guia Prático 3.1.0 item 1, vigente a partir de janeiro/2023). Mantido
+    /// no enum para parsing de arquivos históricos — pacote é read-only (ARCHITECTURE
+    /// §4.7) e continua reconhecendo o código.
+    /// </summary>
+    // EmVersao = 17 corresponde a LayoutEfdIcmsIpi.V017 (COD_VER do registro 0000). Usa-se
+    // literal porque Core não pode depender de EfdIcmsIpi (Hard Rule 2 — sem referência
+    // entre projetos format-specific). Enum-of-versão regente fica no módulo do leiaute.
+    [Descontinuado(EmVersao = 17)]
     NfeDenegada = 4,
 
-    /// <summary>05 — NF-e com numeração inutilizada (somente para emissão própria).</summary>
+    /// <summary>
+    /// 05 — NF-e com numeração inutilizada (somente para emissão própria). Descontinuado
+    /// em V017 do EFD ICMS-IPI (Guia Prático 3.1.0 item 1, vigente a partir de
+    /// janeiro/2023). Mantido no enum para parsing de arquivos históricos — pacote é
+    /// read-only (ARCHITECTURE §4.7) e continua reconhecendo o código.
+    /// </summary>
+    // EmVersao = 17 corresponde a LayoutEfdIcmsIpi.V017 (COD_VER do registro 0000). Usa-se
+    // literal porque Core não pode depender de EfdIcmsIpi (Hard Rule 2 — sem referência
+    // entre projetos format-specific). Enum-of-versão regente fica no módulo do leiaute.
+    [Descontinuado(EmVersao = 17)]
     NumeracaoInutilizada = 5,
 
     /// <summary>06 — Documento Fiscal Complementar.</summary>

@@ -20,7 +20,11 @@ public sealed partial class Registro0000 : RegistroSped
     /// <inheritdoc />
     public override string Codigo => "0000";
 
-    /// <summary>Código da versão do leiaute conforme tabela indicada no Ato COTEPE (ex.: "306").</summary>
+    /// <inheritdoc />
+    public override int VersaoLeiaute =>
+        int.TryParse(CodVer, out var v) ? v : 0;
+
+    /// <summary>Código da versão do leiaute conforme tabela indicada no Ato COTEPE (ex.: "015").</summary>
     [CampoSped(Ordem = 2, Tamanho = 3, Obrigatorio = true)]
     public string? CodVer { get; set; }
 

@@ -40,7 +40,7 @@ public static class CatalogoBuilder
     /// de campos uma única vez na inicialização do catálogo. Reflexão fica fora da hot path
     /// de parsing porque os <see cref="MetadadosCampo"/> internos guardam delegates compilados.
     /// </summary>
-    public static MetadadosRegistro ConstruirMetadadosDoTipo(
+    public static MetadadosRegistro BuildMetadataForType(
         Type tipo,
         string codigo,
         int nivel,
@@ -90,6 +90,7 @@ public static class CatalogoBuilder
     {
         var fabrica = ConstruirFabrica(tipo);
         var campos = ConstruirCampos(tipo);
+        var descontinuado = tipo.GetCustomAttribute<DescontinuadoAttribute>(inherit: false);
         return new MetadadosRegistro(
             atributo.Codigo,
             atributo.Nivel,
@@ -97,7 +98,8 @@ public static class CatalogoBuilder
             tipo,
             fabrica,
             campos,
-            atributo.IntroduzidoEm);
+            atributo.IntroduzidoEm,
+            descontinuado?.EmVersao ?? 0);
     }
 
     private static Func<RegistroSped> ConstruirFabrica(Type tipo)

@@ -26,11 +26,11 @@ public sealed class RegistroD180Tests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+        await foreach (var registro in leitor.ReadStreamingAsync(entrada, cancelamento))
             registros.Add(registro);
 
         using var saida = new MemoryStream();
-        await escritor.EscreverAsync(saida, registros, cancelamento);
+        await escritor.WriteAsync(saida, registros, cancelamento);
 
         return EncodingSped.Latin1.GetString(saida.ToArray());
     }
@@ -93,7 +93,7 @@ public sealed class RegistroD180Tests
         registro.UfTom.Should().Be("RJ");
         registro.IeTom.Should().Be("987654321");
         registro.CodMunDest.Should().Be(3304557);
-        registro.CodMod.Should().Be(ModeloDocumento.Criar("26"));
+        registro.CodMod.Should().Be(ModeloDocumento.Create("26"));
         registro.Ser.Should().Be("001");
         registro.Sub.Should().Be("1");
         registro.NumDoc.Should().Be(100001);

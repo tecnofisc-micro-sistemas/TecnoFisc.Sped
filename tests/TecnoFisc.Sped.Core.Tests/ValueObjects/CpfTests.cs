@@ -8,7 +8,7 @@ public sealed class CpfTests
     [InlineData(" 529.982.247-25 ")]
     public void Criar_ComValorValido_RetornaCpf(string entrada)
     {
-        var cpf = Cpf.Criar(entrada);
+        var cpf = Cpf.Create(entrada);
 
         cpf.ToString().Should().Be("52998224725");
         cpf.ToStringFormatado().Should().Be("529.982.247-25");
@@ -25,7 +25,7 @@ public sealed class CpfTests
     [InlineData("")]
     public void Criar_ComValorInvalido_LancaFormatException(string entrada)
     {
-        var act = () => Cpf.Criar(entrada);
+        var act = () => Cpf.Create(entrada);
 
         act.Should().Throw<FormatException>();
     }
@@ -42,8 +42,8 @@ public sealed class CpfTests
     [Fact]
     public void Equals_ComMesmosDigitos_RetornaTrue()
     {
-        var a = Cpf.Criar("52998224725");
-        var b = Cpf.Criar("529.982.247-25");
+        var a = Cpf.Create("52998224725");
+        var b = Cpf.Create("529.982.247-25");
 
         a.Should().Be(b);
         a.GetHashCode().Should().Be(b.GetHashCode());

@@ -79,7 +79,7 @@ public sealed class ArquivoEfdContribuicoes : IArquivoSped
     /// dentro de cada bloco. Útil como ponte direta entre <see cref="Parser.ParserEfdContribuicoes"/>
     /// e a API tipada.
     /// </summary>
-    public static async Task<ArquivoEfdContribuicoes> CarregarAsync(
+    public static async Task<ArquivoEfdContribuicoes> LoadAsync(
         IAsyncEnumerable<RegistroSped> registros,
         CancellationToken cancelamento = default)
     {

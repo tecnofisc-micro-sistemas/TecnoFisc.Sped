@@ -26,11 +26,11 @@ public sealed class RegistroD300Tests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+        await foreach (var registro in leitor.ReadStreamingAsync(entrada, cancelamento))
             registros.Add(registro);
 
         using var saida = new MemoryStream();
-        await escritor.EscreverAsync(saida, registros, cancelamento);
+        await escritor.WriteAsync(saida, registros, cancelamento);
 
         return EncodingSped.Latin1.GetString(saida.ToArray());
     }
@@ -94,7 +94,7 @@ public sealed class RegistroD300Tests
         registro.NumDocIni.Should().Be(100);
         registro.NumDocFin.Should().Be(199);
         registro.CstIcms.Should().Be(20);
-        registro.Cfop.Should().Be(Cfop.Criar("5353".AsSpan()));
+        registro.Cfop.Should().Be(Cfop.Create("5353".AsSpan()));
         registro.AliqIcms.Should().Be(12m);
         registro.DtDoc.Should().Be(new DateOnly(2023, 1, 1));
         registro.VlOpr.Should().Be(1000m);

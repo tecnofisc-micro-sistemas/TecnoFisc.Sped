@@ -11,6 +11,32 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoC;
 /// Nível hierárquico 2, ocorrência vários por arquivo.
 /// Conforme Guia Prático EFD-ICMS/IPI V3.0.6, p. 59-64.
 /// </summary>
+/// <remarks>
+/// <b>V017 (Guide 3.1.3 item 2):</b> nova orientação de preenchimento sobre escrituração de
+/// operações com ICMS monofásico (Nota Orientativa 01/2023).
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// <para>
+/// <b>V017 (Guide 3.1.4 item 1):</b> nova validação de duplicidade do documento na combinação
+/// (<c>IND_EMIT</c>, <c>COD_SIT</c>, <c>COD_PART</c>, <c>SER</c>, <c>NUM_DOC</c>), com exceção
+/// quando <c>COD_MOD</c> for 55 ou 65.
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </para>
+/// <para>
+/// <b>V019 (Guide 3.1.9 itens 3-4):</b> regra de validação do campo 12 <c>VL_DOC</c> desabilitada;
+/// nova observação relativa à Reforma Tributária do Consumo — documentos fiscais que escriturem
+/// exclusivamente os novos tributos (IBS/CBS/IS) não devem ser informados em EFD ICMS-IPI.
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </para>
+/// <para>
+/// <b>V020 (Guide 3.2.1 item 4 + 3.2.2 itens 1-2):</b> nova orientação de preenchimento do
+/// campo 12 <c>VL_DOC</c> e inclusão da exceção nº 11 nas regras gerais do registro. Orientação
+/// adicional sobre a Reforma Tributária do Consumo + Ajuste SINIEF 49/25: operações que envolvam
+/// simultaneamente novos tributos (IBS/CBS/IS) <i>e</i> ICMS/IPI devem ser regularmente
+/// escrituradas no C100 — apenas documentos exclusivos dos novos tributos ficam fora do EFD
+/// ICMS-IPI.
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </para>
+/// </remarks>
 [RegistroSped(Codigo = "C100", Nivel = 2, Bloco = "C")]
 public sealed partial class RegistroC100 : RegistroSped
 {

@@ -9,6 +9,11 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoC;
 /// Filho do C790. Nível hierárquico 4, ocorrência 1:N.
 /// Conforme Guia Prático EFD-ICMS/IPI V3.0.6, p. 150.
 /// </summary>
+/// <remarks>
+/// <b>V017 (Guide 3.1.2 item 1):</b> passa a admitir também a NF3-e (modelo 66) no
+/// agrupamento consolidado do registro pai C700/C790.
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </remarks>
 [RegistroSped(Codigo = "C791", Nivel = 4, Bloco = "C")]
 public sealed partial class RegistroC791 : RegistroSped
 {

@@ -69,7 +69,7 @@ public sealed class RegistroC175Tests
         meta.Campos[15].Definidor(registro, "3.1.01.001".AsSpan());        // CodCta
         meta.Campos[16].Definidor(registro, "Info Complementar".AsSpan()); // InfoCompl
 
-        registro.Cfop.Should().Be(Cfop.Criar("5102"));
+        registro.Cfop.Should().Be(Cfop.Create("5102"));
         registro.VlOpr.Should().Be(1000m);
         registro.VlDesc.Should().Be(50m);
         registro.CstPis.Should().Be(1);
@@ -168,11 +168,11 @@ public sealed class RegistroC175Tests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+        await foreach (var registro in leitor.ReadStreamingAsync(entrada, cancelamento))
             registros.Add(registro);
 
         using var saida = new MemoryStream();
-        await escritor.EscreverAsync(saida, registros, cancelamento);
+        await escritor.WriteAsync(saida, registros, cancelamento);
 
         return EncodingSped.Latin1.GetString(saida.ToArray());
     }

@@ -12,6 +12,24 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoD;
 /// Nível hierárquico 2, ocorrência vários por arquivo.
 /// Conforme Guia Prático EFD-ICMS/IPI V3.2.2, p. 171-175.
 /// </summary>
+/// <remarks>
+/// <b>V016 (Guide 3.0.7 itens 1-2, 29):</b> campos 24 <c>VL_PIS</c> e 25 <c>VL_COFINS</c>
+/// passaram de OC (Obrigatório Condicional) para O (Obrigatório); validação do campo 11
+/// <c>DT_DOC</c> foi alterada.
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// <para>
+/// <b>V019 (Guide 3.1.7 itens 9, 12-13 + 3.1.8 itens 1, 3):</b> nova orientação de preenchimento
+/// dos campos 14 <c>CHV_CTE_REF</c>, 24 <c>COD_MUN_ORIG</c> e 25 <c>COD_MUN_DEST</c>; validações
+/// revisadas nos campos 14 <c>CHV_CTE_REF</c> e 18 <c>VL_SERV</c>; inclusão da exceção nº 4 nas
+/// regras gerais do registro.
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </para>
+/// <para>
+/// <b>V020 (Guide 3.2.1 item 5):</b> nova orientação de preenchimento do campo 25
+/// <c>COD_MUN_DEST</c> (código do município de destino do serviço).
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </para>
+/// </remarks>
 [RegistroSped(Codigo = "D100", Nivel = 2, Bloco = "D")]
 public sealed partial class RegistroD100 : RegistroSped
 {

@@ -29,11 +29,11 @@ public sealed class RegistroE113Tests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+        await foreach (var registro in leitor.ReadStreamingAsync(entrada, cancelamento))
             registros.Add(registro);
 
         using var saida = new MemoryStream();
-        await escritor.EscreverAsync(saida, registros, cancelamento);
+        await escritor.WriteAsync(saida, registros, cancelamento);
 
         return EncodingSped.Latin1.GetString(saida.ToArray());
     }
@@ -85,7 +85,7 @@ public sealed class RegistroE113Tests
         registro.DtDoc.Should().Be(new DateOnly(2023, 1, 1));
         registro.CodItem.Should().Be("PROD001");
         registro.VlAjItem.Should().Be(1500.00m);
-        registro.ChvDoce.Should().Be(ChaveAcesso.Criar(ChaveNfeValida));
+        registro.ChvDoce.Should().Be(ChaveAcesso.Create(ChaveNfeValida));
     }
 
     [Fact]

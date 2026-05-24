@@ -2,6 +2,7 @@ using TecnoFisc.Sped.Core.Abstracoes;
 using TecnoFisc.Sped.Core.Atributos;
 using TecnoFisc.Sped.Core.Enums;
 using TecnoFisc.Sped.EfdIcmsIpi.Enums;
+using TecnoFisc.Sped.EfdIcmsIpi.Versionamento;
 
 namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoC;
 
@@ -12,6 +13,18 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoC;
 /// Nível hierárquico 2, ocorrência vários (por arquivo).
 /// Conforme Guia Prático EFD-ICMS/IPI V3.0.6, pp. 133-137.
 /// </summary>
+/// <remarks>
+/// <b>V016 (Guide 3.0.7 itens 12-13):</b> validação alterada nos campos 13 <c>VL_DOC</c>,
+/// 15 <c>VL_FORN</c> e 30 <c>CHV_DOCe_REF</c>; nova orientação de preenchimento para os
+/// campos 12 <c>DT_E_S</c>, 16 <c>VL_SERV_NT</c>, 17 <c>VL_TERC</c>, 20 <c>VL_ICMS</c>
+/// e 22 <c>VL_ICMS_ST</c>.
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// <para>
+/// <b>V017 (Guide 3.1.4 item 2):</b> nova orientação determinando que NF3-e (<c>COD_MOD</c>
+/// = "66") sem CST e sem energia injetada não deve ser escriturada neste registro.
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </para>
+/// </remarks>
 [RegistroSped(Codigo = "C500", Nivel = 2, Bloco = "C")]
 public sealed partial class RegistroC500 : RegistroSped
 {
@@ -165,4 +178,32 @@ public sealed partial class RegistroC500 : RegistroSped
     /// <summary>Código da conta analítica contábil debitada/creditada.</summary>
     [CampoSped(Ordem = 33, Tamanho = 0)]
     public string? CodCta { get; set; }
+
+    /// <summary>Código do modelo do documento fiscal referenciado, conforme a Tabela 4.1.1.</summary>
+    [CampoSped(Ordem = 34, Tamanho = 2, DesdeVersao = (int)LayoutEfdIcmsIpi.V016)]
+    public string? CodModDocRef { get; set; }
+
+    /// <summary>Código de autenticação digital do registro (Convênio 115/2003).</summary>
+    [CampoSped(Ordem = 35, Tamanho = 32, DesdeVersao = (int)LayoutEfdIcmsIpi.V016)]
+    public string? HashDocRef { get; set; }
+
+    /// <summary>Série do documento fiscal referenciado.</summary>
+    [CampoSped(Ordem = 36, Tamanho = 4, DesdeVersao = (int)LayoutEfdIcmsIpi.V016)]
+    public string? SerDocRef { get; set; }
+
+    /// <summary>Número do documento fiscal referenciado.</summary>
+    [CampoSped(Ordem = 37, Tamanho = 9, DesdeVersao = (int)LayoutEfdIcmsIpi.V016)]
+    public int? NumDocRef { get; set; }
+
+    /// <summary>Mês e ano da emissão do documento fiscal referenciado (formato MMAAAA).</summary>
+    [CampoSped(Ordem = 38, Tamanho = 6, DesdeVersao = (int)LayoutEfdIcmsIpi.V016)]
+    public string? MesDocRef { get; set; }
+
+    /// <summary>Energia injetada.</summary>
+    [CampoSped(Ordem = 39, Tamanho = 0, Decimais = 2, DesdeVersao = (int)LayoutEfdIcmsIpi.V016)]
+    public decimal? EnerInjet { get; set; }
+
+    /// <summary>Outras deduções.</summary>
+    [CampoSped(Ordem = 40, Tamanho = 0, Decimais = 2, DesdeVersao = (int)LayoutEfdIcmsIpi.V016)]
+    public decimal? OutrasDed { get; set; }
 }

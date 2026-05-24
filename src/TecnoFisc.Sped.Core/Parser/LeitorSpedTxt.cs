@@ -39,7 +39,7 @@ public sealed class LeitorSpedTxt : ILeitorSped
         _catalogo = catalogo;
     }
 
-    public async IAsyncEnumerable<RegistroSped> LerStreamingAsync(
+    public async IAsyncEnumerable<RegistroSped> ReadStreamingAsync(
         Stream entrada,
         [EnumeratorCancellation] CancellationToken cancelamento = default)
     {
@@ -49,6 +49,7 @@ public sealed class LeitorSpedTxt : ILeitorSped
         var pilha = new PilhaHierarquica();
         long numeroLinha = 0;
         bool encerrado = false;
+        int versaoLeiaute = 0;
 
         try
         {
@@ -62,9 +63,13 @@ public sealed class LeitorSpedTxt : ILeitorSped
                 while (TentarExtrairLinha(ref buffer, out var linha))
                 {
                     numeroLinha++;
-                    var registro = ProcessarLinha(in linha, numeroLinha, pilha);
+                    var registro = ProcessarLinha(in linha, numeroLinha, pilha, versaoLeiaute);
                     if (registro is not null)
                     {
+                        // Captura a versão do leiaute assim que o Registro0000 é processado.
+                        if (versaoLeiaute == 0 && registro.VersaoLeiaute > 0)
+                            versaoLeiaute = registro.VersaoLeiaute;
+
                         yield return registro;
                         if (registro.Codigo == CodigoEncerramentoArquivo)
                         {
@@ -87,9 +92,13 @@ public sealed class LeitorSpedTxt : ILeitorSped
                     if (!buffer.IsEmpty)
                     {
                         numeroLinha++;
-                        var registro = ProcessarLinha(in buffer, numeroLinha, pilha);
+                        var registro = ProcessarLinha(in buffer, numeroLinha, pilha, versaoLeiaute);
                         if (registro is not null)
+                        {
+                            if (versaoLeiaute == 0 && registro.VersaoLeiaute > 0)
+                                versaoLeiaute = registro.VersaoLeiaute;
                             yield return registro;
+                        }
                     }
                     break;
                 }
@@ -141,7 +150,8 @@ public sealed class LeitorSpedTxt : ILeitorSped
     private RegistroSped? ProcessarLinha(
         in ReadOnlySequence<byte> linha,
         long numeroLinha,
-        PilhaHierarquica pilha)
+        PilhaHierarquica pilha,
+        int versaoLeiaute)
     {
         int comprimento = checked((int)linha.Length);
         if (comprimento == 0)
@@ -159,7 +169,7 @@ public sealed class LeitorSpedTxt : ILeitorSped
             var chars = charsAlugados.AsSpan(0, qtdChar);
             int gravados = EncodingSped.Latin1.GetChars(bytes, chars);
 
-            return InterpretarLinha(chars[..gravados], numeroLinha, pilha);
+            return InterpretarLinha(chars[..gravados], numeroLinha, pilha, versaoLeiaute);
         }
         finally
         {
@@ -172,7 +182,8 @@ public sealed class LeitorSpedTxt : ILeitorSped
     private RegistroSped? InterpretarLinha(
         ReadOnlySpan<char> linha,
         long numeroLinha,
-        PilhaHierarquica pilha)
+        PilhaHierarquica pilha,
+        int versaoLeiaute)
     {
         if (linha.IsEmpty)
             return null;
@@ -208,6 +219,8 @@ public sealed class LeitorSpedTxt : ILeitorSped
                         new ErroLayout(numeroLinha, fatia.ToString(),
                             "Código de registro desconhecido pelo catálogo."));
 
+                // [Descontinuado] é informacional no read path (ARCHITECTURE §4.7 read-only):
+                // arquivos históricos ainda contêm o registro e precisam ser parseáveis.
                 registro = metadados.Fabrica();
             }
             else if (metadados is not null && registro is not null)

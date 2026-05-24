@@ -4,7 +4,7 @@ namespace TecnoFisc.Sped.Core.Parser;
 
 /// <summary>
 /// Encoding canônico dos arquivos SPED textuais: Latin1 / Windows-1252 (codepage 1252).
-/// Os projetos baseados em XML (NF-e, NFC-e, CT-e, MDF-e) usam UTF-8 por especificação
+/// Os projetos baseados em XML (NF-e, NFC-e, CT-e) usam UTF-8 por especificação
 /// da Receita Federal e não passam por aqui.
 /// </summary>
 public static class EncodingSped

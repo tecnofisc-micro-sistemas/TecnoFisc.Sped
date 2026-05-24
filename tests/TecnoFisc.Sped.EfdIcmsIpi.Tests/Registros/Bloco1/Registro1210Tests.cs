@@ -28,11 +28,11 @@ public sealed class Registro1210Tests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+        await foreach (var registro in leitor.ReadStreamingAsync(entrada, cancelamento))
             registros.Add(registro);
 
         using var saida = new MemoryStream();
-        await escritor.EscreverAsync(saida, registros, cancelamento);
+        await escritor.WriteAsync(saida, registros, cancelamento);
 
         return EncodingSped.Latin1.GetString(saida.ToArray());
     }
@@ -84,7 +84,7 @@ public sealed class Registro1210Tests
         registro.TipoUtil.Should().Be("SP01");
         registro.NrDoc.Should().Be("DOC123");
         registro.VlCredUtil.Should().Be(125.50m);
-        registro.ChvDoce.Should().Be(ChaveAcesso.Criar(ChaveNfeValida));
+        registro.ChvDoce.Should().Be(ChaveAcesso.Create(ChaveNfeValida));
     }
 
     [Fact]

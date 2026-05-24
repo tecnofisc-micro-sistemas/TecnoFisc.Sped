@@ -65,7 +65,7 @@ public sealed class RegistroF700Tests
         registro.VlDedPis.Should().Be(500m);
         registro.VlDedCofins.Should().Be(1500m);
         registro.VlBcOper.Should().Be(100000m);
-        registro.Cnpj.Should().Be(Cnpj.Criar("12345678000195"));
+        registro.Cnpj.Should().Be(Cnpj.Create("12345678000195"));
         registro.InfComp.Should().Be("Credito presumido medicamentos");
     }
 
@@ -153,11 +153,11 @@ public sealed class RegistroF700Tests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+        await foreach (var registro in leitor.ReadStreamingAsync(entrada, cancelamento))
             registros.Add(registro);
 
         using var saida = new MemoryStream();
-        await escritor.EscreverAsync(saida, registros, cancelamento);
+        await escritor.WriteAsync(saida, registros, cancelamento);
 
         return EncodingSped.Latin1.GetString(saida.ToArray());
     }

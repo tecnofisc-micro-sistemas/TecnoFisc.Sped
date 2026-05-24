@@ -17,7 +17,7 @@ internal static class CodigosUf
         91,                                     // Ambiente Nacional
     ];
 
-    public static bool EhValido(int codigoUf)
+    public static bool IsValid(int codigoUf)
     {
         foreach (int c in Validos)
             if (c == codigoUf) return true;

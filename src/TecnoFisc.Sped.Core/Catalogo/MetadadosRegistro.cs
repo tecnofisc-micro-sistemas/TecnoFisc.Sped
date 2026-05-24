@@ -15,7 +15,8 @@ public sealed class MetadadosRegistro
         Type tipoCSharp,
         Func<RegistroSped> fabrica,
         IReadOnlyList<MetadadosCampo> campos,
-        int introduzidoEm = 0)
+        int introduzidoEm = 0,
+        int descontinuadoEm = 0)
     {
         Codigo = codigo;
         Nivel = nivel;
@@ -24,6 +25,7 @@ public sealed class MetadadosRegistro
         Fabrica = fabrica;
         Campos = campos;
         IntroduzidoEm = introduzidoEm;
+        DescontinuadoEm = descontinuadoEm;
     }
 
     public string Codigo { get; }
@@ -40,4 +42,12 @@ public sealed class MetadadosRegistro
     /// Origem em <see cref="Atributos.RegistroSpedAttribute.IntroduzidoEm"/>.
     /// </summary>
     public int IntroduzidoEm { get; }
+
+    /// <summary>
+    /// Versão de leiaute a partir da qual o registro foi descontinuado. <c>0</c> = ativo em todas as versões.
+    /// Origem em <see cref="Atributos.DescontinuadoAttribute.EmVersao"/>. Informacional — o parser
+    /// continua reconhecendo o registro para suportar leitura de arquivos históricos das versões
+    /// anteriores (ARCHITECTURE §4.7 read-only).
+    /// </summary>
+    public int DescontinuadoEm { get; }
 }

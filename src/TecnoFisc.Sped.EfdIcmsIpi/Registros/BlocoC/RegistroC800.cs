@@ -11,6 +11,11 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoC;
 /// Nível hierárquico 2, ocorrência vários.
 /// Conforme Guia Prático EFD-ICMS/IPI V3.0.6, p. 151.
 /// </summary>
+/// <remarks>
+/// <b>V017 (Guide 3.1.0 item 3):</b> nova Exceção nº 2 incluída na instrução do registro
+/// (escrituração de CF-e-SAT em situações específicas).
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </remarks>
 [RegistroSped(Codigo = "C800", Nivel = 2, Bloco = "C")]
 public sealed partial class RegistroC800 : RegistroSped
 {
@@ -46,6 +51,10 @@ public sealed partial class RegistroC800 : RegistroSped
     public decimal? VlCofins { get; set; }
 
     /// <summary>CNPJ (14 dígitos) ou CPF (11 dígitos) do destinatário.</summary>
+    /// <remarks>
+    /// <b>V017 (Guide 3.1.4 item 6):</b> nova validação no campo 09 <c>CNPJ_CPF</c>.
+    /// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+    /// </remarks>
     [CampoSped(Ordem = 9, Tamanho = 14)]
     public string? CnpjCpf { get; set; }
 

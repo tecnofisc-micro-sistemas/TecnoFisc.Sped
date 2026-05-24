@@ -12,6 +12,9 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Tests.Registros.BlocoC;
 /// Sub-stage 8.047 — exercita a forma do <see cref="RegistroC120"/> contra o Guia Prático
 /// EFD-ICMS/IPI V3.0.6 (p. 72): metadados de catálogo, mapeamento de campos e invariante
 /// de round-trip parse → gerar → texto idêntico.
+/// Sub-stage 8.016.006 — confirma tamanho atualizado para 15 caracteres no campo 03
+/// `NUM_DOC_IMP` (Guide 3.0.7 item 4, V016). Pacote read-only mantém o tamanho do
+/// leiaute mais recente; arquivos V015 com até 12 caracteres continuam compatíveis.
 /// </summary>
 public sealed class RegistroC120Tests
 {
@@ -111,6 +114,28 @@ public sealed class RegistroC120Tests
     {
         // DSI sem PIS, COFINS nem Drawback (contribuinte que entrega EFD-Contribuições).
         const string sped = "|C120|1|21000098765||||\r\n";
+
+        var resultado = await RoundTripAsync(sped, TestContext.Current.CancellationToken);
+
+        resultado.Should().Be(sped);
+    }
+
+    // ── sub-stage 8.016.006: tamanho NUM_DOC_IMP 12 → 15 em V016 ─────────────
+
+    [Fact]
+    public void Catalogo_NumDocImp_DeclaraTamanhoAtualizado15()
+    {
+        _catalogo.TentarObter("C120".AsSpan(), out var meta).Should().BeTrue();
+
+        var numDocImp = meta!.Campos.Single(c => c.Nome == "NumDocImp");
+        numDocImp.Tamanho.Should().Be(15);
+    }
+
+    [Fact]
+    public async Task RoundTrip_NumDocImpCom15Caracteres_V016_PreservaTextoCanonico()
+    {
+        // V016 (Guide 3.0.7 item 4): NUM_DOC_IMP cresce de 12 para 15 caracteres.
+        const string sped = "|C120|0|210000123456789|1500,75|6923,50||\r\n";
 
         var resultado = await RoundTripAsync(sped, TestContext.Current.CancellationToken);
 

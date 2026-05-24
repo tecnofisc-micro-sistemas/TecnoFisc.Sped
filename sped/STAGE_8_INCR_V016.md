@@ -42,7 +42,7 @@ Numeração: `8.{versão}.{seq}`. Sequência é local da versão.
 | --- | --- | --- | --- | --- | --- | --- |
 | [x] | 8.016.002 | UPDATE/Campo | Registro 0220 | 0 | 04 `COD_BARRA` | Subseção 11 (p.16) + 3.0.7 item 10 |
 | [x] | 8.016.003 | UPDATE/Campo | Registro C500 | C | 34 `COD_MOD_DOC_REF`, 35 `HASH_DOC_REF`, 36 `SER_DOC_REF`, 37 `NUM_DOC_REF`, 38 `MES_DOC_REF`, 39 `ENER_INJET`, 40 `OUTRAS_DED` | Subseção 11 (p.16) + 3.0.7 itens 11-12 |
-| [ ] | 8.016.006 | UPDATE/Campo | Registro C120 | C | Campo 03 `Tamanho` atualizado 12→15 in-place no `[CampoSped]` da property existente. Pacote read-only não distingue versões para tamanho — valor máximo do leiaute mais recente. | 3.0.7 item 4 |
+| [x] | 8.016.006 | UPDATE/Campo | Registro C120 | C | Campo 03 `Tamanho` atualizado 12→15 in-place no `[CampoSped]` da property existente. Pacote read-only não distingue versões para tamanho — valor máximo do leiaute mais recente. | 3.0.7 item 4 |
 
 ### Mudanças estruturais (UPDATE/Descontinuado)
 
@@ -89,5 +89,5 @@ Conforme ARCHITECTURE §2.3, validações fiscais (obrigatoriedade condicional, 
 ## Sumário
 
 - **Total sub-stages:** 7 atômicos (2 NEW + 3 UPDATE/Campo + 2 UPDATE/Descontinuado) + 1 PR agregador (21 itens de doc, todos triviais).
-- **Pendentes:** 2 atômicos (8.016.006 C120 tamanho, 8.016.028 K010 NEW) + 1 PR agregador (8.016.029).
-- **Concluídos:** 5 atômicos (8.016.001-005).
+- **Pendentes:** 1 atômico (8.016.028 K010 NEW) + 1 PR agregador (8.016.029).
+- **Concluídos:** 6 atômicos (8.016.001-006).

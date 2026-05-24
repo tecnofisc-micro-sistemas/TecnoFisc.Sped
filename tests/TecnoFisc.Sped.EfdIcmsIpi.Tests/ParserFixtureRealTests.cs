@@ -1,42 +1,24 @@
+using TecnoFisc.Sped.Core.Abstracoes;
 using TecnoFisc.Sped.Core.Parser;
-using TecnoFisc.Sped.EfdIcmsIpi.Gerador;
 using TecnoFisc.Sped.EfdIcmsIpi.Parser;
 
 namespace TecnoFisc.Sped.EfdIcmsIpi.Tests;
 
 /// <summary>
-/// Round-trip end-to-end contra arquivos SPED reais armazenados em <c>sped/fixtures/</c>
+/// Parse end-to-end contra arquivos SPED reais armazenados em <c>sped/fixtures/</c>
 /// (gitignored). Os arquivos são emitidos pelo PVA da Receita e podem trazer assinatura digital
-/// PKCS#7 anexada após o último registro <c>9999</c> — a parte binária é descartada antes
-/// do round-trip; o teste exercita apenas a porção textual de registros SPED.
+/// PKCS#7 anexada após o último registro <c>9999</c> — a parte binária é ignorada pelo parser,
+/// que encerra ao encontrar o <c>9999</c>.
 ///
 /// Pula automaticamente quando nenhuma fixture EFD ICMS-IPI estiver presente (CI público,
 /// máquina sem arquivo de cliente). Fixtures de outros leiautes (EFD Contribuições) são
 /// distinguidas pelo cabeçalho do <c>Registro0000</c> e ignoradas.
 ///
-/// Invariante exigida: <b>parse → serialize é idempotente</b> — o segundo passo de serialização
-/// produz exatamente os mesmos bytes do primeiro. Não assertamos byte-equality contra o arquivo
-/// original porque o leiaute permite normalizações deliberadas (ex.: campo decimal opcional
-/// emitido pelo PVA como <c>0</c> é normalizado para <c>0,00</c> conforme a coluna Dec do
-/// Guia Prático). A invariante mais forte que importa para uma biblioteca SPED é estabilidade
-/// sob round-trip, não fidelidade textual contra geradores externos heterogêneos.
+/// Pacote EFD ICMS-IPI é read-only (ARCHITECTURE §2.5) — não há teste de round-trip
+/// parse → generate.
 /// </summary>
-public sealed class RoundTripFixtureRealTests
+public sealed class ParserFixtureRealTests
 {
-    [Fact]
-    public async Task ParserESerializadorSaoEstaveisSobReSerializacao()
-    {
-        var fixtures = EnumerarFixturesEfdIcmsIpi().ToList();
-        if (fixtures.Count == 0)
-        {
-            Assert.Skip("Nenhuma fixture EFD ICMS-IPI presente em sped/fixtures/. Adicione um arquivo SPED real para exercitar o round-trip.");
-            return;
-        }
-
-        foreach (var caminhoFixture in fixtures)
-            await ExercitarFixtureAsync(caminhoFixture);
-    }
-
     [Fact]
     public async Task ParserAceitaArquivoComBlocoAssinaturaPKCS7Anexo()
     {
@@ -54,13 +36,43 @@ public sealed class RoundTripFixtureRealTests
             var bytesCrus = await File.ReadAllBytesAsync(caminhoFixture, TestContext.Current.CancellationToken);
             using var entrada = new MemoryStream(bytesCrus, writable: false);
 
-            var registros = new List<TecnoFisc.Sped.Core.Abstracoes.RegistroSped>();
+            var registros = new List<RegistroSped>();
             await foreach (var registro in parser.LerStreamingAsync(entrada, TestContext.Current.CancellationToken))
                 registros.Add(registro);
 
             registros.Should().NotBeEmpty(because: $"fixture {Path.GetFileName(caminhoFixture)} deve produzir registros");
             registros[^1].Codigo.Should().Be("9999",
                 because: $"parser deve encerrar no |9999| de {Path.GetFileName(caminhoFixture)}, ignorando bloco de assinatura PKCS#7 anexo");
+        }
+    }
+
+    [Fact]
+    public async Task ParserMaterializaUmRegistroPorLinhaSpedDoArquivoOriginal()
+    {
+        var fixtures = EnumerarFixturesEfdIcmsIpi().ToList();
+        if (fixtures.Count == 0)
+        {
+            Assert.Skip("Nenhuma fixture EFD ICMS-IPI presente em sped/fixtures/. Adicione um arquivo SPED real para exercitar o parser.");
+            return;
+        }
+
+        var parser = new ParserEfdIcmsIpi();
+
+        foreach (var caminhoFixture in fixtures)
+        {
+            var bytesOriginais = ExtrairPorcaoTextual(
+                await File.ReadAllBytesAsync(caminhoFixture, TestContext.Current.CancellationToken));
+
+            using var entrada = new MemoryStream(bytesOriginais, writable: false);
+            var arquivo = await ArquivoEfdIcmsIpi.CarregarAsync(
+                parser.LerStreamingAsync(entrada, TestContext.Current.CancellationToken),
+                TestContext.Current.CancellationToken);
+
+            var totalRegistros = arquivo.EnumerarRegistros().Count();
+            var linhasOriginais = ContarLinhasNaoVazias(bytesOriginais);
+
+            totalRegistros.Should().Be(linhasOriginais,
+                because: $"parser deve materializar uma instância por linha SPED ({linhasOriginais} linhas no original — {Path.GetFileName(caminhoFixture)})");
         }
     }
 
@@ -102,56 +114,6 @@ public sealed class RoundTripFixtureRealTests
         // campos[0] = "" (antes do primeiro pipe), campos[1] = "0000", campos[2] = COD_VER.
         var codVer = campos[2];
         return codVer is "014" or "015" or "016" or "017" or "018" or "019" or "020" or "021" or "022";
-    }
-
-    private static async Task ExercitarFixtureAsync(string caminhoFixture)
-    {
-        var bytesOriginais = ExtrairPorcaoTextual(
-            await File.ReadAllBytesAsync(caminhoFixture, TestContext.Current.CancellationToken));
-
-        var parser = new ParserEfdIcmsIpi();
-        var gerador = new GeradorEfdIcmsIpi();
-
-        var arquivo1 = await CarregarAsync(parser, bytesOriginais);
-        var bytesGerados = await SerializarAsync(gerador, arquivo1);
-
-        var arquivo2 = await CarregarAsync(parser, bytesGerados);
-        var bytesDuplos = await SerializarAsync(gerador, arquivo2);
-
-        var codigos1 = arquivo1.EnumerarRegistros().Select(r => r.Codigo).ToList();
-        var codigos2 = arquivo2.EnumerarRegistros().Select(r => r.Codigo).ToList();
-        codigos2.Should().Equal(codigos1, because: "segundo parse deve produzir a mesma sequência de registros");
-
-        if (!bytesGerados.AsSpan().SequenceEqual(bytesDuplos))
-        {
-            var (linha, esperada, obtida) = LocalizarPrimeiraDivergencia(bytesGerados, bytesDuplos);
-            throw new Xunit.Sdk.XunitException(
-                $"Serialização não é idempotente — divergência na linha {linha}.\n" +
-                $"  Primeira passagem: {esperada}\n" +
-                $"  Segunda  passagem: {obtida}\n" +
-                $"  Bytes 1ª: {bytesGerados.Length}, 2ª: {bytesDuplos.Length}.");
-        }
-
-        var linhasOriginais = ContarLinhasNaoVazias(bytesOriginais);
-        codigos1.Should().HaveCount(linhasOriginais,
-            because: $"parser deve materializar uma instância por linha SPED ({linhasOriginais} linhas no original — {Path.GetFileName(caminhoFixture)})");
-    }
-
-    private static async Task<ArquivoEfdIcmsIpi> CarregarAsync(
-        ParserEfdIcmsIpi parser, byte[] bytes)
-    {
-        using var entrada = new MemoryStream(bytes, writable: false);
-        return await ArquivoEfdIcmsIpi.CarregarAsync(
-            parser.LerStreamingAsync(entrada, TestContext.Current.CancellationToken),
-            TestContext.Current.CancellationToken);
-    }
-
-    private static async Task<byte[]> SerializarAsync(
-        GeradorEfdIcmsIpi gerador, ArquivoEfdIcmsIpi arquivo)
-    {
-        using var saida = new MemoryStream();
-        await gerador.EscreverAsync(saida, arquivo.EnumerarRegistros(), TestContext.Current.CancellationToken);
-        return saida.ToArray();
     }
 
     private static string? LocalizarPastaFixtures()
@@ -208,21 +170,5 @@ public sealed class RoundTripFixtureRealTests
         }
         if (inicio < bytes.Length) total++;
         return total;
-    }
-
-    private static (int linha, string esperada, string obtida) LocalizarPrimeiraDivergencia(
-        byte[] esperado, byte[] obtido)
-    {
-        var linhasEsperadas = EncodingSped.Latin1.GetString(esperado).Split('\n');
-        var linhasObtidas = EncodingSped.Latin1.GetString(obtido).Split('\n');
-        int min = Math.Min(linhasEsperadas.Length, linhasObtidas.Length);
-        for (int i = 0; i < min; i++)
-        {
-            if (!string.Equals(linhasEsperadas[i], linhasObtidas[i], StringComparison.Ordinal))
-                return (i + 1, linhasEsperadas[i], linhasObtidas[i]);
-        }
-        return (min + 1,
-            linhasEsperadas.Length > min ? linhasEsperadas[min] : "<EOF>",
-            linhasObtidas.Length > min ? linhasObtidas[min] : "<EOF>");
     }
 }

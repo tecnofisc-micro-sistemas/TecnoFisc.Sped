@@ -1,13 +1,12 @@
 using TecnoFisc.Sped.Core.Parser;
-using TecnoFisc.Sped.EfdIcmsIpi.Gerador;
 using TecnoFisc.Sped.EfdIcmsIpi.Parser;
 using TecnoFisc.Sped.EfdIcmsIpi.Registros.Bloco9;
 
 namespace TecnoFisc.Sped.EfdIcmsIpi.Tests;
 
 /// <summary>
-/// Modelo raiz do arquivo EFD ICMS-IPI. Cobre a classificação de registros por bloco,
-/// a ordem canônica de enumeração e o round-trip Parser → Arquivo → Gerador.
+/// Modelo raiz do arquivo EFD ICMS-IPI. Cobre a classificação de registros por bloco
+/// e a ordem canônica de enumeração. Pacote read-only — sem cobertura de gerador.
 /// </summary>
 public sealed class ArquivoEfdIcmsIpiTests
 {
@@ -84,7 +83,7 @@ public sealed class ArquivoEfdIcmsIpiTests
     }
 
     [Fact]
-    public async Task RoundTrip_ParserArquivoGerador_PreservaTextoCanonico()
+    public async Task CarregarAsync_AssociaCadaRegistroLidoAoBlocoCorrespondente()
     {
         const string sped =
             "|0001|0|\r\n" +
@@ -96,16 +95,15 @@ public sealed class ArquivoEfdIcmsIpiTests
             "|9999|7|\r\n";
 
         var parser = new ParserEfdIcmsIpi();
-        var gerador = new GeradorEfdIcmsIpi();
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var arquivo = await ArquivoEfdIcmsIpi.CarregarAsync(
             parser.LerStreamingAsync(entrada, TestContext.Current.CancellationToken),
             TestContext.Current.CancellationToken);
 
-        using var saida = new MemoryStream();
-        await gerador.EscreverAsync(saida, arquivo.EnumerarRegistros(), TestContext.Current.CancellationToken);
-
-        EncodingSped.Latin1.GetString(saida.ToArray()).Should().Be(sped);
+        arquivo.Bloco0.Registros.Select(r => r.Codigo).Should().Equal(["0001", "0990"]);
+        arquivo.Bloco9.Registros.Select(r => r.Codigo).Should().Equal(["9001", "9900", "9900", "9990", "9999"]);
+        arquivo.EnumerarRegistros().Select(r => r.Codigo).Should().Equal(
+            ["0001", "0990", "9001", "9900", "9900", "9990", "9999"]);
     }
 }

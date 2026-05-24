@@ -219,12 +219,8 @@ public sealed class LeitorSpedTxt : ILeitorSped
                         new ErroLayout(numeroLinha, fatia.ToString(),
                             "Código de registro desconhecido pelo catálogo."));
 
-                if (metadados.DescontinuadoEm > 0 && versaoLeiaute >= metadados.DescontinuadoEm)
-                    throw new ErroLayoutSpedException(
-                        new ErroLayout(numeroLinha, fatia.ToString(),
-                            $"Registro descontinuado a partir da versão {metadados.DescontinuadoEm}. " +
-                            $"Versão do arquivo: {versaoLeiaute}."));
-
+                // [Descontinuado] é informacional no read path (ARCHITECTURE §4.7 read-only):
+                // arquivos históricos ainda contêm o registro e precisam ser parseáveis.
                 registro = metadados.Fabrica();
             }
             else if (metadados is not null && registro is not null)

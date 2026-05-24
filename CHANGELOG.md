@@ -6,6 +6,14 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ## [Não publicado]
 
+### TecnoFisc.Sped.EfdIcmsIpi
+
+#### Alterado (breaking)
+
+- Pacote passa a ser **read-only** (ARCHITECTURE §2.5). API pública `GeradorEfdIcmsIpi` removida; `IEscritorSped` deixa de ser implementado neste pacote. Consumidores que precisam emitir arquivos EFD ICMS-IPI devem usar o PVA da Receita ou outro caminho — o propósito do pacote é ingestão rápida + modelo tipado.
+- `[Descontinuado(EmVersao=...)]` vira informacional no read path — registros descontinuados continuam sendo reconhecidos pelo parser para que arquivos históricos sejam lidos sem erro de leiaute.
+- Testes de round-trip parse → generate → parse removidos (`RoundTripFixtureRealTests` renomeado para `ParserFixtureRealTests`, cobrindo apenas o caminho de leitura).
+
 ## [0.3.1] — 2026-05-17
 
 Corrige nomenclatura das versões do leiaute EFD ICMS-IPI: o que estava sendo chamado de `V306` é, na verdade, o leiaute **V015** (`COD_VER` do registro `0000`, conforme Tabela "Versão do Leiaute" da Nota Técnica EFD ICMS-IPI nº 2020.001 — Ato COTEPE/ICMS nº 44/2018). O número `306` é a versão do Guia Prático (3.0.6) que descreve o leiaute, não o leiaute em si. Múltiplas versões do Guia (3.0.6, 3.1.x, 3.2.x) descrevem o mesmo leiaute 015.

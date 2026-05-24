@@ -34,7 +34,7 @@ Numeração: `8.{versão}.{seq}`. Sequência é local da versão.
 | Feito | Sub-stage | Tipo | Registro | Bloco | Resumo | Fonte |
 | --- | --- | --- | --- | --- | --- | --- |
 | [x] | 8.016.001 | NEW | Registro 1601 | 1 | Operações com instrumentos de pagamentos eletrônicos. Nível 2, 1:N, OC. Substitui Registro 1600. | Subseção 11 (p.16) + 3.0.7 item 6 |
-| [ ] | 8.016.028 | NEW | Registro K010 | K | Tipo de leiaute K (simplificado/completo). Nível 2, 1, OC. Movido de V017 — facultativo em 2022 (3.0.9 item 3) antes da obrigatoriedade em V017. `IntroduzidoEm = V016`. | Subseção 11 + 3.0.9 item 3 |
+| [x] | 8.016.028 | NEW | Registro K010 | K | Tipo de leiaute K (simplificado/completo/restrito). Nível 2, 1, OC. Movido de V017 — facultativo em 2022 (3.0.9 item 3) antes da obrigatoriedade em V017. `IntroduzidoEm = V016`. | Subseção 12 (p.266) + 3.0.9 item 3 |
 
 ### Campos novos / mudança de atributo em registros existentes (UPDATE/Campo)
 
@@ -89,5 +89,5 @@ Conforme ARCHITECTURE §2.3, validações fiscais (obrigatoriedade condicional, 
 ## Sumário
 
 - **Total sub-stages:** 7 atômicos (2 NEW + 3 UPDATE/Campo + 2 UPDATE/Descontinuado) + 1 PR agregador (21 itens de doc, todos triviais).
-- **Pendentes:** 1 atômico (8.016.028 K010 NEW) + 1 PR agregador (8.016.029).
-- **Concluídos:** 6 atômicos (8.016.001-006).
+- **Pendentes:** 1 PR agregador (8.016.029).
+- **Concluídos:** 7 atômicos (8.016.001-006 + 8.016.028).

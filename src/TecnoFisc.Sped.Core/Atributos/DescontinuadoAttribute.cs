@@ -9,10 +9,19 @@ namespace TecnoFisc.Sped.Core.Atributos;
 /// não o registro em arquivos da versão alvo.
 /// </summary>
 /// <remarks>
+/// <para>
 /// First-use: criado no sub-stage 8.016.004 para marcar <c>Registro1600</c> como substituído
 /// pelo <c>Registro1601</c> a partir de V016 (3.0.7 item 6).
+/// </para>
+/// <para>
+/// Suporte a <see cref="AttributeTargets.Field"/> adicionado no sub-stage 8.017.050 para
+/// marcar membros de enum (Tabela 4.1.2 — códigos 04 e 05 descontinuados em V017).
+/// </para>
 /// </remarks>
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
+[AttributeUsage(
+    AttributeTargets.Class | AttributeTargets.Property | AttributeTargets.Field,
+    AllowMultiple = false,
+    Inherited = false)]
 public sealed class DescontinuadoAttribute : Attribute
 {
     /// <summary>

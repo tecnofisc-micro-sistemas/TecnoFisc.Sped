@@ -39,22 +39,22 @@ Registros que tiveram `Tam` aumentado em V017 (15→60 em vários casos). Modelo
 
 | Feito | Sub-stage | Registro | Bloco | Campo | Mudança | Fonte |
 | --- | --- | --- | --- | --- | --- | --- |
-| [ ] | 8.017.049.a | Registro C111 | C | 02 | Tam 15→60 | 3.1.0 item 8 |
-| [ ] | 8.017.049.b | Registro E112 | E | 03 | Tam 15→60 | 3.1.0 item 9 |
-| [ ] | 8.017.049.c | Registro E116 | E | 06 | Tam 15→60 | 3.1.0 item 10 |
-| [ ] | 8.017.049.d | Registro E230 | E | 03 | Tam 15→60 | 3.1.0 item 9 |
-| [ ] | 8.017.049.e | Registro E250 | E | 06 | Tam 15→60 | 3.1.0 item 10 |
-| [ ] | 8.017.049.f | Registro E312 | E | 03 | Tam 15→60 | 3.1.0 item 9 |
-| [ ] | 8.017.049.g | Registro E316 | E | 06 | Tam 15→60 | 3.1.0 item 10 |
-| [ ] | 8.017.049.h | Registro 1922 | 1 | 03 | Tam 15→60 | 3.1.0 item 9 |
-| [ ] | 8.017.049.i | Registro 1926 | 1 | 06 | Tam 15→60 | 3.1.0 item 10 |
+| [x] | 8.017.049.a | Registro C111 | C | 02 | Tam 15→60 | 3.1.0 item 8 |
+| [x] | 8.017.049.b | Registro E112 | E | 03 | Tam 15→60 | 3.1.0 item 9 |
+| [x] | 8.017.049.c | Registro E116 | E | 06 | Tam 15→60 | 3.1.0 item 10 |
+| [x] | 8.017.049.d | Registro E230 | E | 03 | Tam 15→60 | 3.1.0 item 9 |
+| [x] | 8.017.049.e | Registro E250 | E | 06 | Tam 15→60 | 3.1.0 item 10 |
+| [x] | 8.017.049.f | Registro E312 | E | 03 | Tam 15→60 | 3.1.0 item 9 |
+| [x] | 8.017.049.g | Registro E316 | E | 06 | Tam 15→60 | 3.1.0 item 10 |
+| [x] | 8.017.049.h | Registro 1922 | 1 | 03 | Tam 15→60 | 3.1.0 item 9 |
+| [x] | 8.017.049.i | Registro 1926 | 1 | 06 | Tam 15→60 | 3.1.0 item 10 |
 
 ### Enums Core (UPDATE/Campo — Core)
 
 | Feito | Sub-stage | Alvo | Delta | Fonte |
 | --- | --- | --- | --- | --- |
-| [ ] | 8.017.050 | enum `SituacaoDocumento` (Core, Tabela 4.1.2) | Códigos 04 e 05 marcados com `[Descontinuado(EmVersao = V017)]` (informacional, parser continua reconhecendo). Atualizar doc-comment dos membros. | 3.1.0 item 1 |
-| [ ] | 8.017.051 | Tabela CST ICMS (Core, Cap IV §1.1) | Atualizar `CstIcms` (enum/value object) com valores vigentes do guide 3.1.3. | 3.1.3 item 1 |
+| [x] | 8.017.050 | enum `SituacaoDocumento` (Core, Tabela 4.1.2) | Códigos 04 e 05 marcados com `[Descontinuado(EmVersao = V017)]` (informacional, parser continua reconhecendo). Atualizar doc-comment dos membros. | 3.1.0 item 1 |
+| [x] | 8.017.051 | Tabela CST ICMS (Core, Cap IV §1.1) | Atualizar `CstIcms` (enum/value object) com valores vigentes do guide 3.1.3. | 3.1.3 item 1 |
 
 ### Documentação (UPDATE/Doc — antigos UPDATE/Validação, UPDATE/Obrig)
 
@@ -94,4 +94,4 @@ Registros que tiveram `Tam` aumentado em V017 (15→60 em vários casos). Modelo
 
 - **Total sub-stages:** 13 NEW + 9 UPDATE/Campo tamanho (1 PR agregador) + 2 UPDATE/Campo enum Core + 21 UPDATE/Doc (1 PR agregador). Em PRs: ~16 individuais para NEW/enums + 2 agregadores.
 - **Pendentes:** 13 NEW + 2 enums Core + 2 PRs agregadores (tamanho + doc).
-- **Concluídos:** 13 NEW (0221, C855, C857, C895, C897, D700, D730, D731, D735, D737, D750, D760, D761).
+- **Concluídos:** 13 NEW + 2 enums Core + 1 PR agregador tamanho (9 itens) (0221, C855, C857, C895, C897, D700, D730, D731, D735, D737, D750, D760, D761; SituacaoDocumento 04/05; CstIcms doc; tamanho 15→60 em C111, E112, E116, E230, E250, E312, E316, 1922, 1926).

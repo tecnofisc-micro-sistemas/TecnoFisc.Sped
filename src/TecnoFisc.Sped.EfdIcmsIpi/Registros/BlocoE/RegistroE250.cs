@@ -35,8 +35,11 @@ public sealed partial class RegistroE250 : RegistroSped
     [CampoSped(Ordem = 5, Tamanho = 0, Obrigatorio = true)]
     public string? CodRec { get; set; }
 
-    /// <summary>Número do processo ou auto de infração ao qual a obrigação está vinculada, se houver.</summary>
-    [CampoSped(Ordem = 6, Tamanho = 15)]
+    /// <summary>
+    /// Número do processo ou auto de infração ao qual a obrigação está vinculada, se
+    /// houver. Tamanho expandido para 60 em V017 (Guia Prático 3.1.0 itens 8-10).
+    /// </summary>
+    [CampoSped(Ordem = 6, Tamanho = 60)]
     public string? NumProc { get; set; }
 
     /// <summary>Indicador da origem do processo.</summary>

@@ -54,7 +54,8 @@ public sealed class Registro1922Tests
         meta!.Codigo.Should().Be("1922");
         meta.Campos.Select(c => c.Nome).Should().Equal(["NumDa", "NumProc", "IndProc", "Proc", "TxtCompl"]);
         meta.Campos.Select(c => c.Ordem).Should().Equal([2, 3, 4, 5, 6]);
-        meta.Campos.Select(c => c.Tamanho).Should().Equal([0, 15, 1, 0, 0]);
+        // Campo 03 (NumProc) Tam 15→60 em V017 (Guia Pratico 3.1.0 itens 8-10).
+        meta.Campos.Select(c => c.Tamanho).Should().Equal([0, 60, 1, 0, 0]);
         meta.Campos.Select(c => c.Decimais).Should().Equal([0, 0, 0, 0, 0]);
         meta.Campos.Where(c => c.Obrigatorio).Should().BeEmpty();
     }

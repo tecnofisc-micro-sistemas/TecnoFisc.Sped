@@ -19,8 +19,11 @@ public sealed partial class Registro1922 : RegistroSped
     [CampoSped(Ordem = 2, Tamanho = 0)]
     public string? NumDa { get; set; }
 
-    /// <summary>Numero do processo ao qual o ajuste esta vinculado, se houver.</summary>
-    [CampoSped(Ordem = 3, Tamanho = 15)]
+    /// <summary>
+    /// Numero do processo ao qual o ajuste esta vinculado, se houver. Tamanho expandido
+    /// para 60 em V017 (Guia Pratico 3.1.0 itens 8-10).
+    /// </summary>
+    [CampoSped(Ordem = 3, Tamanho = 60)]
     public string? NumProc { get; set; }
 
     /// <summary>Indicador da origem do processo: 0-SEFAZ; 1-Justica Federal; 2-Justica Estadual; 9-Outros.</summary>

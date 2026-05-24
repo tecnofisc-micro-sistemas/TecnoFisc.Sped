@@ -15,8 +15,11 @@ public sealed partial class RegistroC111 : RegistroSped
     /// <inheritdoc />
     public override string Codigo => "C111";
 
-    /// <summary>Identificação do processo ou ato concessório.</summary>
-    [CampoSped(Ordem = 2, Tamanho = 15, Obrigatorio = true)]
+    /// <summary>
+    /// Identificação do processo ou ato concessório. Tamanho expandido para 60 em V017
+    /// (Guia Prático 3.1.0 itens 8-10).
+    /// </summary>
+    [CampoSped(Ordem = 2, Tamanho = 60, Obrigatorio = true)]
     public string? NumProc { get; set; }
 
     /// <summary>Indicador da origem do processo: 0-SEFAZ; 1-Justiça Federal; 2-Justiça Estadual; 3-SECEX/SRF; 9-Outros.</summary>

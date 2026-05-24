@@ -19,8 +19,12 @@ public sealed partial class RegistroC120 : RegistroSped
     [CampoSped(Ordem = 2, Tamanho = 1, Obrigatorio = true)]
     public CodigoDocumentoImportacao? CodDocImp { get; set; }
 
-    /// <summary>Número do documento de importação (até 12 caracteres).</summary>
-    [CampoSped(Ordem = 3, Tamanho = 12, Obrigatorio = true)]
+    /// <summary>
+    /// Número do documento de importação. Tamanho máximo do leiaute vigente: 15 caracteres
+    /// (Guide 3.0.7 item 4, V016 — aumento de 12 para 15). Pacote read-only mantém o tamanho
+    /// mais recente — arquivos V015 com até 12 caracteres continuam parseáveis.
+    /// </summary>
+    [CampoSped(Ordem = 3, Tamanho = 15, Obrigatorio = true)]
     public string? NumDocImp { get; set; }
 
     /// <summary>Valor pago de PIS na importação.</summary>

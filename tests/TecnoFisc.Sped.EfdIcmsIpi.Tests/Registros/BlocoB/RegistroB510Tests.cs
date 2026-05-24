@@ -25,11 +25,11 @@ public sealed class RegistroB510Tests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+        await foreach (var registro in leitor.ReadStreamingAsync(entrada, cancelamento))
             registros.Add(registro);
 
         using var saida = new MemoryStream();
-        await escritor.EscreverAsync(saida, registros, cancelamento);
+        await escritor.WriteAsync(saida, registros, cancelamento);
 
         return EncodingSped.Latin1.GetString(saida.ToArray());
     }
@@ -70,7 +70,7 @@ public sealed class RegistroB510Tests
         registro.IndProf.Should().Be(IndicadorHabilitacaoProfissional.Habilitado);
         registro.IndEsc.Should().Be(IndicadorEscolaridade.NivelSuperior);
         registro.IndSoc.Should().Be(IndicadorParticipacaoSocietaria.Socio);
-        registro.Cpf.Should().Be(Cpf.Criar("52998224725"));
+        registro.Cpf.Should().Be(Cpf.Create("52998224725"));
         registro.Nome.Should().Be("Maria Souza");
     }
 

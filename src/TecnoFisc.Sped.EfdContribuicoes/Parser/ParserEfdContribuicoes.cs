@@ -40,15 +40,15 @@ public sealed class ParserEfdContribuicoes : ILeitorSped
     /// arquivo todo. Memória consumida é limitada pelo buffer do <see cref="System.IO.Pipelines.PipeReader"/>
     /// — adequado para arquivos de múltiplos gigabytes. Os registros saem com Pai/Filhos já vinculados.
     /// </summary>
-    public IAsyncEnumerable<RegistroSped> LerStreamingAsync(Stream entrada, CancellationToken cancelamento = default)
-        => _leitor.LerStreamingAsync(entrada, cancelamento);
+    public IAsyncEnumerable<RegistroSped> ReadStreamingAsync(Stream entrada, CancellationToken cancelamento = default)
+        => _leitor.ReadStreamingAsync(entrada, cancelamento);
 
     /// <summary>
     /// Lê o fluxo SPED inteiro e devolve o modelo tipado <see cref="ArquivoEfdContribuicoes"/> com
-    /// todos os blocos populados. Conveniência sobre <see cref="LerStreamingAsync"/> + <see cref="ArquivoEfdContribuicoes.CarregarAsync"/>;
+    /// todos os blocos populados. Conveniência sobre <see cref="ReadStreamingAsync"/> + <see cref="ArquivoEfdContribuicoes.LoadAsync"/>;
     /// indicado quando o consumidor precisa do arquivo completo em memória. Para arquivos muito
-    /// grandes prefira <see cref="LerStreamingAsync"/>.
+    /// grandes prefira <see cref="ReadStreamingAsync"/>.
     /// </summary>
-    public Task<ArquivoEfdContribuicoes> LerAsync(Stream entrada, CancellationToken cancelamento = default)
-        => ArquivoEfdContribuicoes.CarregarAsync(LerStreamingAsync(entrada, cancelamento), cancelamento);
+    public Task<ArquivoEfdContribuicoes> ReadAsync(Stream entrada, CancellationToken cancelamento = default)
+        => ArquivoEfdContribuicoes.LoadAsync(ReadStreamingAsync(entrada, cancelamento), cancelamento);
 }

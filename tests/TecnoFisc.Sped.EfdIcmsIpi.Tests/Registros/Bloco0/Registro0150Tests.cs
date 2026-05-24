@@ -25,11 +25,11 @@ public sealed class Registro0150Tests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+        await foreach (var registro in leitor.ReadStreamingAsync(entrada, cancelamento))
             registros.Add(registro);
 
         using var saida = new MemoryStream();
-        await escritor.EscreverAsync(saida, registros, cancelamento);
+        await escritor.WriteAsync(saida, registros, cancelamento);
 
         return EncodingSped.Latin1.GetString(saida.ToArray());
     }
@@ -91,9 +91,9 @@ public sealed class Registro0150Tests
         registro.CodPart.Should().Be("PART001");
         registro.Nome.Should().Be("Empresa Teste Ltda");
         registro.CodPais.Should().Be("01058");
-        registro.Cnpj.Should().Be(Cnpj.Criar("11222333000181"));
-        registro.Cpf.Should().Be(Cpf.Criar("52998224725"));
-        registro.Ie.Should().Be(InscricaoEstadual.Criar("111222333"));
+        registro.Cnpj.Should().Be(Cnpj.Create("11222333000181"));
+        registro.Cpf.Should().Be(Cpf.Create("52998224725"));
+        registro.Ie.Should().Be(InscricaoEstadual.Create("111222333"));
         registro.CodMun.Should().Be("3550308");
         registro.Suframa.Should().Be("200012345");
         registro.End.Should().Be("Rua das Flores");

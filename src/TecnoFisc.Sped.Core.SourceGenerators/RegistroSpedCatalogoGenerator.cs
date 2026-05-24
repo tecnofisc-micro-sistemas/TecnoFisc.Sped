@@ -224,13 +224,13 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
             return CategoriaCampo.Enum;
         }
 
-        if (EhValueObjectConhecido(fq))
+        if (IsKnownValueObject(fq))
             return CategoriaCampo.ValueObject;
 
         return CategoriaCampo.NaoSuportado;
     }
 
-    private static bool EhValueObjectConhecido(string fqName) => fqName switch
+    private static bool IsKnownValueObject(string fqName) => fqName switch
     {
         "global::TecnoFisc.Sped.Core.ValueObjects.Cnpj" => true,
         "global::TecnoFisc.Sped.Core.ValueObjects.Cpf" => true,
@@ -549,12 +549,12 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
         if (c.Nullable)
         {
             sb.Append("        if (valor.IsEmpty) { alvo.").Append(c.Nome).AppendLine(" = null; return; }");
-            sb.Append("        alvo.").Append(c.Nome).Append(" = ").Append(c.TipoFq).AppendLine(".Criar(valor);");
+            sb.Append("        alvo.").Append(c.Nome).Append(" = ").Append(c.TipoFq).AppendLine(".Create(valor);");
         }
         else
         {
             sb.Append("        alvo.").Append(c.Nome).Append(" = valor.IsEmpty ? default : ")
-                .Append(c.TipoFq).AppendLine(".Criar(valor);");
+                .Append(c.TipoFq).AppendLine(".Create(valor);");
         }
     }
 

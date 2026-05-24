@@ -77,7 +77,7 @@ public sealed class ArquivoEfdIcmsIpiTests
     [Fact]
     public async Task CarregarAsync_QuandoFluxoNulo_LancaArgumentNullException()
     {
-        var act = async () => await ArquivoEfdIcmsIpi.CarregarAsync(null!);
+        var act = async () => await ArquivoEfdIcmsIpi.LoadAsync(null!);
 
         await act.Should().ThrowAsync<ArgumentNullException>();
     }
@@ -97,8 +97,8 @@ public sealed class ArquivoEfdIcmsIpiTests
         var parser = new ParserEfdIcmsIpi();
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
-        var arquivo = await ArquivoEfdIcmsIpi.CarregarAsync(
-            parser.LerStreamingAsync(entrada, TestContext.Current.CancellationToken),
+        var arquivo = await ArquivoEfdIcmsIpi.LoadAsync(
+            parser.ReadStreamingAsync(entrada, TestContext.Current.CancellationToken),
             TestContext.Current.CancellationToken);
 
         arquivo.Bloco0.Registros.Select(r => r.Codigo).Should().Equal(["0001", "0990"]);

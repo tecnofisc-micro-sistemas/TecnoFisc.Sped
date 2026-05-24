@@ -28,11 +28,11 @@ public sealed class RegistroG130Tests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+        await foreach (var registro in leitor.ReadStreamingAsync(entrada, cancelamento))
             registros.Add(registro);
 
         using var saida = new MemoryStream();
-        await escritor.EscreverAsync(saida, registros, cancelamento);
+        await escritor.WriteAsync(saida, registros, cancelamento);
 
         return EncodingSped.Latin1.GetString(saida.ToArray());
     }
@@ -84,10 +84,10 @@ public sealed class RegistroG130Tests
 
         registro.IndEmit.Should().Be(IndicadorEmissorDocumento.Terceiros);
         registro.CodPart.Should().Be("PART001");
-        registro.CodMod.Should().Be(ModeloDocumento.Criar("55"));
+        registro.CodMod.Should().Be(ModeloDocumento.Create("55"));
         registro.Serie.Should().Be("001");
         registro.NumDoc.Should().Be(123);
-        registro.ChvNfeCte.Should().Be(ChaveAcesso.Criar(ChaveNfeValida));
+        registro.ChvNfeCte.Should().Be(ChaveAcesso.Create(ChaveNfeValida));
         registro.DtDoc.Should().Be(new DateOnly(2025, 1, 15));
         registro.NumDa.Should().Be("DA-123");
     }
@@ -140,7 +140,7 @@ public sealed class RegistroG130Tests
 
         meta.Campos[2].Definidor(registro, valor.AsSpan());
 
-        registro.CodMod.Should().Be(ModeloDocumento.Criar(valor));
+        registro.CodMod.Should().Be(ModeloDocumento.Create(valor));
     }
 
     [Fact]

@@ -19,7 +19,7 @@ public sealed class ParserEfdContribuicoesTests
         ParserEfdContribuicoes parser, string sped, CancellationToken cancelamento)
     {
         var registros = new List<RegistroSped>();
-        await foreach (var registro in parser.LerStreamingAsync(Fluxo(sped), cancelamento))
+        await foreach (var registro in parser.ReadStreamingAsync(Fluxo(sped), cancelamento))
             registros.Add(registro);
         return registros;
     }
@@ -122,7 +122,7 @@ public sealed class ParserEfdContribuicoesTests
             "|9990|2|\r\n" +
             "|9999|6|\r\n";
 
-        var arquivo = await parser.LerAsync(Fluxo(sped), TestContext.Current.CancellationToken);
+        var arquivo = await parser.ReadAsync(Fluxo(sped), TestContext.Current.CancellationToken);
 
         arquivo.Bloco0.EnumerarRegistros().Should().HaveCount(2);
         arquivo.Bloco9.EnumerarRegistros().Should().HaveCount(4);
@@ -139,7 +139,7 @@ public sealed class ParserEfdContribuicoesTests
             "|9900|0000|1|\r\n" +
             "|9900|9999|1|\r\n";
 
-        var arquivo = await parser.LerAsync(Fluxo(sped), TestContext.Current.CancellationToken);
+        var arquivo = await parser.ReadAsync(Fluxo(sped), TestContext.Current.CancellationToken);
 
         var abertura = arquivo.Bloco9.EnumerarRegistros().OfType<Registro9001>().Single();
         var totalizadores = arquivo.Bloco9.EnumerarRegistros().OfType<Registro9900>().ToList();

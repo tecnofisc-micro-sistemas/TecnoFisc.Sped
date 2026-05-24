@@ -28,11 +28,11 @@ public sealed class Registro1110Tests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+        await foreach (var registro in leitor.ReadStreamingAsync(entrada, cancelamento))
             registros.Add(registro);
 
         using var saida = new MemoryStream();
-        await escritor.EscreverAsync(saida, registros, cancelamento);
+        await escritor.WriteAsync(saida, registros, cancelamento);
 
         return EncodingSped.Latin1.GetString(saida.ToArray());
     }
@@ -94,11 +94,11 @@ public sealed class Registro1110Tests
         meta.Campos[8].Definidor(registro, "UN".AsSpan());
 
         registro.CodPart.Should().Be("FORN001");
-        registro.CodMod.Should().Be(ModeloDocumento.Criar("55"));
+        registro.CodMod.Should().Be(ModeloDocumento.Create("55"));
         registro.Ser.Should().Be("001");
         registro.NumDoc.Should().Be(123);
         registro.DtDoc.Should().Be(new DateOnly(2024, 3, 15));
-        registro.ChvNfe.Should().Be(ChaveAcesso.Criar(ChaveNfeValida));
+        registro.ChvNfe.Should().Be(ChaveAcesso.Create(ChaveNfeValida));
         registro.NrMemo.Should().Be(987654321);
         registro.Qtd.Should().Be(10.500m);
         registro.Unid.Should().Be("UN");
@@ -131,7 +131,7 @@ public sealed class Registro1110Tests
 
         meta.Campos[1].Definidor(registro, valor.AsSpan());
 
-        registro.CodMod.Should().Be(ModeloDocumento.Criar(valor));
+        registro.CodMod.Should().Be(ModeloDocumento.Create(valor));
     }
 
     [Fact]
@@ -139,7 +139,7 @@ public sealed class Registro1110Tests
     {
         _catalogo.TentarObter("1110".AsSpan(), out var meta);
         var registro = (Registro1110)meta!.Fabrica();
-        registro.CodMod = ModeloDocumento.Criar("1B");
+        registro.CodMod = ModeloDocumento.Create("1B");
 
         meta.Campos[1].Serializar(registro).Should().Be("1B");
     }

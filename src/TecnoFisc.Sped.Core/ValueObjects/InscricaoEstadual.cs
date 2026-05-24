@@ -16,7 +16,7 @@ public readonly struct InscricaoEstadual : IEquatable<InscricaoEstadual>
     private InscricaoEstadual(string valor) => _valor = valor;
 
     /// <exception cref="FormatException">Quando o valor não é uma IE válida em formato.</exception>
-    public static InscricaoEstadual Criar(ReadOnlySpan<char> valor)
+    public static InscricaoEstadual Create(ReadOnlySpan<char> valor)
     {
         if (!TentarCriar(valor, out var ie))
             throw new FormatException($"Valor não é uma Inscrição Estadual válida: '{valor}'.");
@@ -66,7 +66,7 @@ public readonly struct InscricaoEstadual : IEquatable<InscricaoEstadual>
         return true;
     }
 
-    public bool EhIsento => string.Equals(_valor, Isento, StringComparison.Ordinal);
+    public bool IsIsento => string.Equals(_valor, Isento, StringComparison.Ordinal);
 
     public override string ToString() => _valor ?? string.Empty;
 

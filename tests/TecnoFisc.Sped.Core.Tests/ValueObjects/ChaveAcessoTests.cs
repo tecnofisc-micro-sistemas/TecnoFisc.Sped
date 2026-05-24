@@ -9,7 +9,7 @@ public sealed class ChaveAcessoTests
     [Fact]
     public void Criar_ComChaveValida_RetornaChaveAcesso()
     {
-        var chave = ChaveAcesso.Criar(ChaveValida);
+        var chave = ChaveAcesso.Create(ChaveValida);
 
         chave.ToString().Should().Be(ChaveValida);
     }
@@ -17,7 +17,7 @@ public sealed class ChaveAcessoTests
     [Fact]
     public void Criar_AceitaMascaraComEspacos()
     {
-        var chave = ChaveAcesso.Criar("3524 0111 2223 3300 0181 5500 1000 0000 0110 0000 0018");
+        var chave = ChaveAcesso.Create("3524 0111 2223 3300 0181 5500 1000 0000 0110 0000 0018");
 
         chave.ToString().Should().Be(ChaveValida);
     }
@@ -25,12 +25,12 @@ public sealed class ChaveAcessoTests
     [Fact]
     public void Propriedades_ExtraemCamposEmbutidos()
     {
-        var chave = ChaveAcesso.Criar(ChaveValida);
+        var chave = ChaveAcesso.Create(ChaveValida);
 
         chave.CodigoUf.Should().Be(35);
         chave.Ano.Should().Be(24);
         chave.Mes.Should().Be(1);
-        chave.CnpjEmitente.Should().Be(Cnpj.Criar("11222333000181"));
+        chave.CnpjEmitente.Should().Be(Cnpj.Create("11222333000181"));
         chave.Modelo.Should().Be(55);
         chave.Serie.Should().Be(1);
         chave.Numero.Should().Be(1);
@@ -45,7 +45,7 @@ public sealed class ChaveAcessoTests
         // Mesma chave com último dígito alterado.
         var invalido = ChaveValida[..43] + "9";
 
-        var act = () => ChaveAcesso.Criar(invalido);
+        var act = () => ChaveAcesso.Create(invalido);
 
         act.Should().Throw<FormatException>();
     }
@@ -58,7 +58,7 @@ public sealed class ChaveAcessoTests
         // Recalcula um DV qualquer para que apenas o CNPJ seja inválido (não o DV da chave).
         // Mais simples: substituir e esperar falha por DV da chave também — qualquer das duas barreiras serve.
 
-        var act = () => ChaveAcesso.Criar(bruto + "0");
+        var act = () => ChaveAcesso.Create(bruto + "0");
 
         act.Should().Throw<FormatException>();
     }
@@ -69,7 +69,7 @@ public sealed class ChaveAcessoTests
     [InlineData("3524011122233300018155001000000001100000001A")]  // não-dígito
     public void Criar_ComTamanhoOuCharInvalido_LancaFormatException(string entrada)
     {
-        var act = () => ChaveAcesso.Criar(entrada);
+        var act = () => ChaveAcesso.Create(entrada);
 
         act.Should().Throw<FormatException>();
     }
@@ -82,7 +82,7 @@ public sealed class ChaveAcessoTests
         // Calcula um DV consistente para isolar a falha em cUF.
         // Se o DV vier diferente da chave ChaveValida, pelo menos uma das validações falha — fim.
 
-        var act = () => ChaveAcesso.Criar(bruto + "0");
+        var act = () => ChaveAcesso.Create(bruto + "0");
 
         act.Should().Throw<FormatException>();
     }

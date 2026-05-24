@@ -72,7 +72,7 @@ public sealed class RegistroF600Tests
         registro.VlRet.Should().Be(650m);
         registro.CodRec.Should().Be("5952");
         registro.IndNatRec.Should().Be(IndicadorNaturezaCumulativa.NaoCumulativa);
-        registro.Cnpj.Should().Be(Cnpj.Criar("12345678000195"));
+        registro.Cnpj.Should().Be(Cnpj.Create("12345678000195"));
         registro.VlRetPis.Should().Be(422.50m);
         registro.VlRetCofins.Should().Be(227.50m);
         registro.IndDec.Should().Be(IndicadorDeclarante.BeneficiariaDaRetencao);
@@ -174,11 +174,11 @@ public sealed class RegistroF600Tests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+        await foreach (var registro in leitor.ReadStreamingAsync(entrada, cancelamento))
             registros.Add(registro);
 
         using var saida = new MemoryStream();
-        await escritor.EscreverAsync(saida, registros, cancelamento);
+        await escritor.WriteAsync(saida, registros, cancelamento);
 
         return EncodingSped.Latin1.GetString(saida.ToArray());
     }

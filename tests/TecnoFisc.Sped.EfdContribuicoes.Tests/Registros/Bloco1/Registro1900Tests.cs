@@ -76,7 +76,7 @@ public sealed class Registro1900Tests
         meta.Campos[10].Definidor(registro, "Vendas NF-e".AsSpan());    // InfCompl
         meta.Campos[11].Definidor(registro, "3.1.1.01".AsSpan());       // CodCta
 
-        registro.Cnpj.Should().Be(Cnpj.Criar("12345678000195"));
+        registro.Cnpj.Should().Be(Cnpj.Create("12345678000195"));
         registro.CodMod.Should().Be("55");
         registro.Ser.Should().Be("A");
         registro.SubSer.Should().Be(1);
@@ -85,7 +85,7 @@ public sealed class Registro1900Tests
         registro.QuantDoc.Should().Be(200L);
         registro.CstPis.Should().Be("01");
         registro.CstCofins.Should().Be("01");
-        registro.Cfop.Should().Be(Cfop.Criar("5102"));
+        registro.Cfop.Should().Be(Cfop.Create("5102"));
         registro.InfCompl.Should().Be("Vendas NF-e");
         registro.CodCta.Should().Be("3.1.1.01");
     }
@@ -156,11 +156,11 @@ public sealed class Registro1900Tests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+        await foreach (var registro in leitor.ReadStreamingAsync(entrada, cancelamento))
             registros.Add(registro);
 
         using var saida = new MemoryStream();
-        await escritor.EscreverAsync(saida, registros, cancelamento);
+        await escritor.WriteAsync(saida, registros, cancelamento);
 
         return EncodingSped.Latin1.GetString(saida.ToArray());
     }

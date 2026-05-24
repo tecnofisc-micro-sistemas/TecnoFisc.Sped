@@ -49,7 +49,7 @@ public sealed class RegistroI010Tests
         meta.Campos[1].Definidor(registro, "01".AsSpan());             // IndAtiv
         meta.Campos[2].Definidor(registro, "Complemento".AsSpan());    // InfoCompl
 
-        registro.Cnpj.Should().Be(Cnpj.Criar("12345678000195"));
+        registro.Cnpj.Should().Be(Cnpj.Create("12345678000195"));
         registro.IndAtiv.Should().Be(IndicadorAtividadeInstituicaoFinanceira.InstituicoesFinanceiras);
         registro.InfoCompl.Should().Be("Complemento");
     }
@@ -109,11 +109,11 @@ public sealed class RegistroI010Tests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+        await foreach (var registro in leitor.ReadStreamingAsync(entrada, cancelamento))
             registros.Add(registro);
 
         using var saida = new MemoryStream();
-        await escritor.EscreverAsync(saida, registros, cancelamento);
+        await escritor.WriteAsync(saida, registros, cancelamento);
 
         return EncodingSped.Latin1.GetString(saida.ToArray());
     }

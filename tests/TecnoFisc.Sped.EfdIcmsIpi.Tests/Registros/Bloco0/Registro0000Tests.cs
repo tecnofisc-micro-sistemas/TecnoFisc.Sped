@@ -25,11 +25,11 @@ public sealed class Registro0000Tests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+        await foreach (var registro in leitor.ReadStreamingAsync(entrada, cancelamento))
             registros.Add(registro);
 
         using var saida = new MemoryStream();
-        await escritor.EscreverAsync(saida, registros, cancelamento);
+        await escritor.WriteAsync(saida, registros, cancelamento);
 
         return EncodingSped.Latin1.GetString(saida.ToArray());
     }
@@ -97,7 +97,7 @@ public sealed class Registro0000Tests
         registro.DtIni.Should().Be(new DateOnly(2020, 1, 1));
         registro.DtFin.Should().Be(new DateOnly(2020, 12, 31));
         registro.Nome.Should().Be("EMPRESA TESTE SA");
-        registro.Cnpj.Should().Be(Cnpj.Criar("11222333000181"));
+        registro.Cnpj.Should().Be(Cnpj.Create("11222333000181"));
         registro.Cpf.Should().BeNull();
         registro.Uf.Should().Be("SP");
         registro.Ie.ToString().Should().Be("123456789");

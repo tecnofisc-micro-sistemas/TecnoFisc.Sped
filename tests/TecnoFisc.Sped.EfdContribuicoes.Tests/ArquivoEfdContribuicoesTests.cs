@@ -79,7 +79,7 @@ public sealed class ArquivoEfdContribuicoesTests
     [Fact]
     public async Task CarregarAsync_QuandoFluxoNulo_LancaArgumentNullException()
     {
-        var act = async () => await ArquivoEfdContribuicoes.CarregarAsync(null!);
+        var act = async () => await ArquivoEfdContribuicoes.LoadAsync(null!);
 
         await act.Should().ThrowAsync<ArgumentNullException>();
     }
@@ -100,12 +100,12 @@ public sealed class ArquivoEfdContribuicoesTests
         var gerador = new GeradorEfdContribuicoes();
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
-        var arquivo = await ArquivoEfdContribuicoes.CarregarAsync(
-            parser.LerStreamingAsync(entrada, TestContext.Current.CancellationToken),
+        var arquivo = await ArquivoEfdContribuicoes.LoadAsync(
+            parser.ReadStreamingAsync(entrada, TestContext.Current.CancellationToken),
             TestContext.Current.CancellationToken);
 
         using var saida = new MemoryStream();
-        await gerador.EscreverAsync(saida, arquivo.EnumerarRegistros(), TestContext.Current.CancellationToken);
+        await gerador.WriteAsync(saida, arquivo.EnumerarRegistros(), TestContext.Current.CancellationToken);
 
         EncodingSped.Latin1.GetString(saida.ToArray()).Should().Be(sped);
     }

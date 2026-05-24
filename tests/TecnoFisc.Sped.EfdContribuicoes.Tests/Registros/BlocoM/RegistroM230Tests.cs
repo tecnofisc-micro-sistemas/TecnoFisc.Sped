@@ -58,7 +58,7 @@ public sealed class RegistroM230Tests
         meta.Campos[4].Definidor(registro, "500,00".AsSpan());         // VlCredDif
         meta.Campos[5].Definidor(registro, "101".AsSpan());            // CodCred
 
-        registro.CnpjPj.Should().Be(Cnpj.Criar("11222333000181"));
+        registro.CnpjPj.Should().Be(Cnpj.Create("11222333000181"));
         registro.VlVend.Should().Be(10000m);
         registro.VlNaoReceb.Should().Be(3000m);
         registro.VlContDif.Should().Be(1500m);
@@ -121,11 +121,11 @@ public sealed class RegistroM230Tests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+        await foreach (var registro in leitor.ReadStreamingAsync(entrada, cancelamento))
             registros.Add(registro);
 
         using var saida = new MemoryStream();
-        await escritor.EscreverAsync(saida, registros, cancelamento);
+        await escritor.WriteAsync(saida, registros, cancelamento);
 
         return EncodingSped.Latin1.GetString(saida.ToArray());
     }

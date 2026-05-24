@@ -13,7 +13,7 @@ public readonly struct Ncm : IEquatable<Ncm>
     private Ncm(string valor) => _valor = valor;
 
     /// <exception cref="FormatException">Quando o valor não tem 8 dígitos.</exception>
-    public static Ncm Criar(ReadOnlySpan<char> valor)
+    public static Ncm Create(ReadOnlySpan<char> valor)
     {
         if (!TentarCriar(valor, out var ncm))
             throw new FormatException($"Valor não é um NCM válido: '{valor}'.");

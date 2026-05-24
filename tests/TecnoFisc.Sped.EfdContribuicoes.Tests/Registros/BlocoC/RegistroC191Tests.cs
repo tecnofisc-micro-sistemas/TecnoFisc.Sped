@@ -66,7 +66,7 @@ public sealed class RegistroC191Tests
 
         registro.CnpjCpfPart.Should().Be("12345678000195");
         registro.CstPis.Should().Be(50);
-        registro.Cfop.Should().Be(Cfop.Criar("1101"));
+        registro.Cfop.Should().Be(Cfop.Create("1101"));
         registro.VlItem.Should().Be(2000m);
         registro.VlDesc.Should().Be(100m);
         registro.VlBcPis.Should().Be(1900m);
@@ -131,11 +131,11 @@ public sealed class RegistroC191Tests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+        await foreach (var registro in leitor.ReadStreamingAsync(entrada, cancelamento))
             registros.Add(registro);
 
         using var saida = new MemoryStream();
-        await escritor.EscreverAsync(saida, registros, cancelamento);
+        await escritor.WriteAsync(saida, registros, cancelamento);
 
         return EncodingSped.Latin1.GetString(saida.ToArray());
     }

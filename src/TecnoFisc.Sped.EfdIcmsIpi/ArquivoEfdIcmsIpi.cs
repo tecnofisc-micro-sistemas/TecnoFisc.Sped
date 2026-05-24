@@ -76,7 +76,7 @@ public sealed class ArquivoEfdIcmsIpi : IArquivoSped
     /// Constrói o arquivo a partir do fluxo do parser, preservando a ordem dos registros
     /// dentro de cada bloco.
     /// </summary>
-    public static async Task<ArquivoEfdIcmsIpi> CarregarAsync(
+    public static async Task<ArquivoEfdIcmsIpi> LoadAsync(
         IAsyncEnumerable<RegistroSped> registros,
         CancellationToken cancelamento = default)
     {

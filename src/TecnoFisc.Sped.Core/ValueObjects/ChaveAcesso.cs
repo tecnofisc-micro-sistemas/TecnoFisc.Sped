@@ -13,7 +13,7 @@ public readonly struct ChaveAcesso : IEquatable<ChaveAcesso>
     private ChaveAcesso(string valor) => _valor = valor;
 
     /// <exception cref="FormatException">Quando o valor não é uma chave de acesso válida.</exception>
-    public static ChaveAcesso Criar(ReadOnlySpan<char> valor)
+    public static ChaveAcesso Create(ReadOnlySpan<char> valor)
     {
         if (!TentarCriar(valor, out var chave))
             throw new FormatException($"Valor não é uma chave de acesso válida: '{valor}'.");
@@ -44,7 +44,7 @@ public readonly struct ChaveAcesso : IEquatable<ChaveAcesso>
 
         // cUF deve ser um código IBGE de UF válido.
         int cuf = (digitos[0] - '0') * 10 + (digitos[1] - '0');
-        if (!CodigosUf.EhValido(cuf))
+        if (!CodigosUf.IsValid(cuf))
         {
             chave = default;
             return false;
@@ -82,7 +82,7 @@ public readonly struct ChaveAcesso : IEquatable<ChaveAcesso>
     public int Mes => _valor is null ? 0 : (_valor[4] - '0') * 10 + (_valor[5] - '0');
 
     /// <summary>CNPJ do emitente (posições 6-19).</summary>
-    public Cnpj CnpjEmitente => _valor is null ? default : Cnpj.Criar(_valor.AsSpan(6, 14));
+    public Cnpj CnpjEmitente => _valor is null ? default : Cnpj.Create(_valor.AsSpan(6, 14));
 
     /// <summary>Modelo do documento fiscal: 55 = NF-e, 65 = NFC-e, 57 = CT-e (posições 20-21).</summary>
     public int Modelo => _valor is null ? 0 : (_valor[20] - '0') * 10 + (_valor[21] - '0');

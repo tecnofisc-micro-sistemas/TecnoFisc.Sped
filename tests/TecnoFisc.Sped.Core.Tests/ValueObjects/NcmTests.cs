@@ -7,7 +7,7 @@ public sealed class NcmTests
     [InlineData("8471.30.19")]
     public void Criar_ComCodigoValido_RetornaNcm(string entrada)
     {
-        var ncm = Ncm.Criar(entrada);
+        var ncm = Ncm.Create(entrada);
 
         ncm.ToString().Should().Be("84713019");
     }
@@ -19,7 +19,7 @@ public sealed class NcmTests
     [InlineData("")]
     public void Criar_ComCodigoInvalido_LancaFormatException(string entrada)
     {
-        var act = () => Ncm.Criar(entrada);
+        var act = () => Ncm.Create(entrada);
 
         act.Should().Throw<FormatException>();
     }
@@ -27,8 +27,8 @@ public sealed class NcmTests
     [Fact]
     public void Equals_ComMesmosDigitos_RetornaTrue()
     {
-        var a = Ncm.Criar("84713019");
-        var b = Ncm.Criar("8471.30.19");
+        var a = Ncm.Create("84713019");
+        var b = Ncm.Create("8471.30.19");
 
         a.Should().Be(b);
     }

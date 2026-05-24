@@ -15,7 +15,7 @@ public sealed class EscritorSpedTxtTests
     {
         var escritor = new EscritorSpedTxt(_catalogo);
         using var fluxo = new MemoryStream();
-        await escritor.EscreverAsync(fluxo, registros);
+        await escritor.WriteAsync(fluxo, registros);
         return EncodingSped.Latin1.GetString(fluxo.ToArray());
     }
 
@@ -28,7 +28,7 @@ public sealed class EscritorSpedTxtTests
             DtIni = new DateOnly(2025, 1, 1),
             DtFin = new DateOnly(2025, 1, 31),
             Nome = "EMPRESA TESTE",
-            Cnpj = Cnpj.Criar("11222333000181"),
+            Cnpj = Cnpj.Create("11222333000181"),
         };
 
         var saida = await EscreverParaTextoAsync([registro]);
@@ -47,7 +47,7 @@ public sealed class EscritorSpedTxtTests
                 DtIni = new DateOnly(2025, 1, 1),
                 DtFin = new DateOnly(2025, 1, 31),
                 Nome = "EMPRESA",
-                Cnpj = Cnpj.Criar("11222333000181"),
+                Cnpj = Cnpj.Create("11222333000181"),
             },
             new RegistroC001Sintetico { IndMov = 0 },
             new RegistroC100Sintetico
@@ -55,7 +55,7 @@ public sealed class EscritorSpedTxtTests
                 IndOper = "0",
                 CodPart = 123,
                 VlDoc = 1500.75m,
-                Cfop = Cfop.Criar("5102"),
+                Cfop = Cfop.Create("5102"),
             },
             new Registro9999Sintetico { QtdLin = 4 },
         };
@@ -78,7 +78,7 @@ public sealed class EscritorSpedTxtTests
             DtIni = new DateOnly(2025, 1, 1),
             DtFin = new DateOnly(2025, 1, 31),
             Nome = null,
-            Cnpj = Cnpj.Criar("11222333000181"),
+            Cnpj = Cnpj.Create("11222333000181"),
         };
 
         var saida = await EscreverParaTextoAsync([registro]);
@@ -94,7 +94,7 @@ public sealed class EscritorSpedTxtTests
             IndOper = "1",
             CodPart = 1,
             VlDoc = 1234m,
-            Cfop = Cfop.Criar("5102"),
+            Cfop = Cfop.Create("5102"),
         };
 
         var saida = await EscreverParaTextoAsync([registro]);
@@ -111,12 +111,12 @@ public sealed class EscritorSpedTxtTests
             DtIni = new DateOnly(2025, 1, 1),
             DtFin = new DateOnly(2025, 1, 31),
             Nome = "AÇÃO LTDA",
-            Cnpj = Cnpj.Criar("11222333000181"),
+            Cnpj = Cnpj.Create("11222333000181"),
         };
 
         var escritor = new EscritorSpedTxt(_catalogo);
         using var fluxo = new MemoryStream();
-        await escritor.EscreverAsync(fluxo, new RegistroSped[] { registro }, TestContext.Current.CancellationToken);
+        await escritor.WriteAsync(fluxo, new RegistroSped[] { registro }, TestContext.Current.CancellationToken);
 
         var bytes = fluxo.ToArray();
         // Latin1 codifica 'Ç' = 0xC7, 'Ã' = 0xC3.
@@ -131,7 +131,7 @@ public sealed class EscritorSpedTxtTests
         using var fluxo = new MemoryStream();
         var registro = new RegistroDesconhecido();
 
-        var act = async () => await escritor.EscreverAsync(fluxo, new RegistroSped[] { registro });
+        var act = async () => await escritor.WriteAsync(fluxo, new RegistroSped[] { registro });
 
         await act.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*ZZZZ*");
@@ -142,7 +142,7 @@ public sealed class EscritorSpedTxtTests
     {
         var escritor = new EscritorSpedTxt(_catalogo);
 
-        var act = async () => await escritor.EscreverAsync(
+        var act = async () => await escritor.WriteAsync(
             saida: null!,
             registros: Array.Empty<RegistroSped>());
 
@@ -155,7 +155,7 @@ public sealed class EscritorSpedTxtTests
         var escritor = new EscritorSpedTxt(_catalogo);
         using var fluxo = new MemoryStream();
 
-        var act = async () => await escritor.EscreverAsync(fluxo, registros: (IEnumerable<RegistroSped>)null!);
+        var act = async () => await escritor.WriteAsync(fluxo, registros: (IEnumerable<RegistroSped>)null!);
 
         await act.Should().ThrowAsync<ArgumentNullException>();
     }
@@ -166,7 +166,7 @@ public sealed class EscritorSpedTxtTests
         var escritor = new EscritorSpedTxt(_catalogo);
         using var fluxo = new MemoryStream();
 
-        await escritor.EscreverAsync(
+        await escritor.WriteAsync(
             fluxo,
             new RegistroSped[] { new Registro9999Sintetico { QtdLin = 1 } },
             TestContext.Current.CancellationToken);

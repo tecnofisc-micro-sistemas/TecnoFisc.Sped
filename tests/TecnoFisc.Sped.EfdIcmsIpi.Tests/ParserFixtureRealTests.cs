@@ -37,7 +37,7 @@ public sealed class ParserFixtureRealTests
             using var entrada = new MemoryStream(bytesCrus, writable: false);
 
             var registros = new List<RegistroSped>();
-            await foreach (var registro in parser.LerStreamingAsync(entrada, TestContext.Current.CancellationToken))
+            await foreach (var registro in parser.ReadStreamingAsync(entrada, TestContext.Current.CancellationToken))
                 registros.Add(registro);
 
             registros.Should().NotBeEmpty(because: $"fixture {Path.GetFileName(caminhoFixture)} deve produzir registros");
@@ -64,8 +64,8 @@ public sealed class ParserFixtureRealTests
                 await File.ReadAllBytesAsync(caminhoFixture, TestContext.Current.CancellationToken));
 
             using var entrada = new MemoryStream(bytesOriginais, writable: false);
-            var arquivo = await ArquivoEfdIcmsIpi.CarregarAsync(
-                parser.LerStreamingAsync(entrada, TestContext.Current.CancellationToken),
+            var arquivo = await ArquivoEfdIcmsIpi.LoadAsync(
+                parser.ReadStreamingAsync(entrada, TestContext.Current.CancellationToken),
                 TestContext.Current.CancellationToken);
 
             var totalRegistros = arquivo.EnumerarRegistros().Count();

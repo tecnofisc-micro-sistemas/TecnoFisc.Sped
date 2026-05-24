@@ -12,10 +12,10 @@ public sealed class InscricaoEstadualTests
     [InlineData("ab1234567", "AB1234567", false)]
     public void Criar_ComValorValido_NormalizaResultado(string entrada, string esperado, bool isento)
     {
-        var ie = InscricaoEstadual.Criar(entrada);
+        var ie = InscricaoEstadual.Create(entrada);
 
         ie.ToString().Should().Be(esperado);
-        ie.EhIsento.Should().Be(isento);
+        ie.IsIsento.Should().Be(isento);
     }
 
     [Theory]
@@ -25,7 +25,7 @@ public sealed class InscricaoEstadualTests
     [InlineData("12@456")]               // caractere proibido
     public void Criar_ComValorInvalido_LancaFormatException(string entrada)
     {
-        var act = () => InscricaoEstadual.Criar(entrada);
+        var act = () => InscricaoEstadual.Create(entrada);
 
         act.Should().Throw<FormatException>();
     }
@@ -33,8 +33,8 @@ public sealed class InscricaoEstadualTests
     [Fact]
     public void Equals_ComMesmoValorNormalizado_RetornaTrue()
     {
-        var a = InscricaoEstadual.Criar("123.456.789");
-        var b = InscricaoEstadual.Criar("123456789");
+        var a = InscricaoEstadual.Create("123.456.789");
+        var b = InscricaoEstadual.Create("123456789");
 
         a.Should().Be(b);
         a.GetHashCode().Should().Be(b.GetHashCode());

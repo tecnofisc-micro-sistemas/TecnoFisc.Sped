@@ -18,7 +18,7 @@ This document is written in **English** because LLMs (including Claude Code) fol
 
 ### 1.3 Code language rule (CRITICAL)
 
-Code uses **Portuguese for all SPED-specific concepts** (record names, fiscal terms, field names) and **English only for technical universal patterns and language keywords**. No mixing within the same logical layer.
+Code separates **substantives from verbs**. SPED-specific **nouns** stay in Portuguese (record classes, fiscal value objects, enum types, SPED field properties). **Verbs**, static factory methods and boolean predicates use **idiomatic English** — Portuguese verb identifiers degrade when accent marks have to be simulated (`EhEntrada` faking `É entrada`, `Carregar` requiring no accent but inconsistent with the rest of the verb surface), and English aligns with C# convention and BCL patterns.
 
 **Portuguese (mandatory) for:**
 
@@ -26,17 +26,31 @@ Code uses **Portuguese for all SPED-specific concepts** (record names, fiscal te
 - Fiscal value objects: `Cnpj`, `Cpf`, `Cfop`, `Ncm`, `Cest`, `Cst`, `ChaveAcesso`
 - Enums representing fiscal concepts: `IndicadorOperacao`, `IndicadorEmitente`, `ModeloDocumento`
 - Properties matching SPED field names: `IndOper`, `CodPart`, `DtDoc`, `VlDoc`
-- Domain methods: `LerArquivo`, `EscreverArquivo`, `ValidarLayout`
+- Domain nouns: `ArquivoEfdContribuicoes`, `BlocoC`, `CatalogoSped`, namespaces (`TecnoFisc.Sped.EfdContribuicoes.Parser`)
 
-**English (allowed/expected) for:**
+**English (mandatory) for:**
 
 - C# language keywords (`class`, `public`, `async`, `await`)
 - BCL types (`List<T>`, `DateOnly`, `Dictionary<,>`)
 - Universal technical patterns: `Parser`, `Generator`, `Reader`, `Writer`, `Builder`, `Factory`
+- **Domain verbs / methods**: `ReadAsync`, `ReadStreamingAsync`, `WriteAsync`, `LoadAsync`, `Create` (static factory on value objects)
+- **Boolean predicates**: `IsEntrada`, `IsSaida`, `IsIsento`, `IsValid`, `IsKnownValueObject`
 - Test conventions: `*Tests` classes, `Should_*` methods
 - Infrastructure concerns: `Stream`, `Pipeline`, `Buffer`
 
-**Forbidden:** mixing Portuguese and English randomly. SPED record classes and fiscal terms stay in Portuguese; technical infrastructure stays in English.
+**Examples:**
+
+```csharp
+Cnpj documento = Cnpj.Create("12345678000195");
+if (cfop.IsEntrada) { ... }
+await foreach (var registro in parser.ReadStreamingAsync(stream)) { ... }
+ArquivoEfdContribuicoes arquivo = await parser.ReadAsync(stream);
+await gerador.WriteAsync(stream, arquivo);
+```
+
+The noun (`Cnpj`, `Cfop`, `RegistroC100`, `ArquivoEfdContribuicoes`) is Portuguese; the verb (`Create`, `ReadAsync`, `WriteAsync`) and the predicate (`IsEntrada`) are English. The two languages never mix **inside one identifier**.
+
+**Forbidden:** Portuguese verbs in code (`Criar`, `LerAsync`, `EscreverAsync`, `CarregarAsync`, `EhEntrada`). Portuguese is reserved for **substantives** — the fiscal vocabulary the consumer reads in their domain.
 
 ### 1.4 Documentation language
 
@@ -429,10 +443,10 @@ The library exposes two main entry points per project:
 
 ```csharp
 // Reading
-ArquivoEfdContribuicoes arquivo = await ParserEfdContribuicoes.LerAsync(stream, cancellationToken);
+ArquivoEfdContribuicoes arquivo = await ParserEfdContribuicoes.ReadAsync(stream, cancellationToken);
 
 // Writing
-await GeradorEfdContribuicoes.EscreverAsync(arquivo, stream, cancellationToken);
+await GeradorEfdContribuicoes.WriteAsync(arquivo, stream, cancellationToken);
 ```
 
 `ArquivoEfdContribuicoes` exposes blocks as strongly-typed collections (`Bloco0`, `BlocoC`, `BlocoF`, `Bloco9`, etc.), each containing typed records.
@@ -442,7 +456,7 @@ await GeradorEfdContribuicoes.EscreverAsync(arquivo, stream, cancellationToken);
 For large files where loading the entire arquivo into memory is undesirable, a streaming API is also exposed:
 
 ```csharp
-await foreach (var registro in ParserEfdContribuicoes.LerStreamingAsync(stream, ct))
+await foreach (var registro in ParserEfdContribuicoes.ReadStreamingAsync(stream, ct))
 {
     // Process one record at a time without buffering the whole file
 }
@@ -456,7 +470,7 @@ This is what consumers will use during heavy import.
 
 Located in `TecnoFisc.Sped.Core.ValueObjects`. Each is an immutable struct or sealed class with:
 
-- Private constructor + static factory method (`Criar`).
+- Private constructor + static factory method (`Create`).
 - Validation enforcing format and check digits where applicable.
 - `IEquatable<T>` and value-based equality.
 - `ToString()` returning canonical SPED representation.
@@ -546,7 +560,7 @@ Publishing: SPED arquivos are all-or-nothing — a partial implementation cannot
 
 ### Stage 5 — Streaming API
 
-- `ParserEfdContribuicoes.LerStreamingAsync` returning `IAsyncEnumerable<RegistroSped>`.
+- `ParserEfdContribuicoes.ReadStreamingAsync` returning `IAsyncEnumerable<RegistroSped>`.
 - Memory-bounded benchmarks proving constant memory for arbitrary file size.
 - Can land mid-Stage 4, after enough registros exist to exercise the streaming path end-to-end.
 
@@ -666,15 +680,15 @@ Pacote para ECF (Escrituração Contábil Fiscal). Padrão `.txt` igual EFD/ECD.
 
 ### 13.1 Naming
 
-- Portuguese for SPED concepts (record names, fiscal terms, field names).
-- English for technical universal patterns.
-- No mixing within the same logical layer.
+- Portuguese for SPED **nouns**: record classes, fiscal value objects, fiscal enums, SPED field properties.
+- English for **verbs**, static factory methods (`Create`), boolean predicates (`IsEntrada`, `IsValid`), and technical universal patterns (`Parser`, `Generator`, `Builder`).
+- No mixing within a single identifier. See §1.3 for the full rule and examples.
 
 ### 13.2 Patterns
 
 - Sealed classes by default unless designed for inheritance.
 - Records for immutable value objects.
-- Private constructors + static factory methods (`Criar`) for value objects with invariants.
+- Private constructors + static factory methods (`Create`) for value objects with invariants.
 - `Result<T>` for parser operations that can fail in expected ways.
 - Exceptions for unexpected/programmatic failures.
 - `async`/`await` on all I/O. `ConfigureAwait(false)` everywhere (this is a library).

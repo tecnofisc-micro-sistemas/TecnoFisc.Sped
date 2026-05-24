@@ -28,11 +28,11 @@ public sealed class Registro1105Tests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+        await foreach (var registro in leitor.ReadStreamingAsync(entrada, cancelamento))
             registros.Add(registro);
 
         using var saida = new MemoryStream();
-        await escritor.EscreverAsync(saida, registros, cancelamento);
+        await escritor.WriteAsync(saida, registros, cancelamento);
 
         return EncodingSped.Latin1.GetString(saida.ToArray());
     }
@@ -84,10 +84,10 @@ public sealed class Registro1105Tests
         meta.Campos[4].Definidor(registro, "15032024".AsSpan());
         meta.Campos[5].Definidor(registro, "ITEM001".AsSpan());
 
-        registro.CodMod.Should().Be(ModeloDocumento.Criar("55"));
+        registro.CodMod.Should().Be(ModeloDocumento.Create("55"));
         registro.Serie.Should().Be("001");
         registro.NumDoc.Should().Be(123);
-        registro.ChvNfe.Should().Be(ChaveAcesso.Criar(ChaveNfeValida));
+        registro.ChvNfe.Should().Be(ChaveAcesso.Create(ChaveNfeValida));
         registro.DtDoc.Should().Be(new DateOnly(2024, 3, 15));
         registro.CodItem.Should().Be("ITEM001");
     }
@@ -115,7 +115,7 @@ public sealed class Registro1105Tests
 
         meta.Campos[0].Definidor(registro, valor.AsSpan());
 
-        registro.CodMod.Should().Be(ModeloDocumento.Criar(valor));
+        registro.CodMod.Should().Be(ModeloDocumento.Create(valor));
     }
 
     [Fact]
@@ -123,7 +123,7 @@ public sealed class Registro1105Tests
     {
         _catalogo.TentarObter("1105".AsSpan(), out var meta);
         var registro = (Registro1105)meta!.Fabrica();
-        registro.CodMod = ModeloDocumento.Criar("55");
+        registro.CodMod = ModeloDocumento.Create("55");
 
         meta.Campos[0].Serializar(registro).Should().Be("55");
     }

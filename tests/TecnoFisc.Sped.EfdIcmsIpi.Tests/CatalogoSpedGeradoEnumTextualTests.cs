@@ -25,7 +25,7 @@ public sealed class CatalogoSpedGeradoEnumTextualTests
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
 
         Registro1010? lido = null;
-        await foreach (var registro in leitor.LerStreamingAsync(entrada, TestContext.Current.CancellationToken))
+        await foreach (var registro in leitor.ReadStreamingAsync(entrada, TestContext.Current.CancellationToken))
             lido = (Registro1010)registro;
 
         lido.Should().NotBeNull();
@@ -66,7 +66,7 @@ public sealed class CatalogoSpedGeradoEnumTextualTests
         };
 
         using var saida = new MemoryStream();
-        await escritor.EscreverAsync(saida, new RegistroSped[] { registro }, TestContext.Current.CancellationToken);
+        await escritor.WriteAsync(saida, new RegistroSped[] { registro }, TestContext.Current.CancellationToken);
 
         EncodingSped.Latin1.GetString(saida.ToArray())
             .Should().Be("|1010|S|N|S|N|S|N|S|N|S|N|S|N|S|\r\n");
@@ -81,7 +81,7 @@ public sealed class CatalogoSpedGeradoEnumTextualTests
 
         var act = async () =>
         {
-            await foreach (var _ in leitor.LerStreamingAsync(entrada, TestContext.Current.CancellationToken)) { }
+            await foreach (var _ in leitor.ReadStreamingAsync(entrada, TestContext.Current.CancellationToken)) { }
         };
 
         await act.Should().ThrowAsync<TecnoFisc.Sped.Core.Erros.ErroFormatoSpedException>();

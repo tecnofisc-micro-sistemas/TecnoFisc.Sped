@@ -8,8 +8,8 @@ using TecnoFisc.Sped.EfdContribuicoes.Parser;
 namespace TecnoFisc.Sped.Benchmarks;
 
 /// <summary>
-/// Compara <see cref="ParserEfdContribuicoes.LerStreamingAsync"/> (memory-bounded) com
-/// <see cref="ParserEfdContribuicoes.LerAsync"/> (buffered, materializa
+/// Compara <see cref="ParserEfdContribuicoes.ReadStreamingAsync"/> (memory-bounded) com
+/// <see cref="ParserEfdContribuicoes.ReadAsync"/> (buffered, materializa
 /// <see cref="ArquivoEfdContribuicoes"/> inteiro).
 /// </summary>
 /// <remarks>
@@ -54,7 +54,7 @@ public class StreamingVsBufferedBenchmark
         var parser = new ParserEfdContribuicoes();
         using var stream = new MemoryStream(_bytesArquivo, writable: false);
         int total = 0;
-        await foreach (var _ in parser.LerStreamingAsync(stream))
+        await foreach (var _ in parser.ReadStreamingAsync(stream))
             total++;
         return total;
     }
@@ -64,7 +64,7 @@ public class StreamingVsBufferedBenchmark
     {
         var parser = new ParserEfdContribuicoes();
         using var stream = new MemoryStream(_bytesArquivo, writable: false);
-        var arquivo = await parser.LerAsync(stream);
+        var arquivo = await parser.ReadAsync(stream);
         return arquivo.Bloco9.EnumerarRegistros().Count();
     }
 

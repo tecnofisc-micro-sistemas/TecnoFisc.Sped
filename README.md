@@ -68,7 +68,7 @@ using TecnoFisc.Sped.EfdContribuicoes.Parser;
 var parser = new ParserEfdContribuicoes();
 await using var entrada = File.OpenRead("PISCOFINS-202401.txt");
 
-ArquivoEfdContribuicoes arquivo = await parser.LerAsync(entrada);
+ArquivoEfdContribuicoes arquivo = await parser.ReadAsync(entrada);
 
 foreach (var registro in arquivo.Bloco0.EnumerarRegistros())
     Console.WriteLine(registro.Codigo);
@@ -82,7 +82,7 @@ using TecnoFisc.Sped.EfdContribuicoes.Parser;
 var parser = new ParserEfdContribuicoes();
 await using var entrada = File.OpenRead("arquivo-grande.txt");
 
-await foreach (var registro in parser.LerStreamingAsync(entrada))
+await foreach (var registro in parser.ReadStreamingAsync(entrada))
 {
     // Um registro por vez. Memória usada não cresce com o tamanho do arquivo.
 }
@@ -97,7 +97,7 @@ using TecnoFisc.Sped.EfdContribuicoes.Gerador;
 var gerador = new GeradorEfdContribuicoes();
 await using var saida = File.Create("saida.txt");
 
-await gerador.EscreverAsync(saida, arquivo);
+await gerador.WriteAsync(saida, arquivo);
 ```
 
 O gerador injeta automaticamente os totalizadores `X990` (encerramento por bloco)
@@ -186,10 +186,15 @@ TecnoFisc.Sped/
 
 ## Convenções
 
-- **Português** para conceitos SPED: classes de registro (`Registro0000`,
-  `RegistroC100`), value objects fiscais (`Cnpj`, `Cfop`, `Ncm`),
-  campos (`IndOper`, `VlDoc`), métodos de domínio (`LerArquivo`, `EscreverArquivo`).
-- **Inglês** para infraestrutura técnica universal: `Parser`, `Generator`,
+- **Português** para **substantivos** do domínio SPED: classes de registro
+  (`Registro0000`, `RegistroC100`), value objects fiscais (`Cnpj`, `Cfop`, `Ncm`),
+  enums fiscais (`IndicadorOperacao`, `ModeloDocumento`), campos (`IndOper`, `VlDoc`),
+  tipos top-level (`ArquivoEfdContribuicoes`, `BlocoC`).
+- **Inglês** para **verbos**, factories estáticos e predicados booleanos:
+  `Cnpj.Create(...)`, `parser.ReadAsync(...)`, `parser.ReadStreamingAsync(...)`,
+  `gerador.WriteAsync(...)`, `cfop.IsEntrada`, `inscricao.IsIsento`,
+  `CodigosUf.IsValid(uf)`.
+- **Inglês** também para infraestrutura técnica universal: `Parser`, `Generator`,
   `Reader`, `Writer`, `Builder`, tipos da BCL, palavras-chave de C#.
 - Encoding dos `.txt` SPED: **Latin1 / Windows-1252**. UTF-8 apenas para os
   pacotes XML (família NF-e).

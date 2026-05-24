@@ -63,14 +63,16 @@ Current development has shipped (release `0.4.0`) EFD Contribuições V006 (read
 
 ## Naming convention (CRITICAL — see ARCHITECTURE.md §1.3)
 
-- **Portuguese** for SPED domain: record classes (`Registro0000`, `RegistroC100`), fiscal value objects (`Cnpj`, `Cfop`, `Ncm`, `ChaveAcesso`), enums of fiscal concepts (`IndicadorOperacao`), SPED field properties (`IndOper`, `CodPart`, `VlDoc`), domain methods (`LerArquivo`, `EscreverArquivo`).
-- **English** for technical infra: BCL types, `Parser`/`Generator`/`Reader`/`Writer`/`Builder`, test class names (`*Tests`, `Should_*`), `Stream`, `Pipeline`, `Buffer`.
-- Do not mix the two within one logical layer.
+Substantivos do domínio SPED em **português**; verbos, factories estáticos e predicados booleanos em **inglês idiomático**.
+
+- **Portuguese (mandatory)** for SPED **nouns**: record classes (`Registro0000`, `RegistroC100`), fiscal value objects (`Cnpj`, `Cfop`, `Ncm`, `ChaveAcesso`), fiscal enums (`IndicadorOperacao`, `ModeloDocumento`), SPED field properties (`IndOper`, `CodPart`, `VlDoc`, `CodVer`), namespaces and top-level domain types (`ArquivoEfdContribuicoes`, `BlocoC`).
+- **English (mandatory)** for **verbs and predicates**: factory methods (`Cnpj.Create(...)`), I/O verbs (`parser.ReadAsync`, `parser.ReadStreamingAsync`, `gerador.WriteAsync`, `arquivo.LoadAsync`), boolean predicates (`Cfop.IsEntrada`, `Cfop.IsSaida`, `InscricaoEstadual.IsIsento`, `CodigosUf.IsValid`), and technical patterns (`Parser`, `Generator`, `Reader`, `Writer`, `Builder`, `*Tests`, `Should_*`, `Stream`, `Pipeline`, `Buffer`, BCL types).
+- The two languages never mix **inside a single identifier**. Example: `Cfop.IsEntrada` (noun PT + verb EN); `parser.ReadStreamingAsync(stream)`; `Cnpj.Create("12345678000195")`.
 
 ## Code conventions worth remembering
 
 - Sealed classes by default. `partial` on classes the source generator extends.
-- Value objects: immutable struct/sealed class, private ctor + static `Criar`, value equality, `ToString()` returns canonical SPED form.
+- Value objects: immutable struct/sealed class, private ctor + static `Create`, value equality, `ToString()` returns canonical SPED form.
 - `Result<T>` for expected parser failures; exceptions for programmer errors.
 - All I/O `async` with `ConfigureAwait(false)` (this is a library).
 - File-scoped namespaces.

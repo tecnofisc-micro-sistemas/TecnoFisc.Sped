@@ -26,11 +26,11 @@ public sealed class Registro1510Tests
 
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
         var registros = new List<RegistroSped>();
-        await foreach (var registro in leitor.LerStreamingAsync(entrada, cancelamento))
+        await foreach (var registro in leitor.ReadStreamingAsync(entrada, cancelamento))
             registros.Add(registro);
 
         using var saida = new MemoryStream();
-        await escritor.EscreverAsync(saida, registros, cancelamento);
+        await escritor.WriteAsync(saida, registros, cancelamento);
 
         return EncodingSped.Latin1.GetString(saida.ToArray());
     }
@@ -104,7 +104,7 @@ public sealed class Registro1510Tests
         registro.VlItem.Should().Be(500.00m);
         registro.VlDesc.Should().Be(10.00m);
         registro.CstIcms.Should().Be(60);
-        registro.Cfop.Should().Be(Cfop.Criar("6102"));
+        registro.Cfop.Should().Be(Cfop.Create("6102"));
         registro.VlBcIcms.Should().Be(250.00m);
         registro.AliqIcms.Should().Be(12.00m);
         registro.VlIcms.Should().Be(30.00m);

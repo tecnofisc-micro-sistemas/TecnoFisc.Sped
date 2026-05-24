@@ -45,8 +45,9 @@ public sealed class MetadadosRegistro
 
     /// <summary>
     /// Versão de leiaute a partir da qual o registro foi descontinuado. <c>0</c> = ativo em todas as versões.
-    /// Origem em <see cref="Atributos.DescontinuadoAttribute.EmVersao"/>. O parser rejeita o registro
-    /// quando a versão do arquivo for maior ou igual a este valor.
+    /// Origem em <see cref="Atributos.DescontinuadoAttribute.EmVersao"/>. Informacional — o parser
+    /// continua reconhecendo o registro para suportar leitura de arquivos históricos das versões
+    /// anteriores (ARCHITECTURE §4.7 read-only).
     /// </summary>
     public int DescontinuadoEm { get; }
 }

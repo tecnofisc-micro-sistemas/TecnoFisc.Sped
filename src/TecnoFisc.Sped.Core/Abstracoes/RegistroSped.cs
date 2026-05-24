@@ -16,8 +16,8 @@ public abstract class RegistroSped
     /// Versão do leiaute declarada no arquivo, extraída do campo <c>COD_VER</c> do
     /// <c>Registro0000</c>. Retorna <c>0</c> para todos os demais registros; o
     /// <c>Registro0000</c> de cada módulo faz override retornando o valor numérico real.
-    /// O parser usa este valor para aplicar restrições de versão (ex.: rejeitar registros
-    /// descontinuados marcados com <see cref="Atributos.DescontinuadoAttribute"/>).
+    /// Exposto ao consumidor para que decida regras próprias por versão; em pacotes
+    /// read-only o parser não usa este valor para filtrar registros (ARCHITECTURE §4.7).
     /// </summary>
     public virtual int VersaoLeiaute => 0;
 

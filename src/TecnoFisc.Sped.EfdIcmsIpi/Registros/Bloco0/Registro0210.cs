@@ -10,8 +10,10 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.Bloco0;
 /// item composto/resultante. Conforme Guia Prático EFD-ICMS/IPI V3.0.6, p. 37.
 /// </summary>
 /// <remarks>
-/// <b>Descontinuado a partir de V016</b> (Guia Prático 3.0.7, item 22). O parser rejeita este
-/// registro em arquivos com <c>COD_VER ≥ 016</c>.
+/// <b>Descontinuado a partir de V016</b> (Guia Prático 3.0.7, item 22). Anotação
+/// <see cref="DescontinuadoAttribute"/> é informacional no read path (ARCHITECTURE §4.7
+/// read-only) — o parser continua reconhecendo o registro para que arquivos históricos
+/// das versões anteriores sejam lidos sem erro de leiaute.
 /// </remarks>
 [RegistroSped(Codigo = "0210", Nivel = 3, Bloco = "0")]
 [Descontinuado(EmVersao = (int)LayoutEfdIcmsIpi.V016)]

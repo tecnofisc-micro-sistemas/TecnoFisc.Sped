@@ -3,7 +3,6 @@ using System.Reflection;
 using TecnoFisc.Sped.Core.Abstracoes;
 using TecnoFisc.Sped.Core.Atributos;
 using TecnoFisc.Sped.Core.Catalogo;
-using TecnoFisc.Sped.Core.Erros;
 using TecnoFisc.Sped.Core.Gerador;
 using TecnoFisc.Sped.Core.Parser;
 using TecnoFisc.Sped.EfdIcmsIpi.Registros.Bloco1;
@@ -15,7 +14,8 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Tests.Registros.Bloco1;
 /// EFD-ICMS/IPI V3.0.6 (p. 286): metadados de catálogo, mapeamento de campos e
 /// invariante de round-trip parse → gerar → texto idêntico.
 /// Sub-stage 8.016.004 — verifica descontinuação em V016: <c>[Descontinuado]</c> aplicado
-/// e parser rejeita o registro quando <c>COD_VER ≥ 016</c>.
+/// como informacional. Parser continua aceitando o registro em V016+ porque arquivos
+/// históricos ainda contêm <c>1600</c> e devem ser lidos (ARCHITECTURE §4.7 read-only).
 /// </summary>
 public sealed class Registro1600Tests
 {
@@ -158,9 +158,10 @@ public sealed class Registro1600Tests
     }
 
     [Fact]
-    public async Task Parser_Registro1600_EmArquivoV016_Rejeitado()
+    public async Task Parser_Registro1600_EmArquivoV016_AceitoComoInformacional()
     {
-        // V016 → descontinuado; parser deve lançar ErroLayoutSpedException
+        // V016 → descontinuado, mas leitura mantém-se ativa para arquivos históricos.
+        // Anotação [Descontinuado] é informacional no read path (ARCHITECTURE §4.7).
         const string sped =
             "|0000|016|0|01012022|31012022|EMPRESA TESTE SA|11222333000181||SP|123456789|3550308|||A|0|\r\n" +
             "|1600|BANCO001|1000,00|500,00|\r\n" +
@@ -168,13 +169,15 @@ public sealed class Registro1600Tests
 
         var leitor = new LeitorSpedTxt(_catalogo);
         using var entrada = new MemoryStream(EncodingSped.Latin1.GetBytes(sped));
+        var registros = new List<RegistroSped>();
 
         Func<Task> ler = async () =>
         {
-            await foreach (var _ in leitor.LerStreamingAsync(entrada, TestContext.Current.CancellationToken)) { }
+            await foreach (var r in leitor.LerStreamingAsync(entrada, TestContext.Current.CancellationToken))
+                registros.Add(r);
         };
 
-        await ler.Should().ThrowAsync<ErroLayoutSpedException>()
-            .WithMessage("*descontinuado*");
+        await ler.Should().NotThrowAsync();
+        registros.Should().Contain(r => r.Codigo == "1600");
     }
 }

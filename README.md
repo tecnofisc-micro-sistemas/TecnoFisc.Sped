@@ -88,6 +88,34 @@ await foreach (var registro in parser.ReadStreamingAsync(entrada))
 }
 ```
 
+### Persistir em banco com `OfType<T>()` + `Batch(n)`
+
+`TecnoFisc.Sped.Core.Streaming` traz dois helpers que removem o boilerplate comum
+de ingestão SPED → banco. `OfType<T>` filtra o stream pelo tipo concreto sem cast
+manual; `Batch(n)` agrupa em lotes para bulk-insert.
+
+```csharp
+using TecnoFisc.Sped.Core.Streaming;
+using TecnoFisc.Sped.EfdContribuicoes.Parser;
+using TecnoFisc.Sped.EfdContribuicoes.Registros.BlocoC;
+
+var parser = new ParserEfdContribuicoes();
+await using var entrada = File.OpenRead("PISCOFINS-202401.txt");
+
+await foreach (var lote in parser.ReadStreamingAsync(entrada)
+                                 .OfType<RegistroC100>()
+                                 .Batch(1000))
+{
+    // lote é IReadOnlyList<RegistroC100> com até 1.000 registros tipados.
+    // Use com Dapper, EF Core AddRangeAsync, SqlBulkCopy, etc.
+    await conexao.BulkInsertAsync(lote);
+}
+```
+
+Memória continua bounded — `OfType` e `Batch` não bufferizam o arquivo inteiro;
+apenas o lote corrente fica em memória. Pattern matching do `OfType` é resolvido
+em compile-time (zero reflection, zero boxing).
+
 ### Geração
 
 ```csharp

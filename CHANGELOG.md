@@ -17,6 +17,7 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 #### Adicionado
 
 - Namespace `TecnoFisc.Sped.Core.Streaming` com dois extension methods sobre o `IAsyncEnumerable<RegistroSped>` produzido pelos parsers: `OfType<T>()` filtra pelo tipo concreto de registro (zero reflection — pattern matching resolvido em compile-time) e `Batch(int size)` agrupa em lotes para bulk-insert em banco (EF Core `AddRangeAsync`, Dapper, `SqlBulkCopy`). Cobre o caso de uso mais comum de ingestão SPED → banco sem o consumidor precisar implementar boilerplate de cast + buffer manual. Memória continua bounded — só o lote corrente fica em memória. (#414)
+- `WithContext()` (mesmo namespace) enriquece o stream com `ContextoPersistencia { IdRegistroAtual, IdPai }` contendo IDs surrogate sequenciais já amarrados à hierarquia. Resolve persistência relacional (PK/FK) sem o consumidor precisar manter stack manual de IDs. Overload `WithContext(startAt: ...)` permite retomar import multi-arquivo. (#416)
 
 #### Alterado (breaking)
 

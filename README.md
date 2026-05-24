@@ -116,6 +116,40 @@ Memória continua bounded — `OfType` e `Batch` não bufferizam o arquivo intei
 apenas o lote corrente fica em memória. Pattern matching do `OfType` é resolvido
 em compile-time (zero reflection, zero boxing).
 
+### IDs surrogate para FK com `WithContext()`
+
+Para modelos relacionais é comum precisar de PK/FK consistentes ao inserir o
+registro pai antes do filho. `WithContext()` enriquece o stream com um
+`ContextoPersistencia` contendo o ID surrogate do registro atual e o ID do
+pai já emitido.
+
+```csharp
+using TecnoFisc.Sped.Core.Streaming;
+using TecnoFisc.Sped.EfdContribuicoes.Parser;
+using TecnoFisc.Sped.EfdContribuicoes.Registros.BlocoC;
+
+await foreach (var (registro, ctx) in parser.ReadStreamingAsync(stream).WithContext())
+{
+    switch (registro)
+    {
+        case RegistroC100 c100:
+            await conexao.ExecuteAsync(
+                "INSERT INTO docs (id, num_doc, vl_doc) VALUES (@id, @n, @v)",
+                new { id = ctx.IdRegistroAtual, n = c100.NumDoc, v = c100.VlDoc });
+            break;
+        case RegistroC170 c170:
+            await conexao.ExecuteAsync(
+                "INSERT INTO itens (id, doc_id, num_item) VALUES (@id, @doc, @n)",
+                new { id = ctx.IdRegistroAtual, doc = ctx.IdPai, n = c170.NumItem });
+            break;
+    }
+}
+```
+
+`ctx.IdPai` é `null` para registros raiz (`0000`, `9990`, `9999`). Para retomar
+import multi-arquivo sem colidir com IDs já persistidos, use o overload
+`WithContext(startAt: <ultimo-id-do-arquivo-anterior + 1>)`.
+
 ### Geração
 
 ```csharp

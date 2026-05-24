@@ -89,4 +89,64 @@ public static class StreamingExtensions
             yield return buffer;
         }
     }
+
+    /// <summary>
+    /// Enriquece o stream com um <see cref="ContextoPersistencia"/> contendo IDs surrogate
+    /// sequenciais e a referência ao ID do pai já emitido. Resolve o caso de uso típico de
+    /// persistência relacional: o consumidor precisa de PK/FK consistentes ao inserir o
+    /// registro pai antes do filho — esta extensão entrega os dois IDs já amarrados, sem
+    /// necessidade de stack manual.
+    /// </summary>
+    /// <param name="origem">Stream produzido por <c>ParserXxx.ReadStreamingAsync</c>.</param>
+    /// <param name="startAt">Valor inicial do contador de IDs (default <c>1</c>). Útil para
+    /// retomar import multi-arquivo sem colidir com IDs já persistidos.</param>
+    /// <param name="cancellationToken">Token de cancelamento propagado ao enumerador subjacente.</param>
+    /// <remarks>
+    /// Internamente mantém um <see cref="Dictionary{TKey, TValue}"/> mapeando registro → ID
+    /// para resolver <c>IdPai</c>. Para arquivos com milhões de registros isso cresce, mas
+    /// continua dominado pela estrutura `Pai/Filhos` que o parser já mantém viva durante o
+    /// streaming. Se memória for crítica, processe e descarte os registros conforme aparecem.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// await foreach (var (registro, ctx) in parser.ReadStreamingAsync(stream).WithContext())
+    /// {
+    ///     switch (registro)
+    ///     {
+    ///         case RegistroC100 c100:
+    ///             await conexao.ExecuteAsync(
+    ///                 "INSERT INTO docs (id, num_doc) VALUES (@id, @n)",
+    ///                 new { id = ctx.IdRegistroAtual, n = c100.NumDoc });
+    ///             break;
+    ///         case RegistroC170 c170:
+    ///             await conexao.ExecuteAsync(
+    ///                 "INSERT INTO itens (id, doc_id, num_item) VALUES (@id, @doc, @n)",
+    ///                 new { id = ctx.IdRegistroAtual, doc = ctx.IdPai, n = c170.NumItem });
+    ///             break;
+    ///     }
+    /// }
+    /// </code>
+    /// </example>
+    public static async IAsyncEnumerable<(RegistroSped Registro, ContextoPersistencia Contexto)> WithContext(
+        this IAsyncEnumerable<RegistroSped> origem,
+        long startAt = 1,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(origem);
+
+        var idsPorRegistro = new Dictionary<RegistroSped, long>();
+        long proximoId = startAt;
+
+        await foreach (var registro in origem.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            long id = proximoId++;
+            idsPorRegistro[registro] = id;
+
+            long? idPai = registro.Pai is { } pai && idsPorRegistro.TryGetValue(pai, out var idResolvido)
+                ? idResolvido
+                : null;
+
+            yield return (registro, new ContextoPersistencia(id, idPai));
+        }
+    }
 }

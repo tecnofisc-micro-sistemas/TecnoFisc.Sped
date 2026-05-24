@@ -21,6 +21,12 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoC;
 /// quando <c>COD_MOD</c> for 55 ou 65.
 /// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
 /// </para>
+/// <para>
+/// <b>V019 (Guide 3.1.9 itens 3-4):</b> regra de validação do campo 12 <c>VL_DOC</c> desabilitada;
+/// nova observação relativa à Reforma Tributária do Consumo — documentos fiscais que escriturem
+/// exclusivamente os novos tributos (IBS/CBS/IS) não devem ser informados em EFD ICMS-IPI.
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </para>
 /// </remarks>
 [RegistroSped(Codigo = "C100", Nivel = 2, Bloco = "C")]
 public sealed partial class RegistroC100 : RegistroSped

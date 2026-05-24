@@ -13,6 +13,11 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoE;
 /// (chave do documento eletrônico) cobrindo as novas integrações fiscais (NFCom/NF3-e/escrituração
 /// consolidada).
 /// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// <para>
+/// <b>V019 (Guide 3.1.7 item 8):</b> validação revisada no campo 02 <c>COD_AJ</c> (código do
+/// ajuste/benefício, conforme Tabela 5.1.1).
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </para>
 /// </remarks>
 [RegistroSped(Codigo = "E113", Nivel = 5, Bloco = "E")]
 public sealed partial class RegistroE113 : RegistroSped

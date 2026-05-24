@@ -12,6 +12,7 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 - Suporte ao leiaute **V018** (Guias Práticos 3.1.5/3.1.6, vigência fiscal jan/2024): novos campos 21-23 `QTD_RESIDUO_DDG/WDG/CANA` no `Registro1391` e doc-comments mecânicos cobrindo NF3-e (modelo 66 no `RegistroC700`), Convênio 115/03 e escrituração consolidada NFCom (`D700`/`D730`/`D750`/`D760`), com reflexos nas apurações `E110`/`E113`/`E210`/`E240` e no `Registro1400`.
 - Suporte ao leiaute **V019** (Guias Práticos 3.1.7/3.1.8/3.1.9, vigência fiscal jan/2025): novo campo `DED` (valor das deduções) em `RegistroD700` (32) e `RegistroD750` (17), e doc-comments mecânicos cobrindo CT-e Simplificado (`D130`), DSI no `C120`, observação sobre Reforma Tributária do Consumo (IBS/CBS/IS) no `C100`/`C190`, DIFAL EC 87/2015 no `0150` e revisões de obrigatoriedade/validação em `C700`/`D100`/`E113`/`D700`/`D750`.
+- Suporte ao leiaute **V020** (Guias Práticos 3.2.0/3.2.1/3.2.2, vigência fiscal jan/2026 — leiaute vigente): novo campo `CAP_TANQUE` (capacidade do tanque em litros) em `Registro1310` (11) e doc-comments mecânicos cobrindo Reforma Tributária do Consumo + Ajuste SINIEF 49/25 no `C100`, orientações de preenchimento em `0150`/`D100`/`D700`/`K230` e mudança de tipo N→C do campo `SER` no `D700` (já modelado lazy como `string?` desde V017).
 
 #### Alterado (breaking)
 

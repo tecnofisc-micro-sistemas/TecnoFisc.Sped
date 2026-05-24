@@ -45,4 +45,7 @@ public enum LayoutEfdIcmsIpi
 
     /// <summary>Leiaute 019 — vigente a partir do período de apuração de janeiro/2025. Inclui o campo DED no Registro D700.</summary>
     V019 = 19,
+
+    /// <summary>Leiaute 020 — vigente a partir do período de apuração de janeiro/2026 (Guia Prático 3.2.0/3.2.1/3.2.2). Inclui o campo CAP_TANQUE no Registro 1310 e marca o início da Reforma Tributária do Consumo (IBS/CBS/IS escriturados em pacote próprio).</summary>
+    V020 = 20,
 }

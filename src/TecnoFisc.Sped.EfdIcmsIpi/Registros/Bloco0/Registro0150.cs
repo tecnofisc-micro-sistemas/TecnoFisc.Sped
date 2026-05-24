@@ -12,6 +12,11 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.Bloco0;
 /// <b>V019 (Guide 3.1.9 item 5):</b> nova orientação adicionada sobre o cadastro de participantes
 /// no contexto do DIFAL (EC 87/2015) — hipótese prevista no § 30 do art. 19 do Convênio SN/1970.
 /// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// <para>
+/// <b>V020 (Guide 3.2.1 item 2):</b> nova orientação de preenchimento adicionada ao cadastro do
+/// participante (não há mudança estrutural de campos).
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </para>
 /// </remarks>
 [RegistroSped(Codigo = "0150", Nivel = 2, Bloco = "0")]
 public sealed partial class Registro0150 : RegistroSped

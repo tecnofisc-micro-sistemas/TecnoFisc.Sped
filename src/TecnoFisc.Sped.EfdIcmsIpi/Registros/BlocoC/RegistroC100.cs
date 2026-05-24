@@ -27,6 +27,15 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoC;
 /// exclusivamente os novos tributos (IBS/CBS/IS) não devem ser informados em EFD ICMS-IPI.
 /// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
 /// </para>
+/// <para>
+/// <b>V020 (Guide 3.2.1 item 4 + 3.2.2 itens 1-2):</b> nova orientação de preenchimento do
+/// campo 12 <c>VL_DOC</c> e inclusão da exceção nº 11 nas regras gerais do registro. Orientação
+/// adicional sobre a Reforma Tributária do Consumo + Ajuste SINIEF 49/25: operações que envolvam
+/// simultaneamente novos tributos (IBS/CBS/IS) <i>e</i> ICMS/IPI devem ser regularmente
+/// escrituradas no C100 — apenas documentos exclusivos dos novos tributos ficam fora do EFD
+/// ICMS-IPI.
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </para>
 /// </remarks>
 [RegistroSped(Codigo = "C100", Nivel = 2, Bloco = "C")]
 public sealed partial class RegistroC100 : RegistroSped

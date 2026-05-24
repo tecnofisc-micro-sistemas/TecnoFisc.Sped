@@ -27,6 +27,13 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoD;
 /// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
 /// </para>
 /// <para>
+/// <b>V020 (Guide 3.2.0 item 1 + 3.2.1 item 1):</b> nova orientação de preenchimento no campo 04
+/// <c>COD_PART</c>. O campo 07 <c>SER</c> teve seu tipo alterado de N para C — já modelado como
+/// <see cref="string"/> lazy desde 8.017.007 (decisão de tipo para tolerar regressão entre
+/// versões em pacotes read-only).
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </para>
+/// <para>
 /// Pacote read-only — modelo único do leiaute mais recente; atributos <see cref="CampoSpedAttribute.DesdeVersao"/>
 /// e <see cref="RegistroSpedAttribute.IntroduzidoEm"/> são informacionais (ver ARCHITECTURE §2.5 / §4.7).
 /// </para>

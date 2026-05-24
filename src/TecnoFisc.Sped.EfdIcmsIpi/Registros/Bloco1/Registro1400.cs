@@ -7,6 +7,12 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.Bloco1;
 /// Registro 1400 - Informacao sobre Valores Agregados. Nivel hierarquico 2,
 /// ocorrencia varios por arquivo. Conforme Guia Pratico EFD-ICMS/IPI V3.0.6, p. 282.
 /// </summary>
+/// <remarks>
+/// <b>V018 (Guide 3.1.5 itens 1-3):</b> nova orientação geral do registro, descrição do
+/// campo 02 <c>COD_ITEM_IPM</c> revisada e novas validações nos campos 02 <c>COD_ITEM_IPM</c>
+/// e 03 <c>MUN</c>.
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </remarks>
 [RegistroSped(Codigo = "1400", Nivel = 2, Bloco = "1")]
 public sealed partial class Registro1400 : RegistroSped
 {

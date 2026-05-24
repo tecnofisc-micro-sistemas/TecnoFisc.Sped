@@ -21,6 +21,11 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoD;
 /// todos os registros como vieram no arquivo.
 /// </para>
 /// <para>
+/// <b>V018 (Guide 3.1.5 item 7 + 3.1.6 itens 4-5):</b> nova orientação geral do registro; descrição
+/// e orientação de preenchimento do campo 05 <c>VL_OPR</c> revisadas.
+/// Regra fiscal — pacote read-only não valida; consumidor (PVA, regras próprias) verifica.
+/// </para>
+/// <para>
 /// Pacote read-only — modelo único do leiaute mais recente; atributos <see cref="CampoSpedAttribute.DesdeVersao"/>
 /// e <see cref="RegistroSpedAttribute.IntroduzidoEm"/> são informacionais (ver ARCHITECTURE §2.5 / §4.7).
 /// </para>

@@ -1,6 +1,7 @@
 using TecnoFisc.Sped.Core.Abstracoes;
 using TecnoFisc.Sped.Core.Atributos;
 using TecnoFisc.Sped.EfdIcmsIpi.Enums;
+using TecnoFisc.Sped.EfdIcmsIpi.Versionamento;
 
 namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.Bloco1;
 
@@ -94,4 +95,16 @@ public sealed partial class Registro1391 : RegistroSped
     /// <summary>Quantidade de residuo produzido, em toneladas.</summary>
     [CampoSped(Ordem = 20, Tamanho = 0, Decimais = 2, Obrigatorio = true)]
     public decimal QtdResiduo { get; set; }
+
+    /// <summary>Quantidade de resíduo de DDG (toneladas). Introduzido em V018 (Guia Prático 3.1.4 item 9; vigência fiscal V018 conforme Subseção 13).</summary>
+    [CampoSped(Ordem = 21, Tamanho = 0, Decimais = 3, DesdeVersao = (int)LayoutEfdIcmsIpi.V018)]
+    public decimal? QtdResiduoDdg { get; set; }
+
+    /// <summary>Quantidade de resíduo de WDG (toneladas). Introduzido em V018 (Guia Prático 3.1.4 item 9; vigência fiscal V018 conforme Subseção 13).</summary>
+    [CampoSped(Ordem = 22, Tamanho = 0, Decimais = 3, DesdeVersao = (int)LayoutEfdIcmsIpi.V018)]
+    public decimal? QtdResiduoWdg { get; set; }
+
+    /// <summary>Quantidade de resíduo de cana (toneladas). Introduzido em V018 (Guia Prático 3.1.4 item 9; vigência fiscal V018 conforme Subseção 13).</summary>
+    [CampoSped(Ordem = 23, Tamanho = 0, Decimais = 3, DesdeVersao = (int)LayoutEfdIcmsIpi.V018)]
+    public decimal? QtdResiduoCana { get; set; }
 }

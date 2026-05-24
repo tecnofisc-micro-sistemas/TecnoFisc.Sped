@@ -40,6 +40,9 @@ public enum LayoutEfdIcmsIpi
     /// <summary>Leiaute 017 — vigente a partir do período de apuração de janeiro/2023 (Guia Prático 3.1.0/3.1.1/3.1.2/3.1.3/3.1.4).</summary>
     V017 = 17,
 
+    /// <summary>Leiaute 018 — vigente a partir do período de apuração de janeiro/2024 (Guia Prático 3.1.5/3.1.6). Inclui NF3-e cód. 66 + Convênio 115/03 (escrituração consolidada via C700) e novos campos de resíduo no Registro 1391.</summary>
+    V018 = 18,
+
     /// <summary>Leiaute 019 — vigente a partir do período de apuração de janeiro/2025. Inclui o campo DED no Registro D700.</summary>
     V019 = 19,
 }

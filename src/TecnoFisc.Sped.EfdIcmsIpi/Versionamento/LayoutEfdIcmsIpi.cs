@@ -36,4 +36,10 @@ public enum LayoutEfdIcmsIpi
 
     /// <summary>Leiaute 016 — vigente a partir do período de apuração de janeiro/2022 (Guia Prático 3.0.7/3.0.8/3.0.9).</summary>
     V016 = 16,
+
+    /// <summary>Leiaute 017 — vigente a partir do período de apuração de janeiro/2023 (Guia Prático 3.1.0/3.1.1/3.1.2/3.1.3/3.1.4).</summary>
+    V017 = 17,
+
+    /// <summary>Leiaute 019 — vigente a partir do período de apuração de janeiro/2025. Inclui o campo DED no Registro D700.</summary>
+    V019 = 19,
 }

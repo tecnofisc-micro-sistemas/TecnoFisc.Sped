@@ -20,7 +20,7 @@
 | [ ] | 8.017.004 | NEW | Registro C857 | C | Outras obrigações tributárias, ajustes e informações de valores provenientes de documento fiscal. Nível 4, 1:N, OC. | Subseção 12 + 3.1.0 item 2 |
 | [ ] | 8.017.005 | NEW | Registro C895 | C | Observações do lançamento fiscal (código 59) — bloco 89x. Nível 3, 1:N, OC. | Subseção 12 + 3.1.0 item 2 |
 | [ ] | 8.017.006 | NEW | Registro C897 | C | Outras obrigações tributárias, ajustes — bloco 89x. Nível 4, 1:N, OC. | Subseção 12 + 3.1.0 item 2 |
-| [ ] | 8.017.007 | NEW | Registro D700 | D | Nota Fiscal Fatura Eletrônica de Serviços de Comunicação — NFCom (código 62). Nível 2, V, OC. **Campo 07 `SER` declarar como `string?` lazy** — V020 muda tipo N→C; modelo único aceita texto sempre. | Subseção 12 + 3.1.0 item 2 |
+| [x] | 8.017.007 | NEW | Registro D700 | D | Nota Fiscal Fatura Eletrônica de Serviços de Comunicação — NFCom (código 62). Nível 2, V, OC. **Campo 07 `SER` declarar como `string?` lazy** — V020 muda tipo N→C; modelo único aceita texto sempre. | Subseção 12 + 3.1.0 item 2 |
 | [ ] | 8.017.008 | NEW | Registro D730 | D | Registro analítico NFCom. Nível 3, 1:N, OC. | Subseção 12 + 3.1.0 item 2 |
 | [ ] | 8.017.009 | NEW | Registro D731 | D | Informações do fundo de combate à pobreza FCP. Nível 4, 1:1, OC. | Subseção 12 + 3.1.0 item 2 |
 | [ ] | 8.017.010 | NEW | Registro D735 | D | Observações do lançamento fiscal (código 62). Nível 3, 1:N, OC. | Subseção 12 + 3.1.0 item 2 |
@@ -94,4 +94,4 @@ Registros que tiveram `Tam` aumentado em V017 (15→60 em vários casos). Modelo
 
 - **Total sub-stages:** 13 NEW + 9 UPDATE/Campo tamanho (1 PR agregador) + 2 UPDATE/Campo enum Core + 21 UPDATE/Doc (1 PR agregador). Em PRs: ~16 individuais para NEW/enums + 2 agregadores.
 - **Pendentes:** 13 NEW + 2 enums Core + 2 PRs agregadores (tamanho + doc).
-- **Concluídos:** 0.
+- **Concluídos:** 1 NEW (D700).

@@ -123,7 +123,7 @@ Block headers são informacionais; numeração é global e contígua (`10.001` �
 | [x] | 10.046 | Registro J005 | Demonstrações Contábeis | 2 | 1:12 | 171 |
 | [x] | 10.047 | Registro J100 | Balanço Patrimonial | 3 | 1:N | 174 |
 | [x] | 10.048 | Registro J150 | Demonstração do Resultado do Exercício (DRE) | 3 | 1:N | 180 |
-| [ ] | 10.049 | Registro J210 | DLPA – Demonstração de Lucros ou Prejuízos Acumulados / DMPL – Demonstração de Mutações do Patrimônio Líquido | 3 | 1:N | 186 |
+| [x] | 10.049 | Registro J210 | DLPA – Demonstração de Lucros ou Prejuízos Acumulados / DMPL – Demonstração de Mutações do Patrimônio Líquido | 3 | 1:N | 186 |
 | [ ] | 10.050 | Registro J215 | Fato Contábil que Altera a Conta Lucros Acumulados ou Prejuízos Acumulados ou Todo o Patrimônio Líquido | 4 | 1:N | 189 |
 | [ ] | 10.051 | Registro J800 | Outras Informações | 3 | 1:N | 190 |
 | [ ] | 10.052 | Registro J801 | Termo de Verificação para Fins de Substituição da ECD | 3 | 0:1 | 192 |

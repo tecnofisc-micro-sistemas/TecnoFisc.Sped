@@ -60,7 +60,7 @@ Block headers são informacionais; numeração é global e contígua (`10.001` �
 
 | Feito | Sub-stage | Registro | Descrição | Nível | Ocorrência | Página PDF |
 | --- | --- | --- | --- | --- | --- | --- |
-| [ ] | 10.001 | Registro 0000 | Abertura do Arquivo Digital e Identificação do Empresário ou da Sociedade Empresária | 0 | 1:1 | 64 |
+| [x] | 10.001 | Registro 0000 | Abertura do Arquivo Digital e Identificação do Empresário ou da Sociedade Empresária | 0 | 1:1 | 64 |
 | [ ] | 10.002 | Registro 0001 | Abertura do Bloco 0 | 1 | 1 | 75 |
 | [ ] | 10.003 | Registro 0007 | Outras Inscrições Cadastrais da Pessoa Jurídica | 2 | 0:N | 76 |
 | [ ] | 10.004 | Registro 0020 | Escrituração Contábil Descentralizada | 2 | 0:N | 78 |

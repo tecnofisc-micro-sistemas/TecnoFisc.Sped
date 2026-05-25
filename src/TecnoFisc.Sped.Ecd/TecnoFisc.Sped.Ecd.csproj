@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Implementação .NET do layout ECD (Escrituração Contábil Digital — Sped Contábil) — leitura e modelo tipado dos registros publicados pela Receita Federal. Cobre o leiaute 9 (vigente a partir do ano-calendário 2020, Manual de Orientação anexo ao Ato Declaratório Executivo Cofis nº 01/2026). Pacote read-only: expõe parser + modelo tipado, sem gerador.</Description>
+    <PackageId>TecnoFisc.Sped.Ecd</PackageId>
+    <PackageTags>sped;ecd;sped-contabil;contabil;escrituracao;fiscal;brasil;tecnofisc</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TecnoFisc.Sped.Core\TecnoFisc.Sped.Core.csproj" />
+
+    <!-- Source generator referenciado como Analyzer: emite o catálogo estático em compile-time
+         e não embarca no runtime do consumidor (ReferenceOutputAssembly=false). -->
+    <ProjectReference Include="..\TecnoFisc.Sped.Core.SourceGenerators\TecnoFisc.Sped.Core.SourceGenerators.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+</Project>

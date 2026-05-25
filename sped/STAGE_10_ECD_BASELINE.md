@@ -112,7 +112,7 @@ Block headers são informacionais; numeração é global e contígua (`10.001` �
 | [x] | 10.040 | Registro I500 | Parâmetros de Impressão e Visualização do Razão Auxiliar com Leiaute Parametrizável | 3 | 0:N | 160 |
 | [x] | 10.041 | Registro I510 | Definição de Campos do Livro Razão Auxiliar com Leiaute Parametrizável | 3 | 0:N | 161 |
 | [x] | 10.042 | Registro I550 | Detalhes do Livro Razão Auxiliar com Leiaute Parametrizável | 3 | 0:N | 163 |
-| [ ] | 10.043 | Registro I555 | Totais no Livro Razão Auxiliar com Leiaute Parametrizável | 4 | 0:N | 166 |
+| [x] | 10.043 | Registro I555 | Totais no Livro Razão Auxiliar com Leiaute Parametrizável | 4 | 0:N | 166 |
 | [ ] | 10.044 | Registro I990 | Encerramento do Bloco I | 1 | 1 | 168 |
 
 ### Bloco J — Demonstrações Contábeis (13 registros)

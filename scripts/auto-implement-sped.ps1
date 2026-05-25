@@ -15,9 +15,10 @@
     - git ou gh CLI retornarem erro
 
 .PARAMETER Module
-    Módulo SPED alvo. Valores aceitos: "efd-contribuicoes", "efd-icms-ipi".
+    Módulo SPED alvo. Valores aceitos: "efd-contribuicoes", "efd-icms-ipi", "ecd".
     Padrão: "efd-contribuicoes" (retro-compatibilidade com Stage 4).
     Determina $TrackingFile e o argumento propagado ao /implementar-registro.
+    "ecd" usa sped/STAGE_10_ECD_BASELINE.md (read-only, leiaute 9 único, sem -Version).
 
 .PARAMETER Version
     Apenas para -Module efd-icms-ipi. Versão do leiaute incremental (ex.: "v016", "v017", "v018", "v019", "v020").
@@ -66,6 +67,11 @@
     Implementa diffs pendentes do incremento V016 sobre o EFD ICMS-IPI.
 
 .EXAMPLE
+    .\scripts\auto-implement-sped.ps1 -Module ecd
+    Implementa os registros pendentes do baseline ECD (leiaute 9, read-only).
+    A primeira execução (sub-stage 10.001) faz o bootstrap do projeto TecnoFisc.Sped.Ecd.
+
+.EXAMPLE
     .\scripts\auto-implement-sped.ps1 -Bloco 0 -DryRun
     Lista pendentes do Bloco 0 sem implementar.
 
@@ -78,7 +84,7 @@
     Implementa registros pendentes usando Codex em vez de Claude.
 #>
 param(
-    [ValidateSet('efd-contribuicoes', 'efd-icms-ipi')]
+    [ValidateSet('efd-contribuicoes', 'efd-icms-ipi', 'ecd')]
     [string]$Module           = "efd-contribuicoes",
     [string]$Version          = "",
     [string]$Bloco            = "",
@@ -109,6 +115,10 @@ function Resolve-TrackingFile {
                 return Join-Path $RepoRoot "sped/STAGE_8_INCR_$upper.md"
             }
             return Join-Path $RepoRoot "sped/STAGE_8_EFD_ICMS_IPI_V015.md"
+        }
+        'ecd' {
+            if ($Version) { throw "Parametro -Version nao se aplica a 'ecd' (leiaute unico 9 — baseline ECD)." }
+            return Join-Path $RepoRoot "sped/STAGE_10_ECD_BASELINE.md"
         }
         default { throw "Modulo desconhecido: $Module" }
     }
@@ -190,12 +200,16 @@ function Get-PendingRegistros {
         $page        = 0
 
         if ($cols[3] -match '^Registro\s+\S+') {
-            # Schema A (baseline)
+            # Schema A (baseline). Pode ter 5 colunas (STAGE_4/STAGE_8:
+            #   ...| Registro | Descrição | Página |) ou 7 colunas (STAGE_10 ECD:
+            #   ...| Registro | Descrição | Nível | Ocorrência | Página |).
+            # A página é a coluna numérica mais à direita (Nível também é numérico,
+            # por isso varre da direita para a esquerda e para na primeira).
             $tipo        = "CREATE"
             $registroCol = $cols[3]
             $description = if ($cols.Count -ge 5) { $cols[4] } else { "" }
-            if ($cols.Count -ge 6 -and $cols[5] -match '^\d+$') {
-                $page = [int]$cols[5]
+            for ($i = $cols.Count - 1; $i -ge 5; $i--) {
+                if ($cols[$i] -match '^\d+$') { $page = [int]$cols[$i]; break }
             }
         }
         elseif ($cols[4] -match '^Registro\s+\S+') {

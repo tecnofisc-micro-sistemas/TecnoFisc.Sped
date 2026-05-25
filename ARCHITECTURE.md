@@ -613,23 +613,27 @@ Sub-stages numerados `8.016.001…` (V016), `8.017.001…` (V017), etc. Ordem de
 
 **Fora do escopo deste Stage 9 (read-only):** `UPDATE/Validação`, `UPDATE/Obrig`, `UPDATE/Subclasse` — viram `UPDATE/Doc` (doc-comment XML) ou `UPDATE/Campo` (mudança in-place no atributo) conforme aplicável. Validações fiscais ficam com o consumidor (§2.3).
 
-### Stage 10 — TecnoFisc.Sped.Ecd (baseline leiaute 2021, read-only inicial)
+### Stage 10 — TecnoFisc.Sped.Ecd (baseline leiaute 9, read-only inicial)
 
-Novo pacote para ECD (Escrituração Contábil Digital). Estrutura interna idêntica a `EfdIcmsIpi` (read-only — sem `Gerador/`, sem round-trip de geração). Pasta `Registros/` por bloco, `Enums/`, `Versionamento/`, `Parser/`, `Arquivo*.cs`.
+Novo pacote para ECD (Escrituração Contábil Digital). Estrutura interna idêntica a `EfdIcmsIpi` (read-only — sem `Gerador/`, sem round-trip de geração). Pasta `Registros/` por bloco, `Enums/`, `Versionamento/`, `Parser/`, `Arquivo*.cs`. Operational appendix: **`sped/STAGE_10_ECD_BASELINE.md`** (72 sub-stages, blocos `0 → C → I → J → K → 9`).
 
 **Modo de operação.** Read-only inicialmente (§2.5) — gerador depende de confirmação de necessidade externa. Quando confirmada, criar stage dedicada ativando subclasses por versão + gerador + round-trip.
 
-**Baseline:** o leiaute vigente em 2021 (versão exata será confirmada lendo o `COD_VER` do registro `0000` do guia oficial no momento da implementação). PDF do Manual de Orientação deve ser dropado em `sped/guides/`. Tracking file: `sped/STAGE_10_ECD_BASELINE.md` com a tabela completa de sub-stages na ordem da Seção 2.6.1 do manual.
+**Baseline: leiaute 9, vigente a partir do ano-calendário 2020** (não há leiaute posterior — ver Stage 11). PDF do Manual de Orientação (`Manual_de_Orientação_da_ECD_Leiaute_20_maio_2026.pdf`, Ato Declaratório Executivo Cofis nº 01/2026) já dropado em `sped/guides/`. Encoding do `.txt`: ISO-8859-1 (Latin-1). Ordem das sub-stages segue a **Seção 3.6 (Leiaute dos Registros)** do manual — fonte autoritativa quando diverge da tabela-resumo 3.2 (e.g., `C052` consta em 3.6, ausente em 3.2).
 
-**Compartilhamento com Core.** Value objects fiscais (`Cnpj`, `Cpf`, `InscricaoEstadual`, etc.) e enums regidos por Ato COTEPE já vivem em `TecnoFisc.Sped.Core` (Stage 1) e são reutilizados — não duplicar. Enums específicos da ECD (planos de contas, naturezas contábeis) ficam no pacote.
+**Versão do leiaute fora do `0000`.** Diferente de EFD, o `Registro0000` da ECD **não** carrega `COD_VER` — campo 02 é o literal `"LECD"`. O código da versão do leiaute mora em **`I010.COD_VER_LC`** (`"9.00"` para AC2024+). `LayoutEcd` enum (`V009 = 9`) é informacional (§4.7 read-only). Impacta o sniffer (§12).
 
-**Independência por registro.** `Registro0000` da ECD é distinto dos `Registro0000` de outros leiautes (Hard Rule 2). Apenas tabelas/enums verdadeiramente transversais migram para Core.
+**Compartilhamento com Core.** Value objects fiscais (`Cnpj`, `Cpf`, `InscricaoEstadual`, `CodigoMunicipio`, etc.) já vivem em `TecnoFisc.Sped.Core` (Stage 1) e são reutilizados — não duplicar. Enums específicos da ECD (forma de escrituração `IND_ESC` `G/R/A/B/Z`, naturezas contábeis) ficam no pacote. `IND_ESC` dirige obrigatoriedade condicional (análogo ao `PERFIL` do EFD ICMS-IPI) → `UPDATE/Doc`, validação fica com o consumidor (§2.3).
 
-Publica `TecnoFisc.Sped.Ecd 0.4.0` quando baseline 2021 completo e parser lê real anonimizado.
+**Independência por registro.** `Registro0000` da ECD é distinto dos `Registro0000` de outros leiautes (Hard Rule 2). Apenas value objects/tabelas verdadeiramente transversais migram para Core.
 
-### Stage 11 — ECD incrementos até leiaute vigente
+Publica `TecnoFisc.Sped.Ecd` (bump apropriado no release) quando todas as 72 sub-stages do baseline leiaute 9 completas e parser lê real anonimizado.
 
-Mesmo padrão de Stage 9: para cada leiaute publicado depois de 2021 até o vigente em 2026, um tracking file `sped/STAGE_10_INCR_V0XX.md` descrevendo apenas o delta. Constantes incrementais no enum `LayoutEcd`. Cada leiaute = minor bump (`0.4.x`).
+### Stage 11 — ECD incrementos até leiaute vigente (standby — sem trigger ativo)
+
+**Sem incrementos hoje.** A Receita não publicou leiaute de ECD posterior ao **leiaute 9** (vigente desde o ano-calendário 2020). O baseline de Stage 10 já é o leiaute vigente — existe **uma única modelagem**. Stage 11 permanece em standby até surgir um leiaute 10.
+
+Quando ativado, segue o mesmo padrão de Stage 9: para cada novo leiaute publicado, um tracking file `sped/STAGE_10_INCR_V0XX.md` descrevendo apenas o delta do read path. Constantes incrementais no enum `LayoutEcd` (`V010 = 10`, …). Cada leiaute = minor bump.
 
 ### Stage 12 — Identificador dinâmico de arquivos SPED (sniffer)
 
@@ -639,7 +643,7 @@ Funcionamento:
 
 - API `SnifferSped.IdentificarAsync(Stream)` lê **apenas a primeira linha não vazia** sem consumir o resto. Devolve `MetadadosArquivoSped { ProjetoSped, VersaoLeiaute, EncodingDetectado, ... }`.
 - Caso o consumidor queira prosseguir, expõe `SnifferSped.AbrirParserAsync(Stream)` que devolve o `ILeitorSped` específico do leiaute identificado e o stream posicionado na origem (replay-safe). Internamente delega para `ParserEfdContribuicoes`, `ParserEfdIcmsIpi`, `ParserEcd`, `ParserEcf` conforme apropriado.
-- Heurística: combinação `(Bloco do primeiro registro, COD_VER, layout do `0000`)`. Registros `0000` divergem entre leiautes em campos e tamanhos, então o discriminator é sólido.
+- Heurística: combinação `(Bloco do primeiro registro, campo discriminador, layout do `0000`)`. Registros `0000` divergem entre leiautes em campos e tamanhos, então o discriminator é sólido. **Caso EFD** (Contribuições / ICMS-IPI): `COD_VER` no próprio `0000` dá projeto + versão. **Caso ECD:** o `0000` **não** tem `COD_VER` — o campo 02 é o literal `"LECD"`, que identifica o projeto pela primeira linha; a versão do leiaute (`COD_VER_LC`) só aparece no `I010`, então o sniffer reporta o projeto ECD na linha 1 mas a `VersaoLeiaute` exige ler até o `I010` (ou assumir o baseline único — leiaute 9 — enquanto não houver incrementos).
 - Sem reflexão no hot path — o despacho é via `switch` gerado em compile time pelo source generator (extensão de Stage 6) ou tabela estática.
 
 Tests cobrem todos os leiautes suportados + arquivo malformado + EOF prematuro + encoding mismatch.

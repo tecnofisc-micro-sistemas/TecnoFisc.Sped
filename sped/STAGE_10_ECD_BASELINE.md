@@ -119,7 +119,7 @@ Block headers são informacionais; numeração é global e contígua (`10.001` �
 
 | Feito | Sub-stage | Registro | Descrição | Nível | Ocorrência | Página PDF |
 | --- | --- | --- | --- | --- | --- | --- |
-| [ ] | 10.045 | Registro J001 | Abertura do Bloco J | 1 | 1 | 169 |
+| [x] | 10.045 | Registro J001 | Abertura do Bloco J | 1 | 1 | 169 |
 | [ ] | 10.046 | Registro J005 | Demonstrações Contábeis | 2 | 1:12 | 171 |
 | [ ] | 10.047 | Registro J100 | Balanço Patrimonial | 3 | 1:N | 174 |
 | [ ] | 10.048 | Registro J150 | Demonstração do Resultado do Exercício (DRE) | 3 | 1:N | 180 |

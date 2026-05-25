@@ -64,7 +64,7 @@ Block headers são informacionais; numeração é global e contígua (`10.001` �
 | [x] | 10.002 | Registro 0001 | Abertura do Bloco 0 | 1 | 1 | 75 |
 | [x] | 10.003 | Registro 0007 | Outras Inscrições Cadastrais da Pessoa Jurídica | 2 | 0:N | 76 |
 | [x] | 10.004 | Registro 0020 | Escrituração Contábil Descentralizada | 2 | 0:N | 78 |
-| [ ] | 10.005 | Registro 0035 | Identificação das SCP | 2 | 0:N | 81 |
+| [x] | 10.005 | Registro 0035 | Identificação das SCP | 2 | 0:N | 81 |
 | [ ] | 10.006 | Registro 0150 | Tabela de Cadastro do Participante | 2 | 0:N | 82 |
 | [ ] | 10.007 | Registro 0180 | Identificação do Relacionamento com o Participante | 3 | 1:N | 85 |
 | [ ] | 10.008 | Registro 0990 | Encerramento do Bloco 0 | 1 | 1 | 87 |

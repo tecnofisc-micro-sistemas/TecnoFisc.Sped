@@ -97,7 +97,7 @@ Block headers são informacionais; numeração é global e contígua (`10.001` �
 | [x] | 10.025 | Registro I050 | Plano de Contas | 3 | 1:N | 117 |
 | [x] | 10.026 | Registro I051 | Plano de Contas Referencial | 4 | 1:N | 122 |
 | [x] | 10.027 | Registro I052 | Indicação dos Códigos de Aglutinação | 4 | 1:N | 124 |
-| [ ] | 10.028 | Registro I053 | Subcontas Correlatas | 4 | 1:N | 126 |
+| [x] | 10.028 | Registro I053 | Subcontas Correlatas | 4 | 1:N | 126 |
 | [ ] | 10.029 | Registro I075 | Tabela de Histórico Padronizado | 3 | 0:N | 129 |
 | [ ] | 10.030 | Registro I100 | Centro de Custos | 3 | 0:N | 130 |
 | [ ] | 10.031 | Registro I150 | Saldos Periódicos – Identificação do Período | 3 | 1:12 | 131 |

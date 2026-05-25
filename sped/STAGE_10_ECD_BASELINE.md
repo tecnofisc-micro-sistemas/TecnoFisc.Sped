@@ -89,7 +89,7 @@ Block headers são informacionais; numeração é global e contígua (`10.001` �
 | Feito | Sub-stage | Registro | Descrição | Nível | Ocorrência | Página PDF |
 | --- | --- | --- | --- | --- | --- | --- |
 | [x] | 10.019 | Registro I001 | Abertura do Bloco I | 1 | 1 | 101 |
-| [ ] | 10.020 | Registro I010 | Identificação da Escrituração Contábil | 2 | 1 | 102 |
+| [x] | 10.020 | Registro I010 | Identificação da Escrituração Contábil | 2 | 1 | 102 |
 | [ ] | 10.021 | Registro I012 | Livros Auxiliares ao Diário ou Livro Principal | 3 | 0:N | 104 |
 | [ ] | 10.022 | Registro I015 | Identificação das Contas da Escrituração Resumida a que se Refere a Escrituração Auxiliar | 4 | 1:N | 107 |
 | [ ] | 10.023 | Registro I020 | Campos Adicionais | 3 | 0:N | 109 |

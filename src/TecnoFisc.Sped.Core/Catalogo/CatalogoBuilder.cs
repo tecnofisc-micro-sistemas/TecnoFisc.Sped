@@ -168,7 +168,8 @@ public static class CatalogoBuilder
                 atributo.Formato,
                 definidor,
                 serializadorComposto,
-                atributo.DesdeVersao)));
+                atributo.DesdeVersao,
+                atributo.CapturaTudo)));
         }
 
         lista.Sort(static (a, b) => a.Ordem.CompareTo(b.Ordem));
@@ -182,6 +183,20 @@ public static class CatalogoBuilder
                 throw new InvalidOperationException(
                     $"Ordens de campos de {tipo.FullName} devem ser sequenciais a partir de 2 " +
                     $"(REG ocupa a posição 1); esperava {esperado}, encontrei {lista[i].Ordem} ({lista[i].Campo.Nome}).");
+        }
+
+        // CapturaTudo só é permitido no último campo e apenas para string?
+        for (int i = 0; i < lista.Count; i++)
+        {
+            var (_, campo) = lista[i];
+            if (!campo.CapturaTudo)
+                continue;
+            if (i != lista.Count - 1)
+                throw new InvalidOperationException(
+                    $"CapturaTudo em {tipo.FullName}.{campo.Nome} só é permitido no último campo do registro.");
+            if (campo.Tipo != typeof(string))
+                throw new InvalidOperationException(
+                    $"CapturaTudo em {tipo.FullName}.{campo.Nome} requer tipo string (nullable ou não).");
         }
 
         return lista.Count == 0

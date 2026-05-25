@@ -33,7 +33,8 @@ public sealed class MetadadosCampo
         string? formato,
         Action<RegistroSped, ReadOnlySpan<char>> definidor,
         Func<RegistroSped, string> serializador,
-        int desdeVersao = 0)
+        int desdeVersao = 0,
+        bool capturaTudo = false)
     {
         ArgumentNullException.ThrowIfNull(nome);
         ArgumentNullException.ThrowIfNull(tipo);
@@ -48,6 +49,7 @@ public sealed class MetadadosCampo
         Obrigatorio = obrigatorio;
         Formato = formato;
         DesdeVersao = desdeVersao;
+        CapturaTudo = capturaTudo;
         _definidor = definidor;
         _serializador = serializador;
     }
@@ -65,6 +67,13 @@ public sealed class MetadadosCampo
     /// Origem em <see cref="Atributos.CampoSpedAttribute.DesdeVersao"/>.
     /// </summary>
     public int DesdeVersao { get; }
+
+    /// <summary>
+    /// Quando <c>true</c>, o parser captura tudo que restar na linha a partir deste campo,
+    /// incluindo separadores <c>|</c> intermediários, como uma única string pipe-joined.
+    /// Origem em <see cref="Atributos.CampoSpedAttribute.CapturaTudo"/>.
+    /// </summary>
+    public bool CapturaTudo { get; }
 
     /// <summary>
     /// Aplica o valor textual ao registro. Recebe o conteúdo do campo entre pipes (sem

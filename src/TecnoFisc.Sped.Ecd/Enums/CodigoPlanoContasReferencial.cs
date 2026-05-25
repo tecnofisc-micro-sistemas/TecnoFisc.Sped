@@ -2,11 +2,15 @@ namespace TecnoFisc.Sped.Ecd.Enums;
 
 /// <summary>
 /// Código do Plano de Contas Referencial usado para o mapeamento das contas analíticas —
-/// campo COD_PLAN_REF do Registro 0000 da ECD. Preenchido apenas quando a pessoa jurídica
-/// realiza o mapeamento para os planos referenciais na ECD.
+/// campos <c>COD_PLAN_REF</c> (Registro 0000) e <c>IND_PLANO_REF_ECD_REC</c> (Registro C040)
+/// da ECD. Preenchido apenas quando a pessoa jurídica realiza o mapeamento para os planos
+/// referenciais; valor <c>0</c> indica ausência de mapeamento.
 /// </summary>
 public enum CodigoPlanoContasReferencial
 {
+    /// <summary>0 — Sem mapeamento para plano referencial.</summary>
+    SemMapeamento = 0,
+
     /// <summary>1 — PJ em Geral – Lucro Real.</summary>
     PessoaJuridicaGeralLucroReal = 1,
 

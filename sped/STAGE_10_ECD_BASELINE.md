@@ -105,7 +105,7 @@ Block headers são informacionais; numeração é global e contígua (`10.001` �
 | [x] | 10.033 | Registro I157 | Transferência de Saldos de Plano de Contas Anterior | 5 | 1:N | 140 |
 | [x] | 10.034 | Registro I200 | Lançamento Contábil | 3 | 1:N | 142 |
 | [x] | 10.035 | Registro I250 | Partidas do Lançamento | 4 | 1:N | 147 |
-| [ ] | 10.036 | Registro I300 | Balancetes Diários – Identificação da Data | 3 | 0:N | 152 |
+| [x] | 10.036 | Registro I300 | Balancetes Diários – Identificação da Data | 3 | 0:N | 152 |
 | [ ] | 10.037 | Registro I310 | Detalhes do Balancete Diário | 4 | 1:N | 153 |
 | [ ] | 10.038 | Registro I350 | Saldo das Contas de Resultado Antes do Encerramento – Identificação da Data | 3 | 1:12 | 155 |
 | [ ] | 10.039 | Registro I355 | Detalhes dos Saldos das Contas de Resultado Antes do Encerramento | 4 | 1:N | 157 |

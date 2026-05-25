@@ -75,7 +75,7 @@ Block headers são informacionais; numeração é global e contígua (`10.001` �
 | --- | --- | --- | --- | --- | --- | --- |
 | [x] | 10.009 | Registro C001 | Abertura do Bloco C | 1 | 1 | 88 |
 | [x] | 10.010 | Registro C040 | Identificação da ECD Recuperada | 2 | 1 | 89 |
-| [ ] | 10.011 | Registro C050 | Plano de Contas Recuperado | 3 | 1:N | 92 |
+| [x] | 10.011 | Registro C050 | Plano de Contas Recuperado | 3 | 1:N | 92 |
 | [ ] | 10.012 | Registro C051 | Plano de Contas Referencial Recuperado | 4 | 0:N | 93 |
 | [ ] | 10.013 | Registro C052 | Indicação dos Códigos de Aglutinação Recuperados | 4 | 0:N | 94 |
 | [ ] | 10.014 | Registro C150 | Saldos Periódicos Recuperados – Identificação do Período | 3 | 1 | 95 |

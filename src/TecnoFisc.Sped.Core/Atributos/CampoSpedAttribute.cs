@@ -43,4 +43,18 @@ public sealed class CampoSpedAttribute : Attribute
     /// atributo.
     /// </remarks>
     public int DesdeVersao { get; init; }
+
+    /// <summary>
+    /// Quando <c>true</c>, indica que este campo variádico (<c>*</c> nas tabelas do guia)
+    /// deve capturar tudo que restar na linha a partir da sua posição, incluindo os separadores
+    /// <c>|</c> intermediários, como uma única string pipe-joined. Obrigatoriamente o último
+    /// campo declarado no registro e do tipo <c>string?</c>.
+    /// </summary>
+    /// <remarks>
+    /// Usado por registros cujo conteúdo é parametrizável em tempo de execução — por exemplo,
+    /// o <c>RZ_CONT</c> do Registro I550 da ECD, cujas colunas são definidas dinamicamente pelo
+    /// Registro I510. O <see cref="Core.Gerador.EscritorSpedTxt"/> serializa o valor diretamente
+    /// (sem pipes adicionais internos), pois o valor já inclui os separadores.
+    /// </remarks>
+    public bool CapturaTudo { get; init; }
 }

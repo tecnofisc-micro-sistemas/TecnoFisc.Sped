@@ -231,6 +231,13 @@ public sealed class LeitorSpedTxt : ILeitorSped
                     var campo = metadados.Campos[indice];
                     try
                     {
+                        if (campo.CapturaTudo)
+                        {
+                            // Campo variádico (*): captura tudo que resta na linha a partir
+                            // de inicioCampo, incluindo os separadores | intermediários.
+                            campo.Definidor(registro, conteudo[inicioCampo..]);
+                            break;
+                        }
                         campo.Definidor(registro, fatia);
                     }
                     catch (Exception ex) when (ex is FormatException

@@ -107,7 +107,7 @@ Block headers são informacionais; numeração é global e contígua (`10.001` �
 | [x] | 10.035 | Registro I250 | Partidas do Lançamento | 4 | 1:N | 147 |
 | [x] | 10.036 | Registro I300 | Balancetes Diários – Identificação da Data | 3 | 0:N | 152 |
 | [x] | 10.037 | Registro I310 | Detalhes do Balancete Diário | 4 | 1:N | 153 |
-| [ ] | 10.038 | Registro I350 | Saldo das Contas de Resultado Antes do Encerramento – Identificação da Data | 3 | 1:12 | 155 |
+| [x] | 10.038 | Registro I350 | Saldo das Contas de Resultado Antes do Encerramento – Identificação da Data | 3 | 1:12 | 155 |
 | [ ] | 10.039 | Registro I355 | Detalhes dos Saldos das Contas de Resultado Antes do Encerramento | 4 | 1:N | 157 |
 | [ ] | 10.040 | Registro I500 | Parâmetros de Impressão e Visualização do Razão Auxiliar com Leiaute Parametrizável | 3 | 0:N | 160 |
 | [ ] | 10.041 | Registro I510 | Definição de Campos do Livro Razão Auxiliar com Leiaute Parametrizável | 3 | 0:N | 161 |

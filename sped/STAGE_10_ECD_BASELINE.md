@@ -82,7 +82,7 @@ Block headers são informacionais; numeração é global e contígua (`10.001` �
 | [x] | 10.015 | Registro C155 | Detalhe dos Saldos Periódicos Recuperados | 4 | 1:N | 96 |
 | [x] | 10.016 | Registro C600 | Demonstrações Contábeis Recuperadas | 3 | 1:N | 98 |
 | [x] | 10.017 | Registro C650 | Demonstração do Resultado do Exercício Recuperada | 4 | 1:N | 99 |
-| [ ] | 10.018 | Registro C990 | Encerramento do Bloco C | 1 | 1 | 100 |
+| [x] | 10.018 | Registro C990 | Encerramento do Bloco C | 1 | 1 | 100 |
 
 ### Bloco I — Lançamentos Contábeis (26 registros)
 

@@ -101,7 +101,7 @@ Block headers são informacionais; numeração é global e contígua (`10.001` �
 | [x] | 10.029 | Registro I075 | Tabela de Histórico Padronizado | 3 | 0:N | 129 |
 | [x] | 10.030 | Registro I100 | Centro de Custos | 3 | 0:N | 130 |
 | [x] | 10.031 | Registro I150 | Saldos Periódicos – Identificação do Período | 3 | 1:12 | 131 |
-| [ ] | 10.032 | Registro I155 | Detalhe dos Saldos Periódicos | 4 | 1:N | 133 |
+| [x] | 10.032 | Registro I155 | Detalhe dos Saldos Periódicos | 4 | 1:N | 133 |
 | [ ] | 10.033 | Registro I157 | Transferência de Saldos de Plano de Contas Anterior | 5 | 1:N | 140 |
 | [ ] | 10.034 | Registro I200 | Lançamento Contábil | 3 | 1:N | 142 |
 | [ ] | 10.035 | Registro I250 | Partidas do Lançamento | 4 | 1:N | 147 |

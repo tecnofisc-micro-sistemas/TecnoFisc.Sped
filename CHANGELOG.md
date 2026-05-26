@@ -6,6 +6,32 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ## [Não publicado]
 
+## [0.6.0] — 2026-05-26
+
+Adiciona o pacote **`TecnoFisc.Sped.Ecd`** (ECD — Escrituração Contábil Digital / Sped Contábil), cobrindo o leiaute 9 (vigente a partir do ano-calendário 2020) completo em modo **read-only**: 72 registros nos blocos `0 → C → I → J → K → 9`, parser streaming/buffered e modelo tipado, validado contra arquivo real anonimizado. No `Core`, adiciona `ReadingOptions` para descartar registros/blocos antes da materialização. Release aditiva (sem breaking changes em relação à `0.5.0`).
+
+### TecnoFisc.Sped.Core 0.6.0
+
+#### Adicionado
+
+- `ReadingOptions` (`TecnoFisc.Sped.Core.Parser`) — permite ao consumidor descartar registros (`RegistrosIgnorados`) ou blocos inteiros (`BlocosIgnorados`) **antes** da materialização. O descarte acontece em nível de byte no `LeitorSpedTxt`: registros ignorados não são decodificados, não são devolvidos no stream e não entram na hierarquia Pai/Filhos — junto com toda a sua subárvore (filhos/netos). Útil para pular registros pesados como `J800`/`J801` da ECD (campo-arquivo RTF de até 30 MB). Os parsers de cada formato expõem um construtor que aceita `ReadingOptions`. Consequência documentada: contagens `9900`/`9990` e validações de hash podem não fechar quando há filtro — é escolha de quem lê. (#502)
+
+### TecnoFisc.Sped.Ecd 0.6.0
+
+#### Adicionado
+
+- Pacote novo, **read-only** (§2.5 — sem `GeradorEcd`, sem `IEscritorSped`, sem round-trip de geração). Cobre a Stage 10 baseline do leiaute 9 (Manual de Orientação anexo ao Ato Declaratório Executivo Cofis nº 01/2026): **72 registros** distribuídos nos 6 blocos `0`, `C`, `I`, `J`, `K`, `9`, com `[RegistroSped]`/`[CampoSped]` declarados, hierarquia validada e fixtures por bloco. Tracking: `sped/STAGE_10_ECD_BASELINE.md`.
+- API pública: `ArquivoEcd` (blocos `Bloco0`/`BlocoC`/`BlocoI`/`BlocoJ`/`BlocoK`/`Bloco9`), `BlocoEcd`, `ParserEcd` (`ReadStreamingAsync` → `IAsyncEnumerable<RegistroSped>`; `ReadAsync` → `Task<ArquivoEcd>` buffered). Encoding do `.txt`: ISO-8859-1 (Latin-1).
+- Enum `LayoutEcd` (`V009 = 9`) informacional. Diferente do EFD, o `Registro0000` da ECD **não** carrega `COD_VER` (campo 02 é o literal `"LECD"`); a versão do leiaute contábil mora em `I010.COD_VER_LC` (`"9.00"` para AC2024+).
+- Leitura de registros multi-linha `J800`/`J801` (campo-arquivo `ARQ_RTF`, conteúdo RTF embutido que pode conter quebras de linha e o delimitador `|`), sem corromper o parsing dos registros seguintes. (#499)
+- Regras `REGRA_*` do manual e obrigatoriedade condicional dirigida por `IND_ESC` (`I010`) tratadas como `UPDATE/Doc` (doc-comment XML) — validação fiscal fica com o consumidor (§2.3). Formato malformado (tipo/tamanho/obrigatório ausente) continua sendo erro de parse.
+
+### Documentação
+
+#### Alterado
+
+- Ordem de implementação dos pacotes restantes (todos **read-only**) definida como **NF-e → NFC-e → CT-e → ECF**. `ARCHITECTURE.md` (§2.5, §3, §4.7, §6, §12, §13) e `README.md` reordenados para refletir essa sequência — o ECF passa a ser o último leiaute textual planejado, depois dos três pacotes XML. `ARCHITECTURE.md` Stage 10 marcada como concluída na `0.6.0`.
+
 ## [0.5.0] — 2026-05-24
 
 Release breaking. Revisa a convenção de nomenclatura da API pública (verbos, factories estáticos e predicados booleanos passam a usar inglês idiomático; substantivos do domínio SPED permanecem em português) e adiciona três helpers de persistência sobre o `IAsyncEnumerable<RegistroSped>` produzido pelos parsers: `OfType<T>()`, `Batch(n)` e `WithContext()`, mais um dispatcher Visitor source-generated por leiaute.
@@ -220,7 +246,8 @@ Release inicial. Conclui a Stage 4 de `ARCHITECTURE.md`: implementação complet
 - API streaming (`IAsyncEnumerable<RegistroSped>`) é objetivo da Stage 5 e não está disponível neste release.
 - Suporte a leiautes mais novos (V007+) entra na Stage 7.
 
-[Não publicado]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/compare/v0.5.0...HEAD
+[Não publicado]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/releases/tag/v0.6.0
 [0.5.0]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/releases/tag/v0.5.0
 [0.4.0]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/releases/tag/v0.4.0
 [0.3.1]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/releases/tag/v0.3.1

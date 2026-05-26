@@ -39,5 +39,12 @@ public sealed class CodigoMunicipioIbgeTests
     public void Equality_PorValor()
     {
         CodigoMunicipioIbge.Create("3168606").Should().Be(CodigoMunicipioIbge.Create("3168606"));
+        (CodigoMunicipioIbge.Create("3168606") != CodigoMunicipioIbge.Create("3128006")).Should().BeTrue();
+    }
+
+    [Fact]
+    public void Default_ToString_RetornaZeros()
+    {
+        default(CodigoMunicipioIbge).ToString().Should().Be("0000000");
     }
 }

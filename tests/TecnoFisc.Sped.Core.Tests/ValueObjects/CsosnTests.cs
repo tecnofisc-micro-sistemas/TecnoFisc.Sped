@@ -28,4 +28,10 @@ public sealed class CsosnTests
         Csosn.Create("102").Should().Be(Csosn.Create("102"));
         (Csosn.Create("102") == Csosn.Create("500")).Should().BeFalse();
     }
+
+    [Fact]
+    public void Default_ToString_RetornaVazio()
+    {
+        default(Csosn).ToString().Should().Be(string.Empty);
+    }
 }

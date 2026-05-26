@@ -5,6 +5,8 @@ public sealed class GtinTests
     [Theory]
     [InlineData("7891149010400")] // GTIN-13 real
     [InlineData("0000078905351")] // GTIN-13 real com zeros à esquerda
+    [InlineData("96385074")]      // GTIN-8
+    [InlineData("10614141000415")]// GTIN-14
     public void Criar_ComGtinValido_RetornaGtin(string codigo)
     {
         var gtin = Gtin.Create(codigo);
@@ -52,5 +54,12 @@ public sealed class GtinTests
     public void Equality_PorValor()
     {
         Gtin.Create("7891149010400").Should().Be(Gtin.Create("7891149010400"));
+        (Gtin.Create("7891149010400") != Gtin.Create("0000078905351")).Should().BeTrue();
+    }
+
+    [Fact]
+    public void Default_ToString_RetornaSentinela()
+    {
+        default(Gtin).ToString().Should().Be("SEM GTIN");
     }
 }

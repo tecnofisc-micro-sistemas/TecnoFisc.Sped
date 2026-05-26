@@ -41,4 +41,10 @@ public sealed class CestTests
         Cest.Create("0302100").Should().Be(Cest.Create("0302100"));
         (Cest.Create("0302100") == Cest.Create("0301100")).Should().BeFalse();
     }
+
+    [Fact]
+    public void Default_ToString_RetornaZeros()
+    {
+        default(Cest).ToString().Should().Be("0000000");
+    }
 }

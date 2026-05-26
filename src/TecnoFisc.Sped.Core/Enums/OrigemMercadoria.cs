@@ -3,7 +3,7 @@ namespace TecnoFisc.Sped.Core.Enums;
 /// <summary>Origem da mercadoria — campo orig do grupo ICMS (item).</summary>
 public enum OrigemMercadoria
 {
-    /// <summary>0 — Nacional, exceto as dos códigos 3 a 5.</summary>
+    /// <summary>0 — Nacional, exceto as dos códigos 3, 4, 5 e 8.</summary>
     Nacional = 0,
 
     /// <summary>1 — Estrangeira, importação direta, exceto código 6.</summary>

@@ -75,7 +75,7 @@ Consequências:
 - Reusar existentes: `Cnpj`, `Cpf`, `Cfop`, `Ncm`, `Cst`, `InscricaoEstadual`, `CodigosUf`.
 
 **Value objects novos — criar no Core** (transversais, servem CT-e futuro):
-- `Cest` (7 dígitos com DV), `Gtin` (8/12/13/14 com checksum; aceitar `SEM GTIN`), `CodigoMunicipioIbge` (7 dígitos), `Csosn`.
+- `Cest` (7 dígitos, formato — **sem DV**), `Gtin` (8/12/13/14 com checksum mod-10; aceitar `SEM GTIN`), `CodigoMunicipioIbge` (7 dígitos), `Csosn` (3 dígitos).
 - Enums do `<ide>` e correlatos: `TipoAmbiente`, `TipoEmissao`, `FinalidadeEmissao`, `IndicadorPresenca`, `IndicadorIntermediador`, `ModalidadeFrete`, `OrigemMercadoria`.
 
 ## 5. API pública

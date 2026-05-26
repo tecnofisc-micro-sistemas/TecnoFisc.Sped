@@ -98,7 +98,7 @@ Nem todos os pacotes precisam de gerador. A decisão é por caso de uso real:
 | `TecnoFisc.Sped.EfdContribuicoes` | ✅ | ✅ | Consumidor TecnoFisc emite o arquivo. |
 | `TecnoFisc.Sped.EfdIcmsIpi` | ✅ | ❌ | Uso é ingestão para análise; não há emissão. |
 | `TecnoFisc.Sped.Ecd` | ✅ | ⏸️ | Parser implementado (0.6.0). Gerador depende de confirmação externa — entra em stage dedicada quando demanda confirmada. |
-| `TecnoFisc.Sped.NFe` / `NFCe` / `CTe` | ✅ | ⏸️ | Caso de uso confirmado é ingestão dos XMLs já emitidos (validação de assinatura, leitura tipada). Geração/emissão para SEFAZ depende de confirmação externa não controlada só pelo usuário — entra em stage dedicada quando confirmada. |
+| `TecnoFisc.Sped.NFeNFCe` / `CTe` | ✅ | ⏸️ | Caso de uso confirmado é ingestão dos XMLs já emitidos (validação de assinatura, leitura tipada). Geração/emissão para SEFAZ depende de confirmação externa não controlada só pelo usuário — entra em stage dedicada quando confirmada. |
 | `TecnoFisc.Sped.Ecf` | ✅ | ⏸️ | Mesma regra do ECD. Último leiaute textual planejado (depois dos pacotes XML). |
 
 **Implicações dos pacotes read-only:**
@@ -122,8 +122,7 @@ Nem todos os pacotes precisam de gerador. A decisão é por caso de uso real:
 | EFD Contribuições | `TecnoFisc.Sped.EfdContribuicoes` | `.txt` (Latin1) |
 | EFD ICMS-IPI | `TecnoFisc.Sped.EfdIcmsIpi` | `.txt` (Latin1) |
 | ECD | `TecnoFisc.Sped.Ecd` | `.txt` (Latin1) |
-| NF-e | `TecnoFisc.Sped.NFe` | XML (UTF-8) |
-| NFC-e | `TecnoFisc.Sped.NFCe` | XML (UTF-8) |
+| NF-e / NFC-e | `TecnoFisc.Sped.NFeNFCe` | XML (UTF-8) |
 | CT-e | `TecnoFisc.Sped.CTe` | XML (UTF-8) |
 | ECF | `TecnoFisc.Sped.Ecf` | `.txt` (Latin1) |
 
@@ -241,8 +240,7 @@ TecnoFisc.Sped/
 │   ├── TecnoFisc.Sped.EfdContribuicoes/              # EFD Contribuições (.txt)
 │   ├── TecnoFisc.Sped.EfdIcmsIpi/                    # EFD ICMS-IPI (.txt)
 │   ├── TecnoFisc.Sped.Ecd/                           # ECD (.txt)
-│   ├── TecnoFisc.Sped.NFe/                           # NF-e XML
-│   ├── TecnoFisc.Sped.NFCe/                          # NFC-e XML
+│   ├── TecnoFisc.Sped.NFeNFCe/                       # NF-e / NFC-e XML (leiaute 4.00, read-only)
 │   ├── TecnoFisc.Sped.CTe/                           # CT-e XML
 │   └── TecnoFisc.Sped.Ecf/                           # ECF (.txt)
 │
@@ -267,8 +265,7 @@ TecnoFisc.Sped.Core.SourceGenerators ← (no dependencies, references Roslyn ana
 TecnoFisc.Sped.EfdContribuicoes      ← Core, Core.SourceGenerators (analyzer)
 TecnoFisc.Sped.EfdIcmsIpi            ← Core, Core.SourceGenerators (analyzer)
 TecnoFisc.Sped.Ecd                   ← Core, Core.SourceGenerators (analyzer)
-TecnoFisc.Sped.NFe                   ← Core, Core.SourceGenerators (analyzer)
-TecnoFisc.Sped.NFCe                  ← Core, Core.SourceGenerators (analyzer)
+TecnoFisc.Sped.NFeNFCe               ← Core
 TecnoFisc.Sped.CTe                   ← Core, Core.SourceGenerators (analyzer)
 TecnoFisc.Sped.Ecf                   ← Core, Core.SourceGenerators (analyzer)
 TecnoFisc.Sped (metapacote)          ← todos os pacotes de leiaute acima
@@ -655,23 +652,26 @@ Tests cobrem todos os leiautes suportados + arquivo malformado + EOF prematuro +
 
 Pacote agregador (`TecnoFisc.Sped`) que referencia todos os pacotes de leiaute em uma única dependência NuGet. Útil para consumidores que querem suporte abrangente sem listar cada pacote no `csproj`.
 
-- Sem código próprio — apenas `<PackageReference>` para cada um dos pacotes de leiaute (`EfdContribuicoes`, `EfdIcmsIpi`, `Ecd`, `NFe`, `NFCe`, `CTe`, `Ecf`).
+- Sem código próprio — apenas `<PackageReference>` para cada um dos pacotes de leiaute (`EfdContribuicoes`, `EfdIcmsIpi`, `Ecd`, `NFeNFCe`, `CTe`, `Ecf`).
 - Versão acompanha a mais alta dos pacotes referenciados; bumps coordenados por release notes consolidados.
 - Documentação no README do pacote orienta consumidores a preferir o metapacote quando não souberem antecipadamente qual leiaute vão consumir, ou quando o sniffer (Stage 12) for o ponto de entrada.
 
 Publica `TecnoFisc.Sped 0.5.0` na primeira vez que todos os leiautes textuais estiverem em uso (EFD Contribuições + EFD ICMS-IPI + ECD; ECF pode ser placeholder até Stage 17).
 
-### Stage 14 — TecnoFisc.Sped.NFe (XML, **read-only**)
+### Stage 14 — TecnoFisc.Sped.NFeNFCe (XML, **read-only**)
 
-- XML parser baseado em `System.Xml.Linq` (ou `XmlReader` para arquivos grandes em modo streaming).
-- Classes de modelo fortemente tipadas mapeando o schema NF-e (procNFe, infNFe, det, total, transp, cobr, infAdic, etc.).
-- Validação de assinatura digital (apenas validação — não assinatura).
-- Encoding canônico do XML = UTF-8 (diferente dos `.txt` SPED que são Latin1).
-- **Modo read-only (§2.5).** Sem `GeradorNFe`, sem emissão para SEFAZ, sem round-trip parse→generate→parse. Caso de uso confirmado é ingestão dos XMLs já emitidos. Geração/emissão entra em stage dedicada se confirmada por demanda externa.
+**Funde os antigos Stage 14 (NFe) + Stage 15 (NFCe) em um único pacote** `TecnoFisc.Sped.NFeNFCe`, leiaute 4.00. NF-e (modelo 55) e NFC-e (modelo 65) usam o **mesmo XSD** e evoluem juntas (mesma Nota Técnica) — não se encaixam na premissa de cadências independentes que justifica a regra de independência de formato (§4.2). Logo: um pacote, dois tipos de modelo (`NFe`, `NFCe`). Spec operacional completa em `sped/STAGE_14_NFE_NFCE.md`.
 
-### Stage 15 — TecnoFisc.Sped.NFCe (XML, **read-only**)
+- Parser `XmlReader` forward-only, **order-independent** (loop `switch (reader.LocalName)`) — lê o XML canônico e o envelope SERPRO na mesma velocidade. Sem DOM por arquivo.
+- Classes de modelo fortemente tipadas mapeando o leiaute (ide, emit, dest, det/prod, imposto polimórfico, total, transp, cobr, pag, infAdic, protNFe), nativas da NF-e (não moldadas em registro SPED).
+- NFC-e ≈ NF-e + `infNFeSupl` (QR Code) + `dest` opcional. Tipos distintos, sem polimorfismo entre os dois.
+- Eventos (`procEventoNFe`/`eventoNFe`): `EventoCancelamento` tipado + `EventoGenerico` fallback; correlação nota × eventos por `ChaveAcesso` (read-only/stateless).
+- Validação de assinatura digital fora da v1 (apenas leitura). Encoding canônico do XML = UTF-8.
+- **Modo read-only (§2.5).** Sem `GeradorNFe`/`GeradorNFCe`, sem emissão para SEFAZ, sem round-trip. **Sem source generator na v1** (não há `RegistroSped`). Caso de uso confirmado é ingestão dos XMLs já emitidos.
 
-Estrutura idêntica a Stage 14, schema NFC-e (Nota Fiscal de Consumidor Eletrônica, modelo 65). Muito código pode ser compartilhado com NF-e via base classes em `TecnoFisc.Sped.Core/Xml/`, mas os tipos públicos do leiaute ficam no pacote NFCe. Modo read-only (§2.5) — sem `GeradorNFCe`.
+### Stage 15 — absorvido pelo Stage 14
+
+O antigo Stage 15 (NFC-e como pacote separado) foi **absorvido pelo Stage 14** (pacote único `TecnoFisc.Sped.NFeNFCe`). Número mantido para não renumerar os stages a jusante (Stage 16 CT-e, Stage 17 ECF inalterados).
 
 ### Stage 16 — TecnoFisc.Sped.CTe (XML, **read-only**)
 

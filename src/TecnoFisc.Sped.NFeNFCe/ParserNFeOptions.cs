@@ -1,7 +1,7 @@
 namespace TecnoFisc.Sped.NFeNFCe;
 
 /// <summary>
-/// Opções de leitura do <c>ParserNFe</c>. Imutável (init-only) e reaproveitável entre
+/// Opções de leitura do <see cref="ParserNFe"/>. Imutável (init-only) e reaproveitável entre
 /// chamadas — o parser é stateless. Use <see cref="Default"/> para o comportamento padrão.
 /// </summary>
 public sealed class ParserNFeOptions

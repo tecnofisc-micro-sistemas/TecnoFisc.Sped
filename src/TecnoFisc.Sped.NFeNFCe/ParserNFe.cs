@@ -37,8 +37,8 @@ public sealed class ParserNFe
     /// <param name="cancelamento">Token de cancelamento.</param>
     public Task<IDocumentoFiscalXml> ReadAsync(Stream entrada, CancellationToken cancelamento = default)
     {
-        _ = Options;
         ArgumentNullException.ThrowIfNull(entrada);
+        _ = Options; // consumido a partir da slice 14.3; mantém o método de instância (CA1822)
         throw new NotImplementedException(
             "Desserialização entra a partir da slice 14.3 (ver sped/STAGE_14_NFE_NFCE.md §8).");
     }

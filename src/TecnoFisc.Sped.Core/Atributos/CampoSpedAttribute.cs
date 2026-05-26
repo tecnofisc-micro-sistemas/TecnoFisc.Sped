@@ -43,4 +43,30 @@ public sealed class CampoSpedAttribute : Attribute
     /// atributo.
     /// </remarks>
     public int DesdeVersao { get; init; }
+
+    /// <summary>
+    /// Quando <c>true</c>, indica que este campo variádico (<c>*</c> nas tabelas do guia)
+    /// deve capturar tudo que restar na linha a partir da sua posição, incluindo os separadores
+    /// <c>|</c> intermediários, como uma única string pipe-joined. Obrigatoriamente o último
+    /// campo declarado no registro e do tipo <c>string?</c>.
+    /// </summary>
+    /// <remarks>
+    /// Usado por registros cujo conteúdo é parametrizável em tempo de execução — por exemplo,
+    /// o <c>RZ_CONT</c> do Registro I550 da ECD, cujas colunas são definidas dinamicamente pelo
+    /// Registro I510. O <see cref="Core.Gerador.EscritorSpedTxt"/> serializa o valor diretamente
+    /// (sem pipes adicionais internos), pois o valor já inclui os separadores.
+    /// </remarks>
+    public bool CapturaTudo { get; init; }
+
+    /// <summary>
+    /// Quando <c>true</c>, marca este campo como o <b>campo-arquivo</b> de um registro multi-linha
+    /// (ver <see cref="RegistroSpedAttribute.TokenFimArquivo"/>) — por exemplo o <c>ARQ_RTF</c> de
+    /// J800/J801, que carrega um arquivo RTF de até 30 MB com quebras de linha CRLF internas. O
+    /// leitor captura tudo entre o separador anterior e o último <c>|</c> do registro montado
+    /// (o campo seguinte é o token de fim), preservando os <c>|</c> e CRLFs embutidos. Deve ser do
+    /// tipo <c>string?</c> e ser seguido por exatamente um campo (o terminador <c>IND_FIM_*</c>).
+    /// Difere de <see cref="CapturaTudo"/>: este não é o último campo e delimita pelo terminador,
+    /// não pelo fim da linha.
+    /// </summary>
+    public bool CampoArquivo { get; init; }
 }

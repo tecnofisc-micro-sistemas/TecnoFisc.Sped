@@ -18,7 +18,9 @@ This document is written in **English** because LLMs (including Claude Code) fol
 
 ### 1.3 Code language rule (CRITICAL)
 
-Code separates **substantives from verbs**. SPED-specific **nouns** stay in Portuguese (record classes, fiscal value objects, enum types, SPED field properties). **Verbs**, static factory methods and boolean predicates use **idiomatic English** — Portuguese verb identifiers degrade when accent marks have to be simulated (`EhEntrada` faking `É entrada`, `Carregar` requiring no accent but inconsistent with the rest of the verb surface), and English aligns with C# convention and BCL patterns.
+Code separates **substantives from verbs**. The split is by **meaning, not by identifier kind** — it governs **every identifier**: class names, method names, properties, fields and locals alike. Only nouns that name a **SPED / Brazilian fiscal-tax concept** stay in Portuguese (record classes, fiscal value objects, enum types, SPED field properties). Everything else — **verbs, boolean predicates, capabilities and generic/technical concepts** — uses **idiomatic English**, including **class names**. Portuguese verb/predicate identifiers degrade when accent marks have to be simulated (`EhEntrada` faking `É entrada`, `TemFiltro` faking `Tem filtro`), and English aligns with C# convention and BCL patterns.
+
+This applies to **class names** too: `RegistroC100`, `BlocoC`, `Cnpj` stay Portuguese because they name SPED/fiscal nouns; a class that names an **action, capability or technical concept** uses English (`ReadingOptions`, `Parser`, `Generator`, `Reader`, `Writer`). A boolean predicate is English even when **private** (`IsKnownValueObject`, `HasFilter`, `ShouldIgnore`).
 
 **Portuguese (mandatory) for:**
 
@@ -34,7 +36,8 @@ Code separates **substantives from verbs**. SPED-specific **nouns** stay in Port
 - BCL types (`List<T>`, `DateOnly`, `Dictionary<,>`)
 - Universal technical patterns: `Parser`, `Generator`, `Reader`, `Writer`, `Builder`, `Factory`
 - **Domain verbs / methods**: `ReadAsync`, `ReadStreamingAsync`, `WriteAsync`, `LoadAsync`, `Create` (static factory on value objects)
-- **Boolean predicates**: `IsEntrada`, `IsSaida`, `IsIsento`, `IsValid`, `IsKnownValueObject`
+- **Boolean predicates** (incl. private): `IsEntrada`, `IsSaida`, `IsIsento`, `IsValid`, `IsKnownValueObject`, `HasFilter`, `ShouldIgnore`
+- **Capability / option / technical classes**: `ReadingOptions`, `Parser`, `Generator`, `Reader`, `Writer`, `Builder`
 - Test conventions: `*Tests` classes, `Should_*` methods
 - Infrastructure concerns: `Stream`, `Pipeline`, `Buffer`
 
@@ -50,7 +53,7 @@ await gerador.WriteAsync(stream, arquivo);
 
 The noun (`Cnpj`, `Cfop`, `RegistroC100`, `ArquivoEfdContribuicoes`) is Portuguese; the verb (`Create`, `ReadAsync`, `WriteAsync`) and the predicate (`IsEntrada`) are English. The two languages never mix **inside one identifier**.
 
-**Forbidden:** Portuguese verbs in code (`Criar`, `LerAsync`, `EscreverAsync`, `CarregarAsync`, `EhEntrada`). Portuguese is reserved for **substantives** — the fiscal vocabulary the consumer reads in their domain.
+**Forbidden:** Portuguese verbs and predicates in code, regardless of identifier kind (`Criar`, `LerAsync`, `EscreverAsync`, `CarregarAsync`, `EhEntrada`, `TemFiltro`, `DeveIgnorar`, `Filtrar`). Portuguese is reserved for **substantives** — the SPED/fiscal vocabulary the consumer reads in their domain.
 
 ### 1.4 Documentation language
 
@@ -94,9 +97,9 @@ Nem todos os pacotes precisam de gerador. A decisão é por caso de uso real:
 | --- | --- | --- | --- |
 | `TecnoFisc.Sped.EfdContribuicoes` | ✅ | ✅ | Consumidor TecnoFisc emite o arquivo. |
 | `TecnoFisc.Sped.EfdIcmsIpi` | ✅ | ❌ | Uso é ingestão para análise; não há emissão. |
-| `TecnoFisc.Sped.Ecd` | ✅ | ⏸️ | Gerador depende de confirmação externa. Implementar parser primeiro; gerador entra em stage dedicada quando demanda confirmada. |
-| `TecnoFisc.Sped.Ecf` | ✅ | ⏸️ | Mesma regra do ECD. |
+| `TecnoFisc.Sped.Ecd` | ✅ | ⏸️ | Parser implementado (0.6.0). Gerador depende de confirmação externa — entra em stage dedicada quando demanda confirmada. |
 | `TecnoFisc.Sped.NFe` / `NFCe` / `CTe` | ✅ | ⏸️ | Caso de uso confirmado é ingestão dos XMLs já emitidos (validação de assinatura, leitura tipada). Geração/emissão para SEFAZ depende de confirmação externa não controlada só pelo usuário — entra em stage dedicada quando confirmada. |
+| `TecnoFisc.Sped.Ecf` | ✅ | ⏸️ | Mesma regra do ECD. Último leiaute textual planejado (depois dos pacotes XML). |
 
 **Implicações dos pacotes read-only:**
 
@@ -119,10 +122,10 @@ Nem todos os pacotes precisam de gerador. A decisão é por caso de uso real:
 | EFD Contribuições | `TecnoFisc.Sped.EfdContribuicoes` | `.txt` (Latin1) |
 | EFD ICMS-IPI | `TecnoFisc.Sped.EfdIcmsIpi` | `.txt` (Latin1) |
 | ECD | `TecnoFisc.Sped.Ecd` | `.txt` (Latin1) |
-| ECF | `TecnoFisc.Sped.Ecf` | `.txt` (Latin1) |
 | NF-e | `TecnoFisc.Sped.NFe` | XML (UTF-8) |
 | NFC-e | `TecnoFisc.Sped.NFCe` | XML (UTF-8) |
 | CT-e | `TecnoFisc.Sped.CTe` | XML (UTF-8) |
+| ECF | `TecnoFisc.Sped.Ecf` | `.txt` (Latin1) |
 
 Além desses, dois pacotes transversais completam a família:
 
@@ -197,7 +200,7 @@ SPED projects publish new layouts approximately yearly. A estratégia depende do
 - **Exception:** structurally divergent registros (rare — order/type/length of an existing field changes) are subclassed `RegistroXxxxVYYY : RegistroXxxx`. O catálogo passa a indexar variantes por versão (decisão futura quando esse caso aparecer em pacote read+write).
 - Receita Federal layouts são **strict-incremental** — uma versão posterior nunca remove campos nem altera significado dos existentes, apenas acrescenta. Isto autoriza o modelo de uma classe + anotações por versão (em vez de uma classe por versão).
 
-**Pacotes read-only (EFD ICMS-IPI; ECD/ECF/NFe/NFCe/CTe até confirmação de gerador):**
+**Pacotes read-only (EFD ICMS-IPI, ECD; NFe/NFCe/CTe/ECF até confirmação de gerador):**
 
 - Existe **uma única modelagem** correspondente ao **leiaute mais recente** dentro da janela fiscal de 5 anos.
 - Sem subclasses por versão. Sem catálogo polimórfico por versão. `Dictionary<string, MetadadosRegistro>` 1:1 permanece.
@@ -238,10 +241,10 @@ TecnoFisc.Sped/
 │   ├── TecnoFisc.Sped.EfdContribuicoes/              # EFD Contribuições (.txt)
 │   ├── TecnoFisc.Sped.EfdIcmsIpi/                    # EFD ICMS-IPI (.txt)
 │   ├── TecnoFisc.Sped.Ecd/                           # ECD (.txt)
-│   ├── TecnoFisc.Sped.Ecf/                           # ECF (.txt)
 │   ├── TecnoFisc.Sped.NFe/                           # NF-e XML
 │   ├── TecnoFisc.Sped.NFCe/                          # NFC-e XML
-│   └── TecnoFisc.Sped.CTe/                           # CT-e XML
+│   ├── TecnoFisc.Sped.CTe/                           # CT-e XML
+│   └── TecnoFisc.Sped.Ecf/                           # ECF (.txt)
 │
 ├── tests/
 │   ├── TecnoFisc.Sped.Core.Tests/
@@ -264,10 +267,10 @@ TecnoFisc.Sped.Core.SourceGenerators ← (no dependencies, references Roslyn ana
 TecnoFisc.Sped.EfdContribuicoes      ← Core, Core.SourceGenerators (analyzer)
 TecnoFisc.Sped.EfdIcmsIpi            ← Core, Core.SourceGenerators (analyzer)
 TecnoFisc.Sped.Ecd                   ← Core, Core.SourceGenerators (analyzer)
-TecnoFisc.Sped.Ecf                   ← Core, Core.SourceGenerators (analyzer)
 TecnoFisc.Sped.NFe                   ← Core, Core.SourceGenerators (analyzer)
 TecnoFisc.Sped.NFCe                  ← Core, Core.SourceGenerators (analyzer)
 TecnoFisc.Sped.CTe                   ← Core, Core.SourceGenerators (analyzer)
+TecnoFisc.Sped.Ecf                   ← Core, Core.SourceGenerators (analyzer)
 TecnoFisc.Sped (metapacote)          ← todos os pacotes de leiaute acima
 ```
 
@@ -613,23 +616,27 @@ Sub-stages numerados `8.016.001…` (V016), `8.017.001…` (V017), etc. Ordem de
 
 **Fora do escopo deste Stage 9 (read-only):** `UPDATE/Validação`, `UPDATE/Obrig`, `UPDATE/Subclasse` — viram `UPDATE/Doc` (doc-comment XML) ou `UPDATE/Campo` (mudança in-place no atributo) conforme aplicável. Validações fiscais ficam com o consumidor (§2.3).
 
-### Stage 10 — TecnoFisc.Sped.Ecd (baseline leiaute 2021, read-only inicial)
+### Stage 10 — TecnoFisc.Sped.Ecd (baseline leiaute 9, read-only inicial)
 
-Novo pacote para ECD (Escrituração Contábil Digital). Estrutura interna idêntica a `EfdIcmsIpi` (read-only — sem `Gerador/`, sem round-trip de geração). Pasta `Registros/` por bloco, `Enums/`, `Versionamento/`, `Parser/`, `Arquivo*.cs`.
+Novo pacote para ECD (Escrituração Contábil Digital). Estrutura interna idêntica a `EfdIcmsIpi` (read-only — sem `Gerador/`, sem round-trip de geração). Pasta `Registros/` por bloco, `Enums/`, `Versionamento/`, `Parser/`, `Arquivo*.cs`. Operational appendix: **`sped/STAGE_10_ECD_BASELINE.md`** (72 sub-stages, blocos `0 → C → I → J → K → 9`).
 
 **Modo de operação.** Read-only inicialmente (§2.5) — gerador depende de confirmação de necessidade externa. Quando confirmada, criar stage dedicada ativando subclasses por versão + gerador + round-trip.
 
-**Baseline:** o leiaute vigente em 2021 (versão exata será confirmada lendo o `COD_VER` do registro `0000` do guia oficial no momento da implementação). PDF do Manual de Orientação deve ser dropado em `sped/guides/`. Tracking file: `sped/STAGE_10_ECD_BASELINE.md` com a tabela completa de sub-stages na ordem da Seção 2.6.1 do manual.
+**Baseline: leiaute 9, vigente a partir do ano-calendário 2020** (não há leiaute posterior — ver Stage 11). PDF do Manual de Orientação (`Manual_de_Orientação_da_ECD_Leiaute_20_maio_2026.pdf`, Ato Declaratório Executivo Cofis nº 01/2026) já dropado em `sped/guides/`. Encoding do `.txt`: ISO-8859-1 (Latin-1). Ordem das sub-stages segue a **Seção 3.6 (Leiaute dos Registros)** do manual — fonte autoritativa quando diverge da tabela-resumo 3.2 (e.g., `C052` consta em 3.6, ausente em 3.2).
 
-**Compartilhamento com Core.** Value objects fiscais (`Cnpj`, `Cpf`, `InscricaoEstadual`, etc.) e enums regidos por Ato COTEPE já vivem em `TecnoFisc.Sped.Core` (Stage 1) e são reutilizados — não duplicar. Enums específicos da ECD (planos de contas, naturezas contábeis) ficam no pacote.
+**Versão do leiaute fora do `0000`.** Diferente de EFD, o `Registro0000` da ECD **não** carrega `COD_VER` — campo 02 é o literal `"LECD"`. O código da versão do leiaute mora em **`I010.COD_VER_LC`** (`"9.00"` para AC2024+). `LayoutEcd` enum (`V009 = 9`) é informacional (§4.7 read-only). Impacta o sniffer (§12).
 
-**Independência por registro.** `Registro0000` da ECD é distinto dos `Registro0000` de outros leiautes (Hard Rule 2). Apenas tabelas/enums verdadeiramente transversais migram para Core.
+**Compartilhamento com Core.** Value objects fiscais (`Cnpj`, `Cpf`, `InscricaoEstadual`, `CodigoMunicipio`, etc.) já vivem em `TecnoFisc.Sped.Core` (Stage 1) e são reutilizados — não duplicar. Enums específicos da ECD (forma de escrituração `IND_ESC` `G/R/A/B/Z`, naturezas contábeis) ficam no pacote. `IND_ESC` dirige obrigatoriedade condicional (análogo ao `PERFIL` do EFD ICMS-IPI) → `UPDATE/Doc`, validação fica com o consumidor (§2.3).
 
-Publica `TecnoFisc.Sped.Ecd 0.4.0` quando baseline 2021 completo e parser lê real anonimizado.
+**Independência por registro.** `Registro0000` da ECD é distinto dos `Registro0000` de outros leiautes (Hard Rule 2). Apenas value objects/tabelas verdadeiramente transversais migram para Core.
 
-### Stage 11 — ECD incrementos até leiaute vigente
+Publica `TecnoFisc.Sped.Ecd` (bump apropriado no release) quando todas as 72 sub-stages do baseline leiaute 9 completas e parser lê real anonimizado. **✅ Concluído na `0.6.0`** — 72 sub-stages merged, `ParserEcd`/`ArquivoEcd` lendo arquivo real anonimizado.
 
-Mesmo padrão de Stage 9: para cada leiaute publicado depois de 2021 até o vigente em 2026, um tracking file `sped/STAGE_10_INCR_V0XX.md` descrevendo apenas o delta. Constantes incrementais no enum `LayoutEcd`. Cada leiaute = minor bump (`0.4.x`).
+### Stage 11 — ECD incrementos até leiaute vigente (standby — sem trigger ativo)
+
+**Sem incrementos hoje.** A Receita não publicou leiaute de ECD posterior ao **leiaute 9** (vigente desde o ano-calendário 2020). O baseline de Stage 10 já é o leiaute vigente — existe **uma única modelagem**. Stage 11 permanece em standby até surgir um leiaute 10.
+
+Quando ativado, segue o mesmo padrão de Stage 9: para cada novo leiaute publicado, um tracking file `sped/STAGE_10_INCR_V0XX.md` descrevendo apenas o delta do read path. Constantes incrementais no enum `LayoutEcd` (`V010 = 10`, …). Cada leiaute = minor bump.
 
 ### Stage 12 — Identificador dinâmico de arquivos SPED (sniffer)
 
@@ -639,7 +646,7 @@ Funcionamento:
 
 - API `SnifferSped.IdentificarAsync(Stream)` lê **apenas a primeira linha não vazia** sem consumir o resto. Devolve `MetadadosArquivoSped { ProjetoSped, VersaoLeiaute, EncodingDetectado, ... }`.
 - Caso o consumidor queira prosseguir, expõe `SnifferSped.AbrirParserAsync(Stream)` que devolve o `ILeitorSped` específico do leiaute identificado e o stream posicionado na origem (replay-safe). Internamente delega para `ParserEfdContribuicoes`, `ParserEfdIcmsIpi`, `ParserEcd`, `ParserEcf` conforme apropriado.
-- Heurística: combinação `(Bloco do primeiro registro, COD_VER, layout do `0000`)`. Registros `0000` divergem entre leiautes em campos e tamanhos, então o discriminator é sólido.
+- Heurística: combinação `(Bloco do primeiro registro, campo discriminador, layout do `0000`)`. Registros `0000` divergem entre leiautes em campos e tamanhos, então o discriminator é sólido. **Caso EFD** (Contribuições / ICMS-IPI): `COD_VER` no próprio `0000` dá projeto + versão. **Caso ECD:** o `0000` **não** tem `COD_VER` — o campo 02 é o literal `"LECD"`, que identifica o projeto pela primeira linha; a versão do leiaute (`COD_VER_LC`) só aparece no `I010`, então o sniffer reporta o projeto ECD na linha 1 mas a `VersaoLeiaute` exige ler até o `I010` (ou assumir o baseline único — leiaute 9 — enquanto não houver incrementos).
 - Sem reflexão no hot path — o despacho é via `switch` gerado em compile time pelo source generator (extensão de Stage 6) ou tabela estática.
 
 Tests cobrem todos os leiautes suportados + arquivo malformado + EOF prematuro + encoding mismatch.
@@ -648,7 +655,7 @@ Tests cobrem todos os leiautes suportados + arquivo malformado + EOF prematuro +
 
 Pacote agregador (`TecnoFisc.Sped`) que referencia todos os pacotes de leiaute em uma única dependência NuGet. Útil para consumidores que querem suporte abrangente sem listar cada pacote no `csproj`.
 
-- Sem código próprio — apenas `<PackageReference>` para cada um dos pacotes de leiaute (`EfdContribuicoes`, `EfdIcmsIpi`, `Ecd`, `Ecf`, `NFe`, `NFCe`, `CTe`).
+- Sem código próprio — apenas `<PackageReference>` para cada um dos pacotes de leiaute (`EfdContribuicoes`, `EfdIcmsIpi`, `Ecd`, `NFe`, `NFCe`, `CTe`, `Ecf`).
 - Versão acompanha a mais alta dos pacotes referenciados; bumps coordenados por release notes consolidados.
 - Documentação no README do pacote orienta consumidores a preferir o metapacote quando não souberem antecipadamente qual leiaute vão consumir, ou quando o sniffer (Stage 12) for o ponto de entrada.
 
@@ -759,7 +766,7 @@ When starting a session in this repository:
 9. **Registros duplicate per leiaute; Ato COTEPE-referenced tables/enums (Tabela 4.1.1, 4.1.2, etc.) live in `Core`** — see §4.2.
 10. **5-year fiscal window:** ignore versionamento de campos com vigência anterior a `(hoje - 5 anos)`. Dentro da janela, marcos temporais antigos não são modelados em código (vide §4.3).
 11. **EFD ICMS-IPI é o regente do Ato COTEPE.** Quando uma tabela/enum aparecer referenciada em múltiplos leiautes, extrair uma vez no leiaute-origem (EFD ICMS-IPI) e tratar como compartilhada.
-12. **Modo de operação do pacote dita a estratégia de versionamento (§2.5 + §4.7).** EFD ICMS-IPI, ECD, ECF, NF-e, NFC-e e CT-e são read-only por padrão — sem `Gerador/`, sem round-trip de geração, modelo único do leiaute mais recente. EFD Contribuições é o único pacote read+write confirmado. Não criar gerador para pacote read-only sem promover oficialmente a stage de migração.
+12. **Modo de operação do pacote dita a estratégia de versionamento (§2.5 + §4.7).** EFD ICMS-IPI, ECD, NF-e, NFC-e, CT-e e ECF são read-only por padrão — sem `Gerador/`, sem round-trip de geração, modelo único do leiaute mais recente. EFD Contribuições é o único pacote read+write confirmado. Não criar gerador para pacote read-only sem promover oficialmente a stage de migração.
 13. **Validações fiscais ficam com o consumidor (§2.3).** `UPDATE/Validação` e `UPDATE/Obrig` em trackers viram `UPDATE/Doc` — apenas doc-comment XML. Não criar pasta `Validadores/Versionados/` nem `IValidadorVersionado<T>`.
 14. Performance-sensitive code requires a BenchmarkDotNet benchmark.
 15. **Merges into `dev` are always Squash and Merge.** Feature branches may contain granular commits while work is in progress, but the integration commit that lands on `dev` must be a single squashed PR merge.

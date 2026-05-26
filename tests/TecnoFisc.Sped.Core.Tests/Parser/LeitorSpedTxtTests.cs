@@ -17,12 +17,90 @@ public sealed class LeitorSpedTxtTests
         => new(EncodingSped.Latin1.GetBytes(conteudo));
 
     private static async Task<List<RegistroSped>> LerTodosAsync(string conteudo)
+        => await LerComOpcoesAsync(conteudo, ReadingOptions.Default);
+
+    private static async Task<List<RegistroSped>> LerComOpcoesAsync(string conteudo, ReadingOptions opcoes)
     {
-        var leitor = new LeitorSpedTxt(_catalogo);
+        var leitor = new LeitorSpedTxt(_catalogo, opcoes);
         var resultado = new List<RegistroSped>();
         await foreach (var registro in leitor.ReadStreamingAsync(FluxoSped(conteudo)))
             resultado.Add(registro);
         return resultado;
+    }
+
+    private const string ArquivoComHierarquia =
+        "|0000|006|01012025|31012025|EMPRESA|11222333000181|\r\n" +
+        "|C001|0|\r\n" +
+        "|C100|0|123|1500,75|5102|\r\n" +
+        "|C170|1|MERCADORIA A|10|750,50|\r\n" +
+        "|C170|2|MERCADORIA B|5|750,25|\r\n" +
+        "|C100|0|456|2000,00|6101|\r\n" +
+        "|C990|2|\r\n" +
+        "|9999|8|\r\n";
+
+    [Fact]
+    public async Task LerStreamingAsync_RegistrosIgnorados_DescartaRegistroEToda_Subarvore()
+    {
+        // Ignorar C100 deve descartar os dois C100 (nível 2) e os C170 filhos (nível 3),
+        // mantendo irmãos/fechadores de nível menor-ou-igual (C001, C990).
+        var opcoes = new ReadingOptions { RegistrosIgnorados = new HashSet<string>(StringComparer.Ordinal) { "C100" } };
+
+        var registros = await LerComOpcoesAsync(ArquivoComHierarquia, opcoes);
+
+        registros.Select(r => r.Codigo).Should().Equal(["0000", "C001", "C990", "9999"]);
+    }
+
+    [Fact]
+    public async Task LerStreamingAsync_BlocosIgnorados_DescartaTodoOBloco()
+    {
+        // Ignorar o bloco C descarta abertura (C001), detalhe (C100/C170) e fechamento (C990).
+        var opcoes = new ReadingOptions { BlocosIgnorados = new HashSet<string>(StringComparer.Ordinal) { "C" } };
+
+        var registros = await LerComOpcoesAsync(ArquivoComHierarquia, opcoes);
+
+        registros.Select(r => r.Codigo).Should().Equal(["0000", "9999"]);
+    }
+
+    [Fact]
+    public async Task LerStreamingAsync_SemFiltro_LeTudo()
+    {
+        // ReadingOptions.Default não filtra nada (fast-path) — comportamento idêntico ao padrão.
+        var registros = await LerComOpcoesAsync(ArquivoComHierarquia, ReadingOptions.Default);
+
+        registros.Select(r => r.Codigo).Should().Equal(["0000", "C001", "C100", "C170", "C170", "C100", "C990", "9999"]);
+    }
+
+    [Fact]
+    public async Task LerStreamingAsync_RegistroMultilinhaIgnorado_NaoMaterializa()
+    {
+        // Y800 (multi-linha) ignorado: o leitor localiza o terminador e avança sem decodificar o
+        // ARQ_RTF; os registros ao redor continuam sendo lidos.
+        const string sped =
+            "|0000|006|01012025|31012025|EMPRESA|11222333000181|\r\n" +
+            "|Y800|010|D|H|linha1 do rtf\r\nlinha2 do rtf\r\nfim}|Y800FIM|\r\n" +
+            "|C001|0|\r\n" +
+            "|9999|4|\r\n";
+        var opcoes = new ReadingOptions { RegistrosIgnorados = new HashSet<string>(StringComparer.Ordinal) { "Y800" } };
+
+        var registros = await LerComOpcoesAsync(sped, opcoes);
+
+        registros.Select(r => r.Codigo).Should().Equal(["0000", "C001", "9999"]);
+        registros.OfType<RegistroY800Sintetico>().Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task LerStreamingAsync_BlocoMultilinhaIgnorado_DescartaSemDecodificar()
+    {
+        // Bloco Y (do Y800 multi-linha) ignorado por bloco.
+        const string sped =
+            "|0000|006|01012025|31012025|EMPRESA|11222333000181|\r\n" +
+            "|Y800|010|D|H|conteudo\r\nrtf|Y800FIM|\r\n" +
+            "|9999|3|\r\n";
+        var opcoes = new ReadingOptions { BlocosIgnorados = new HashSet<string>(StringComparer.Ordinal) { "Y" } };
+
+        var registros = await LerComOpcoesAsync(sped, opcoes);
+
+        registros.Select(r => r.Codigo).Should().Equal(["0000", "9999"]);
     }
 
     [Fact]
@@ -183,6 +261,86 @@ public sealed class LeitorSpedTxtTests
 
         registros.OfType<RegistroC100Sintetico>().Should().HaveCount(500);
         registros.OfType<RegistroC100Sintetico>().Last().CodPart.Should().Be(500);
+    }
+
+    [Fact]
+    public async Task LerStreamingAsync_RegistroMultilinha_RemontaCampoArquivoComCrlfInterno()
+    {
+        // Y800 é multi-linha (TokenFimArquivo="Y800FIM"): ARQ_RTF carrega um arquivo com quebras
+        // CRLF internas, ocupando 3 linhas físicas. O leitor deve remontar o registro até a linha
+        // que termina em |Y800FIM| e capturar ArqRtf preservando os CRLFs internos.
+        const string arqRtf = "{\\rtf1\\ansi\r\nlinha 2 do rtf\r\nfim}";
+        const string sped =
+            "|0000|006|01012025|31012025|EMPRESA|11222333000181|\r\n" +
+            "|Y800|010|Notas|HASH123|{\\rtf1\\ansi\r\n" +
+            "linha 2 do rtf\r\n" +
+            "fim}|Y800FIM|\r\n" +
+            "|9999|4|\r\n";
+
+        var registros = await LerTodosAsync(sped);
+
+        registros.Select(r => r.Codigo).Should().Equal(["0000", "Y800", "9999"]);
+
+        var y800 = registros.OfType<RegistroY800Sintetico>().Single();
+        y800.TipoDoc.Should().Be("010");
+        y800.DescRtf.Should().Be("Notas");
+        y800.HashRtf.Should().Be("HASH123");
+        y800.ArqRtf.Should().Be(arqRtf);
+        y800.IndFimRtf.Should().Be("Y800FIM");
+    }
+
+    [Fact]
+    public async Task LerStreamingAsync_RegistroMultilinha_CampoArquivoComPipeInterno_PreservaConteudo()
+    {
+        // ARQ_RTF contém '|' interno — split ingênuo quebraria. O campo-arquivo deve capturar
+        // tudo até o último '|' (separador do token de fim), preservando '|' e CRLFs internos.
+        const string arqRtf = "linha A|com pipe\r\nlinha B|tambem|com pipes";
+        const string sped =
+            "|Y800|010|D|H|linha A|com pipe\r\n" +
+            "linha B|tambem|com pipes|Y800FIM|\r\n" +
+            "|9999|2|\r\n";
+
+        var registros = await LerTodosAsync(sped);
+
+        var y800 = registros.OfType<RegistroY800Sintetico>().Single();
+        y800.ArqRtf.Should().Be(arqRtf);
+        y800.IndFimRtf.Should().Be("Y800FIM");
+    }
+
+    [Fact]
+    public async Task LerStreamingAsync_RegistroMultilinhaMaiorQueBufferInterno_RemontaCompleto()
+    {
+        // ARQ_RTF com milhares de linhas físicas (> buffer do PipeReader) força múltiplas
+        // iterações de ReadAsync; o registro deve permanecer bufferizado até o terminador.
+        var rtf = new StringBuilder();
+        for (int i = 0; i < 2000; i++)
+            rtf.Append("conteudo da linha numero ").Append(i).Append("\r\n");
+        rtf.Append("FIM");
+        string arqRtf = rtf.ToString();
+
+        string sped =
+            "|Y800|010|D|H|" + arqRtf + "|Y800FIM|\r\n" +
+            "|9999|2|\r\n";
+
+        var registros = await LerTodosAsync(sped);
+
+        var y800 = registros.OfType<RegistroY800Sintetico>().Single();
+        y800.ArqRtf.Should().Be(arqRtf);
+        registros[^1].Codigo.Should().Be("9999");
+    }
+
+    [Fact]
+    public async Task LerStreamingAsync_RegistroMultilinhaSemTerminador_LancaErroFormato()
+    {
+        // Arquivo truncado: registro multi-linha começa mas não há |Y800FIM|.
+        const string sped =
+            "|Y800|010|D|H|{\\rtf1\r\n" +
+            "conteudo sem terminador\r\n";
+
+        var act = async () => await LerTodosAsync(sped);
+
+        var assercao = await act.Should().ThrowAsync<ErroFormatoSpedException>();
+        assercao.Which.Erro.CodigoRegistro.Should().Be("Y800");
     }
 
     [Fact]

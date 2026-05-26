@@ -75,6 +75,34 @@ public sealed class RegistroC170Sintetico : RegistroSped
     public decimal VlItem { get; set; }
 }
 
+/// <summary>
+/// Registro sintético com campo-arquivo embutido — espelha a forma de J800/J801 da ECD
+/// (TIPO_DOC, DESC_RTF, HASH_RTF, ARQ_RTF, IND_FIM_RTF). <c>ArqRtf</c> é o campo-arquivo
+/// (<see cref="CampoSpedAttribute.CampoArquivo"/>) e o registro é multi-linha via
+/// <see cref="RegistroSpedAttribute.TokenFimArquivo"/> = <c>"Y800FIM"</c>. Exercita a leitura
+/// de registros cujo conteúdo ocupa várias linhas físicas (CRLF embutido no arquivo).
+/// </summary>
+[RegistroSped(Codigo = "Y800", Nivel = 3, Bloco = "Y", TokenFimArquivo = "Y800FIM")]
+public sealed class RegistroY800Sintetico : RegistroSped
+{
+    public override string Codigo => "Y800";
+
+    [CampoSped(Ordem = 2)]
+    public string? TipoDoc { get; set; }
+
+    [CampoSped(Ordem = 3)]
+    public string? DescRtf { get; set; }
+
+    [CampoSped(Ordem = 4)]
+    public string? HashRtf { get; set; }
+
+    [CampoSped(Ordem = 5, CampoArquivo = true)]
+    public string? ArqRtf { get; set; }
+
+    [CampoSped(Ordem = 6)]
+    public string? IndFimRtf { get; set; }
+}
+
 [RegistroSped(Codigo = "0990", Nivel = 1, Bloco = "0")]
 public sealed class Registro0990Sintetico : RegistroSped
 {

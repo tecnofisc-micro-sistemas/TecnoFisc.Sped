@@ -4,11 +4,13 @@
     <Project Path="src/TecnoFisc.Sped.Core.SourceGenerators/TecnoFisc.Sped.Core.SourceGenerators.csproj" />
     <Project Path="src/TecnoFisc.Sped.EfdContribuicoes/TecnoFisc.Sped.EfdContribuicoes.csproj" />
     <Project Path="src/TecnoFisc.Sped.EfdIcmsIpi/TecnoFisc.Sped.EfdIcmsIpi.csproj" />
+    <Project Path="src/TecnoFisc.Sped.Ecd/TecnoFisc.Sped.Ecd.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/TecnoFisc.Sped.Core.Tests/TecnoFisc.Sped.Core.Tests.csproj" />
     <Project Path="tests/TecnoFisc.Sped.EfdContribuicoes.Tests/TecnoFisc.Sped.EfdContribuicoes.Tests.csproj" />
     <Project Path="tests/TecnoFisc.Sped.EfdIcmsIpi.Tests/TecnoFisc.Sped.EfdIcmsIpi.Tests.csproj" />
+    <Project Path="tests/TecnoFisc.Sped.Ecd.Tests/TecnoFisc.Sped.Ecd.Tests.csproj" />
   </Folder>
   <Folder Name="/benchmarks/">
     <Project Path="benchmarks/TecnoFisc.Sped.Benchmarks/TecnoFisc.Sped.Benchmarks.csproj" />

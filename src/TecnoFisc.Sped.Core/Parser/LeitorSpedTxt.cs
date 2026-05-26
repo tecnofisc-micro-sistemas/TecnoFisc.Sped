@@ -19,6 +19,13 @@ namespace TecnoFisc.Sped.Core.Parser;
 /// Stage 2: o caminho de set de propriedade aloca uma string por campo (fallback). O
 /// Stage 6 (source generator) elimina essa alocação substituindo o catálogo reflexivo
 /// por código gerado em tempo de compilação. A API pública não muda.
+/// <para>
+/// Registros com campo-arquivo embutido (<see cref="MetadadosRegistro.EhMultilinha"/> —
+/// ex.: J800/J801 da ECD) ocupam várias linhas físicas, pois o conteúdo do arquivo (RTF até
+/// 30 MB) carrega quebras CRLF. Para esses, o leitor acumula as linhas físicas a partir do
+/// início do registro até a que termina em <c>|{token}|</c> e só então interpreta o registro
+/// montado, preservando as quebras internas.
+/// </para>
 /// </remarks>
 public sealed class LeitorSpedTxt : ILeitorSped
 {
@@ -32,11 +39,19 @@ public sealed class LeitorSpedTxt : ILeitorSped
     private const string CodigoEncerramentoArquivo = "9999";
 
     private readonly IRegistroSpedCatalogo _catalogo;
+    private readonly ReadingOptions _opcoes;
 
     public LeitorSpedTxt(IRegistroSpedCatalogo catalogo)
+        : this(catalogo, ReadingOptions.Default)
+    {
+    }
+
+    public LeitorSpedTxt(IRegistroSpedCatalogo catalogo, ReadingOptions opcoes)
     {
         ArgumentNullException.ThrowIfNull(catalogo);
+        ArgumentNullException.ThrowIfNull(opcoes);
         _catalogo = catalogo;
+        _opcoes = opcoes;
     }
 
     public async IAsyncEnumerable<RegistroSped> ReadStreamingAsync(
@@ -51,6 +66,11 @@ public sealed class LeitorSpedTxt : ILeitorSped
         bool encerrado = false;
         int versaoLeiaute = 0;
 
+        // Estado de descarte (ReadingOptions). nivelCorteSubarvore >= 0 indica que estamos dentro
+        // da subárvore de um registro ignorado por código; sobrevive entre iterações de ReadAsync.
+        bool hasFilter = _opcoes.HasFilter;
+        int nivelCorteSubarvore = -1;
+
         try
         {
             while (!encerrado)
@@ -60,10 +80,26 @@ public sealed class LeitorSpedTxt : ILeitorSped
                 var resultado = await leitor.ReadAsync(cancelamento).ConfigureAwait(false);
                 var buffer = resultado.Buffer;
 
-                while (TentarExtrairLinha(ref buffer, out var linha))
+                while (TentarExtrairRegistro(ref buffer, resultado.IsCompleted,
+                                             out var registroBytes, out var metadados, out int linhasFisicas))
                 {
-                    numeroLinha++;
-                    var registro = ProcessarLinha(in linha, numeroLinha, pilha, versaoLeiaute);
+                    long linhaRegistro = numeroLinha + 1;
+                    numeroLinha += linhasFisicas;
+
+                    // Descarte antes de materializar: registro ignorado não é decodificado (multi-linha
+                    // não paga o custo dos 30 MB do ARQ_RTF) nem entra na hierarquia/stream.
+                    if (hasFilter && ShouldIgnore(metadados, ref nivelCorteSubarvore))
+                    {
+                        if (metadados is not null && metadados.Codigo == CodigoEncerramentoArquivo)
+                        {
+                            // Mesmo ignorado, o 9999 encerra o consumo (evita ler a assinatura anexa).
+                            encerrado = true;
+                            break;
+                        }
+                        continue;
+                    }
+
+                    var registro = ProcessarLinha(in registroBytes, linhaRegistro, pilha, versaoLeiaute, metadados);
                     if (registro is not null)
                     {
                         // Captura a versão do leiaute assim que o Registro0000 é processado.
@@ -88,20 +124,7 @@ public sealed class LeitorSpedTxt : ILeitorSped
                 leitor.AdvanceTo(buffer.Start, buffer.End);
 
                 if (resultado.IsCompleted)
-                {
-                    if (!buffer.IsEmpty)
-                    {
-                        numeroLinha++;
-                        var registro = ProcessarLinha(in buffer, numeroLinha, pilha, versaoLeiaute);
-                        if (registro is not null)
-                        {
-                            if (versaoLeiaute == 0 && registro.VersaoLeiaute > 0)
-                                versaoLeiaute = registro.VersaoLeiaute;
-                            yield return registro;
-                        }
-                    }
                     break;
-                }
             }
         }
         finally
@@ -110,29 +133,252 @@ public sealed class LeitorSpedTxt : ILeitorSped
         }
     }
 
-    private static bool TentarExtrairLinha(
-        ref ReadOnlySequence<byte> buffer,
-        out ReadOnlySequence<byte> linha)
+    /// <summary>
+    /// Decide se o registro deve ser descartado conforme <see cref="ReadingOptions"/>:
+    /// <list type="bullet">
+    ///   <item>se estamos na subárvore de um registro ignorado por código, descarta descendentes
+    ///   (nível maior) até sair (nível menor ou igual ao do corte);</item>
+    ///   <item><see cref="ReadingOptions.BlocosIgnorados"/>: descarta qualquer registro do bloco
+    ///   (todos carregam o mesmo bloco — não precisa de subárvore);</item>
+    ///   <item><see cref="ReadingOptions.RegistrosIgnorados"/>: descarta o registro e abre a
+    ///   subárvore para descartar os filhos.</item>
+    /// </list>
+    /// Metadados nulo (linha vazia ou código desconhecido) nunca é ignorado — segue o caminho
+    /// normal (que produz <c>null</c> ou erro de layout).
+    /// </summary>
+    private bool ShouldIgnore(MetadadosRegistro? metadados, ref int nivelCorteSubarvore)
     {
+        if (metadados is null)
+            return false;
+
+        if (nivelCorteSubarvore >= 0)
+        {
+            if (metadados.Nivel > nivelCorteSubarvore)
+                return true;
+            nivelCorteSubarvore = -1; // nível menor ou igual: saiu da subárvore ignorada.
+        }
+
+        if (_opcoes.BlocosIgnorados.Contains(metadados.Bloco))
+            return true;
+
+        if (_opcoes.RegistrosIgnorados.Contains(metadados.Codigo))
+        {
+            nivelCorteSubarvore = metadados.Nivel;
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Extrai o próximo registro lógico do <paramref name="buffer"/>. Para registros de uma linha
+    /// física, recorta pelo <c>LF</c>. Para registros multi-linha (campo-arquivo embutido),
+    /// acumula linhas físicas até a que termina em <c>|{token}|</c>. Avança o <paramref name="buffer"/>
+    /// somente quando devolve um registro completo; caso contrário (precisa de mais dados) deixa
+    /// o <paramref name="buffer"/> intacto para o <see cref="PipeReader"/> bufferizar mais.
+    /// </summary>
+    private bool TentarExtrairRegistro(
+        ref ReadOnlySequence<byte> buffer,
+        bool entradaCompleta,
+        out ReadOnlySequence<byte> registro,
+        out MetadadosRegistro? metadados,
+        out int linhasFisicas)
+    {
+        registro = default;
+        metadados = null;
+        linhasFisicas = 0;
+
+        if (buffer.IsEmpty)
+            return false;
+
         var posLf = buffer.PositionOf(EncodingSped.LfAscii);
+        if (posLf is null && !entradaCompleta)
+            return false; // linha incompleta; aguarda mais dados.
+
+        var primeiraLinha = posLf is null ? buffer : buffer.Slice(0, posLf.Value);
+        metadados = ResolverMetadados(primeiraLinha);
+
+        if (metadados is { EhMultilinha: true })
+            return TentarExtrairMultilinha(ref buffer, metadados, entradaCompleta, out registro, out linhasFisicas);
+
+        // Registro de uma linha física (caminho clássico).
+        linhasFisicas = 1;
         if (posLf is null)
         {
-            linha = default;
+            // entradaCompleta garantido aqui: última linha sem terminador LF.
+            registro = AparaCrFinal(buffer);
+            buffer = buffer.Slice(buffer.End);
+            return true;
+        }
+
+        registro = AparaCrFinal(primeiraLinha);
+        buffer = buffer.Slice(buffer.GetPosition(1, posLf.Value));
+        return true;
+    }
+
+    /// <summary>
+    /// Acumula as linhas físicas de um registro multi-linha até a linha que termina em
+    /// <c>|{token}|</c> (<see cref="MetadadosRegistro.TokenFimArquivo"/>). O registro devolvido
+    /// inclui as quebras CRLF internas do campo-arquivo. Devolve <c>false</c> sem mexer no
+    /// <paramref name="buffer"/> quando o terminador ainda não está no buffer e a entrada não
+    /// terminou; lança <see cref="ErroFormatoSpedException"/> se a entrada acabou sem o terminador.
+    /// </summary>
+    private static bool TentarExtrairMultilinha(
+        ref ReadOnlySequence<byte> buffer,
+        MetadadosRegistro metadados,
+        bool entradaCompleta,
+        out ReadOnlySequence<byte> registro,
+        out int linhasFisicas)
+    {
+        registro = default;
+        linhasFisicas = 0;
+
+        string token = metadados.TokenFimArquivo!;
+        // needle = |{token}| — ex.: |J800FIM|
+        Span<byte> needle = stackalloc byte[token.Length + 2];
+        needle[0] = EncodingSped.PipeAscii;
+        EncodingSped.Latin1.GetBytes(token, needle[1..^1]);
+        needle[^1] = EncodingSped.PipeAscii;
+
+        var reader = new SequenceReader<byte>(buffer);
+        while (reader.TryReadTo(out ReadOnlySequence<byte> _, needle, advancePastDelimiter: true))
+        {
+            var fimRegistro = reader.Position; // logo após o '|' de fechamento do needle.
+
+            // Confirma que o needle está em fim de linha física (próximo byte é CR/LF ou EOF);
+            // do contrário é um falso positivo (token no meio do conteúdo) — continua buscando.
+            if (TentarConsumirQuebra(buffer, fimRegistro, entradaCompleta, out var aposQuebra, out bool precisaMais))
+            {
+                registro = buffer.Slice(0, fimRegistro);
+                linhasFisicas = ContarLinhas(buffer.Slice(0, aposQuebra));
+                buffer = buffer.Slice(aposQuebra);
+                return true;
+            }
+
+            if (precisaMais)
+                return false; // needle no fim do buffer; precisa de mais bytes p/ confirmar a quebra.
+        }
+
+        if (!entradaCompleta)
+            return false; // terminador ainda não chegou; aguarda mais dados.
+
+        throw new ErroFormatoSpedException(new ErroFormato(
+            0, metadados.Codigo, null,
+            $"Registro multi-linha '{metadados.Codigo}' sem o terminador '{token}' (arquivo truncado)."));
+    }
+
+    /// <summary>
+    /// Verifica se a posição <paramref name="fim"/> está no fim de uma linha física e devolve a
+    /// posição logo após a quebra (CR, LF ou CRLF). Define <paramref name="precisaMais"/> quando
+    /// o byte de quebra ainda não chegou ao buffer e a entrada não terminou.
+    /// </summary>
+    private static bool TentarConsumirQuebra(
+        ReadOnlySequence<byte> buffer,
+        SequencePosition fim,
+        bool entradaCompleta,
+        out SequencePosition aposQuebra,
+        out bool precisaMais)
+    {
+        aposQuebra = fim;
+        precisaMais = false;
+
+        var resto = buffer.Slice(fim);
+        if (resto.IsEmpty)
+        {
+            if (entradaCompleta)
+                return true; // último registro sem terminador LF final.
+            precisaMais = true;
             return false;
         }
 
-        linha = buffer.Slice(0, posLf.Value);
-        var apos = buffer.GetPosition(1, posLf.Value);
-        buffer = buffer.Slice(apos);
+        var r = new SequenceReader<byte>(resto);
+        r.TryPeek(out byte b0);
 
+        if (b0 == EncodingSped.LfAscii)
+        {
+            aposQuebra = resto.GetPosition(1);
+            return true;
+        }
+
+        if (b0 == EncodingSped.CrAscii)
+        {
+            if (resto.Length >= 2)
+            {
+                r.TryPeek(1, out byte b1);
+                aposQuebra = resto.GetPosition(b1 == EncodingSped.LfAscii ? 2 : 1);
+                return true;
+            }
+            if (entradaCompleta)
+            {
+                aposQuebra = resto.GetPosition(1);
+                return true;
+            }
+            precisaMais = true;
+            return false;
+        }
+
+        // Outro byte após o needle → não é fim de linha física (falso positivo).
+        return false;
+    }
+
+    /// <summary>Conta as linhas físicas em uma região (número de <c>LF</c> + a última sem LF).</summary>
+    private static int ContarLinhas(ReadOnlySequence<byte> regiao)
+    {
+        if (regiao.IsEmpty)
+            return 1;
+
+        long lfs = 0;
+        var r = new SequenceReader<byte>(regiao);
+        while (r.TryAdvanceTo(EncodingSped.LfAscii, advancePastDelimiter: true))
+            lfs++;
+
+        int linhas = (int)lfs;
+        if (UltimoByte(in regiao) != EncodingSped.LfAscii)
+            linhas++; // última linha física sem terminador LF.
+        return Math.Max(linhas, 1);
+    }
+
+    /// <summary>
+    /// Resolve os metadados do registro a partir do código (entre o 1º e o 2º <c>|</c>) sem
+    /// alocar string. Devolve <c>null</c> para linhas vazias, malformadas ou código desconhecido —
+    /// o caminho de uma linha trata esses casos em <see cref="InterpretarLinha"/>.
+    /// </summary>
+    private MetadadosRegistro? ResolverMetadados(ReadOnlySequence<byte> linha)
+    {
+        var primeiroPipe = linha.PositionOf(EncodingSped.PipeAscii);
+        if (primeiroPipe is null)
+            return null;
+
+        var aposPrimeiro = linha.Slice(linha.GetPosition(1, primeiroPipe.Value));
+        var segundoPipe = aposPrimeiro.PositionOf(EncodingSped.PipeAscii);
+        if (segundoPipe is null)
+            return null;
+
+        var codigoBytes = aposPrimeiro.Slice(0, segundoPipe.Value);
+        int comprimento = (int)codigoBytes.Length;
+        if (comprimento is 0 or > 32)
+            return null;
+
+        Span<byte> bytes = stackalloc byte[32];
+        codigoBytes.CopyTo(bytes);
+        Span<char> chars = stackalloc char[32];
+        int qtd = EncodingSped.Latin1.GetChars(bytes[..comprimento], chars);
+
+        return _catalogo.TentarObter(chars[..qtd], out var metadados) ? metadados : null;
+    }
+
+    private static ReadOnlySequence<byte> AparaCrFinal(in ReadOnlySequence<byte> linha)
+    {
         if (!linha.IsEmpty && UltimoByte(in linha) == EncodingSped.CrAscii)
-            linha = linha.Slice(0, linha.Length - 1);
-
-        return true;
+            return linha.Slice(0, linha.Length - 1);
+        return linha;
     }
 
     private static byte UltimoByte(in ReadOnlySequence<byte> sequencia)
     {
+        if (sequencia.IsEmpty)
+            return 0;
+
         if (sequencia.IsSingleSegment)
             return sequencia.FirstSpan[^1];
 
@@ -151,7 +397,8 @@ public sealed class LeitorSpedTxt : ILeitorSped
         in ReadOnlySequence<byte> linha,
         long numeroLinha,
         PilhaHierarquica pilha,
-        int versaoLeiaute)
+        int versaoLeiaute,
+        MetadadosRegistro? metadadosResolvido)
     {
         int comprimento = checked((int)linha.Length);
         if (comprimento == 0)
@@ -169,7 +416,7 @@ public sealed class LeitorSpedTxt : ILeitorSped
             var chars = charsAlugados.AsSpan(0, qtdChar);
             int gravados = EncodingSped.Latin1.GetChars(bytes, chars);
 
-            return InterpretarLinha(chars[..gravados], numeroLinha, pilha, versaoLeiaute);
+            return InterpretarLinha(chars[..gravados], numeroLinha, pilha, versaoLeiaute, metadadosResolvido);
         }
         finally
         {
@@ -183,7 +430,8 @@ public sealed class LeitorSpedTxt : ILeitorSped
         ReadOnlySpan<char> linha,
         long numeroLinha,
         PilhaHierarquica pilha,
-        int versaoLeiaute)
+        int versaoLeiaute,
+        MetadadosRegistro? metadadosResolvido)
     {
         if (linha.IsEmpty)
             return null;
@@ -214,7 +462,8 @@ public sealed class LeitorSpedTxt : ILeitorSped
 
             if (posicaoCampo == 1)
             {
-                if (!_catalogo.TentarObter(fatia, out metadados))
+                metadados = metadadosResolvido;
+                if (metadados is null && !_catalogo.TentarObter(fatia, out metadados))
                     throw new ErroLayoutSpedException(
                         new ErroLayout(numeroLinha, fatia.ToString(),
                             "Código de registro desconhecido pelo catálogo."));
@@ -231,6 +480,30 @@ public sealed class LeitorSpedTxt : ILeitorSped
                     var campo = metadados.Campos[indice];
                     try
                     {
+                        if (campo.CapturaTudo)
+                        {
+                            // Campo variádico (*): captura tudo que resta na linha a partir
+                            // de inicioCampo, incluindo os separadores | intermediários.
+                            campo.Definidor(registro, conteudo[inicioCampo..]);
+                            break;
+                        }
+                        if (campo.CampoArquivo)
+                        {
+                            // Campo-arquivo de registro multi-linha (ex.: ARQ_RTF): captura tudo
+                            // entre inicioCampo e o último '|' do conteúdo (que separa do token de
+                            // fim), preservando '|' e CRLFs embutidos. O campo seguinte é o token.
+                            var resto = conteudo[inicioCampo..];
+                            int idxSep = resto.LastIndexOf('|');
+                            if (idxSep < 0)
+                            {
+                                campo.Definidor(registro, resto);
+                                break;
+                            }
+                            campo.Definidor(registro, resto[..idxSep]);
+                            if (indice + 1 < metadados.Campos.Count)
+                                metadados.Campos[indice + 1].Definidor(registro, resto[(idxSep + 1)..]);
+                            break;
+                        }
                         campo.Definidor(registro, fatia);
                     }
                     catch (Exception ex) when (ex is FormatException

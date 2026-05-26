@@ -201,4 +201,29 @@ public sealed class CatalogoBuilderTests
         meta.Campos[1].Nome.Should().Be("IndComplemento");
         meta.Campos[1].DesdeVersao.Should().Be(312);
     }
+
+    [Fact]
+    public void Metadados_QuandoRegistroMultilinha_PropagaTokenFimArquivoECampoArquivo()
+    {
+        var catalogo = CatalogoBuilder.BuildFromAssembly(_assembly);
+        catalogo.TentarObter("Y800".AsSpan(), out var meta);
+
+        meta!.TokenFimArquivo.Should().Be("Y800FIM");
+        meta.EhMultilinha.Should().BeTrue();
+
+        var arqRtf = meta.Campos.Single(c => c.Nome == "ArqRtf");
+        arqRtf.CampoArquivo.Should().BeTrue();
+        meta.Campos.Where(c => c.Nome != "ArqRtf").Should().OnlyContain(c => !c.CampoArquivo);
+    }
+
+    [Fact]
+    public void Metadados_QuandoRegistroUmaLinha_TokenFimArquivoNuloENaoMultilinha()
+    {
+        var catalogo = CatalogoBuilder.BuildFromAssembly(_assembly);
+        catalogo.TentarObter("0000".AsSpan(), out var meta);
+
+        meta!.TokenFimArquivo.Should().BeNull();
+        meta.EhMultilinha.Should().BeFalse();
+        meta.Campos.Should().OnlyContain(c => !c.CampoArquivo);
+    }
 }

@@ -1,6 +1,6 @@
 ---
-description: Implementa ou atualiza o próximo registro SPED pendente com testes completos, em um único PR. Funciona para qualquer módulo SPED (EFD Contribuições, EFD ICMS-IPI baseline + incrementos V016+).
-argument-hint: [módulo] [single] [resume] (módulo opcional: efd-contribuicoes, efd-icms-ipi [v016..v020]; `single` desabilita batch; `resume` força retomada do trabalho parcial na branch atual)
+description: Implementa ou atualiza o próximo registro SPED pendente com testes completos, em um único PR. Funciona para qualquer módulo SPED (EFD Contribuições, EFD ICMS-IPI baseline + incrementos V016+, ECD baseline leiaute 9).
+argument-hint: [módulo] [single] [resume] (módulo opcional: efd-contribuicoes, efd-icms-ipi [v016..v020], ecd; `single` desabilita batch; `resume` força retomada do trabalho parcial na branch atual)
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent
 ---
 
@@ -39,10 +39,28 @@ Resolva o módulo lendo `$ARGUMENTS` (primeira palavra que casa com um conhecido
 | `efd-contribuicoes` | `TecnoFisc.Sped.EfdContribuicoes` | `TecnoFisc.Sped.EfdContribuicoes.Tests` | `sped/STAGE_4_REGISTROS.md` | `feat(efd-contribuicoes):` |
 | `efd-icms-ipi` (baseline) | `TecnoFisc.Sped.EfdIcmsIpi` | `TecnoFisc.Sped.EfdIcmsIpi.Tests` | `sped/STAGE_8_EFD_ICMS_IPI_V015.md` | `feat(efd-icms-ipi):` |
 | `efd-icms-ipi v016`..`v020` | `TecnoFisc.Sped.EfdIcmsIpi` | `TecnoFisc.Sped.EfdIcmsIpi.Tests` | `sped/STAGE_8_INCR_V{NNN}.md` (uppercase) | `feat(efd-icms-ipi):` |
+| `ecd` (baseline leiaute 9) | `TecnoFisc.Sped.Ecd` | `TecnoFisc.Sped.Ecd.Tests` | `sped/STAGE_10_ECD_BASELINE.md` | `feat(ecd):` |
 
 Para EFD ICMS-IPI, se `$ARGUMENTS` indicar versão (ex.: `efd-icms-ipi v016`), use o tracking incremental correspondente. Sub-stages do incremento usam **3 segmentos** (e.g., `8.016.001`); branch correspondente é `feat/stage-8-016-001-registro-{code}`. Baseline V015 mantém 2 segmentos (`8.001`).
 
+Para **ECD**: módulo **read-only** com **leiaute único 9** (sem `-Version`, sem incrementos, **sem modo UPDATE** — todas as sub-stages são CREATE de 2 segmentos `10.NNN`, branch `feat/stage-10-NNN-registro-{code}`). Source of truth: `sped/guides/Manual_de_Orientação_da_ECD_Leiaute_20_maio_2026.pdf` (não os guias EFD). O projeto `TecnoFisc.Sped.Ecd` ainda **não existe** — a primeira sub-stage (`10.001`) executa o **Bootstrap de módulo novo** (seção abaixo) antes de implementar o Registro 0000.
+
 Substitua qualquer referência a `STAGE_4_REGISTROS.md`, `efd-contribuicoes`, `EfdContribuicoes`, `stage-4` nos PASSOS abaixo pelos valores derivados aqui.
+
+## Bootstrap de módulo novo (só na primeira sub-stage do ECD, `10.001`)
+
+Se `$PROJ_SRC` (`src/TecnoFisc.Sped.Ecd/`) ainda **não existe**, antes de implementar o Registro 0000 crie o esqueleto do pacote **espelhando `TecnoFisc.Sped.EfdIcmsIpi`** (referência canônica read-only). Tudo entra no **mesmo PR** de `10.001`:
+
+1. **csproj** `src/TecnoFisc.Sped.Ecd/TecnoFisc.Sped.Ecd.csproj` — copie de `EfdIcmsIpi.csproj`: `ProjectReference` ao Core + ao SourceGenerators como `OutputItemType="Analyzer" ReferenceOutputAssembly="false"`. Ajuste `<Description>`/`<PackageId>`/`<PackageTags>` para ECD.
+2. **tests csproj** `tests/TecnoFisc.Sped.Ecd.Tests/TecnoFisc.Sped.Ecd.Tests.csproj` — copie do `.Tests` do EfdIcmsIpi.
+3. **`TecnoFisc.Sped.slnx`** — adicione os dois `<Project Path=.../>` nas pastas `/src/` e `/tests/` (mesmo formato das linhas existentes).
+4. **`Versionamento/LayoutEcd.cs`** — enum `LayoutEcd { V009 = 9 }`. Doc-comment: o valor é o `COD_VER_LC` do registro `I010` (o `0000` da ECD **não** tem `COD_VER`; campo 02 do `0000` é o literal `"LECD"`). Leiaute único — sem incrementos.
+5. **`BlocoEcd.cs`** — copie `BlocoEfdIcmsIpi.cs`, renomeie o tipo.
+6. **`ArquivoEcd.cs`** — copie `ArquivoEfdIcmsIpi.cs`; ordem dos blocos `["0", "C", "I", "J", "K", "9"]`; `LoadAsync` devolve `ArquivoEcd`.
+7. **`Parser/ParserEcd.cs`** — copie `ParserEfdIcmsIpi.cs`: usa `new CatalogoSpedGerado()` do namespace `TecnoFisc.Sped.Ecd.Generated` (o source generator emite o catálogo a partir dos `[RegistroSped]` do assembly — confirme o namespace gerado no primeiro build). `ReadAsync` devolve `ArquivoEcd`.
+8. **Sem pasta `Gerador/`** — read-only (ARCHITECTURE §2.5). O round-trip dos testes usa o `EscritorSpedTxt` **genérico do Core** (serializa pelo catálogo), igual aos testes do EfdIcmsIpi — **não** existe `GeradorEcd`.
+
+Template de teste = `tests/TecnoFisc.Sped.EfdIcmsIpi.Tests/Registros/Bloco0/Registro0000Tests.cs` (helper `RoundTripAsync` com `LeitorSpedTxt` + `EscritorSpedTxt` do Core). Para `10.002`+ o projeto já existe — fluxo normal de PASSO 0 em diante.
 
 ## Regra dura: 1 PR por execução
 
@@ -119,6 +137,8 @@ Para registros tocados em múltiplas versões (e.g., D700 em V017/V018/V019/V020
 
 Janela fiscal de 5 anos: ignore marcos de versão anteriores ao corte vigente.
 
+**ECD:** modo **sempre CREATE** (leiaute único, sem UPDATE). PDF = `sped/guides/Manual_de_Orientação_da_ECD_Leiaute_20_maio_2026.pdf`; página = coluna "Página PDF" do tracking (índice do PDF = página impressa, sem offset). A **Seção 3.6 "Leiaute dos Registros"** é a fonte da tabela de campos; ignore divergências da tabela-resumo 3.2 (e.g., `C052` existe em 3.6, falta em 3.2). Sem leitura de "Principais alterações" (não há incremento). Atente para as particularidades do leiaute 9: `0000` campo 02 = literal `"LECD"` (sem `COD_VER`); versão em `I010.COD_VER_LC`; `IND_ESC` (I010, `G/R/A/B/Z`) dirige obrigatoriedade condicional → só doc-comment (validação fica com o consumidor, ARCHITECTURE §2.3).
+
 ## PASSO 3 — Branch único
 
 **Modo retomada (PASSO -1):** pular este passo. Você já está na branch correta.
@@ -137,6 +157,7 @@ Exemplos:
 - Sub-stage `4.034` (baseline EFD Contribuições) → `feat/stage-4-034-registro-c100`.
 - Sub-stage `8.001` (baseline EFD ICMS-IPI V015) → `feat/stage-8-001-registro-0000`.
 - Sub-stage `8.016.001` (incremento V016) → `feat/stage-8-016-001-registro-1601`.
+- Sub-stage `10.001` (baseline ECD leiaute 9) → `feat/stage-10-001-registro-0000`.
 
 ## PASSO 4 — Implementar
 
@@ -216,6 +237,8 @@ Antes de criar, `Grep` no diretório de enums (Core **e** módulo). Se não exis
 - Não aparece em registros replicados.
 
 **Em dúvida → Core.** Drift bug de duplicar enum Ato COTEPE é pior que enum no Core que poderia estar no módulo.
+
+**ECD (exceção):** enums da ECD são **contábeis** (forma de escrituração `IND_ESC` `G/R/A/B/Z`, naturezas de conta, indicadores de demonstração) — não regidos por Ato COTEPE nem fiscais transversais → ficam no **módulo** (`src/TecnoFisc.Sped.Ecd/Enums/`). A regra "em dúvida → Core" acima vale para tributos (ICMS/IPI/Ato COTEPE), **não** para enums contábeis. Do Core, a ECD só reutiliza value objects já existentes (`Cnpj`, `Cpf`, `InscricaoEstadual`, `CodigoMunicipio`).
 
 Padrão **idêntico** ao enum lido no PASSO 0. Sem sentinelas (`Desconhecido`, `Outros`).
 
@@ -322,7 +345,7 @@ Corpo do PR:
 8. Sem comentários além de docstring de classe e WHY não-óbvio.
 9. Sem runtime dependencies externas.
 10. Encoding `EncodingSped.Latin1`.
-11. Round-trip obrigatório.
+11. Round-trip obrigatório. Em módulos read-only (EFD ICMS-IPI, ECD) não existe `Gerador{Modulo}`: o round-trip do teste usa o `EscritorSpedTxt` **genérico do Core** (serializa pelo catálogo). O teste continua mandatório.
 12. Tracking marcado **antes** do commit final do PR.
 13. Branch sempre a partir de `dev`. PR sempre `--base dev`.
 

@@ -46,7 +46,8 @@ public static class CatalogoBuilder
         int nivel,
         string bloco,
         Func<RegistroSped> fabrica,
-        int introduzidoEm = 0)
+        int introduzidoEm = 0,
+        string? tokenFimArquivo = null)
     {
         ArgumentNullException.ThrowIfNull(tipo);
         ArgumentNullException.ThrowIfNull(codigo);
@@ -58,7 +59,11 @@ public static class CatalogoBuilder
                 $"Tipo {tipo.FullName} precisa ser concreto e herdar de RegistroSped.");
 
         var campos = ConstruirCampos(tipo);
-        return new MetadadosRegistro(codigo, nivel, bloco, tipo, fabrica, campos, introduzidoEm);
+        tokenFimArquivo ??= tipo.GetCustomAttribute<RegistroSpedAttribute>(inherit: false)?.TokenFimArquivo;
+        ValidarCampoArquivo(tipo, campos, tokenFimArquivo);
+        return new MetadadosRegistro(
+            codigo, nivel, bloco, tipo, fabrica, campos, introduzidoEm,
+            descontinuadoEm: 0, tokenFimArquivo: tokenFimArquivo);
     }
 
     private static IRegistroSpedCatalogo ConstruirNovo(Assembly assembly)
@@ -90,6 +95,7 @@ public static class CatalogoBuilder
     {
         var fabrica = ConstruirFabrica(tipo);
         var campos = ConstruirCampos(tipo);
+        ValidarCampoArquivo(tipo, campos, atributo.TokenFimArquivo);
         var descontinuado = tipo.GetCustomAttribute<DescontinuadoAttribute>(inherit: false);
         return new MetadadosRegistro(
             atributo.Codigo,
@@ -99,7 +105,60 @@ public static class CatalogoBuilder
             fabrica,
             campos,
             atributo.IntroduzidoEm,
-            descontinuado?.EmVersao ?? 0);
+            descontinuado?.EmVersao ?? 0,
+            atributo.TokenFimArquivo);
+    }
+
+    /// <summary>
+    /// Valida a consistência de um registro com campo-arquivo embutido (J800/J801 e similares).
+    /// As regras refletem o que o reassembly multi-linha do <c>LeitorSpedTxt</c> consegue
+    /// interpretar — uma única âncora de fim conhecida é necessária porque o campo-arquivo pode
+    /// conter <c>|</c> e CRLF:
+    /// <list type="number">
+    ///   <item>no máximo um campo marcado com <c>CampoArquivo</c>;</item>
+    ///   <item><c>CampoArquivo</c> e <c>TokenFimArquivo</c> andam em par (um exige o outro);</item>
+    ///   <item>o campo-arquivo é do tipo <c>string</c>;</item>
+    ///   <item>o campo-arquivo é o penúltimo campo (seguido apenas pelo terminador IND_FIM_*).</item>
+    /// </list>
+    /// Se um leiaute futuro (ex.: ECF) trouxer outra forma, esta validação falha apontando o
+    /// registro — sinal de que o reassembly precisa ser generalizado (com teste), em vez de gerar
+    /// dado errado calado.
+    /// </summary>
+    private static void ValidarCampoArquivo(Type tipo, IReadOnlyList<MetadadosCampo> campos, string? tokenFimArquivo)
+    {
+        int indice = -1;
+        for (int i = 0; i < campos.Count; i++)
+        {
+            if (!campos[i].CampoArquivo)
+                continue;
+            if (indice >= 0)
+                throw new InvalidOperationException(
+                    $"{tipo.FullName} tem mais de um campo com CampoArquivo; só é permitido um por registro.");
+            indice = i;
+        }
+
+        bool temCampoArquivo = indice >= 0;
+        bool temToken = tokenFimArquivo is not null;
+
+        if (temCampoArquivo != temToken)
+            throw new InvalidOperationException(
+                $"{tipo.FullName}: CampoSped.CampoArquivo e RegistroSped.TokenFimArquivo devem ser usados " +
+                $"em par (campoArquivo={(temCampoArquivo ? "presente" : "ausente")}, " +
+                $"TokenFimArquivo={(temToken ? $"\"{tokenFimArquivo}\"" : "ausente")}).");
+
+        if (!temCampoArquivo)
+            return;
+
+        var campo = campos[indice];
+        if (campo.Tipo != typeof(string))
+            throw new InvalidOperationException(
+                $"CampoArquivo em {tipo.FullName}.{campo.Nome} requer tipo string (nullable ou não).");
+
+        if (indice != campos.Count - 2)
+            throw new InvalidOperationException(
+                $"CampoArquivo em {tipo.FullName}.{campo.Nome} deve ser o penúltimo campo " +
+                $"(seguido apenas pelo campo terminador IND_FIM_*); encontrado na posição {indice + 2} " +
+                $"de {campos.Count + 1} (REG = 1).");
     }
 
     private static Func<RegistroSped> ConstruirFabrica(Type tipo)
@@ -168,7 +227,9 @@ public static class CatalogoBuilder
                 atributo.Formato,
                 definidor,
                 serializadorComposto,
-                atributo.DesdeVersao)));
+                atributo.DesdeVersao,
+                atributo.CapturaTudo,
+                atributo.CampoArquivo)));
         }
 
         lista.Sort(static (a, b) => a.Ordem.CompareTo(b.Ordem));
@@ -182,6 +243,20 @@ public static class CatalogoBuilder
                 throw new InvalidOperationException(
                     $"Ordens de campos de {tipo.FullName} devem ser sequenciais a partir de 2 " +
                     $"(REG ocupa a posição 1); esperava {esperado}, encontrei {lista[i].Ordem} ({lista[i].Campo.Nome}).");
+        }
+
+        // CapturaTudo só é permitido no último campo e apenas para string?
+        for (int i = 0; i < lista.Count; i++)
+        {
+            var (_, campo) = lista[i];
+            if (!campo.CapturaTudo)
+                continue;
+            if (i != lista.Count - 1)
+                throw new InvalidOperationException(
+                    $"CapturaTudo em {tipo.FullName}.{campo.Nome} só é permitido no último campo do registro.");
+            if (campo.Tipo != typeof(string))
+                throw new InvalidOperationException(
+                    $"CapturaTudo em {tipo.FullName}.{campo.Nome} requer tipo string (nullable ou não).");
         }
 
         return lista.Count == 0

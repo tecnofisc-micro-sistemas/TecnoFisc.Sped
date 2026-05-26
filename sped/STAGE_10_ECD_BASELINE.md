@@ -127,7 +127,7 @@ Block headers são informacionais; numeração é global e contígua (`10.001` �
 | [x] | 10.050 | Registro J215 | Fato Contábil que Altera a Conta Lucros Acumulados ou Prejuízos Acumulados ou Todo o Patrimônio Líquido | 4 | 1:N | 189 |
 | [x] | 10.051 | Registro J800 | Outras Informações | 3 | 1:N | 190 |
 | [x] | 10.052 | Registro J801 | Termo de Verificação para Fins de Substituição da ECD | 3 | 0:1 | 192 |
-| [ ] | 10.053 | Registro J900 | Termo de Encerramento | 2 | 1 | 195 |
+| [x] | 10.053 | Registro J900 | Termo de Encerramento | 2 | 1 | 195 |
 | [ ] | 10.054 | Registro J930 | Signatários da Escrituração | 3 | 1:N | 197 |
 | [ ] | 10.055 | Registro J932 | Signatários do Termo de Verificação para Fins de Substituição da ECD | 3 | 1:N | 203 |
 | [ ] | 10.056 | Registro J935 | Identificação dos Auditores Independentes | 3 | 1:N | 206 |

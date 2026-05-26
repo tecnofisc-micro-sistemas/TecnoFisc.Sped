@@ -21,7 +21,7 @@ namespace TecnoFisc.Sped.NFeNFCe.Parser;
 /// A chave de acesso é sempre validada (é a identidade do documento);
 /// <see cref="ParserNFeOptions.ValidateChecksums"/> governa os demais value objects com DV (GTIN).
 /// </remarks>
-internal sealed class NFeXmlReader(XmlReader reader, ParserNFeOptions options)
+internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions options)
 {
     private readonly XmlReader _r = reader;
     private readonly ParserNFeOptions _options = options;
@@ -412,237 +412,6 @@ internal sealed class NFeXmlReader(XmlReader reader, ParserNFeOptions options)
         return new Imposto { Icms = icms };
     }
 
-    private async Task<Icms?> ReadIcmsAsync(CancellationToken ct)
-    {
-        Icms? icms = null;
-
-        await _r.ConsumeChildrenAsync(async nome =>
-        {
-            switch (nome)
-            {
-                case "ICMS00": icms = await ReadIcms00Async(ct).ConfigureAwait(false); return true;
-                case "ICMS10": icms = await ReadIcms10Async(ct).ConfigureAwait(false); return true;
-                case "ICMS20": icms = await ReadIcms20Async(ct).ConfigureAwait(false); return true;
-                case "ICMS30": icms = await ReadIcms30Async(ct).ConfigureAwait(false); return true;
-                case "ICMS60": icms = await ReadIcms60Async(ct).ConfigureAwait(false); return true;
-                // Demais variantes (CST 40/41/50/51/70/90, CSOSN, ICMSPart/ST/SN) entram em slices posteriores.
-                default: return false;
-            }
-        }, _options.Strict, ct).ConfigureAwait(false);
-
-        return icms;
-    }
-
-    private async Task<Icms00> ReadIcms00Async(CancellationToken ct)
-    {
-        OrigemMercadoria orig = default; string cstTributacao = string.Empty;
-        int modBC = 0; decimal vBC = 0, pICMS = 0, vICMS = 0;
-        decimal? pFCP = null, vFCP = null;
-
-        await _r.ConsumeChildrenAsync(async nome =>
-        {
-            switch (nome)
-            {
-                case "orig": orig = ParseEnum<OrigemMercadoria>(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "CST": cstTributacao = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "modBC": modBC = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vBC": vBC = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "pICMS": pICMS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vICMS": vICMS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "pFCP": pFCP = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vFCP": vFCP = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                default: return false;
-            }
-        }, _options.Strict, ct).ConfigureAwait(false);
-
-        // O CST de ICMS na NF-e tem 2 dígitos (<CST>) com a origem em <orig> à parte; o value
-        // object Cst do Core segue a forma canônica SPED/Ato COTEPE de 3 dígitos (origem + CST).
-        Cst cst = Cst.Create(string.Concat(((int)orig).ToString(CultureInfo.InvariantCulture), cstTributacao), TipoTributo.Icms);
-
-        return new Icms00
-        {
-            Orig = orig, CST = cst, ModBC = modBC, VBC = vBC, PICMS = pICMS, VICMS = vICMS,
-            PFCP = pFCP, VFCP = vFCP,
-        };
-    }
-
-    private async Task<Icms10> ReadIcms10Async(CancellationToken ct)
-    {
-        OrigemMercadoria orig = default; string cstTributacao = string.Empty;
-        int modBC = 0, modBCST = 0;
-        decimal vBC = 0, pICMS = 0, vICMS = 0, vBCST = 0, pICMSST = 0, vICMSST = 0;
-        decimal? vBCFCP = null, pFCP = null, vFCP = null;
-        decimal? pMVAST = null, pRedBCST = null;
-        decimal? vBCFCPST = null, pFCPST = null, vFCPST = null;
-        decimal? vICMSSTDeson = null;
-        int? motDesICMSST = null;
-
-        await _r.ConsumeChildrenAsync(async nome =>
-        {
-            switch (nome)
-            {
-                case "orig": orig = ParseEnum<OrigemMercadoria>(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "CST": cstTributacao = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "modBC": modBC = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vBC": vBC = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "pICMS": pICMS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vICMS": vICMS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vBCFCP": vBCFCP = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "pFCP": pFCP = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vFCP": vFCP = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "modBCST": modBCST = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "pMVAST": pMVAST = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "pRedBCST": pRedBCST = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vBCST": vBCST = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "pICMSST": pICMSST = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vICMSST": vICMSST = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vBCFCPST": vBCFCPST = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "pFCPST": pFCPST = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vFCPST": vFCPST = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vICMSSTDeson": vICMSSTDeson = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "motDesICMSST": motDesICMSST = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                default: return false;
-            }
-        }, _options.Strict, ct).ConfigureAwait(false);
-
-        // O CST de ICMS na NF-e tem 2 dígitos (<CST>) com a origem em <orig> à parte; o value
-        // object Cst do Core segue a forma canônica SPED/Ato COTEPE de 3 dígitos (origem + CST).
-        Cst cst = Cst.Create(string.Concat(((int)orig).ToString(CultureInfo.InvariantCulture), cstTributacao), TipoTributo.Icms);
-
-        return new Icms10
-        {
-            Orig = orig, CST = cst, ModBC = modBC, VBC = vBC, PICMS = pICMS, VICMS = vICMS,
-            VBCFCP = vBCFCP, PFCP = pFCP, VFCP = vFCP,
-            ModBCST = modBCST, PMVAST = pMVAST, PRedBCST = pRedBCST,
-            VBCST = vBCST, PICMSST = pICMSST, VICMSST = vICMSST,
-            VBCFCPST = vBCFCPST, PFCPST = pFCPST, VFCPST = vFCPST,
-            VICMSSTDeson = vICMSSTDeson, MotDesICMSST = motDesICMSST,
-        };
-    }
-
-    private async Task<Icms20> ReadIcms20Async(CancellationToken ct)
-    {
-        OrigemMercadoria orig = default; string cstTributacao = string.Empty;
-        int modBC = 0;
-        decimal pRedBC = 0, vBC = 0, pICMS = 0, vICMS = 0;
-        decimal? vBCFCP = null, pFCP = null, vFCP = null;
-        decimal? vICMSDeson = null;
-        int? motDesICMS = null, indDeduzDeson = null;
-
-        await _r.ConsumeChildrenAsync(async nome =>
-        {
-            switch (nome)
-            {
-                case "orig": orig = ParseEnum<OrigemMercadoria>(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "CST": cstTributacao = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "modBC": modBC = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "pRedBC": pRedBC = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vBC": vBC = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "pICMS": pICMS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vICMS": vICMS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vBCFCP": vBCFCP = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "pFCP": pFCP = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vFCP": vFCP = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vICMSDeson": vICMSDeson = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "motDesICMS": motDesICMS = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "indDeduzDeson": indDeduzDeson = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                default: return false;
-            }
-        }, _options.Strict, ct).ConfigureAwait(false);
-
-        // O CST de ICMS na NF-e tem 2 dígitos (<CST>) com a origem em <orig> à parte; o value
-        // object Cst do Core segue a forma canônica SPED/Ato COTEPE de 3 dígitos (origem + CST).
-        Cst cst = Cst.Create(string.Concat(((int)orig).ToString(CultureInfo.InvariantCulture), cstTributacao), TipoTributo.Icms);
-
-        return new Icms20
-        {
-            Orig = orig, CST = cst, ModBC = modBC, PRedBC = pRedBC, VBC = vBC, PICMS = pICMS, VICMS = vICMS,
-            VBCFCP = vBCFCP, PFCP = pFCP, VFCP = vFCP,
-            VICMSDeson = vICMSDeson, MotDesICMS = motDesICMS, IndDeduzDeson = indDeduzDeson,
-        };
-    }
-
-    private async Task<Icms30> ReadIcms30Async(CancellationToken ct)
-    {
-        OrigemMercadoria orig = default; string cstTributacao = string.Empty;
-        int modBCST = 0;
-        decimal vBCST = 0, pICMSST = 0, vICMSST = 0;
-        decimal? pMVAST = null, pRedBCST = null;
-        decimal? vBCFCPST = null, pFCPST = null, vFCPST = null;
-        decimal? vICMSDeson = null;
-        int? motDesICMS = null, indDeduzDeson = null;
-
-        await _r.ConsumeChildrenAsync(async nome =>
-        {
-            switch (nome)
-            {
-                case "orig": orig = ParseEnum<OrigemMercadoria>(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "CST": cstTributacao = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "modBCST": modBCST = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "pMVAST": pMVAST = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "pRedBCST": pRedBCST = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vBCST": vBCST = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "pICMSST": pICMSST = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vICMSST": vICMSST = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vBCFCPST": vBCFCPST = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "pFCPST": pFCPST = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vFCPST": vFCPST = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vICMSDeson": vICMSDeson = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "motDesICMS": motDesICMS = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "indDeduzDeson": indDeduzDeson = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                default: return false;
-            }
-        }, _options.Strict, ct).ConfigureAwait(false);
-
-        // O CST de ICMS na NF-e tem 2 dígitos (<CST>) com a origem em <orig> à parte; o value
-        // object Cst do Core segue a forma canônica SPED/Ato COTEPE de 3 dígitos (origem + CST).
-        Cst cst = Cst.Create(string.Concat(((int)orig).ToString(CultureInfo.InvariantCulture), cstTributacao), TipoTributo.Icms);
-
-        return new Icms30
-        {
-            Orig = orig, CST = cst, ModBCST = modBCST, PMVAST = pMVAST, PRedBCST = pRedBCST,
-            VBCST = vBCST, PICMSST = pICMSST, VICMSST = vICMSST,
-            VBCFCPST = vBCFCPST, PFCPST = pFCPST, VFCPST = vFCPST,
-            VICMSDeson = vICMSDeson, MotDesICMS = motDesICMS, IndDeduzDeson = indDeduzDeson,
-        };
-    }
-
-    private async Task<Icms60> ReadIcms60Async(CancellationToken ct)
-    {
-        OrigemMercadoria orig = default; string cstTributacao = string.Empty;
-        decimal? vBCSTRet = null, pST = null, vICMSSubstituto = null, vICMSSTRet = null,
-            pRedBCEfet = null, vBCEfet = null, pICMSEfet = null, vICMSEfet = null;
-
-        await _r.ConsumeChildrenAsync(async nome =>
-        {
-            switch (nome)
-            {
-                case "orig": orig = ParseEnum<OrigemMercadoria>(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "CST": cstTributacao = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "vBCSTRet": vBCSTRet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "pST": pST = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vICMSSubstituto": vICMSSubstituto = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vICMSSTRet": vICMSSTRet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "pRedBCEfet": pRedBCEfet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vBCEfet": vBCEfet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "pICMSEfet": pICMSEfet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vICMSEfet": vICMSEfet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                default: return false;
-            }
-        }, _options.Strict, ct).ConfigureAwait(false);
-
-        // O CST de ICMS na NF-e tem 2 dígitos (<CST>) com a origem em <orig> à parte; o value
-        // object Cst do Core segue a forma canônica SPED/Ato COTEPE de 3 dígitos (origem + CST).
-        Cst cst = Cst.Create(string.Concat(((int)orig).ToString(CultureInfo.InvariantCulture), cstTributacao), TipoTributo.Icms);
-
-        return new Icms60
-        {
-            Orig = orig, CST = cst, VBCSTRet = vBCSTRet, PST = pST,
-            VICMSSubstituto = vICMSSubstituto, VICMSSTRet = vICMSSTRet,
-            PRedBCEfet = pRedBCEfet, VBCEfet = vBCEfet, PICMSEfet = pICMSEfet, VICMSEfet = vICMSEfet,
-        };
-    }
-
     private async Task<Protocolo> ReadInfProtAsync(CancellationToken ct)
     {
         TipoAmbiente tpAmb = default; string? verAplic = null; ChaveAcesso chNFe = default; bool chSet = false;
@@ -692,6 +461,13 @@ internal sealed class NFeXmlReader(XmlReader reader, ParserNFeOptions options)
         => _options.ValidateChecksums
             ? Gtin.Create(valor)
             : Gtin.TentarCriar(valor, out var g) ? g : default;
+
+    /// <summary>
+    /// Combina <c>orig</c> e o <c>CST</c> de 2 dígitos da NF-e na forma canônica SPED/Ato COTEPE
+    /// de 3 dígitos (origem + CST) do value object <see cref="Cst"/> do Core.
+    /// </summary>
+    private static Cst CombinarCst(OrigemMercadoria orig, string cstTributacao)
+        => Cst.Create(string.Concat(((int)orig).ToString(CultureInfo.InvariantCulture), cstTributacao), TipoTributo.Icms);
 
     private static int ParseInt(string s) => int.Parse(s, CultureInfo.InvariantCulture);
 

@@ -141,7 +141,7 @@ Block headers são informacionais; numeração é global e contígua (`10.001` �
 | [x] | 10.059 | Registro K030 | Período da Escrituração Contábil Consolidada | 2 | 0:1 | 209 |
 | [x] | 10.060 | Registro K100 | Relação das Empresas Consolidadas | 3 | 0:N | 211 |
 | [x] | 10.061 | Registro K110 | Relação dos Eventos Societários | 4 | 0:N | 215 |
-| [ ] | 10.062 | Registro K115 | Empresas Participantes do Evento Societário | 5 | 0:N | 217 |
+| [x] | 10.062 | Registro K115 | Empresas Participantes do Evento Societário | 5 | 0:N | 217 |
 | [ ] | 10.063 | Registro K200 | Plano de Contas Consolidado | 2 | 1:N | 219 |
 | [ ] | 10.064 | Registro K210 | Mapeamento para Planos de Contas das Empresas Consolidadas | 3 | 1:N | 222 |
 | [ ] | 10.065 | Registro K300 | Saldos das Contas Consolidadas | 3 | 0:N | 223 |

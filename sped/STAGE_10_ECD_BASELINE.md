@@ -156,7 +156,7 @@ Block headers são informacionais; numeração é global e contígua (`10.001` �
 | [x] | 10.069 | Registro 9001 | Abertura do Bloco 9 | 1 | 1 | 229 |
 | [x] | 10.070 | Registro 9900 | Registros do Arquivo | 2 | 1:N | 230 |
 | [x] | 10.071 | Registro 9990 | Encerramento do Bloco 9 | 1 | 1 | 231 |
-| [ ] | 10.072 | Registro 9999 | Encerramento do Arquivo Digital | 0 | 1 | 232 |
+| [x] | 10.072 | Registro 9999 | Encerramento do Arquivo Digital | 0 | 1 | 232 |
 
 ## Publishing
 

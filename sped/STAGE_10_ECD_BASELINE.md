@@ -138,7 +138,7 @@ Block headers são informacionais; numeração é global e contígua (`10.001` �
 | Feito | Sub-stage | Registro | Descrição | Nível | Ocorrência | Página PDF |
 | --- | --- | --- | --- | --- | --- | --- |
 | [x] | 10.058 | Registro K001 | Abertura do Bloco K | 1 | 1 | 208 |
-| [ ] | 10.059 | Registro K030 | Período da Escrituração Contábil Consolidada | 2 | 0:1 | 209 |
+| [x] | 10.059 | Registro K030 | Período da Escrituração Contábil Consolidada | 2 | 0:1 | 209 |
 | [ ] | 10.060 | Registro K100 | Relação das Empresas Consolidadas | 3 | 0:N | 211 |
 | [ ] | 10.061 | Registro K110 | Relação dos Eventos Societários | 4 | 0:N | 215 |
 | [ ] | 10.062 | Registro K115 | Empresas Participantes do Evento Societário | 5 | 0:N | 217 |

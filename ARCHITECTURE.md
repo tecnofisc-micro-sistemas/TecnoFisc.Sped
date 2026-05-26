@@ -97,9 +97,9 @@ Nem todos os pacotes precisam de gerador. A decisão é por caso de uso real:
 | --- | --- | --- | --- |
 | `TecnoFisc.Sped.EfdContribuicoes` | ✅ | ✅ | Consumidor TecnoFisc emite o arquivo. |
 | `TecnoFisc.Sped.EfdIcmsIpi` | ✅ | ❌ | Uso é ingestão para análise; não há emissão. |
-| `TecnoFisc.Sped.Ecd` | ✅ | ⏸️ | Gerador depende de confirmação externa. Implementar parser primeiro; gerador entra em stage dedicada quando demanda confirmada. |
-| `TecnoFisc.Sped.Ecf` | ✅ | ⏸️ | Mesma regra do ECD. |
+| `TecnoFisc.Sped.Ecd` | ✅ | ⏸️ | Parser implementado (0.6.0). Gerador depende de confirmação externa — entra em stage dedicada quando demanda confirmada. |
 | `TecnoFisc.Sped.NFe` / `NFCe` / `CTe` | ✅ | ⏸️ | Caso de uso confirmado é ingestão dos XMLs já emitidos (validação de assinatura, leitura tipada). Geração/emissão para SEFAZ depende de confirmação externa não controlada só pelo usuário — entra em stage dedicada quando confirmada. |
+| `TecnoFisc.Sped.Ecf` | ✅ | ⏸️ | Mesma regra do ECD. Último leiaute textual planejado (depois dos pacotes XML). |
 
 **Implicações dos pacotes read-only:**
 
@@ -122,10 +122,10 @@ Nem todos os pacotes precisam de gerador. A decisão é por caso de uso real:
 | EFD Contribuições | `TecnoFisc.Sped.EfdContribuicoes` | `.txt` (Latin1) |
 | EFD ICMS-IPI | `TecnoFisc.Sped.EfdIcmsIpi` | `.txt` (Latin1) |
 | ECD | `TecnoFisc.Sped.Ecd` | `.txt` (Latin1) |
-| ECF | `TecnoFisc.Sped.Ecf` | `.txt` (Latin1) |
 | NF-e | `TecnoFisc.Sped.NFe` | XML (UTF-8) |
 | NFC-e | `TecnoFisc.Sped.NFCe` | XML (UTF-8) |
 | CT-e | `TecnoFisc.Sped.CTe` | XML (UTF-8) |
+| ECF | `TecnoFisc.Sped.Ecf` | `.txt` (Latin1) |
 
 Além desses, dois pacotes transversais completam a família:
 
@@ -200,7 +200,7 @@ SPED projects publish new layouts approximately yearly. A estratégia depende do
 - **Exception:** structurally divergent registros (rare — order/type/length of an existing field changes) are subclassed `RegistroXxxxVYYY : RegistroXxxx`. O catálogo passa a indexar variantes por versão (decisão futura quando esse caso aparecer em pacote read+write).
 - Receita Federal layouts são **strict-incremental** — uma versão posterior nunca remove campos nem altera significado dos existentes, apenas acrescenta. Isto autoriza o modelo de uma classe + anotações por versão (em vez de uma classe por versão).
 
-**Pacotes read-only (EFD ICMS-IPI; ECD/ECF/NFe/NFCe/CTe até confirmação de gerador):**
+**Pacotes read-only (EFD ICMS-IPI, ECD; NFe/NFCe/CTe/ECF até confirmação de gerador):**
 
 - Existe **uma única modelagem** correspondente ao **leiaute mais recente** dentro da janela fiscal de 5 anos.
 - Sem subclasses por versão. Sem catálogo polimórfico por versão. `Dictionary<string, MetadadosRegistro>` 1:1 permanece.
@@ -241,10 +241,10 @@ TecnoFisc.Sped/
 │   ├── TecnoFisc.Sped.EfdContribuicoes/              # EFD Contribuições (.txt)
 │   ├── TecnoFisc.Sped.EfdIcmsIpi/                    # EFD ICMS-IPI (.txt)
 │   ├── TecnoFisc.Sped.Ecd/                           # ECD (.txt)
-│   ├── TecnoFisc.Sped.Ecf/                           # ECF (.txt)
 │   ├── TecnoFisc.Sped.NFe/                           # NF-e XML
 │   ├── TecnoFisc.Sped.NFCe/                          # NFC-e XML
-│   └── TecnoFisc.Sped.CTe/                           # CT-e XML
+│   ├── TecnoFisc.Sped.CTe/                           # CT-e XML
+│   └── TecnoFisc.Sped.Ecf/                           # ECF (.txt)
 │
 ├── tests/
 │   ├── TecnoFisc.Sped.Core.Tests/
@@ -267,10 +267,10 @@ TecnoFisc.Sped.Core.SourceGenerators ← (no dependencies, references Roslyn ana
 TecnoFisc.Sped.EfdContribuicoes      ← Core, Core.SourceGenerators (analyzer)
 TecnoFisc.Sped.EfdIcmsIpi            ← Core, Core.SourceGenerators (analyzer)
 TecnoFisc.Sped.Ecd                   ← Core, Core.SourceGenerators (analyzer)
-TecnoFisc.Sped.Ecf                   ← Core, Core.SourceGenerators (analyzer)
 TecnoFisc.Sped.NFe                   ← Core, Core.SourceGenerators (analyzer)
 TecnoFisc.Sped.NFCe                  ← Core, Core.SourceGenerators (analyzer)
 TecnoFisc.Sped.CTe                   ← Core, Core.SourceGenerators (analyzer)
+TecnoFisc.Sped.Ecf                   ← Core, Core.SourceGenerators (analyzer)
 TecnoFisc.Sped (metapacote)          ← todos os pacotes de leiaute acima
 ```
 
@@ -630,7 +630,7 @@ Novo pacote para ECD (Escrituração Contábil Digital). Estrutura interna idên
 
 **Independência por registro.** `Registro0000` da ECD é distinto dos `Registro0000` de outros leiautes (Hard Rule 2). Apenas value objects/tabelas verdadeiramente transversais migram para Core.
 
-Publica `TecnoFisc.Sped.Ecd` (bump apropriado no release) quando todas as 72 sub-stages do baseline leiaute 9 completas e parser lê real anonimizado.
+Publica `TecnoFisc.Sped.Ecd` (bump apropriado no release) quando todas as 72 sub-stages do baseline leiaute 9 completas e parser lê real anonimizado. **✅ Concluído na `0.6.0`** — 72 sub-stages merged, `ParserEcd`/`ArquivoEcd` lendo arquivo real anonimizado.
 
 ### Stage 11 — ECD incrementos até leiaute vigente (standby — sem trigger ativo)
 
@@ -655,7 +655,7 @@ Tests cobrem todos os leiautes suportados + arquivo malformado + EOF prematuro +
 
 Pacote agregador (`TecnoFisc.Sped`) que referencia todos os pacotes de leiaute em uma única dependência NuGet. Útil para consumidores que querem suporte abrangente sem listar cada pacote no `csproj`.
 
-- Sem código próprio — apenas `<PackageReference>` para cada um dos pacotes de leiaute (`EfdContribuicoes`, `EfdIcmsIpi`, `Ecd`, `Ecf`, `NFe`, `NFCe`, `CTe`).
+- Sem código próprio — apenas `<PackageReference>` para cada um dos pacotes de leiaute (`EfdContribuicoes`, `EfdIcmsIpi`, `Ecd`, `NFe`, `NFCe`, `CTe`, `Ecf`).
 - Versão acompanha a mais alta dos pacotes referenciados; bumps coordenados por release notes consolidados.
 - Documentação no README do pacote orienta consumidores a preferir o metapacote quando não souberem antecipadamente qual leiaute vão consumir, ou quando o sniffer (Stage 12) for o ponto de entrada.
 
@@ -766,7 +766,7 @@ When starting a session in this repository:
 9. **Registros duplicate per leiaute; Ato COTEPE-referenced tables/enums (Tabela 4.1.1, 4.1.2, etc.) live in `Core`** — see §4.2.
 10. **5-year fiscal window:** ignore versionamento de campos com vigência anterior a `(hoje - 5 anos)`. Dentro da janela, marcos temporais antigos não são modelados em código (vide §4.3).
 11. **EFD ICMS-IPI é o regente do Ato COTEPE.** Quando uma tabela/enum aparecer referenciada em múltiplos leiautes, extrair uma vez no leiaute-origem (EFD ICMS-IPI) e tratar como compartilhada.
-12. **Modo de operação do pacote dita a estratégia de versionamento (§2.5 + §4.7).** EFD ICMS-IPI, ECD, ECF, NF-e, NFC-e e CT-e são read-only por padrão — sem `Gerador/`, sem round-trip de geração, modelo único do leiaute mais recente. EFD Contribuições é o único pacote read+write confirmado. Não criar gerador para pacote read-only sem promover oficialmente a stage de migração.
+12. **Modo de operação do pacote dita a estratégia de versionamento (§2.5 + §4.7).** EFD ICMS-IPI, ECD, NF-e, NFC-e, CT-e e ECF são read-only por padrão — sem `Gerador/`, sem round-trip de geração, modelo único do leiaute mais recente. EFD Contribuições é o único pacote read+write confirmado. Não criar gerador para pacote read-only sem promover oficialmente a stage de migração.
 13. **Validações fiscais ficam com o consumidor (§2.3).** `UPDATE/Validação` e `UPDATE/Obrig` em trackers viram `UPDATE/Doc` — apenas doc-comment XML. Não criar pasta `Validadores/Versionados/` nem `IValidadorVersionado<T>`.
 14. Performance-sensitive code requires a BenchmarkDotNet benchmark.
 15. **Merges into `dev` are always Squash and Merge.** Feature branches may contain granular commits while work is in progress, but the integration commit that lands on `dev` must be a single squashed PR merge.

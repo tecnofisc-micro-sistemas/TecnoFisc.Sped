@@ -17,12 +17,90 @@ public sealed class LeitorSpedTxtTests
         => new(EncodingSped.Latin1.GetBytes(conteudo));
 
     private static async Task<List<RegistroSped>> LerTodosAsync(string conteudo)
+        => await LerComOpcoesAsync(conteudo, ReadingOptions.Default);
+
+    private static async Task<List<RegistroSped>> LerComOpcoesAsync(string conteudo, ReadingOptions opcoes)
     {
-        var leitor = new LeitorSpedTxt(_catalogo);
+        var leitor = new LeitorSpedTxt(_catalogo, opcoes);
         var resultado = new List<RegistroSped>();
         await foreach (var registro in leitor.ReadStreamingAsync(FluxoSped(conteudo)))
             resultado.Add(registro);
         return resultado;
+    }
+
+    private const string ArquivoComHierarquia =
+        "|0000|006|01012025|31012025|EMPRESA|11222333000181|\r\n" +
+        "|C001|0|\r\n" +
+        "|C100|0|123|1500,75|5102|\r\n" +
+        "|C170|1|MERCADORIA A|10|750,50|\r\n" +
+        "|C170|2|MERCADORIA B|5|750,25|\r\n" +
+        "|C100|0|456|2000,00|6101|\r\n" +
+        "|C990|2|\r\n" +
+        "|9999|8|\r\n";
+
+    [Fact]
+    public async Task LerStreamingAsync_RegistrosIgnorados_DescartaRegistroEToda_Subarvore()
+    {
+        // Ignorar C100 deve descartar os dois C100 (nível 2) e os C170 filhos (nível 3),
+        // mantendo irmãos/fechadores de nível menor-ou-igual (C001, C990).
+        var opcoes = new ReadingOptions { RegistrosIgnorados = new HashSet<string>(StringComparer.Ordinal) { "C100" } };
+
+        var registros = await LerComOpcoesAsync(ArquivoComHierarquia, opcoes);
+
+        registros.Select(r => r.Codigo).Should().Equal(["0000", "C001", "C990", "9999"]);
+    }
+
+    [Fact]
+    public async Task LerStreamingAsync_BlocosIgnorados_DescartaTodoOBloco()
+    {
+        // Ignorar o bloco C descarta abertura (C001), detalhe (C100/C170) e fechamento (C990).
+        var opcoes = new ReadingOptions { BlocosIgnorados = new HashSet<string>(StringComparer.Ordinal) { "C" } };
+
+        var registros = await LerComOpcoesAsync(ArquivoComHierarquia, opcoes);
+
+        registros.Select(r => r.Codigo).Should().Equal(["0000", "9999"]);
+    }
+
+    [Fact]
+    public async Task LerStreamingAsync_SemFiltro_LeTudo()
+    {
+        // ReadingOptions.Default não filtra nada (fast-path) — comportamento idêntico ao padrão.
+        var registros = await LerComOpcoesAsync(ArquivoComHierarquia, ReadingOptions.Default);
+
+        registros.Select(r => r.Codigo).Should().Equal(["0000", "C001", "C100", "C170", "C170", "C100", "C990", "9999"]);
+    }
+
+    [Fact]
+    public async Task LerStreamingAsync_RegistroMultilinhaIgnorado_NaoMaterializa()
+    {
+        // Y800 (multi-linha) ignorado: o leitor localiza o terminador e avança sem decodificar o
+        // ARQ_RTF; os registros ao redor continuam sendo lidos.
+        const string sped =
+            "|0000|006|01012025|31012025|EMPRESA|11222333000181|\r\n" +
+            "|Y800|010|D|H|linha1 do rtf\r\nlinha2 do rtf\r\nfim}|Y800FIM|\r\n" +
+            "|C001|0|\r\n" +
+            "|9999|4|\r\n";
+        var opcoes = new ReadingOptions { RegistrosIgnorados = new HashSet<string>(StringComparer.Ordinal) { "Y800" } };
+
+        var registros = await LerComOpcoesAsync(sped, opcoes);
+
+        registros.Select(r => r.Codigo).Should().Equal(["0000", "C001", "9999"]);
+        registros.OfType<RegistroY800Sintetico>().Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task LerStreamingAsync_BlocoMultilinhaIgnorado_DescartaSemDecodificar()
+    {
+        // Bloco Y (do Y800 multi-linha) ignorado por bloco.
+        const string sped =
+            "|0000|006|01012025|31012025|EMPRESA|11222333000181|\r\n" +
+            "|Y800|010|D|H|conteudo\r\nrtf|Y800FIM|\r\n" +
+            "|9999|3|\r\n";
+        var opcoes = new ReadingOptions { BlocosIgnorados = new HashSet<string>(StringComparer.Ordinal) { "Y" } };
+
+        var registros = await LerComOpcoesAsync(sped, opcoes);
+
+        registros.Select(r => r.Codigo).Should().Equal(["0000", "9999"]);
     }
 
     [Fact]

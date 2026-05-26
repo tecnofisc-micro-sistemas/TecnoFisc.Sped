@@ -18,7 +18,9 @@ This document is written in **English** because LLMs (including Claude Code) fol
 
 ### 1.3 Code language rule (CRITICAL)
 
-Code separates **substantives from verbs**. SPED-specific **nouns** stay in Portuguese (record classes, fiscal value objects, enum types, SPED field properties). **Verbs**, static factory methods and boolean predicates use **idiomatic English** — Portuguese verb identifiers degrade when accent marks have to be simulated (`EhEntrada` faking `É entrada`, `Carregar` requiring no accent but inconsistent with the rest of the verb surface), and English aligns with C# convention and BCL patterns.
+Code separates **substantives from verbs**. The split is by **meaning, not by identifier kind** — it governs **every identifier**: class names, method names, properties, fields and locals alike. Only nouns that name a **SPED / Brazilian fiscal-tax concept** stay in Portuguese (record classes, fiscal value objects, enum types, SPED field properties). Everything else — **verbs, boolean predicates, capabilities and generic/technical concepts** — uses **idiomatic English**, including **class names**. Portuguese verb/predicate identifiers degrade when accent marks have to be simulated (`EhEntrada` faking `É entrada`, `TemFiltro` faking `Tem filtro`), and English aligns with C# convention and BCL patterns.
+
+This applies to **class names** too: `RegistroC100`, `BlocoC`, `Cnpj` stay Portuguese because they name SPED/fiscal nouns; a class that names an **action, capability or technical concept** uses English (`ReadingOptions`, `Parser`, `Generator`, `Reader`, `Writer`). A boolean predicate is English even when **private** (`IsKnownValueObject`, `HasFilter`, `ShouldIgnore`).
 
 **Portuguese (mandatory) for:**
 
@@ -34,7 +36,8 @@ Code separates **substantives from verbs**. SPED-specific **nouns** stay in Port
 - BCL types (`List<T>`, `DateOnly`, `Dictionary<,>`)
 - Universal technical patterns: `Parser`, `Generator`, `Reader`, `Writer`, `Builder`, `Factory`
 - **Domain verbs / methods**: `ReadAsync`, `ReadStreamingAsync`, `WriteAsync`, `LoadAsync`, `Create` (static factory on value objects)
-- **Boolean predicates**: `IsEntrada`, `IsSaida`, `IsIsento`, `IsValid`, `IsKnownValueObject`
+- **Boolean predicates** (incl. private): `IsEntrada`, `IsSaida`, `IsIsento`, `IsValid`, `IsKnownValueObject`, `HasFilter`, `ShouldIgnore`
+- **Capability / option / technical classes**: `ReadingOptions`, `Parser`, `Generator`, `Reader`, `Writer`, `Builder`
 - Test conventions: `*Tests` classes, `Should_*` methods
 - Infrastructure concerns: `Stream`, `Pipeline`, `Buffer`
 
@@ -50,7 +53,7 @@ await gerador.WriteAsync(stream, arquivo);
 
 The noun (`Cnpj`, `Cfop`, `RegistroC100`, `ArquivoEfdContribuicoes`) is Portuguese; the verb (`Create`, `ReadAsync`, `WriteAsync`) and the predicate (`IsEntrada`) are English. The two languages never mix **inside one identifier**.
 
-**Forbidden:** Portuguese verbs in code (`Criar`, `LerAsync`, `EscreverAsync`, `CarregarAsync`, `EhEntrada`). Portuguese is reserved for **substantives** — the fiscal vocabulary the consumer reads in their domain.
+**Forbidden:** Portuguese verbs and predicates in code, regardless of identifier kind (`Criar`, `LerAsync`, `EscreverAsync`, `CarregarAsync`, `EhEntrada`, `TemFiltro`, `DeveIgnorar`, `Filtrar`). Portuguese is reserved for **substantives** — the SPED/fiscal vocabulary the consumer reads in their domain.
 
 ### 1.4 Documentation language
 

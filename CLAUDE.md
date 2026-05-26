@@ -63,11 +63,12 @@ Current development has shipped (release `0.4.0`) EFD Contribuições V006 (read
 
 ## Naming convention (CRITICAL — see ARCHITECTURE.md §1.3)
 
-Substantivos do domínio SPED em **português**; verbos, factories estáticos e predicados booleanos em **inglês idiomático**.
+Substantivos do domínio SPED em **português**; verbos, factories estáticos e predicados booleanos em **inglês idiomático**. A divisão é por **significado, não por tipo de identificador** — vale para **nomes de classe, métodos, propriedades, campos e variáveis locais**.
 
 - **Portuguese (mandatory)** for SPED **nouns**: record classes (`Registro0000`, `RegistroC100`), fiscal value objects (`Cnpj`, `Cfop`, `Ncm`, `ChaveAcesso`), fiscal enums (`IndicadorOperacao`, `ModeloDocumento`), SPED field properties (`IndOper`, `CodPart`, `VlDoc`, `CodVer`), namespaces and top-level domain types (`ArquivoEfdContribuicoes`, `BlocoC`).
-- **English (mandatory)** for **verbs and predicates**: factory methods (`Cnpj.Create(...)`), I/O verbs (`parser.ReadAsync`, `parser.ReadStreamingAsync`, `gerador.WriteAsync`, `arquivo.LoadAsync`), boolean predicates (`Cfop.IsEntrada`, `Cfop.IsSaida`, `InscricaoEstadual.IsIsento`, `CodigosUf.IsValid`), and technical patterns (`Parser`, `Generator`, `Reader`, `Writer`, `Builder`, `*Tests`, `Should_*`, `Stream`, `Pipeline`, `Buffer`, BCL types).
+- **English (mandatory)** for **verbs and predicates** (incl. private): factory methods (`Cnpj.Create(...)`), I/O verbs (`parser.ReadAsync`, `parser.ReadStreamingAsync`, `gerador.WriteAsync`, `arquivo.LoadAsync`), boolean predicates (`Cfop.IsEntrada`, `InscricaoEstadual.IsIsento`, `CodigosUf.IsValid`, `IsKnownValueObject`, `HasFilter`, `ShouldIgnore`), and **classes that name a capability / option / technical pattern** (`ReadingOptions`, `Parser`, `Generator`, `Reader`, `Writer`, `Builder`, `*Tests`, `Should_*`, `Stream`, `Pipeline`, `Buffer`, BCL types).
 - The two languages never mix **inside a single identifier**. Example: `Cfop.IsEntrada` (noun PT + verb EN); `parser.ReadStreamingAsync(stream)`; `Cnpj.Create("12345678000195")`.
+- **Proibido** (verbo/predicado em PT, qualquer tipo de identificador): `Criar`, `LerAsync`, `EhEntrada`, `TemFiltro` (→ `HasFilter`), `DeveIgnorar` (→ `ShouldIgnore`), `Filtrar` (→ `Filter`).
 
 ## Code conventions worth remembering
 

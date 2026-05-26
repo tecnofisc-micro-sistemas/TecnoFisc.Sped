@@ -24,15 +24,26 @@ public sealed class ParserEfdContribuicoes : ILeitorSped
     private readonly LeitorSpedTxt _leitor;
 
     /// <summary>Cria o parser usando o catálogo gerado em tempo de compilação.</summary>
-    public ParserEfdContribuicoes() : this(_catalogoPadrao)
+    public ParserEfdContribuicoes() : this(_catalogoPadrao, ReadingOptions.Default)
+    {
+    }
+
+    /// <summary>Cria o parser com opções de leitura (ex.: ignorar registros/blocos), catálogo gerado.</summary>
+    public ParserEfdContribuicoes(ReadingOptions opcoes) : this(_catalogoPadrao, opcoes)
     {
     }
 
     /// <summary>Cria o parser com um catálogo customizado (testes, source generator).</summary>
-    public ParserEfdContribuicoes(IRegistroSpedCatalogo catalogo)
+    public ParserEfdContribuicoes(IRegistroSpedCatalogo catalogo) : this(catalogo, ReadingOptions.Default)
+    {
+    }
+
+    /// <summary>Cria o parser com catálogo customizado e opções de leitura.</summary>
+    public ParserEfdContribuicoes(IRegistroSpedCatalogo catalogo, ReadingOptions opcoes)
     {
         ArgumentNullException.ThrowIfNull(catalogo);
-        _leitor = new LeitorSpedTxt(catalogo);
+        ArgumentNullException.ThrowIfNull(opcoes);
+        _leitor = new LeitorSpedTxt(catalogo, opcoes);
     }
 
     /// <summary>

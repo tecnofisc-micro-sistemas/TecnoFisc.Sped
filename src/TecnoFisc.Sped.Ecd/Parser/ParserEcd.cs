@@ -21,15 +21,29 @@ public sealed class ParserEcd : ILeitorSped
     private readonly LeitorSpedTxt _leitor;
 
     /// <summary>Cria o parser usando o catálogo gerado em tempo de compilação.</summary>
-    public ParserEcd() : this(_catalogoPadrao)
+    public ParserEcd() : this(_catalogoPadrao, ReadingOptions.Default)
+    {
+    }
+
+    /// <summary>
+    /// Cria o parser com opções de leitura (ex.: ignorar J800/J801 para não materializar o
+    /// ARQ_RTF de até 30 MB), usando o catálogo gerado em tempo de compilação.
+    /// </summary>
+    public ParserEcd(ReadingOptions opcoes) : this(_catalogoPadrao, opcoes)
     {
     }
 
     /// <summary>Cria o parser com um catálogo customizado (testes, source generator).</summary>
-    public ParserEcd(IRegistroSpedCatalogo catalogo)
+    public ParserEcd(IRegistroSpedCatalogo catalogo) : this(catalogo, ReadingOptions.Default)
+    {
+    }
+
+    /// <summary>Cria o parser com catálogo customizado e opções de leitura.</summary>
+    public ParserEcd(IRegistroSpedCatalogo catalogo, ReadingOptions opcoes)
     {
         ArgumentNullException.ThrowIfNull(catalogo);
-        _leitor = new LeitorSpedTxt(catalogo);
+        ArgumentNullException.ThrowIfNull(opcoes);
+        _leitor = new LeitorSpedTxt(catalogo, opcoes);
     }
 
     /// <summary>

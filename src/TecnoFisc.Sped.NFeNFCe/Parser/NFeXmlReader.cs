@@ -21,7 +21,7 @@ namespace TecnoFisc.Sped.NFeNFCe.Parser;
 /// A chave de acesso é sempre validada (é a identidade do documento);
 /// <see cref="ParserNFeOptions.ValidateChecksums"/> governa os demais value objects com DV (GTIN).
 /// </remarks>
-internal sealed class NFeXmlReader(XmlReader reader, ParserNFeOptions options)
+internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions options)
 {
     private readonly XmlReader _r = reader;
     private readonly ParserNFeOptions _options = options;
@@ -398,71 +398,33 @@ internal sealed class NFeXmlReader(XmlReader reader, ParserNFeOptions options)
     private async Task<Imposto> ReadImpostoAsync(CancellationToken ct)
     {
         Icms? icms = null;
+        Ipi? ipi = null;
+        Pis? pis = null;
+        PisSt? pisSt = null;
+        Cofins? cofins = null;
+        CofinsSt? cofinsSt = null;
+        Ii? ii = null;
+        Issqn? issqn = null;
+        decimal? vTotTrib = null;
 
         await _r.ConsumeChildrenAsync(async nome =>
         {
             switch (nome)
             {
                 case "ICMS": icms = await ReadIcmsAsync(ct).ConfigureAwait(false); return true;
-                // IPI/PIS/COFINS/II/ISSQN entram na slice 14.4.
+                case "IPI": ipi = await ReadIpiAsync(ct).ConfigureAwait(false); return true;
+                case "PIS": pis = await ReadPisAsync(ct).ConfigureAwait(false); return true;
+                case "PISST": pisSt = await ReadPisStAsync(ct).ConfigureAwait(false); return true;
+                case "COFINS": cofins = await ReadCofinsAsync(ct).ConfigureAwait(false); return true;
+                case "COFINSST": cofinsSt = await ReadCofinsStAsync(ct).ConfigureAwait(false); return true;
+                case "II": ii = await ReadIiAsync(ct).ConfigureAwait(false); return true;
+                case "ISSQN": issqn = await ReadIssqnAsync(ct).ConfigureAwait(false); return true;
+                case "vTotTrib": vTotTrib = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
                 default: return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
 
-        return new Imposto { Icms = icms };
-    }
-
-    private async Task<Icms?> ReadIcmsAsync(CancellationToken ct)
-    {
-        Icms? icms = null;
-
-        await _r.ConsumeChildrenAsync(async nome =>
-        {
-            switch (nome)
-            {
-                case "ICMS60": icms = await ReadIcms60Async(ct).ConfigureAwait(false); return true;
-                // Demais variantes (CST 00/10/.../CSOSN, ICMSPart/ST/SN) entram na slice 14.4.
-                default: return false;
-            }
-        }, _options.Strict, ct).ConfigureAwait(false);
-
-        return icms;
-    }
-
-    private async Task<Icms60> ReadIcms60Async(CancellationToken ct)
-    {
-        OrigemMercadoria orig = default; string cstTributacao = string.Empty;
-        decimal? vBCSTRet = null, pST = null, vICMSSubstituto = null, vICMSSTRet = null,
-            pRedBCEfet = null, vBCEfet = null, pICMSEfet = null, vICMSEfet = null;
-
-        await _r.ConsumeChildrenAsync(async nome =>
-        {
-            switch (nome)
-            {
-                case "orig": orig = ParseEnum<OrigemMercadoria>(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "CST": cstTributacao = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "vBCSTRet": vBCSTRet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "pST": pST = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vICMSSubstituto": vICMSSubstituto = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vICMSSTRet": vICMSSTRet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "pRedBCEfet": pRedBCEfet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vBCEfet": vBCEfet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "pICMSEfet": pICMSEfet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vICMSEfet": vICMSEfet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                default: return false;
-            }
-        }, _options.Strict, ct).ConfigureAwait(false);
-
-        // O CST de ICMS na NF-e tem 2 dígitos (<CST>) com a origem em <orig> à parte; o value
-        // object Cst do Core segue a forma canônica SPED/Ato COTEPE de 3 dígitos (origem + CST).
-        Cst cst = Cst.Create(string.Concat(((int)orig).ToString(CultureInfo.InvariantCulture), cstTributacao), TipoTributo.Icms);
-
-        return new Icms60
-        {
-            Orig = orig, CST = cst, VBCSTRet = vBCSTRet, PST = pST,
-            VICMSSubstituto = vICMSSubstituto, VICMSSTRet = vICMSSTRet,
-            PRedBCEfet = pRedBCEfet, VBCEfet = vBCEfet, PICMSEfet = pICMSEfet, VICMSEfet = vICMSEfet,
-        };
+        return new Imposto { Icms = icms, Ipi = ipi, Pis = pis, PisSt = pisSt, Cofins = cofins, CofinsSt = cofinsSt, Ii = ii, Issqn = issqn, VTotTrib = vTotTrib };
     }
 
     private async Task<Protocolo> ReadInfProtAsync(CancellationToken ct)
@@ -515,7 +477,16 @@ internal sealed class NFeXmlReader(XmlReader reader, ParserNFeOptions options)
             ? Gtin.Create(valor)
             : Gtin.TentarCriar(valor, out var g) ? g : default;
 
+    /// <summary>
+    /// Combina <c>orig</c> e o <c>CST</c> de 2 dígitos da NF-e na forma canônica SPED/Ato COTEPE
+    /// de 3 dígitos (origem + CST) do value object <see cref="Cst"/> do Core.
+    /// </summary>
+    private static Cst CombinarCst(OrigemMercadoria orig, string cstTributacao)
+        => Cst.Create(string.Concat(((int)orig).ToString(CultureInfo.InvariantCulture), cstTributacao), TipoTributo.Icms);
+
     private static int ParseInt(string s) => int.Parse(s, CultureInfo.InvariantCulture);
+
+    private static long ParseLong(string s) => long.Parse(s, CultureInfo.InvariantCulture);
 
     private static decimal ParseDecimal(string s) => decimal.Parse(s, NumberStyles.Number, CultureInfo.InvariantCulture);
 

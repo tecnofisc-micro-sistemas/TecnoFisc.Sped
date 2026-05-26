@@ -4,8 +4,10 @@ namespace TecnoFisc.Sped.NFeNFCe;
 
 /// <summary>
 /// Base abstrata das variantes de ICMS de um item (grupo <c>ICMS</c>). Cada CST/CSOSN é um
-/// <c>sealed record</c> concreto; o consumidor faz pattern matching sobre o tipo. A slice 14.3
-/// implementa apenas <see cref="Icms60"/>; as demais variantes entram na slice 14.4.
+/// <c>sealed record</c> concreto; o consumidor faz pattern matching sobre o tipo. As variantes
+/// de regime normal (CST 00/10/20/30/40/51/60/70/90, ICMSPart, ICMSST) e as variantes CSOSN
+/// do Simples Nacional (SN101/102/201/202/500/900) estão implementadas; variantes de combustível
+/// entram em slices posteriores.
 /// </summary>
 public abstract record Icms
 {

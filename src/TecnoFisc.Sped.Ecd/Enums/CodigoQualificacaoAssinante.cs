@@ -77,11 +77,19 @@ public enum CodigoQualificacaoAssinante
     [SpedValor("900")]
     ContadorContabilista = 16,
 
+    /// <summary>910 — Contador/Contabilista Responsável Pelo Termo de Verificação para Fins de Substituição da ECD. Exclusivo do Registro J932 (<c>COD_ASSIN_T</c>).</summary>
+    [SpedValor("910")]
+    ContadorTermoSubstituicao = 17,
+
+    /// <summary>920 — Auditor Independente Responsável pelo Termo de Verificação para Fins de Substituição da ECD. Exclusivo do Registro J932 (<c>COD_ASSIN_T</c>).</summary>
+    [SpedValor("920")]
+    AuditorIndependenteTermoSubstituicao = 18,
+
     /// <summary>940 — Auditor Independente.</summary>
     [SpedValor("940")]
-    AuditorIndependente = 17,
+    AuditorIndependente = 19,
 
     /// <summary>999 — Outros.</summary>
     [SpedValor("999")]
-    Outros = 18,
+    Outros = 20,
 }

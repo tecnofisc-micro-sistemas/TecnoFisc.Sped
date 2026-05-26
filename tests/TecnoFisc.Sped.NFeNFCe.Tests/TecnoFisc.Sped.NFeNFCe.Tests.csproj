@@ -23,4 +23,9 @@
     <ProjectReference Include="..\..\src\TecnoFisc.Sped.NFeNFCe\TecnoFisc.Sped.NFeNFCe.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Fixtures XML anonimizadas: copiadas para a saída para os testes E2E. -->
+    <None Include="Fixtures\**\*.xml" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

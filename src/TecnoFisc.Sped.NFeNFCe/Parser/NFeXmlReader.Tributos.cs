@@ -3,7 +3,7 @@ using TecnoFisc.Sped.Core.ValueObjects;
 namespace TecnoFisc.Sped.NFeNFCe.Parser;
 
 /// <summary>
-/// Leitores de tributos não-ICMS: IPI e PIS (slice 14.4); COFINS, II, ISSQN entram em slices posteriores.
+/// Leitores de tributos não-ICMS: IPI, PIS e COFINS (slice 14.4); II e ISSQN entram em slices posteriores.
 /// </summary>
 internal sealed partial class NFeXmlReader
 {
@@ -346,6 +346,232 @@ internal sealed partial class NFeXmlReader
             VAliqProd = vAliqProd,
             VPIS = vPIS,
             IndSomaPISST = indSomaPISST,
+        };
+    }
+
+    // =========================================================================
+    // COFINS
+    // =========================================================================
+
+    /// <summary>
+    /// Lê o grupo <c>COFINS</c> e despacha para a variante correta:
+    /// <see cref="CofinsAliq"/>, <see cref="CofinsQtde"/>, <see cref="CofinsNt"/> ou <see cref="CofinsOutr"/>.
+    /// </summary>
+    private async Task<Cofins> ReadCofinsAsync(CancellationToken ct)
+    {
+        Cofins? variante = null;
+
+        await _r.ConsumeChildrenAsync(async nome =>
+        {
+            switch (nome)
+            {
+                case "COFINSAliq":
+                    variante = await ReadCofinsAliqAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "COFINSQtde":
+                    variante = await ReadCofinsQtdeAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "COFINSNT":
+                    variante = await ReadCofinsNtAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "COFINSOutr":
+                    variante = await ReadCofinsOutrAsync(ct).ConfigureAwait(false);
+                    return true;
+                default:
+                    return false;
+            }
+        }, _options.Strict, ct).ConfigureAwait(false);
+
+        return variante ?? throw new FormatException("COFINS sem variante reconhecida (COFINSAliq/COFINSQtde/COFINSNT/COFINSOutr).");
+    }
+
+    private async Task<CofinsAliq> ReadCofinsAliqAsync(CancellationToken ct)
+    {
+        string cstTexto = string.Empty;
+        decimal vBC = 0, pCOFINS = 0, vCOFINS = 0;
+
+        await _r.ConsumeChildrenAsync(async nome =>
+        {
+            switch (nome)
+            {
+                case "CST":
+                    cstTexto = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "vBC":
+                    vBC = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "pCOFINS":
+                    pCOFINS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vCOFINS":
+                    vCOFINS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                default:
+                    return false;
+            }
+        }, _options.Strict, ct).ConfigureAwait(false);
+
+        return new CofinsAliq
+        {
+            CST = Cst.Create(cstTexto, TipoTributo.Cofins),
+            VBC = vBC,
+            PCOFINS = pCOFINS,
+            VCOFINS = vCOFINS,
+        };
+    }
+
+    private async Task<CofinsQtde> ReadCofinsQtdeAsync(CancellationToken ct)
+    {
+        string cstTexto = string.Empty;
+        decimal qBCProd = 0, vAliqProd = 0, vCOFINS = 0;
+
+        await _r.ConsumeChildrenAsync(async nome =>
+        {
+            switch (nome)
+            {
+                case "CST":
+                    cstTexto = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "qBCProd":
+                    qBCProd = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vAliqProd":
+                    vAliqProd = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vCOFINS":
+                    vCOFINS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                default:
+                    return false;
+            }
+        }, _options.Strict, ct).ConfigureAwait(false);
+
+        return new CofinsQtde
+        {
+            CST = Cst.Create(cstTexto, TipoTributo.Cofins),
+            QBCProd = qBCProd,
+            VAliqProd = vAliqProd,
+            VCOFINS = vCOFINS,
+        };
+    }
+
+    private async Task<CofinsNt> ReadCofinsNtAsync(CancellationToken ct)
+    {
+        string cstTexto = string.Empty;
+
+        await _r.ConsumeChildrenAsync(async nome =>
+        {
+            switch (nome)
+            {
+                case "CST":
+                    cstTexto = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                default:
+                    return false;
+            }
+        }, _options.Strict, ct).ConfigureAwait(false);
+
+        return new CofinsNt
+        {
+            CST = Cst.Create(cstTexto, TipoTributo.Cofins),
+        };
+    }
+
+    private async Task<CofinsOutr> ReadCofinsOutrAsync(CancellationToken ct)
+    {
+        string cstTexto = string.Empty;
+        decimal? vBC = null, pCOFINS = null;
+        decimal? qBCProd = null, vAliqProd = null;
+        decimal vCOFINS = 0;
+
+        await _r.ConsumeChildrenAsync(async nome =>
+        {
+            switch (nome)
+            {
+                case "CST":
+                    cstTexto = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "vBC":
+                    vBC = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "pCOFINS":
+                    pCOFINS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "qBCProd":
+                    qBCProd = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vAliqProd":
+                    vAliqProd = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vCOFINS":
+                    vCOFINS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                default:
+                    return false;
+            }
+        }, _options.Strict, ct).ConfigureAwait(false);
+
+        return new CofinsOutr
+        {
+            CST = Cst.Create(cstTexto, TipoTributo.Cofins),
+            VBC = vBC,
+            PCOFINS = pCOFINS,
+            QBCProd = qBCProd,
+            VAliqProd = vAliqProd,
+            VCOFINS = vCOFINS,
+        };
+    }
+
+    // =========================================================================
+    // COFINSST
+    // =========================================================================
+
+    /// <summary>
+    /// Lê o grupo <c>COFINSST</c> — COFINS substituição tributária.
+    /// Não possui CST; a inner choice (percentual/específico) é modelada com campos nullable.
+    /// </summary>
+    private async Task<CofinsSt> ReadCofinsStAsync(CancellationToken ct)
+    {
+        decimal? vBC = null, pCOFINS = null;
+        decimal? qBCProd = null, vAliqProd = null;
+        decimal vCOFINS = 0;
+        int? indSomaCOFINSST = null;
+
+        await _r.ConsumeChildrenAsync(async nome =>
+        {
+            switch (nome)
+            {
+                case "vBC":
+                    vBC = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "pCOFINS":
+                    pCOFINS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "qBCProd":
+                    qBCProd = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vAliqProd":
+                    vAliqProd = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vCOFINS":
+                    vCOFINS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "indSomaCOFINSST":
+                    indSomaCOFINSST = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                default:
+                    return false;
+            }
+        }, _options.Strict, ct).ConfigureAwait(false);
+
+        return new CofinsSt
+        {
+            VBC = vBC,
+            PCOFINS = pCOFINS,
+            QBCProd = qBCProd,
+            VAliqProd = vAliqProd,
+            VCOFINS = vCOFINS,
+            IndSomaCOFINSST = indSomaCOFINSST,
         };
     }
 }

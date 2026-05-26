@@ -38,16 +38,24 @@ public class ParserNFeTests
         await act.Should().ThrowAsync<ArgumentNullException>();
     }
 
-    // Esqueleto da slice 14.2: o corpo de desserialização chega na 14.3 e este teste será
-    // substituído por testes E2E de leitura real.
     [Fact]
-    public async Task ReadAsync_Valid_Stream_NotImplemented_Until_14_3()
+    public async Task ReadNFeAsync_Null_Stream_Throws()
     {
         var parser = new ParserNFe();
-        using var stream = new MemoryStream([1, 2, 3]);
 
-        Func<Task> act = () => parser.ReadAsync(stream, TestContext.Current.CancellationToken);
+        Func<Task> act = () => parser.ReadNFeAsync(null!, TestContext.Current.CancellationToken);
 
-        await act.Should().ThrowAsync<NotImplementedException>();
+        await act.Should().ThrowAsync<ArgumentNullException>();
+    }
+
+    [Fact]
+    public async Task ReadNFeAsync_Documento_Sem_InfNFe_Throws()
+    {
+        var parser = new ParserNFe();
+        using var stream = new MemoryStream("<qualquer><coisa>1</coisa></qualquer>"u8.ToArray());
+
+        Func<Task> act = () => parser.ReadNFeAsync(stream, TestContext.Current.CancellationToken);
+
+        await act.Should().ThrowAsync<FormatException>();
     }
 }

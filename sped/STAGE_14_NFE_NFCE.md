@@ -141,7 +141,7 @@ Cada slice entrega valor testável. PR por slice (ou sub-PR coeso dentro de uma 
 | --- | --- | --- |
 | [x] | 14.1 | **Fundação Core:** value objects novos (`Cest`, `Gtin`, `CodigoMunicipioIbge`, `Csosn` + enums do `<ide>`) e `IdentificadorXmlFiscal` + enum `TipoDocumentoFiscalXml`. Reusa `ChaveAcesso`/`ModeloDocumento`. Testes unitários extensos (especialmente DV/checksum). Sem parser. |
 | [x] | 14.2 | **Estrutura do pacote** `src/TecnoFisc.Sped.NFeNFCe/` + `tests/` + registro no `.slnx`. `ParserNFeOptions`, esqueleto de `ParserNFe`, `IDocumentoFiscalXml`. **Deliverable: editar `ARCHITECTURE.md` (§0 deltas).** |
-| [ ] | 14.3 | **Piloto NFe 55 mínimo:** `Ide`, `Emit`, `Dest`, `Total`, `Item`+`Prod`+ICMS60 (usa o fixture real). Desserializador à mão order-independent. **SOAP-unwrap do SERPRO single-doc** (lê a NFe de dentro do `NFeLog`). E2E com NFe real (canônico + SERPRO) + benchmark inicial. |
+| [x] | 14.3 | **Piloto NFe 55 mínimo:** `Ide`, `Emit`, `Dest`, `Total`, `Item`+`Prod`+ICMS60 (usa o fixture real). Desserializador à mão order-independent. **SOAP-unwrap do SERPRO single-doc** (lê a NFe de dentro do `NFeLog`). E2E com NFe real (canônico + SERPRO) + benchmark inicial. |
 | [ ] | 14.4 | **Polimorfismo de impostos completo:** ICMS (todos CST/CSOSN + ICMSPart/ICMSST/ICMSSN/FCP/desoneração), IPI, PIS, COFINS, II, ISSQN. ← **decisão sobre source generator entra após esta slice.** |
 | [ ] | 14.5 | **Resto do essencial NFe 55:** `transp`, `cobr`, `pag`, `infAdic`, `infRespTec`, `autXML`, `protNFe` (`Protocolo`). |
 | [ ] | 14.6 | **NFCe 65:** `infNFeSupl` (QR Code, `urlChave`), `dest` opcional/ausente, `pag` com cartão. |

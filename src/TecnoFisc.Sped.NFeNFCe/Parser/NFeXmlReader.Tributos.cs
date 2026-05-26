@@ -3,7 +3,8 @@ using TecnoFisc.Sped.Core.ValueObjects;
 namespace TecnoFisc.Sped.NFeNFCe.Parser;
 
 /// <summary>
-/// Leitores de tributos não-ICMS: IPI, PIS e COFINS (slice 14.4); II e ISSQN entram em slices posteriores.
+/// Leitores de tributos não-ICMS: IPI, II e ISSQN (slice 14.4).
+/// PIS/PISST/COFINS/COFINSST residem em <c>NFeXmlReader.PisCofins.cs</c>.
 /// </summary>
 internal sealed partial class NFeXmlReader
 {
@@ -124,192 +125,65 @@ internal sealed partial class NFeXmlReader
     }
 
     // =========================================================================
-    // PIS
+    // II
     // =========================================================================
 
     /// <summary>
-    /// Lê o grupo <c>PIS</c> e despacha para a variante correta:
-    /// <see cref="PisAliq"/>, <see cref="PisQtde"/>, <see cref="PisNt"/> ou <see cref="PisOutr"/>.
+    /// Lê o grupo <c>II</c> — Imposto de Importação.
+    /// Registro plano com quatro campos obrigatórios: <c>vBC</c>, <c>vDespAdu</c>, <c>vII</c> e <c>vIOF</c>.
     /// </summary>
-    private async Task<Pis> ReadPisAsync(CancellationToken ct)
+    private async Task<Ii> ReadIiAsync(CancellationToken ct)
     {
-        Pis? variante = null;
+        decimal vBC = 0, vDespAdu = 0, vII = 0, vIOF = 0;
 
         await _r.ConsumeChildrenAsync(async nome =>
         {
             switch (nome)
             {
-                case "PISAliq":
-                    variante = await ReadPisAliqAsync(ct).ConfigureAwait(false);
-                    return true;
-                case "PISQtde":
-                    variante = await ReadPisQtdeAsync(ct).ConfigureAwait(false);
-                    return true;
-                case "PISNT":
-                    variante = await ReadPisNtAsync(ct).ConfigureAwait(false);
-                    return true;
-                case "PISOutr":
-                    variante = await ReadPisOutrAsync(ct).ConfigureAwait(false);
-                    return true;
-                default:
-                    return false;
-            }
-        }, _options.Strict, ct).ConfigureAwait(false);
-
-        return variante ?? throw new FormatException("PIS sem variante reconhecida (PISAliq/PISQtde/PISNT/PISOutr).");
-    }
-
-    private async Task<PisAliq> ReadPisAliqAsync(CancellationToken ct)
-    {
-        string cstTexto = string.Empty;
-        decimal vBC = 0, pPIS = 0, vPIS = 0;
-
-        await _r.ConsumeChildrenAsync(async nome =>
-        {
-            switch (nome)
-            {
-                case "CST":
-                    cstTexto = await _r.ReadTextAsync().ConfigureAwait(false);
-                    return true;
                 case "vBC":
                     vBC = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
                     return true;
-                case "pPIS":
-                    pPIS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                case "vDespAdu":
+                    vDespAdu = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
                     return true;
-                case "vPIS":
-                    vPIS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                case "vII":
+                    vII = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vIOF":
+                    vIOF = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
                     return true;
                 default:
                     return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
 
-        return new PisAliq
+        return new Ii
         {
-            CST = Cst.Create(cstTexto, TipoTributo.Pis),
             VBC = vBC,
-            PPIS = pPIS,
-            VPIS = vPIS,
-        };
-    }
-
-    private async Task<PisQtde> ReadPisQtdeAsync(CancellationToken ct)
-    {
-        string cstTexto = string.Empty;
-        decimal qBCProd = 0, vAliqProd = 0, vPIS = 0;
-
-        await _r.ConsumeChildrenAsync(async nome =>
-        {
-            switch (nome)
-            {
-                case "CST":
-                    cstTexto = await _r.ReadTextAsync().ConfigureAwait(false);
-                    return true;
-                case "qBCProd":
-                    qBCProd = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
-                    return true;
-                case "vAliqProd":
-                    vAliqProd = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
-                    return true;
-                case "vPIS":
-                    vPIS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
-                    return true;
-                default:
-                    return false;
-            }
-        }, _options.Strict, ct).ConfigureAwait(false);
-
-        return new PisQtde
-        {
-            CST = Cst.Create(cstTexto, TipoTributo.Pis),
-            QBCProd = qBCProd,
-            VAliqProd = vAliqProd,
-            VPIS = vPIS,
-        };
-    }
-
-    private async Task<PisNt> ReadPisNtAsync(CancellationToken ct)
-    {
-        string cstTexto = string.Empty;
-
-        await _r.ConsumeChildrenAsync(async nome =>
-        {
-            switch (nome)
-            {
-                case "CST":
-                    cstTexto = await _r.ReadTextAsync().ConfigureAwait(false);
-                    return true;
-                default:
-                    return false;
-            }
-        }, _options.Strict, ct).ConfigureAwait(false);
-
-        return new PisNt
-        {
-            CST = Cst.Create(cstTexto, TipoTributo.Pis),
-        };
-    }
-
-    private async Task<PisOutr> ReadPisOutrAsync(CancellationToken ct)
-    {
-        string cstTexto = string.Empty;
-        decimal? vBC = null, pPIS = null;
-        decimal? qBCProd = null, vAliqProd = null;
-        decimal vPIS = 0;
-
-        await _r.ConsumeChildrenAsync(async nome =>
-        {
-            switch (nome)
-            {
-                case "CST":
-                    cstTexto = await _r.ReadTextAsync().ConfigureAwait(false);
-                    return true;
-                case "vBC":
-                    vBC = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
-                    return true;
-                case "pPIS":
-                    pPIS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
-                    return true;
-                case "qBCProd":
-                    qBCProd = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
-                    return true;
-                case "vAliqProd":
-                    vAliqProd = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
-                    return true;
-                case "vPIS":
-                    vPIS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
-                    return true;
-                default:
-                    return false;
-            }
-        }, _options.Strict, ct).ConfigureAwait(false);
-
-        return new PisOutr
-        {
-            CST = Cst.Create(cstTexto, TipoTributo.Pis),
-            VBC = vBC,
-            PPIS = pPIS,
-            QBCProd = qBCProd,
-            VAliqProd = vAliqProd,
-            VPIS = vPIS,
+            VDespAdu = vDespAdu,
+            VII = vII,
+            VIOF = vIOF,
         };
     }
 
     // =========================================================================
-    // PISST
+    // ISSQN
     // =========================================================================
 
     /// <summary>
-    /// Lê o grupo <c>PISST</c> — PIS substituição tributária.
-    /// Não possui CST; a inner choice (percentual/específico) é modelada com campos nullable.
+    /// Lê o grupo <c>ISSQN</c> — Imposto Sobre Serviços de Qualquer Natureza.
+    /// Registro plano com campos obrigatórios e vários opcionais (minOccurs="0").
     /// </summary>
-    private async Task<PisSt> ReadPisStAsync(CancellationToken ct)
+    private async Task<Issqn> ReadIssqnAsync(CancellationToken ct)
     {
-        decimal? vBC = null, pPIS = null;
-        decimal? qBCProd = null, vAliqProd = null;
-        decimal vPIS = 0;
-        int? indSomaPISST = null;
+        decimal vBC = 0, vAliq = 0, vISSQN = 0;
+        CodigoMunicipioIbge cMunFG = default;
+        string cListServ = string.Empty;
+        int indISS = 0, indIncentivo = 0;
+        decimal? vDeducao = null, vOutro = null, vDescIncond = null, vDescCond = null, vISSRet = null;
+        string? cServico = null, nProcesso = null;
+        CodigoMunicipioIbge? cMun = null;
+        int? cPais = null;
 
         await _r.ConsumeChildrenAsync(async nome =>
         {
@@ -318,260 +192,74 @@ internal sealed partial class NFeXmlReader
                 case "vBC":
                     vBC = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
                     return true;
-                case "pPIS":
-                    pPIS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                case "vAliq":
+                    vAliq = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
                     return true;
-                case "qBCProd":
-                    qBCProd = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                case "vISSQN":
+                    vISSQN = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
                     return true;
-                case "vAliqProd":
-                    vAliqProd = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                case "cMunFG":
+                    cMunFG = CodigoMunicipioIbge.Create(await _r.ReadTextAsync().ConfigureAwait(false));
                     return true;
-                case "vPIS":
-                    vPIS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                case "cListServ":
+                    cListServ = await _r.ReadTextAsync().ConfigureAwait(false);
                     return true;
-                case "indSomaPISST":
-                    indSomaPISST = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false));
+                case "vDeducao":
+                    vDeducao = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vOutro":
+                    vOutro = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vDescIncond":
+                    vDescIncond = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vDescCond":
+                    vDescCond = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vISSRet":
+                    vISSRet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "indISS":
+                    indISS = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "cServico":
+                    cServico = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "cMun":
+                    cMun = CodigoMunicipioIbge.Create(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "cPais":
+                    cPais = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "nProcesso":
+                    nProcesso = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "indIncentivo":
+                    indIncentivo = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false));
                     return true;
                 default:
                     return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
 
-        return new PisSt
+        return new Issqn
         {
             VBC = vBC,
-            PPIS = pPIS,
-            QBCProd = qBCProd,
-            VAliqProd = vAliqProd,
-            VPIS = vPIS,
-            IndSomaPISST = indSomaPISST,
-        };
-    }
-
-    // =========================================================================
-    // COFINS
-    // =========================================================================
-
-    /// <summary>
-    /// Lê o grupo <c>COFINS</c> e despacha para a variante correta:
-    /// <see cref="CofinsAliq"/>, <see cref="CofinsQtde"/>, <see cref="CofinsNt"/> ou <see cref="CofinsOutr"/>.
-    /// </summary>
-    private async Task<Cofins> ReadCofinsAsync(CancellationToken ct)
-    {
-        Cofins? variante = null;
-
-        await _r.ConsumeChildrenAsync(async nome =>
-        {
-            switch (nome)
-            {
-                case "COFINSAliq":
-                    variante = await ReadCofinsAliqAsync(ct).ConfigureAwait(false);
-                    return true;
-                case "COFINSQtde":
-                    variante = await ReadCofinsQtdeAsync(ct).ConfigureAwait(false);
-                    return true;
-                case "COFINSNT":
-                    variante = await ReadCofinsNtAsync(ct).ConfigureAwait(false);
-                    return true;
-                case "COFINSOutr":
-                    variante = await ReadCofinsOutrAsync(ct).ConfigureAwait(false);
-                    return true;
-                default:
-                    return false;
-            }
-        }, _options.Strict, ct).ConfigureAwait(false);
-
-        return variante ?? throw new FormatException("COFINS sem variante reconhecida (COFINSAliq/COFINSQtde/COFINSNT/COFINSOutr).");
-    }
-
-    private async Task<CofinsAliq> ReadCofinsAliqAsync(CancellationToken ct)
-    {
-        string cstTexto = string.Empty;
-        decimal vBC = 0, pCOFINS = 0, vCOFINS = 0;
-
-        await _r.ConsumeChildrenAsync(async nome =>
-        {
-            switch (nome)
-            {
-                case "CST":
-                    cstTexto = await _r.ReadTextAsync().ConfigureAwait(false);
-                    return true;
-                case "vBC":
-                    vBC = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
-                    return true;
-                case "pCOFINS":
-                    pCOFINS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
-                    return true;
-                case "vCOFINS":
-                    vCOFINS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
-                    return true;
-                default:
-                    return false;
-            }
-        }, _options.Strict, ct).ConfigureAwait(false);
-
-        return new CofinsAliq
-        {
-            CST = Cst.Create(cstTexto, TipoTributo.Cofins),
-            VBC = vBC,
-            PCOFINS = pCOFINS,
-            VCOFINS = vCOFINS,
-        };
-    }
-
-    private async Task<CofinsQtde> ReadCofinsQtdeAsync(CancellationToken ct)
-    {
-        string cstTexto = string.Empty;
-        decimal qBCProd = 0, vAliqProd = 0, vCOFINS = 0;
-
-        await _r.ConsumeChildrenAsync(async nome =>
-        {
-            switch (nome)
-            {
-                case "CST":
-                    cstTexto = await _r.ReadTextAsync().ConfigureAwait(false);
-                    return true;
-                case "qBCProd":
-                    qBCProd = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
-                    return true;
-                case "vAliqProd":
-                    vAliqProd = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
-                    return true;
-                case "vCOFINS":
-                    vCOFINS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
-                    return true;
-                default:
-                    return false;
-            }
-        }, _options.Strict, ct).ConfigureAwait(false);
-
-        return new CofinsQtde
-        {
-            CST = Cst.Create(cstTexto, TipoTributo.Cofins),
-            QBCProd = qBCProd,
-            VAliqProd = vAliqProd,
-            VCOFINS = vCOFINS,
-        };
-    }
-
-    private async Task<CofinsNt> ReadCofinsNtAsync(CancellationToken ct)
-    {
-        string cstTexto = string.Empty;
-
-        await _r.ConsumeChildrenAsync(async nome =>
-        {
-            switch (nome)
-            {
-                case "CST":
-                    cstTexto = await _r.ReadTextAsync().ConfigureAwait(false);
-                    return true;
-                default:
-                    return false;
-            }
-        }, _options.Strict, ct).ConfigureAwait(false);
-
-        return new CofinsNt
-        {
-            CST = Cst.Create(cstTexto, TipoTributo.Cofins),
-        };
-    }
-
-    private async Task<CofinsOutr> ReadCofinsOutrAsync(CancellationToken ct)
-    {
-        string cstTexto = string.Empty;
-        decimal? vBC = null, pCOFINS = null;
-        decimal? qBCProd = null, vAliqProd = null;
-        decimal vCOFINS = 0;
-
-        await _r.ConsumeChildrenAsync(async nome =>
-        {
-            switch (nome)
-            {
-                case "CST":
-                    cstTexto = await _r.ReadTextAsync().ConfigureAwait(false);
-                    return true;
-                case "vBC":
-                    vBC = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
-                    return true;
-                case "pCOFINS":
-                    pCOFINS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
-                    return true;
-                case "qBCProd":
-                    qBCProd = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
-                    return true;
-                case "vAliqProd":
-                    vAliqProd = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
-                    return true;
-                case "vCOFINS":
-                    vCOFINS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
-                    return true;
-                default:
-                    return false;
-            }
-        }, _options.Strict, ct).ConfigureAwait(false);
-
-        return new CofinsOutr
-        {
-            CST = Cst.Create(cstTexto, TipoTributo.Cofins),
-            VBC = vBC,
-            PCOFINS = pCOFINS,
-            QBCProd = qBCProd,
-            VAliqProd = vAliqProd,
-            VCOFINS = vCOFINS,
-        };
-    }
-
-    // =========================================================================
-    // COFINSST
-    // =========================================================================
-
-    /// <summary>
-    /// Lê o grupo <c>COFINSST</c> — COFINS substituição tributária.
-    /// Não possui CST; a inner choice (percentual/específico) é modelada com campos nullable.
-    /// </summary>
-    private async Task<CofinsSt> ReadCofinsStAsync(CancellationToken ct)
-    {
-        decimal? vBC = null, pCOFINS = null;
-        decimal? qBCProd = null, vAliqProd = null;
-        decimal vCOFINS = 0;
-        int? indSomaCOFINSST = null;
-
-        await _r.ConsumeChildrenAsync(async nome =>
-        {
-            switch (nome)
-            {
-                case "vBC":
-                    vBC = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
-                    return true;
-                case "pCOFINS":
-                    pCOFINS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
-                    return true;
-                case "qBCProd":
-                    qBCProd = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
-                    return true;
-                case "vAliqProd":
-                    vAliqProd = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
-                    return true;
-                case "vCOFINS":
-                    vCOFINS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
-                    return true;
-                case "indSomaCOFINSST":
-                    indSomaCOFINSST = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false));
-                    return true;
-                default:
-                    return false;
-            }
-        }, _options.Strict, ct).ConfigureAwait(false);
-
-        return new CofinsSt
-        {
-            VBC = vBC,
-            PCOFINS = pCOFINS,
-            QBCProd = qBCProd,
-            VAliqProd = vAliqProd,
-            VCOFINS = vCOFINS,
-            IndSomaCOFINSST = indSomaCOFINSST,
+            VAliq = vAliq,
+            VISSQN = vISSQN,
+            CMunFG = cMunFG,
+            CListServ = cListServ,
+            IndISS = indISS,
+            IndIncentivo = indIncentivo,
+            VDeducao = vDeducao,
+            VOutro = vOutro,
+            VDescIncond = vDescIncond,
+            VDescCond = vDescCond,
+            VISSRet = vISSRet,
+            CServico = cServico,
+            CMun = cMun,
+            CPais = cPais,
+            NProcesso = nProcesso,
         };
     }
 }

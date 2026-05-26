@@ -20,7 +20,7 @@ namespace TecnoFisc.Sped.Ecd.Registros.BlocoJ;
 ///   calculado sobre o conteúdo de <see cref="ArqRtf"/>; descumprimento gera erro.</item>
 /// </list>
 /// </remarks>
-[RegistroSped(Codigo = "J800", Nivel = 3, Bloco = "J")]
+[RegistroSped(Codigo = "J800", Nivel = 3, Bloco = "J", TokenFimArquivo = "J800FIM")]
 public sealed partial class RegistroJ800 : RegistroSped
 {
     /// <inheritdoc />
@@ -53,7 +53,7 @@ public sealed partial class RegistroJ800 : RegistroSped
     /// com limite de 30 MB. Serializado diretamente no campo SPED sem codificação adicional.
     /// Campo <c>ARQ_RTF</c>.
     /// </summary>
-    [CampoSped(Ordem = 5, Tamanho = 0, Obrigatorio = true)]
+    [CampoSped(Ordem = 5, Tamanho = 0, Obrigatorio = true, CampoArquivo = true)]
     public string? ArqRtf { get; set; }
 
     /// <summary>

@@ -58,7 +58,10 @@ public static class CatalogoBuilder
                 $"Tipo {tipo.FullName} precisa ser concreto e herdar de RegistroSped.");
 
         var campos = ConstruirCampos(tipo);
-        return new MetadadosRegistro(codigo, nivel, bloco, tipo, fabrica, campos, introduzidoEm);
+        var tokenFimArquivo = tipo.GetCustomAttribute<RegistroSpedAttribute>(inherit: false)?.TokenFimArquivo;
+        return new MetadadosRegistro(
+            codigo, nivel, bloco, tipo, fabrica, campos, introduzidoEm,
+            descontinuadoEm: 0, tokenFimArquivo: tokenFimArquivo);
     }
 
     private static IRegistroSpedCatalogo ConstruirNovo(Assembly assembly)
@@ -99,7 +102,8 @@ public static class CatalogoBuilder
             fabrica,
             campos,
             atributo.IntroduzidoEm,
-            descontinuado?.EmVersao ?? 0);
+            descontinuado?.EmVersao ?? 0,
+            atributo.TokenFimArquivo);
     }
 
     private static Func<RegistroSped> ConstruirFabrica(Type tipo)
@@ -169,7 +173,8 @@ public static class CatalogoBuilder
                 definidor,
                 serializadorComposto,
                 atributo.DesdeVersao,
-                atributo.CapturaTudo)));
+                atributo.CapturaTudo,
+                atributo.CampoArquivo)));
         }
 
         lista.Sort(static (a, b) => a.Ordem.CompareTo(b.Ordem));

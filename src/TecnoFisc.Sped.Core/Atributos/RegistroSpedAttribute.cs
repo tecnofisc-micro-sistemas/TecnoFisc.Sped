@@ -25,4 +25,14 @@ public sealed class RegistroSpedAttribute : Attribute
     /// for menor; o gerador recusa emitir o registro nessa situação.
     /// </summary>
     public int IntroduzidoEm { get; init; }
+
+    /// <summary>
+    /// Token de fim de um registro com campo-arquivo embutido (ex.: <c>"J800FIM"</c>). Quando
+    /// não nulo, o registro é <b>multi-linha</b>: seu conteúdo (tipicamente um arquivo RTF de até
+    /// 30 MB no campo marcado com <see cref="CampoSpedAttribute.CampoArquivo"/>) carrega quebras
+    /// de linha CRLF e ocupa várias linhas físicas no arquivo SPED. O leitor acumula linhas físicas
+    /// a partir do início do registro até a linha que termina em <c>|{token}|</c>, preservando as
+    /// quebras internas. <c>null</c> (default) = registro de uma linha física, comportamento padrão.
+    /// </summary>
+    public string? TokenFimArquivo { get; init; }
 }

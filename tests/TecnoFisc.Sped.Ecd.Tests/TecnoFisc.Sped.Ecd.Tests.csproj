@@ -23,4 +23,9 @@
     <ProjectReference Include="..\..\src\TecnoFisc.Sped.Ecd\TecnoFisc.Sped.Ecd.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Fixtures SPED versionadas: copiadas byte-exatas (CRLF preservado via .gitattributes). -->
+    <None Include="Fixtures\**\*.txt" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

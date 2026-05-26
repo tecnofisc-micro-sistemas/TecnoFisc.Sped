@@ -158,6 +158,7 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
         string? bloco = null;
         int nivel = 0;
         int introduzidoEm = 0;
+        string? tokenFimArquivo = null;
         foreach (KeyValuePair<string, TypedConstant> arg in atributo.NamedArguments)
         {
             switch (arg.Key)
@@ -166,6 +167,7 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
                 case "Nivel": nivel = arg.Value.Value is int n ? n : 0; break;
                 case "Bloco": bloco = arg.Value.Value as string; break;
                 case "IntroduzidoEm": introduzidoEm = arg.Value.Value is int iv ? iv : 0; break;
+                case "TokenFimArquivo": tokenFimArquivo = arg.Value.Value as string; break;
             }
         }
         if (string.IsNullOrEmpty(codigo) || string.IsNullOrEmpty(bloco))
@@ -174,7 +176,7 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
         ImmutableArray<InfoCampo> campos = ColetarCampos(tipo);
 
         string tipoFq = tipo.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-        return new InfoRegistro(tipoFq, codigo!, nivel, bloco!, campos, introduzidoEm);
+        return new InfoRegistro(tipoFq, codigo!, nivel, bloco!, campos, introduzidoEm, tokenFimArquivo);
     }
 
     private static ImmutableArray<InfoCampo> ColetarCampos(INamedTypeSymbol tipoRegistro)
@@ -196,6 +198,8 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
 
                 int ordem = 0, tamanho = 0, decimais = 0, desdeVersao = 0;
                 bool obrigatorio = false;
+                bool capturaTudo = false;
+                bool campoArquivo = false;
                 string? formato = null;
                 foreach (KeyValuePair<string, TypedConstant> arg in campoAttr.NamedArguments)
                 {
@@ -207,6 +211,8 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
                         case "Obrigatorio": obrigatorio = arg.Value.Value is bool b && b; break;
                         case "Formato": formato = arg.Value.Value as string; break;
                         case "DesdeVersao": desdeVersao = arg.Value.Value is int dv ? dv : 0; break;
+                        case "CapturaTudo": capturaTudo = arg.Value.Value is bool ct && ct; break;
+                        case "CampoArquivo": campoArquivo = arg.Value.Value is bool ca && ca; break;
                     }
                 }
 
@@ -241,6 +247,8 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
                     obrigatorio,
                     formato,
                     desdeVersao,
+                    capturaTudo,
+                    campoArquivo,
                     enumValoresSped));
             }
         }
@@ -413,6 +421,11 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
             sb.Append(',').AppendLine();
             sb.Append("            introduzidoEm: ").Append(reg.IntroduzidoEm.ToString(CultureInfo.InvariantCulture));
         }
+        if (reg.TokenFimArquivo is not null)
+        {
+            sb.Append(',').AppendLine();
+            sb.Append("            tokenFimArquivo: \"").Append(EscaparLiteral(reg.TokenFimArquivo)).Append('"');
+        }
         sb.AppendLine(");");
         sb.AppendLine("    }");
 
@@ -440,6 +453,10 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
         sb.Append("Ser_").Append(reg.Codigo).Append('_').Append(campo.Nome);
         if (campo.DesdeVersao != 0)
             sb.Append(", desdeVersao: ").Append(campo.DesdeVersao.ToString(CultureInfo.InvariantCulture));
+        if (campo.CapturaTudo)
+            sb.Append(", capturaTudo: true");
+        if (campo.CampoArquivo)
+            sb.Append(", campoArquivo: true");
         sb.Append(')');
         sb.AppendLine(ultimo ? "" : ",");
     }
@@ -884,6 +901,8 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
         bool Obrigatorio,
         string? Formato,
         int DesdeVersao,
+        bool CapturaTudo,
+        bool CampoArquivo,
         ImmutableArray<string> EnumValoresSped);
 
     private readonly record struct InfoRegistro(
@@ -892,5 +911,6 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
         int Nivel,
         string Bloco,
         ImmutableArray<InfoCampo> Campos,
-        int IntroduzidoEm);
+        int IntroduzidoEm,
+        string? TokenFimArquivo);
 }

@@ -16,7 +16,8 @@ public sealed class MetadadosRegistro
         Func<RegistroSped> fabrica,
         IReadOnlyList<MetadadosCampo> campos,
         int introduzidoEm = 0,
-        int descontinuadoEm = 0)
+        int descontinuadoEm = 0,
+        string? tokenFimArquivo = null)
     {
         Codigo = codigo;
         Nivel = nivel;
@@ -26,6 +27,7 @@ public sealed class MetadadosRegistro
         Campos = campos;
         IntroduzidoEm = introduzidoEm;
         DescontinuadoEm = descontinuadoEm;
+        TokenFimArquivo = tokenFimArquivo;
     }
 
     public string Codigo { get; }
@@ -50,4 +52,17 @@ public sealed class MetadadosRegistro
     /// anteriores (ARCHITECTURE §4.7 read-only).
     /// </summary>
     public int DescontinuadoEm { get; }
+
+    /// <summary>
+    /// Token de fim do registro multi-linha (campo-arquivo), ou <c>null</c> para registros de uma
+    /// linha física. Origem em <see cref="Atributos.RegistroSpedAttribute.TokenFimArquivo"/>.
+    /// </summary>
+    public string? TokenFimArquivo { get; }
+
+    /// <summary>
+    /// <c>true</c> quando o registro ocupa várias linhas físicas (campo-arquivo embutido com CRLFs),
+    /// delimitado por <see cref="TokenFimArquivo"/>. O leitor usa esta marca para acumular as linhas
+    /// físicas antes de interpretar.
+    /// </summary>
+    public bool EhMultilinha => TokenFimArquivo is not null;
 }

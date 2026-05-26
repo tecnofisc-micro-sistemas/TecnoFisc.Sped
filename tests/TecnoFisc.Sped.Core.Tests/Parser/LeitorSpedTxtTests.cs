@@ -186,6 +186,86 @@ public sealed class LeitorSpedTxtTests
     }
 
     [Fact]
+    public async Task LerStreamingAsync_RegistroMultilinha_RemontaCampoArquivoComCrlfInterno()
+    {
+        // Y800 é multi-linha (TokenFimArquivo="Y800FIM"): ARQ_RTF carrega um arquivo com quebras
+        // CRLF internas, ocupando 3 linhas físicas. O leitor deve remontar o registro até a linha
+        // que termina em |Y800FIM| e capturar ArqRtf preservando os CRLFs internos.
+        const string arqRtf = "{\\rtf1\\ansi\r\nlinha 2 do rtf\r\nfim}";
+        const string sped =
+            "|0000|006|01012025|31012025|EMPRESA|11222333000181|\r\n" +
+            "|Y800|010|Notas|HASH123|{\\rtf1\\ansi\r\n" +
+            "linha 2 do rtf\r\n" +
+            "fim}|Y800FIM|\r\n" +
+            "|9999|4|\r\n";
+
+        var registros = await LerTodosAsync(sped);
+
+        registros.Select(r => r.Codigo).Should().Equal(["0000", "Y800", "9999"]);
+
+        var y800 = registros.OfType<RegistroY800Sintetico>().Single();
+        y800.TipoDoc.Should().Be("010");
+        y800.DescRtf.Should().Be("Notas");
+        y800.HashRtf.Should().Be("HASH123");
+        y800.ArqRtf.Should().Be(arqRtf);
+        y800.IndFimRtf.Should().Be("Y800FIM");
+    }
+
+    [Fact]
+    public async Task LerStreamingAsync_RegistroMultilinha_CampoArquivoComPipeInterno_PreservaConteudo()
+    {
+        // ARQ_RTF contém '|' interno — split ingênuo quebraria. O campo-arquivo deve capturar
+        // tudo até o último '|' (separador do token de fim), preservando '|' e CRLFs internos.
+        const string arqRtf = "linha A|com pipe\r\nlinha B|tambem|com pipes";
+        const string sped =
+            "|Y800|010|D|H|linha A|com pipe\r\n" +
+            "linha B|tambem|com pipes|Y800FIM|\r\n" +
+            "|9999|2|\r\n";
+
+        var registros = await LerTodosAsync(sped);
+
+        var y800 = registros.OfType<RegistroY800Sintetico>().Single();
+        y800.ArqRtf.Should().Be(arqRtf);
+        y800.IndFimRtf.Should().Be("Y800FIM");
+    }
+
+    [Fact]
+    public async Task LerStreamingAsync_RegistroMultilinhaMaiorQueBufferInterno_RemontaCompleto()
+    {
+        // ARQ_RTF com milhares de linhas físicas (> buffer do PipeReader) força múltiplas
+        // iterações de ReadAsync; o registro deve permanecer bufferizado até o terminador.
+        var rtf = new StringBuilder();
+        for (int i = 0; i < 2000; i++)
+            rtf.Append("conteudo da linha numero ").Append(i).Append("\r\n");
+        rtf.Append("FIM");
+        string arqRtf = rtf.ToString();
+
+        string sped =
+            "|Y800|010|D|H|" + arqRtf + "|Y800FIM|\r\n" +
+            "|9999|2|\r\n";
+
+        var registros = await LerTodosAsync(sped);
+
+        var y800 = registros.OfType<RegistroY800Sintetico>().Single();
+        y800.ArqRtf.Should().Be(arqRtf);
+        registros[^1].Codigo.Should().Be("9999");
+    }
+
+    [Fact]
+    public async Task LerStreamingAsync_RegistroMultilinhaSemTerminador_LancaErroFormato()
+    {
+        // Arquivo truncado: registro multi-linha começa mas não há |Y800FIM|.
+        const string sped =
+            "|Y800|010|D|H|{\\rtf1\r\n" +
+            "conteudo sem terminador\r\n";
+
+        var act = async () => await LerTodosAsync(sped);
+
+        var assercao = await act.Should().ThrowAsync<ErroFormatoSpedException>();
+        assercao.Which.Erro.CodigoRegistro.Should().Be("Y800");
+    }
+
+    [Fact]
     public async Task LerStreamingAsync_QuandoStreamNulo_LancaArgumentNullException()
     {
         var leitor = new LeitorSpedTxt(_catalogo);

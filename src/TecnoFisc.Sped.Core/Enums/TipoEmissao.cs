@@ -9,8 +9,8 @@ public enum TipoEmissao
     /// <summary>2 — Contingência FS-IA (formulário de segurança).</summary>
     ContingenciaFsia = 2,
 
-    /// <summary>3 — Contingência SCAN (desativado).</summary>
-    ContingenciaScan = 3,
+    /// <summary>3 — Regime Especial NFF (NT 2021.002).</summary>
+    RegimeEspecialNff = 3,
 
     /// <summary>4 — Contingência DPEC/EPEC.</summary>
     ContingenciaEpec = 4,

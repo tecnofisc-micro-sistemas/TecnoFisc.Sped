@@ -12,6 +12,12 @@ public enum FinalidadeEmissao
     /// <summary>3 — NF-e de ajuste.</summary>
     Ajuste = 3,
 
-    /// <summary>4 — Devolução de mercadoria.</summary>
+    /// <summary>4 — Devolução/Retorno.</summary>
     Devolucao = 4,
+
+    /// <summary>5 — Nota de crédito.</summary>
+    NotaCredito = 5,
+
+    /// <summary>6 — Nota de débito.</summary>
+    NotaDebito = 6,
 }

@@ -39,11 +39,19 @@ public sealed class LeitorSpedTxt : ILeitorSped
     private const string CodigoEncerramentoArquivo = "9999";
 
     private readonly IRegistroSpedCatalogo _catalogo;
+    private readonly ReadingOptions _opcoes;
 
     public LeitorSpedTxt(IRegistroSpedCatalogo catalogo)
+        : this(catalogo, ReadingOptions.Default)
+    {
+    }
+
+    public LeitorSpedTxt(IRegistroSpedCatalogo catalogo, ReadingOptions opcoes)
     {
         ArgumentNullException.ThrowIfNull(catalogo);
+        ArgumentNullException.ThrowIfNull(opcoes);
         _catalogo = catalogo;
+        _opcoes = opcoes;
     }
 
     public async IAsyncEnumerable<RegistroSped> ReadStreamingAsync(
@@ -57,6 +65,11 @@ public sealed class LeitorSpedTxt : ILeitorSped
         long numeroLinha = 0;
         bool encerrado = false;
         int versaoLeiaute = 0;
+
+        // Estado de descarte (ReadingOptions). nivelCorteSubarvore >= 0 indica que estamos dentro
+        // da subárvore de um registro ignorado por código; sobrevive entre iterações de ReadAsync.
+        bool hasFilter = _opcoes.HasFilter;
+        int nivelCorteSubarvore = -1;
 
         try
         {
@@ -72,6 +85,19 @@ public sealed class LeitorSpedTxt : ILeitorSped
                 {
                     long linhaRegistro = numeroLinha + 1;
                     numeroLinha += linhasFisicas;
+
+                    // Descarte antes de materializar: registro ignorado não é decodificado (multi-linha
+                    // não paga o custo dos 30 MB do ARQ_RTF) nem entra na hierarquia/stream.
+                    if (hasFilter && ShouldIgnore(metadados, ref nivelCorteSubarvore))
+                    {
+                        if (metadados is not null && metadados.Codigo == CodigoEncerramentoArquivo)
+                        {
+                            // Mesmo ignorado, o 9999 encerra o consumo (evita ler a assinatura anexa).
+                            encerrado = true;
+                            break;
+                        }
+                        continue;
+                    }
 
                     var registro = ProcessarLinha(in registroBytes, linhaRegistro, pilha, versaoLeiaute, metadados);
                     if (registro is not null)
@@ -105,6 +131,43 @@ public sealed class LeitorSpedTxt : ILeitorSped
         {
             await leitor.CompleteAsync().ConfigureAwait(false);
         }
+    }
+
+    /// <summary>
+    /// Decide se o registro deve ser descartado conforme <see cref="ReadingOptions"/>:
+    /// <list type="bullet">
+    ///   <item>se estamos na subárvore de um registro ignorado por código, descarta descendentes
+    ///   (nível maior) até sair (nível menor ou igual ao do corte);</item>
+    ///   <item><see cref="ReadingOptions.BlocosIgnorados"/>: descarta qualquer registro do bloco
+    ///   (todos carregam o mesmo bloco — não precisa de subárvore);</item>
+    ///   <item><see cref="ReadingOptions.RegistrosIgnorados"/>: descarta o registro e abre a
+    ///   subárvore para descartar os filhos.</item>
+    /// </list>
+    /// Metadados nulo (linha vazia ou código desconhecido) nunca é ignorado — segue o caminho
+    /// normal (que produz <c>null</c> ou erro de layout).
+    /// </summary>
+    private bool ShouldIgnore(MetadadosRegistro? metadados, ref int nivelCorteSubarvore)
+    {
+        if (metadados is null)
+            return false;
+
+        if (nivelCorteSubarvore >= 0)
+        {
+            if (metadados.Nivel > nivelCorteSubarvore)
+                return true;
+            nivelCorteSubarvore = -1; // nível menor ou igual: saiu da subárvore ignorada.
+        }
+
+        if (_opcoes.BlocosIgnorados.Contains(metadados.Bloco))
+            return true;
+
+        if (_opcoes.RegistrosIgnorados.Contains(metadados.Codigo))
+        {
+            nivelCorteSubarvore = metadados.Nivel;
+            return true;
+        }
+
+        return false;
     }
 
     /// <summary>

@@ -114,4 +114,48 @@ public sealed class ParserEcdMultilinhaTests
         }
         registros.OfType<RegistroJ801>().Single().IndFimRtf.Should().Be("J801FIM");
     }
+
+    [Fact]
+    public async Task ParserEcd_IgnorandoJ800J801_NaoMaterializaRegistrosPesados()
+    {
+        // ReadingOptions.RegistrosIgnorados descarta J800/J801 antes da materialização — o ARQ_RTF
+        // (potencialmente 30 MB) não é decodificado. Os demais registros continuam sendo lidos.
+        var opcoes = new ReadingOptions
+        {
+            RegistrosIgnorados = new HashSet<string>(StringComparer.Ordinal) { "J800", "J801" },
+        };
+        var caminho = Path.Combine(AppContext.BaseDirectory, "Fixtures", "ecd-j800-j801-multilinha.txt");
+        var bytes = await File.ReadAllBytesAsync(caminho, TestContext.Current.CancellationToken);
+        using var entrada = new MemoryStream(bytes, writable: false);
+
+        var parser = new ParserEcd(opcoes);
+        var registros = new List<RegistroSped>();
+        await foreach (var r in parser.ReadStreamingAsync(entrada, TestContext.Current.CancellationToken))
+            registros.Add(r);
+
+        registros.OfType<RegistroJ800>().Should().BeEmpty();
+        registros.OfType<RegistroJ801>().Should().BeEmpty();
+        registros.Should().Contain(r => r.Codigo == "0000");
+        registros[^1].Codigo.Should().Be("9999");
+    }
+
+    [Fact]
+    public async Task ParserEcd_IgnorandoBlocoJ_DescartaTodoOBloco()
+    {
+        // BlocosIgnorados descarta o bloco J inteiro (J800 ×2, J801, J990).
+        var opcoes = new ReadingOptions
+        {
+            BlocosIgnorados = new HashSet<string>(StringComparer.Ordinal) { "J" },
+        };
+        var caminho = Path.Combine(AppContext.BaseDirectory, "Fixtures", "ecd-j800-j801-multilinha.txt");
+        var bytes = await File.ReadAllBytesAsync(caminho, TestContext.Current.CancellationToken);
+        using var entrada = new MemoryStream(bytes, writable: false);
+
+        var parser = new ParserEcd(opcoes);
+        var registros = new List<RegistroSped>();
+        await foreach (var r in parser.ReadStreamingAsync(entrada, TestContext.Current.CancellationToken))
+            registros.Add(r);
+
+        registros.Select(r => r.Codigo).Should().Equal(["0000", "9999"]);
+    }
 }

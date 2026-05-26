@@ -131,7 +131,7 @@ Block headers são informacionais; numeração é global e contígua (`10.001` �
 | [x] | 10.054 | Registro J930 | Signatários da Escrituração | 3 | 1:N | 197 |
 | [x] | 10.055 | Registro J932 | Signatários do Termo de Verificação para Fins de Substituição da ECD | 3 | 1:N | 203 |
 | [x] | 10.056 | Registro J935 | Identificação dos Auditores Independentes | 3 | 1:N | 206 |
-| [ ] | 10.057 | Registro J990 | Encerramento do Bloco J | 1 | 1 | 207 |
+| [x] | 10.057 | Registro J990 | Encerramento do Bloco J | 1 | 1 | 207 |
 
 ### Bloco K — Conglomerados Econômicos (11 registros)
 

@@ -87,4 +87,51 @@ public sealed class IdentificadorXmlFiscalTests
 
         tipo.Should().Be(TipoDocumentoFiscalXml.Desconhecido);
     }
+
+    [Fact]
+    public async Task Identificar_EventoNFe_RetornaEventoNFe()
+    {
+        await using var s = Xml(
+            $"<eventoNFe versao=\"1.00\" xmlns=\"{Ns}\"><infEvento><tpEvento>110111</tpEvento></infEvento></eventoNFe>");
+
+        var tipo = await IdentificadorXmlFiscal.IdentificarAsync(s, TestContext.Current.CancellationToken);
+
+        tipo.Should().Be(TipoDocumentoFiscalXml.EventoNFe);
+    }
+
+    [Fact]
+    public async Task Identificar_EnvEvento_RetornaEventoNFe()
+    {
+        await using var s = Xml(
+            $"<envEvento versao=\"1.00\" xmlns=\"{Ns}\"><evento><infEvento><tpEvento>110110</tpEvento></infEvento></evento></envEvento>");
+
+        var tipo = await IdentificadorXmlFiscal.IdentificarAsync(s, TestContext.Current.CancellationToken);
+
+        tipo.Should().Be(TipoDocumentoFiscalXml.EventoNFe);
+    }
+
+    [Fact]
+    public async Task Identificar_NFCePuraMod65_RetornaNFCe()
+    {
+        await using var s = Xml(
+            $"<NFe xmlns=\"{Ns}\"><infNFe><ide><mod>65</mod></ide></infNFe></NFe>");
+
+        var tipo = await IdentificadorXmlFiscal.IdentificarAsync(s, TestContext.Current.CancellationToken);
+
+        tipo.Should().Be(TipoDocumentoFiscalXml.NFCe);
+    }
+
+    [Fact]
+    public async Task Identificar_ComBomEDeclaracaoXml_RetornaNFeProc()
+    {
+        // Arquivos reais da SEFAZ vêm com declaração <?xml?> e às vezes BOM UTF-8.
+        var conteudo = $"<?xml version=\"1.0\" encoding=\"UTF-8\"?><nfeProc versao=\"4.00\" xmlns=\"{Ns}\"><NFe><infNFe><ide><mod>55</mod></ide></infNFe></NFe></nfeProc>";
+        byte[] bom = Encoding.UTF8.GetPreamble();
+        byte[] corpo = Encoding.UTF8.GetBytes(conteudo);
+        await using var s = new MemoryStream([.. bom, .. corpo]);
+
+        var tipo = await IdentificadorXmlFiscal.IdentificarAsync(s, TestContext.Current.CancellationToken);
+
+        tipo.Should().Be(TipoDocumentoFiscalXml.NFeProc);
+    }
 }

@@ -9,13 +9,13 @@ public enum TipoDocumentoFiscalXml
     /// <summary>Não foi possível identificar o documento.</summary>
     Desconhecido = 0,
 
-    /// <summary>procNFe (NF-e autorizada, modelo 55).</summary>
+    /// <summary>nfeProc (NF-e autorizada, modelo 55).</summary>
     NFeProc,
 
     /// <summary>NFe pura (sem protocolo), modelo 55.</summary>
     NFe,
 
-    /// <summary>procNFe (NFC-e autorizada, modelo 65).</summary>
+    /// <summary>nfeProc (NFC-e autorizada, modelo 65).</summary>
     NFCeProc,
 
     /// <summary>NFe pura (sem protocolo), modelo 65.</summary>

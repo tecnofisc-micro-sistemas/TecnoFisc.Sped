@@ -27,9 +27,11 @@ public static class IdentificadorXmlFiscal
         string? raiz = null;
         try
         {
-            while (await reader.ReadAsync().ConfigureAwait(false))
+            while (true)
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                if (!await reader.ReadAsync().ConfigureAwait(false))
+                    break;
                 if (reader.NodeType != XmlNodeType.Element)
                     continue;
 
@@ -54,6 +56,7 @@ public static class IdentificadorXmlFiscal
                         raiz ??= reader.LocalName;
                         break;
 
+                    // <mod> é único dentro de <ide> em qualquer leiaute NF-e vigente; sem verificação de ancestral.
                     case "mod":
                         string mod = (await reader.ReadElementContentAsStringAsync().ConfigureAwait(false)).Trim();
                         bool nfce = mod == "65";

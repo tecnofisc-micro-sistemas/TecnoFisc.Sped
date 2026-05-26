@@ -1,7 +1,7 @@
 namespace TecnoFisc.Sped.Core.Xml;
 
 /// <summary>
-/// Tipo de documento fiscal XML reconhecido pelo <c>IdentificadorXmlFiscal</c>
+/// Tipo de documento fiscal XML reconhecido pelo <see cref="IdentificadorXmlFiscal"/>
 /// a partir do início do stream.
 /// </summary>
 public enum TipoDocumentoFiscalXml

@@ -3,20 +3,21 @@ using System.Text;
 namespace TecnoFisc.Sped.NFeNFCe.Tests;
 
 /// <summary>
-/// Auxiliar de teste compartilhado para desserializar snippets ICMS via o parser real.
-/// Reutilizado por IcmsNormalTests, IcmsSimplesTests e variantes futuras.
+/// Auxiliar de teste compartilhado para desserializar snippets do grupo <c>imposto</c>
+/// via o parser real. Reutilizado por IcmsNormalTests, IcmsSimplesTests, IpiTests e variantes futuras.
 /// </summary>
 internal static class IcmsTestHelper
 {
+    // -------------------------------------------------------------------------
+    // Envelope mínimo reutilizável
+    // -------------------------------------------------------------------------
+
     /// <summary>
-    /// Envolve um snippet <c>&lt;ICMS&gt;...&lt;/ICMS&gt;</c> dentro de uma NF-e mínima mas
-    /// suficiente para o parser não lançar FormatException, e executa a leitura devolvendo o
-    /// <see cref="Icms"/> do primeiro item.
+    /// Envolve o <paramref name="impostoInnerXml"/> (conteúdo interno do elemento
+    /// <c>&lt;imposto&gt;</c>) dentro de uma NF-e mínima e devolve o <see cref="Imposto"/>
+    /// do primeiro item.
     /// </summary>
-    /// <param name="icmsSnippet">Conteúdo interno do elemento <c>&lt;ICMS&gt;</c>, por ex. um bloco <c>&lt;ICMS00&gt;…&lt;/ICMS00&gt;</c>.</param>
-    /// <param name="ct">Token de cancelamento.</param>
-    /// <returns>O <see cref="Icms"/> do primeiro item da NF-e, ou <c>null</c> se o grupo ICMS estiver ausente.</returns>
-    public static async Task<Icms?> ParseIcmsAsync(string icmsSnippet, CancellationToken ct)
+    public static async Task<Imposto> ParseImpostoAsync(string impostoInnerXml, CancellationToken ct)
     {
         var xml = $"""
             <?xml version="1.0" encoding="UTF-8"?>
@@ -75,9 +76,7 @@ internal static class IcmsTestHelper
                       <indTot>1</indTot>
                     </prod>
                     <imposto>
-                      <ICMS>
-                        {icmsSnippet}
-                      </ICMS>
+                      {impostoInnerXml}
                     </imposto>
                   </det>
                   <total>
@@ -111,6 +110,23 @@ internal static class IcmsTestHelper
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes(xml));
         var parser = new ParserNFe();
         var nfe = await parser.ReadNFeAsync(stream, ct);
-        return nfe.Itens[0].Imposto.Icms;
+        return nfe.Itens[0].Imposto;
+    }
+
+    // -------------------------------------------------------------------------
+    // Atalho ICMS (retrocompatível com todos os testes existentes)
+    // -------------------------------------------------------------------------
+
+    /// <summary>
+    /// Envolve um snippet <c>&lt;ICMS&gt;...&lt;/ICMS&gt;</c> dentro de uma NF-e mínima e
+    /// devolve o <see cref="Icms"/> do primeiro item.
+    /// </summary>
+    /// <param name="icmsSnippet">Conteúdo interno do elemento <c>&lt;ICMS&gt;</c>, por ex. um bloco <c>&lt;ICMS00&gt;…&lt;/ICMS00&gt;</c>.</param>
+    /// <param name="ct">Token de cancelamento.</param>
+    /// <returns>O <see cref="Icms"/> do primeiro item da NF-e, ou <c>null</c> se o grupo ICMS estiver ausente.</returns>
+    public static async Task<Icms?> ParseIcmsAsync(string icmsSnippet, CancellationToken ct)
+    {
+        var imposto = await ParseImpostoAsync($"<ICMS>{icmsSnippet}</ICMS>", ct).ConfigureAwait(false);
+        return imposto.Icms;
     }
 }

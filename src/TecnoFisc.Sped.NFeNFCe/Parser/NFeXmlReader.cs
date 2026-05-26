@@ -398,18 +398,22 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
     private async Task<Imposto> ReadImpostoAsync(CancellationToken ct)
     {
         Icms? icms = null;
+        Ipi? ipi = null;
+        decimal? vTotTrib = null;
 
         await _r.ConsumeChildrenAsync(async nome =>
         {
             switch (nome)
             {
                 case "ICMS": icms = await ReadIcmsAsync(ct).ConfigureAwait(false); return true;
-                // IPI/PIS/COFINS/II/ISSQN entram na slice 14.4.
+                case "IPI": ipi = await ReadIpiAsync(ct).ConfigureAwait(false); return true;
+                case "vTotTrib": vTotTrib = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
+                // PIS/COFINS/II/ISSQN entram em slices posteriores.
                 default: return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
 
-        return new Imposto { Icms = icms };
+        return new Imposto { Icms = icms, Ipi = ipi, VTotTrib = vTotTrib };
     }
 
     private async Task<Protocolo> ReadInfProtAsync(CancellationToken ct)
@@ -470,6 +474,8 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
         => Cst.Create(string.Concat(((int)orig).ToString(CultureInfo.InvariantCulture), cstTributacao), TipoTributo.Icms);
 
     private static int ParseInt(string s) => int.Parse(s, CultureInfo.InvariantCulture);
+
+    private static long ParseLong(string s) => long.Parse(s, CultureInfo.InvariantCulture);
 
     private static decimal ParseDecimal(string s) => decimal.Parse(s, NumberStyles.Number, CultureInfo.InvariantCulture);
 

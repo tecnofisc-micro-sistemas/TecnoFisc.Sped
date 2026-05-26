@@ -11,6 +11,12 @@ public sealed record Imposto
     /// <summary>Grupo <c>IPI</c> — dados de IPI do item (nulo quando ausente).</summary>
     public Ipi? Ipi { get; init; }
 
+    /// <summary>Grupo <c>PIS</c> — tributação PIS do item (nula quando ausente).</summary>
+    public Pis? Pis { get; init; }
+
+    /// <summary>Grupo <c>PISST</c> — PIS substituição tributária do item (nulo quando ausente).</summary>
+    public PisSt? PisSt { get; init; }
+
     /// <summary>
     /// <c>vTotTrib</c> — valor aproximado total de tributos federais, estaduais e municipais
     /// (Lei 12.741/2012 — informativo, opcional).

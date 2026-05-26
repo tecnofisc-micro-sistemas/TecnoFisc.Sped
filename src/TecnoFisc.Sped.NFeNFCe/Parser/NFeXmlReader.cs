@@ -399,6 +399,8 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
     {
         Icms? icms = null;
         Ipi? ipi = null;
+        Pis? pis = null;
+        PisSt? pisSt = null;
         decimal? vTotTrib = null;
 
         await _r.ConsumeChildrenAsync(async nome =>
@@ -407,13 +409,15 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
             {
                 case "ICMS": icms = await ReadIcmsAsync(ct).ConfigureAwait(false); return true;
                 case "IPI": ipi = await ReadIpiAsync(ct).ConfigureAwait(false); return true;
+                case "PIS": pis = await ReadPisAsync(ct).ConfigureAwait(false); return true;
+                case "PISST": pisSt = await ReadPisStAsync(ct).ConfigureAwait(false); return true;
                 case "vTotTrib": vTotTrib = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                // PIS/COFINS/II/ISSQN entram em slices posteriores.
+                // COFINS/II/ISSQN entram em slices posteriores.
                 default: return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
 
-        return new Imposto { Icms = icms, Ipi = ipi, VTotTrib = vTotTrib };
+        return new Imposto { Icms = icms, Ipi = ipi, Pis = pis, PisSt = pisSt, VTotTrib = vTotTrib };
     }
 
     private async Task<Protocolo> ReadInfProtAsync(CancellationToken ct)

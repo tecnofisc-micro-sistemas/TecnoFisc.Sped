@@ -1,6 +1,6 @@
 using System.Xml;
 
-namespace TecnoFisc.Sped.Core.Xml;
+namespace TecnoFisc.Sped.Xml.Engine;
 
 /// <summary>
 /// Identifica o tipo de documento fiscal XML (NF-e/NFC-e/evento/envelope SERPRO) lendo apenas

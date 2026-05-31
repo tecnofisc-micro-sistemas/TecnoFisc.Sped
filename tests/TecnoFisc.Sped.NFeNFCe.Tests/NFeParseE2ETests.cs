@@ -1,6 +1,6 @@
 using TecnoFisc.Sped.Core.Enums;
 using TecnoFisc.Sped.Core.ValueObjects;
-using TecnoFisc.Sped.Core.Xml;
+using TecnoFisc.Sped.Xml.Engine;
 using TecnoFisc.Sped.NFeNFCe.Enums;
 
 namespace TecnoFisc.Sped.NFeNFCe.Tests;

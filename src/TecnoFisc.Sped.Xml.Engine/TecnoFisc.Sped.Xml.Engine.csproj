@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Maquinaria de leitura de documentos fiscais eletrônicos em XML da família TecnoFisc.Sped: identificador de documento (sniffer forward-only XXE-safe), contrato comum IDocumentoFiscalXml e bases compartilhadas por NF-e/NFC-e/CT-e. Independente de leiaute específico.</Description>
+    <PackageId>TecnoFisc.Sped.Xml.Engine</PackageId>
+    <PackageTags>sped;nfe;nfce;cte;xml;parser;fiscal;brasil;tecnofisc</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TecnoFisc.Sped.Core\TecnoFisc.Sped.Core.csproj" />
+  </ItemGroup>
+
+</Project>

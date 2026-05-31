@@ -1,5 +1,5 @@
 using System.Text;
-using TecnoFisc.Sped.Core.Xml;
+using TecnoFisc.Sped.Xml.Engine;
 
 namespace TecnoFisc.Sped.Core.Tests.Xml;
 

@@ -1,4 +1,4 @@
-using TecnoFisc.Sped.Core.Atributos;
+using TecnoFisc.Sped.Txt.Engine.Atributos;
 
 namespace TecnoFisc.Sped.Ecd.Enums;
 

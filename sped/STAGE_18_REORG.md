@@ -48,11 +48,25 @@ Baseada no uso real (grep por pacote consumidor):
 - [x] Adicionar `using` do novo namespace nos consumidores (só onde faltava); remover `Core.Enums` órfão.
 - [x] Build 0/0 + 4693 testes verdes (verificado de forma independente). PR #509 aberto para `dev`.
 
-### PR 2 — Criar `Txt.Engine` — `refactor/stage18-pr2-txt-engine`
-- [ ] Novo projeto `src/TecnoFisc.Sped.Txt.Engine/`; mover `Parser/`, `Gerador/`, `Catalogo/`, `Abstracoes/` (`RegistroSped`+`I*Sped`), `Streaming/`, atributos SPED (menos `Descontinuado`), `Erros/`? (avaliar — `ResultadoParse` é universal, fica no Core) + 6 enums TXT-transversais.
-- [ ] Renomear `Core.SourceGenerators` → `Txt.Engine.SourceGenerators`.
-- [ ] Repontar EFD Contribuições/ICMS-IPI/ECD para `Core + Txt.Engine + analyzer`. Atualizar `.slnx`.
-- [ ] Build + testes verdes. PR.
+### PR 2 — Criar `Txt.Engine` — `refactor/stage18-pr2-txt-engine` (em execução)
+
+**De-risking (confirmado por análise):**
+- NFeNFCe **não** importa nenhuma máquina TXT do Core → corte limpo, sem refactor de NFe.
+- Nenhum tipo que fica no Core (`ValueObjects`/`Erros`/`Xml`/4 enums/`DescontinuadoAttribute`) referencia tipo que move → sem dependência invertida.
+- `Erros/` (`ResultadoParse` etc.) é autossuficiente → **fica no Core** (universal).
+- Source generator casa atributos por **string FQN** (`TecnoFisc.Sped.Core.Atributos.RegistroSpedAttribute` etc.) e **gera** `using TecnoFisc.Sped.Core.{Abstracoes,Catalogo,Gerador,Parser}` → atualizar para `Txt.Engine.*` (ValueObjects ficam Core).
+- `[Descontinuado]` usado em 6 arquivos (Registro0210, Registro1600 + 2 testes + interno CatalogoBuilder/MetadadosRegistro/LeitorSpedTxt): namespace `Core.Atributos` **fica**; esses arquivos precisam dos dois usings.
+- `Enums` e `Atributos` **dividem** entre Core e Txt.Engine; consumidor que usa um que move + um que fica precisa dos dois usings (compilador aponta).
+
+**Move para `Txt.Engine` (namespace `Core.X` → `Txt.Engine.X`):** `Abstracoes/` (6), `Atributos/` exceto `DescontinuadoAttribute` (4), `Catalogo/` (5), `Parser/` (5), `Gerador/` (3), `Streaming/` (2), 6 enums TXT (`CodigoNaturezaContaContabil`, `IndicadorApuracaoIpi`, `IndicadorMovimentacaoFisica`, `IndicadorMovimentoBloco`, `IndicadorSimNao`, `TipoItem`).
+**Fica no Core:** `ValueObjects/`, `Erros/`, `Xml/`, 4 enums, `Atributos/DescontinuadoAttribute`.
+
+- [x] Criar `src/TecnoFisc.Sped.Txt.Engine/` (csproj ref Core) + mover arquivos (git mv) + ajustar namespaces.
+- [x] Renomear projeto `Core.SourceGenerators` → `Txt.Engine.SourceGenerators` + atualizar FQN/usings gerados.
+- [x] Repontar EFD Contribuições/ICMS-IPI/ECD (csproj: + Txt.Engine, analyzer novo) + renames de `using` nos consumidores (~1184 arquivos). Atualizar `.slnx`.
+- [x] Build 0/0 + 4693 testes verdes (verificado independente). Dependência confirmada: Core sem refs; NFeNFCe e Txt.Engine só → Core.
+
+**Follow-up conhecido (não bloqueia):** `Core.Tests` passou a referenciar `Txt.Engine` (contém testes de Parser/Gerador/Catalogo/Abstracoes/Streaming, que agora vivem no engine). Cleanup futuro opcional: extrair um `Txt.Engine.Tests`.
 
 ### PR 3 — Criar `Xml.Engine` — `refactor/stage18-pr3-xml-engine`
 - [ ] Novo projeto `src/TecnoFisc.Sped.Xml.Engine/`; mover `Core/Xml/` + `TipoAmbiente`/`TipoEmissao`.

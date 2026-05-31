@@ -1,4 +1,4 @@
-using TecnoFisc.Sped.Core.Parser;
+using TecnoFisc.Sped.Txt.Engine.Parser;
 
 namespace TecnoFisc.Sped.Core.Tests.Parser;
 

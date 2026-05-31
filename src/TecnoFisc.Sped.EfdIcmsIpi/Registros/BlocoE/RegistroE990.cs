@@ -1,5 +1,5 @@
-using TecnoFisc.Sped.Core.Abstracoes;
-using TecnoFisc.Sped.Core.Atributos;
+using TecnoFisc.Sped.Txt.Engine.Abstracoes;
+using TecnoFisc.Sped.Txt.Engine.Atributos;
 
 namespace TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoE;
 

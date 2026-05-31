@@ -1,5 +1,5 @@
-using TecnoFisc.Sped.Core.Abstracoes;
-using TecnoFisc.Sped.Core.Parser;
+using TecnoFisc.Sped.Txt.Engine.Abstracoes;
+using TecnoFisc.Sped.Txt.Engine.Parser;
 using TecnoFisc.Sped.EfdContribuicoes.Generated;
 
 namespace TecnoFisc.Sped.EfdContribuicoes.Parser;

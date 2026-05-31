@@ -1,6 +1,6 @@
-using TecnoFisc.Sped.Core.Abstracoes;
-using TecnoFisc.Sped.Core.Atributos;
-using TecnoFisc.Sped.Core.Catalogo;
+using TecnoFisc.Sped.Txt.Engine.Abstracoes;
+using TecnoFisc.Sped.Txt.Engine.Atributos;
+using TecnoFisc.Sped.Txt.Engine.Catalogo;
 
 namespace TecnoFisc.Sped.Core.Tests.Catalogo;
 

@@ -1,7 +1,7 @@
 using BenchmarkDotNet.Attributes;
 
-using TecnoFisc.Sped.Core.Abstracoes;
-using TecnoFisc.Sped.Core.Catalogo;
+using TecnoFisc.Sped.Txt.Engine.Abstracoes;
+using TecnoFisc.Sped.Txt.Engine.Catalogo;
 using TecnoFisc.Sped.EfdContribuicoes.Generated;
 using TecnoFisc.Sped.EfdContribuicoes.Parser;
 

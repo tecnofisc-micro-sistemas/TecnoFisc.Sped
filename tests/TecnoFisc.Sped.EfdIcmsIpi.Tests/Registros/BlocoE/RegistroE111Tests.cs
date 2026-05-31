@@ -1,10 +1,10 @@
 using System.Reflection;
 
-using TecnoFisc.Sped.Core.Abstracoes;
-using TecnoFisc.Sped.Core.Atributos;
-using TecnoFisc.Sped.Core.Catalogo;
-using TecnoFisc.Sped.Core.Gerador;
-using TecnoFisc.Sped.Core.Parser;
+using TecnoFisc.Sped.Txt.Engine.Abstracoes;
+using TecnoFisc.Sped.Txt.Engine.Atributos;
+using TecnoFisc.Sped.Txt.Engine.Catalogo;
+using TecnoFisc.Sped.Txt.Engine.Gerador;
+using TecnoFisc.Sped.Txt.Engine.Parser;
 using TecnoFisc.Sped.EfdIcmsIpi.Registros.BlocoE;
 
 namespace TecnoFisc.Sped.EfdIcmsIpi.Tests.Registros.BlocoE;

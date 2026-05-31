@@ -1,4 +1,4 @@
-using TecnoFisc.Sped.Core.Parser;
+using TecnoFisc.Sped.Txt.Engine.Parser;
 using TecnoFisc.Sped.EfdIcmsIpi.Parser;
 using TecnoFisc.Sped.EfdIcmsIpi.Registros.Bloco9;
 

@@ -16,7 +16,7 @@ namespace TecnoFisc.Sped.Benchmarks;
 /// <para>
 /// Atenção à interpretação da coluna <c>Allocated</c>: ela reporta o total de bytes alocados
 /// no heap durante a operação, não o pico de memória viva. Como ambos os caminhos criam o
-/// mesmo número de <see cref="TecnoFisc.Sped.Core.Abstracoes.RegistroSped"/> (um por linha),
+/// mesmo número de <see cref="TecnoFisc.Sped.Txt.Engine.Abstracoes.RegistroSped"/> (um por linha),
 /// o total alocado fica praticamente idêntico — a única diferença é o overhead do
 /// <see cref="ArquivoEfdContribuicoes"/> (dicionário de blocos + listas de filhos) no caminho
 /// buffered.

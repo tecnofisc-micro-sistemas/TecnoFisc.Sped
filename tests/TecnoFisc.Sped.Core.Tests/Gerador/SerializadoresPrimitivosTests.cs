@@ -1,4 +1,4 @@
-using TecnoFisc.Sped.Core.Gerador;
+using TecnoFisc.Sped.Txt.Engine.Gerador;
 
 namespace TecnoFisc.Sped.Core.Tests.Gerador;
 

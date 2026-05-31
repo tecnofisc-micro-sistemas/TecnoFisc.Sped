@@ -1,4 +1,4 @@
-using TecnoFisc.Sped.Core.Abstracoes;
+using TecnoFisc.Sped.Txt.Engine.Abstracoes;
 
 namespace TecnoFisc.Sped.Ecd;
 

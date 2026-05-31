@@ -8,10 +8,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TecnoFisc.Sped.Core\TecnoFisc.Sped.Core.csproj" />
+    <ProjectReference Include="..\TecnoFisc.Sped.Txt.Engine\TecnoFisc.Sped.Txt.Engine.csproj" />
 
     <!-- Source generator referenciado como Analyzer: emite o catálogo estático em compile-time
          e não embarca no runtime do consumidor (ReferenceOutputAssembly=false). -->
-    <ProjectReference Include="..\TecnoFisc.Sped.Core.SourceGenerators\TecnoFisc.Sped.Core.SourceGenerators.csproj"
+    <ProjectReference Include="..\TecnoFisc.Sped.Txt.Engine.SourceGenerators\TecnoFisc.Sped.Txt.Engine.SourceGenerators.csproj"
                       OutputItemType="Analyzer"
                       ReferenceOutputAssembly="false" />
   </ItemGroup>

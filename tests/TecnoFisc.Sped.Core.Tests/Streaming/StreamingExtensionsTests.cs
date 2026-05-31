@@ -1,6 +1,6 @@
 using System.Runtime.CompilerServices;
-using TecnoFisc.Sped.Core.Abstracoes;
-using TecnoFisc.Sped.Core.Streaming;
+using TecnoFisc.Sped.Txt.Engine.Abstracoes;
+using TecnoFisc.Sped.Txt.Engine.Streaming;
 
 namespace TecnoFisc.Sped.Core.Tests.Streaming;
 

@@ -1,4 +1,4 @@
-namespace TecnoFisc.Sped.Core.Enums;
+namespace TecnoFisc.Sped.EfdIcmsIpi.Enums;
 
 /// <summary>
 /// Indicador da origem do documento vinculado ao ajuste de IPI — campo <c>IND_DOC</c> do

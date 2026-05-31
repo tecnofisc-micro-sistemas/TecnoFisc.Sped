@@ -1,4 +1,4 @@
-namespace TecnoFisc.Sped.Core.Enums;
+namespace TecnoFisc.Sped.EfdIcmsIpi.Enums;
 
 /// <summary>
 /// Indicador do emitente do documento fiscal — campo IND_EMIT em registros de

@@ -1,4 +1,4 @@
-namespace TecnoFisc.Sped.Core.Enums;
+namespace TecnoFisc.Sped.NFeNFCe.Enums;
 
 /// <summary>Indicador de presença do comprador no momento da operação — campo indPres do grupo ide.</summary>
 public enum IndicadorPresenca

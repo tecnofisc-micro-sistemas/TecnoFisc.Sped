@@ -1,4 +1,4 @@
-namespace TecnoFisc.Sped.Core.Enums;
+namespace TecnoFisc.Sped.EfdIcmsIpi.Enums;
 
 /// <summary>
 /// Indicador do tipo de ajuste da apuração do IPI — campo <c>IND_AJ</c> do Registro E530.

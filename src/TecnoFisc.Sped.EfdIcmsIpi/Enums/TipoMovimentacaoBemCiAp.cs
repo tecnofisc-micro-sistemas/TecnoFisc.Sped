@@ -1,6 +1,6 @@
 using TecnoFisc.Sped.Core.Atributos;
 
-namespace TecnoFisc.Sped.Core.Enums;
+namespace TecnoFisc.Sped.EfdIcmsIpi.Enums;
 
 /// <summary>
 /// Tipo de movimentação de bem ou componente do CIAP — campo <c>TIPO_MOV</c> do Registro G125.

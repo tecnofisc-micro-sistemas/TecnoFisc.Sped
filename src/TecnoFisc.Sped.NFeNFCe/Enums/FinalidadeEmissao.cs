@@ -1,4 +1,4 @@
-namespace TecnoFisc.Sped.Core.Enums;
+namespace TecnoFisc.Sped.NFeNFCe.Enums;
 
 /// <summary>Finalidade de emissão da NF-e/NFC-e — campo finNFe do grupo ide.</summary>
 public enum FinalidadeEmissao

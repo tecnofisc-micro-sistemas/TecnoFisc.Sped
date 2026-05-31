@@ -1,6 +1,6 @@
 using System.Xml;
 
-using TecnoFisc.Sped.Core.Xml;
+using TecnoFisc.Sped.Xml.Engine;
 using TecnoFisc.Sped.NFeNFCe.Parser;
 
 namespace TecnoFisc.Sped.NFeNFCe;

@@ -1,4 +1,4 @@
-namespace TecnoFisc.Sped.Core.Xml;
+namespace TecnoFisc.Sped.Xml.Engine;
 
 /// <summary>
 /// Tipo de documento fiscal XML reconhecido pelo <see cref="IdentificadorXmlFiscal"/>

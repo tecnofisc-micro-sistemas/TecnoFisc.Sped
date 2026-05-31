@@ -3,6 +3,7 @@
     <Project Path="src/TecnoFisc.Sped.Core/TecnoFisc.Sped.Core.csproj" />
     <Project Path="src/TecnoFisc.Sped.Txt.Engine/TecnoFisc.Sped.Txt.Engine.csproj" />
     <Project Path="src/TecnoFisc.Sped.Txt.Engine.SourceGenerators/TecnoFisc.Sped.Txt.Engine.SourceGenerators.csproj" />
+    <Project Path="src/TecnoFisc.Sped.Xml.Engine/TecnoFisc.Sped.Xml.Engine.csproj" />
     <Project Path="src/TecnoFisc.Sped.EfdContribuicoes/TecnoFisc.Sped.EfdContribuicoes.csproj" />
     <Project Path="src/TecnoFisc.Sped.EfdIcmsIpi/TecnoFisc.Sped.EfdIcmsIpi.csproj" />
     <Project Path="src/TecnoFisc.Sped.Ecd/TecnoFisc.Sped.Ecd.csproj" />

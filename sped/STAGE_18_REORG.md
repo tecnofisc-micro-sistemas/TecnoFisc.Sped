@@ -68,12 +68,15 @@ Baseada no uso real (grep por pacote consumidor):
 
 **Follow-up conhecido (não bloqueia):** `Core.Tests` passou a referenciar `Txt.Engine` (contém testes de Parser/Gerador/Catalogo/Abstracoes/Streaming, que agora vivem no engine). Cleanup futuro opcional: extrair um `Txt.Engine.Tests`.
 
-### PR 3 — Criar `Xml.Engine` — `refactor/stage18-pr3-xml-engine`
-- [ ] Novo projeto `src/TecnoFisc.Sped.Xml.Engine/`; mover `Core/Xml/` + `TipoAmbiente`/`TipoEmissao`.
-- [ ] Repontar `NFeNFCe` para `Core + Xml.Engine`. Atualizar `.slnx`.
-- [ ] Build + testes verdes. PR.
+### PR 3 — Criar `Xml.Engine` — `refactor/stage18-pr3-xml-engine` ✅
+**Correção de triagem:** `TipoAmbiente`/`TipoEmissao` **ficam no Core** — `ChaveAcesso` (Core) consome `TipoEmissao` (mover criaria dep invertida Core→Xml.Engine). `XmlReaderExtensions` fica no NFeNFCe (helper de NF-e). Logo o PR só move os 3 arquivos de `Core/Xml/`.
+- [x] Novo projeto `src/TecnoFisc.Sped.Xml.Engine/`; mover `Core/Xml/` (IdentificadorXmlFiscal, IDocumentoFiscalXml, TipoDocumentoFiscalXml).
+- [x] Repontar `NFeNFCe` para `Core + Xml.Engine`; `Core.Tests` + Xml.Engine (testes do sniffer). Atualizar `.slnx`.
+- [x] Build 0/0 + 4693 testes verdes (verificado independente). Dependência: Core/Txt.Engine não referenciam Xml.Engine.
+- [x] ARCHITECTURE.md: Stage 18 (passos 1–3) marcada concluída; exemplos corrigidos (`CodigoNaturezaContaContabil`→Txt.Engine; `TipoAmbiente`/`TipoEmissao`→Core); §7 Xml.Engine tree corrigida.
 
-### Pós-PRs
-- [ ] Atualizar `ARCHITECTURE.md`: marcar Stage 18 (passos 1–3) concluída; corrigir exemplo `CodigoNaturezaContaContabil`; nota sobre `DescontinuadoAttribute` no Core.
-- [ ] CHANGELOG por pacote.
-- [ ] Guarda-chuvas (passo 4) + Stage 12 sniffer TXT: pendências separadas.
+### Pós-PRs (pendências separadas)
+- [ ] CHANGELOG por pacote (próximo release — novos pacotes `Txt.Engine`/`Xml.Engine`/`Txt.Engine.SourceGenerators`; breaking de namespace).
+- [ ] Passo 4 — guarda-chuvas (Stage 13): `Sped.Txt` + `Sped` agora; `Sped.Xml` após CT-e.
+- [ ] Stage 12 — sniffer TXT (`IdentificadorArquivoSped`/`SnifferSped`) ainda não existe (só o XML foi feito na Stage 14).
+- [ ] Cleanup opcional: extrair `Txt.Engine.Tests` e `Xml.Engine.Tests` (hoje `Core.Tests` referencia os dois engines por conter testes da maquinaria movida).

@@ -1,6 +1,6 @@
 using TecnoFisc.Sped.Core.ValueObjects;
 
-namespace TecnoFisc.Sped.Core.Xml;
+namespace TecnoFisc.Sped.Xml.Engine;
 
 /// <summary>
 /// Contrato comum dos documentos fiscais eletrônicos em XML (NF-e, NFC-e e eventos) produzidos

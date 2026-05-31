@@ -166,9 +166,9 @@ Each SPED project gets its own package. The duplication rule applies at the **re
 | `RegistroC100`, `RegistroC170`, etc. | Per-leiaute project | Filhos, hierarquia, validações cross-record divergem. |
 | `Cnpj`, `Cpf`, `Cfop`, `Ncm`, `Cest`, `Cst`, `Csosn`, `ChaveAcesso`, `CodigoMunicipioIbge`, `Gtin` | `Core` (universal) | Value objects fiscais usados por TXT **e** XML. |
 | `ModeloDocumento` (Tabela 4.1.1), `SituacaoDocumento` (Tabela 4.1.2), `OrigemMercadoria` | `Core` (universal) | Regidos por Ato COTEPE ou cross-mundo; EFD ICMS-IPI é regente; demais leiautes referenciam. |
-| `IndicadorMovimentoBloco` (`IND_MOV`) e demais enums transversais **só** ao TXT | `Txt.Engine` | Aparecem em vários leiautes textuais, em nenhum XML. |
-| `TipoAmbiente`, `TipoEmissao` e demais enums transversais **só** ao XML (NF-e + CT-e) | `Xml.Engine` | Aparecem em vários leiautes XML, em nenhum TXT. |
-| `IndicadorApuracaoIpi` (EFD ICMS-IPI), `CodigoNaturezaContaContabil` (ECD), `FinalidadeEmissao`/`IndicadorPresenca` (NF-e), regimes de PIS/Cofins, blocos M de apuração | Per-leiaute project | Existem em um único leiaute — não sobem para `Core` nem para o engine. |
+| `IndicadorMovimentoBloco` (`IND_MOV`), `IndicadorApuracaoIpi`, `CodigoNaturezaContaContabil` e demais enums transversais **só** ao TXT | `Txt.Engine` | Aparecem em ≥2 leiautes textuais, em nenhum XML. |
+| `TipoAmbiente`, `TipoEmissao` (`tpAmb`/`tpEmis`) | `Core` (universal) | Pareciam só-XML, mas `ChaveAcesso` (Core) consome `TipoEmissao` → universais. `Xml.Engine` hoje não tem enums. |
+| `TipoMovimentacaoBemCiAp` (EFD ICMS-IPI), `FinalidadeEmissao`/`IndicadorPresenca`/`IndicadorIntermediador` (NF-e), regimes de PIS/Cofins, blocos M de apuração | Per-leiaute project | Existem em um único leiaute — não sobem para `Core` nem para o engine. |
 
 ### 4.3 Janela fiscal de 5 anos
 
@@ -243,8 +243,10 @@ Camada 4  TecnoFisc.Sped.Txt / .Xml /  → guarda-chuvas (bundles); só <Package
 **Regra de triagem (onde colocar uma tabela/enum/value object).** Pela amplitude de uso:
 
 1. **Usado pelos dois mundos** (TXT e XML), ou regido pelo Ato COTEPE → **`Core`**. Ex.: `Cnpj`, `Cfop`, `Ncm`, `ChaveAcesso`, `ModeloDocumento`, `OrigemMercadoria`.
-2. **Usado por ≥2 leiautes do mesmo mundo, mas não do outro** → o **engine daquele mundo**. Ex. TXT: `IndicadorMovimentoBloco` (`IND_MOV`). Ex. XML: `TipoAmbiente`, `TipoEmissao` (NF-e + CT-e).
-3. **Usado por um único leiaute** → o **próprio pacote do leiaute**. Ex.: `IndicadorApuracaoIpi` (EFD ICMS-IPI), `CodigoNaturezaContaContabil` (ECD), `FinalidadeEmissao`/`IndicadorPresenca`/`IndicadorIntermediador` (NF-e).
+2. **Usado por ≥2 leiautes do mesmo mundo, mas não do outro** → o **engine daquele mundo**. Ex. TXT: `IndicadorMovimentoBloco` (`IND_MOV`), `IndicadorApuracaoIpi`, `CodigoNaturezaContaContabil` (EFD Contribuições + ICMS-IPI). XML: nenhum hoje — o `Xml.Engine` carrega só o sniffer/contrato.
+3. **Usado por um único leiaute** → o **próprio pacote do leiaute**. Ex.: `TipoMovimentacaoBemCiAp` (EFD ICMS-IPI), `FinalidadeEmissao`/`IndicadorPresenca`/`IndicadorIntermediador` (NF-e).
+
+> **Nota de calibração (Stage 18 executada).** A triagem real ajustou dois exemplos que pareciam óbvios: `CodigoNaturezaContaContabil` é usado por EFD Contribuições **e** ICMS-IPI (→ `Txt.Engine`, não ECD); e `TipoAmbiente`/`TipoEmissao` **ficaram no `Core`** porque `ChaveAcesso` (value object do Core) decodifica o `tpEmis`. Lição: confira o uso real antes de assumir o nível.
 
 Quando um item sobe de nível (passa a ser usado por outro mundo), promove-se para a camada mais geral — nunca se duplica (drift bug, §4.2).
 
@@ -395,11 +397,10 @@ TecnoFisc.Sped.Txt.Engine/
 TecnoFisc.Sped.Xml.Engine/
 ├── IdentificadorXmlFiscal.cs                 # sniffer XML forward-only, XXE-safe
 ├── IDocumentoFiscalXml.cs                    # contrato comum (chave de acesso)
-├── TipoDocumentoFiscalXml.cs
-├── XmlReaderExtensions.cs                    # helpers forward-only
-└── Enums/
-    └── TipoAmbiente.cs / TipoEmissao.cs      # enums transversais NF-e + CT-e
+└── TipoDocumentoFiscalXml.cs                 # enum do tipo de documento (retorno do sniffer)
 ```
+
+> `TipoAmbiente`/`TipoEmissao` **não** vivem aqui — ficaram no `Core` (universais; `ChaveAcesso` consome `TipoEmissao`). `XmlReaderExtensions` segue no `NFeNFCe` (helper específico de NF-e) até o CT-e justificar promovê-lo. Por isso o `Xml.Engine` nasce com apenas 3 tipos — a assimetria com o `Txt.Engine` é esperada (§4.9).
 
 ### 7.2 Hierarchical metadata strategy
 
@@ -772,15 +773,17 @@ Pacote para ECF (Escrituração Contábil Fiscal). Padrão `.txt` igual EFD/ECD.
 
 ### Stage 18 — Reorganização em camadas (Core universal + engines Txt/Xml)
 
+> **Status: passos 1–3 ✅ concluídos** (PRs #509 enxugar Core, #510 `Txt.Engine`, #511 `Xml.Engine`). Tracking detalhado em `sped/STAGE_18_REORG.md`. Falta o passo 4 (guarda-chuvas, Stage 13) — `Sped.Txt`/`Sped` quando houver ≥2 leiautes; `Sped.Xml` após o CT-e. Cada passo manteve build 0/0 + 4693 testes verdes.
+
 Refatoração estrutural que implementa o empacotamento em quatro camadas de §4.9. Motivada por: um consumidor que só lê XML (NF-e/NFC-e/CT-e) não deve ver no `Core` toda a maquinaria SPED-TXT (`RegistroSped`, catálogo, gerador, enums de bloco) que nunca usa. Resolve ruído de superfície de API + acoplamento conceitual; o custo é só de IL/discoverability (sem dep transitiva nem runtime — Hard Rule 1), por isso é refatoração de higiene, não de performance.
 
 **Janela.** Fazer **pré-1.0**, enquanto a superfície XML ainda é mínima (um pacote `NFeNFCe`, poucos arquivos em `Core/Xml`). Pós-1.0 vira tabu de breaking change. É transversal ao progresso dos leiautes — pode ser agendada independentemente, mediante trigger explícito do usuário (não pular à frente sem pedido).
 
 **Sequência (bottom-up; cada passo é um PR):**
 
-1. **Enxugar o `Core`** — triar `Core/Enums` pela regra dos três níveis (§4.9): enums só-de-um-leiaute descem para o pacote do leiaute (`IndicadorApuracaoIpi`→EfdIcmsIpi, `CodigoNaturezaContaContabil`→Ecd, `FinalidadeEmissao`/`IndicadorPresenca`/`IndicadorIntermediador`→NFeNFCe); enums cross-mundo ficam. É o grosso do trabalho (classificação 1-a-1), não o move-de-pasta.
-2. **Criar `Txt.Engine`** — mover `Parser/`, `Gerador/`, `Catalogo/`, `Atributos/`, `Abstracoes/` (`RegistroSped` + `I*Sped`), `Streaming/`, sniffer da 1ª linha e enums TXT-transversais (`IND_MOV`); renomear `Core.SourceGenerators` → `Txt.Engine.SourceGenerators`; repontar EFD Contribuições/ICMS-IPI/ECD/ECF para `Core + Txt.Engine + analyzer`. Maior PR; mexe no source generator.
-3. **Criar `Xml.Engine`** — mover `Core/Xml/` (`IdentificadorXmlFiscal`, `IDocumentoFiscalXml`, `TipoDocumentoFiscalXml`) + `XmlReaderExtensions` + enums XML-transversais (`TipoAmbiente`, `TipoEmissao`); repontar `NFeNFCe` para `Core + Xml.Engine`. PR pequeno hoje.
+1. **Enxugar o `Core`** ✅ — triar `Core/Enums` pela regra dos três níveis (§4.9): 8 enums só-EfdIcmsIpi→EfdIcmsIpi, `FinalidadeEmissao`/`IndicadorPresenca`/`IndicadorIntermediador`→NFeNFCe; enums transversais ficam para os passos 2/3. (Classificação 1-a-1 pelo uso real — é o grosso do trabalho, não o move-de-pasta.)
+2. **Criar `Txt.Engine`** ✅ — mover `Parser/`, `Gerador/`, `Catalogo/`, `Atributos/` (exceto `DescontinuadoAttribute`, que fica no Core), `Abstracoes/` (`RegistroSped` + `I*Sped`), `Streaming/`, sniffer da 1ª linha e 6 enums TXT-transversais (`IND_MOV` etc.); renomear `Core.SourceGenerators` → `Txt.Engine.SourceGenerators` (atualizar FQN dos atributos + usings gerados); repontar EFD Contribuições/ICMS-IPI/ECD para `Core + Txt.Engine + analyzer` (ECF quando existir). Maior PR (~1184 arquivos); mexe no source generator.
+3. **Criar `Xml.Engine`** ✅ — mover só `Core/Xml/` (`IdentificadorXmlFiscal`, `IDocumentoFiscalXml`, `TipoDocumentoFiscalXml`); repontar `NFeNFCe` para `Core + Xml.Engine`. `TipoAmbiente`/`TipoEmissao` ficam no Core (`ChaveAcesso` consome `TipoEmissao`); `XmlReaderExtensions` segue no `NFeNFCe`. PR pequeno.
 4. **Guarda-chuvas** (Stage 13) — `TecnoFisc.Sped.Txt`, `TecnoFisc.Sped` agora; `TecnoFisc.Sped.Xml` adiado para depois do CT-e (Stage 16). Só `<PackageReference>`, zero código.
 
 Round-trip e benchmarks devem continuar verdes a cada passo (a refatoração é move + repoint, não mudança de comportamento). Atualizar `slnx`, `Directory.Build.props`, READMEs e CHANGELOG por pacote.

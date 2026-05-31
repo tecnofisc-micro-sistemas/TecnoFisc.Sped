@@ -73,7 +73,7 @@ TecnoFisc.Sped provides .NET classes and parsing/generation infrastructure for a
 ### 2.2 What the library is
 
 - A collection of .NET 10 NuGet packages, one per SPED project.
-- A layered packaging model: a universal fiscal core (`TecnoFisc.Sped.Core`) shared by every package, plus two technology engines (`TecnoFisc.Sped.Txt.Engine`, `TecnoFisc.Sped.Xml.Engine`) carrying the format-specific machinery, plus umbrella bundles (`TecnoFisc.Sped.Txt`, `TecnoFisc.Sped.Xml`, `TecnoFisc.Sped`). See §4.9.
+- A layered packaging model: a universal fiscal core (`TecnoFisc.Sped.Core`) shared by every package, plus two technology engines (`TecnoFisc.Sped.Txt.Engine`, `TecnoFisc.Sped.Xml.Engine`) carrying the format-specific machinery, plus umbrella bundles (`TecnoFisc.Sped.Txt` and `TecnoFisc.Sped` now; `TecnoFisc.Sped.Xml` planned after CT-e). See §4.9.
 - Strongly-typed record classes for each SPED record specification.
 - High-performance parsers using `PipeReader` and minimal allocations.
 - Generators that produce SPED-compliant output files.
@@ -137,9 +137,9 @@ Além desses, pacotes transversais completam a família, organizados em camadas 
 
 **Guarda-chuvas (bundles, só `<PackageReference>`, zero código):**
 
-- `TecnoFisc.Sped.Txt` — agrega todos os leiautes textuais (`EfdContribuicoes`, `EfdIcmsIpi`, `Ecd`, `Ecf`).
-- `TecnoFisc.Sped.Xml` — agrega todos os leiautes XML (`NFeNFCe`, `CTe`).
-- `TecnoFisc.Sped` — agrega tudo (referencia `Txt` + `Xml`). Ver Stage 13.
+- `TecnoFisc.Sped.Txt` — agrega os leiautes textuais disponíveis agora (`EfdContribuicoes`, `EfdIcmsIpi`, `Ecd`); `Ecf` entra na Stage 17.
+- `TecnoFisc.Sped.Xml` — planejado após CT-e; agregará os leiautes XML (`NFeNFCe`, `CTe`).
+- `TecnoFisc.Sped` — agrega `Txt` agora; agregará `Txt` + `Xml` quando o guarda-chuva XML existir. Ver Stage 13.
 
 Todos os outros projetos SPED listados no parágrafo de contexto ficam **explicitamente fora do escopo** e não devem ganhar pacote, stage no roadmap, nem entrada em tracking files.
 
@@ -279,9 +279,9 @@ A implementação desta reorganização é a Stage 18 (§12), sequenciada de bai
 ```text
 TecnoFisc.Sped/
 ├── src/
-│   ├── TecnoFisc.Sped/                               # Guarda-chuva geral (Txt + Xml)
-│   ├── TecnoFisc.Sped.Txt/                           # Guarda-chuva textual (EFD/ECD/ECF)
-│   ├── TecnoFisc.Sped.Xml/                           # Guarda-chuva XML (NFeNFCe/CTe)
+│   ├── TecnoFisc.Sped/                               # Guarda-chuva geral (Txt agora; Xml após CT-e)
+│   ├── TecnoFisc.Sped.Txt/                           # Guarda-chuva textual (EFD Contribuições, EFD ICMS-IPI, ECD)
+│   ├── TecnoFisc.Sped.Xml/                           # Planejado após CT-e — guarda-chuva XML (NFeNFCe/CTe)
 │   ├── TecnoFisc.Sped.Core/                          # Camada 1 — primitivos fiscais universais
 │   ├── TecnoFisc.Sped.Txt.Engine/                    # Camada 2 — motor .txt + sniffer da 1ª linha
 │   ├── TecnoFisc.Sped.Txt.Engine.SourceGenerators/   # Source generators (catalog + serialization)
@@ -328,9 +328,9 @@ TecnoFisc.Sped.NFeNFCe                   ← Core, Xml.Engine  (+ Xml.Engine.Sou
 TecnoFisc.Sped.CTe                       ← Core, Xml.Engine  (+ Xml.Engine.SourceGenerators quando existir)
 
 # Camada 4 — guarda-chuvas (só PackageReference, zero código)
-TecnoFisc.Sped.Txt                       ← EfdContribuicoes, EfdIcmsIpi, Ecd, Ecf
-TecnoFisc.Sped.Xml                       ← NFeNFCe, CTe
-TecnoFisc.Sped                           ← Txt, Xml
+TecnoFisc.Sped.Txt                       ← EfdContribuicoes, EfdIcmsIpi, Ecd (Ecf na Stage 17)
+TecnoFisc.Sped.Xml                       ← planejado após CT-e: NFeNFCe, CTe
+TecnoFisc.Sped                           ← Txt agora; Txt + Xml após CT-e
 ```
 
 **Critical rule 1:** No project in TecnoFisc.Sped depends on any database, file system configuration, or external service.
@@ -737,16 +737,16 @@ Tests por mundo cobrem todos os leiautes/tipos suportados + documento malformado
 
 Pacotes agregadores que referenciam leiautes em uma única dependência NuGet. Úteis para consumidores que querem suporte abrangente sem listar cada pacote no `csproj`. Originalmente um único metapacote `TecnoFisc.Sped`; com a reorganização em camadas (§4.9) passam a ser três guarda-chuvas:
 
-- `TecnoFisc.Sped.Txt` → `EfdContribuicoes`, `EfdIcmsIpi`, `Ecd`, `Ecf`.
-- `TecnoFisc.Sped.Xml` → `NFeNFCe`, `CTe`.
-- `TecnoFisc.Sped` → `Txt` + `Xml` (tudo).
+- `TecnoFisc.Sped.Txt` → `EfdContribuicoes`, `EfdIcmsIpi`, `Ecd` agora; `Ecf` entra na Stage 17.
+- `TecnoFisc.Sped.Xml` → `NFeNFCe`, `CTe` depois da Stage 16 (adiado enquanto só existe `NFeNFCe`).
+- `TecnoFisc.Sped` → `Txt` agora; `Txt` + `Xml` quando o guarda-chuva XML existir.
 
 - Sem código próprio — apenas `<PackageReference>` (Critical rule 4, §6.1).
 - Versão acompanha a mais alta dos pacotes referenciados; bumps coordenados por release notes consolidados.
-- README orienta o consumidor a preferir o guarda-chuva do seu mundo (XML ou TXT) quando não souber antecipadamente qual leiaute vai consumir, ou quando um sniffer for o ponto de entrada.
+- README orienta o consumidor a usar os guarda-chuvas disponiveis agora (`TecnoFisc.Sped.Txt` para TXT; `TecnoFisc.Sped` para bundles disponiveis) e documenta `TecnoFisc.Sped.Xml` como futuro apos CT-e.
 - **Sequenciamento:** o `TecnoFisc.Sped.Xml` só passa a fazer sentido quando houver ≥2 pacotes XML (i.e., após o CT-e — Stage 16); antes disso ele embrulharia só o `NFeNFCe`. Os guarda-chuvas `Txt` e `Sped` valem assim que há ≥2 leiautes textuais.
 
-Publica a primeira vez que todos os leiautes textuais estiverem em uso (EFD Contribuições + EFD ICMS-IPI + ECD; ECF pode ser placeholder até Stage 17).
+Publica agora porque ja ha tres leiautes textuais em uso (EFD Contribuições + EFD ICMS-IPI + ECD). `Ecf` sera adicionado ao `TecnoFisc.Sped.Txt` na Stage 17; `TecnoFisc.Sped.Xml` e a perna XML do pacote geral entram depois do CT-e.
 
 ### Stage 14 — TecnoFisc.Sped.NFeNFCe (XML, **read-only**)
 
@@ -773,7 +773,7 @@ Pacote para ECF (Escrituração Contábil Fiscal). Padrão `.txt` igual EFD/ECD.
 
 ### Stage 18 — Reorganização em camadas (Core universal + engines Txt/Xml)
 
-> **Status: passos 1–3 ✅ concluídos** (PRs #509 enxugar Core, #510 `Txt.Engine`, #511 `Xml.Engine`). Tracking detalhado em `sped/STAGE_18_REORG.md`. Falta o passo 4 (guarda-chuvas, Stage 13) — `Sped.Txt`/`Sped` quando houver ≥2 leiautes; `Sped.Xml` após o CT-e. Cada passo manteve build 0/0 + 4693 testes verdes.
+> **Status: passos 1–4 ✅ concluídos para Core, `Txt.Engine`, `Xml.Engine`, `TecnoFisc.Sped.Txt` e `TecnoFisc.Sped`** (PRs #509 enxugar Core, #510 `Txt.Engine`, #511 `Xml.Engine`, mais guarda-chuvas Stage 13). Tracking detalhado em `sped/STAGE_18_REORG.md`. Apenas `TecnoFisc.Sped.Xml` permanece adiado para depois do CT-e. Cada passo manteve build 0/0 + 4693 testes verdes.
 
 Refatoração estrutural que implementa o empacotamento em quatro camadas de §4.9. Motivada por: um consumidor que só lê XML (NF-e/NFC-e/CT-e) não deve ver no `Core` toda a maquinaria SPED-TXT (`RegistroSped`, catálogo, gerador, enums de bloco) que nunca usa. Resolve ruído de superfície de API + acoplamento conceitual; o custo é só de IL/discoverability (sem dep transitiva nem runtime — Hard Rule 1), por isso é refatoração de higiene, não de performance.
 
@@ -784,7 +784,7 @@ Refatoração estrutural que implementa o empacotamento em quatro camadas de §4
 1. **Enxugar o `Core`** ✅ — triar `Core/Enums` pela regra dos três níveis (§4.9): 8 enums só-EfdIcmsIpi→EfdIcmsIpi, `FinalidadeEmissao`/`IndicadorPresenca`/`IndicadorIntermediador`→NFeNFCe; enums transversais ficam para os passos 2/3. (Classificação 1-a-1 pelo uso real — é o grosso do trabalho, não o move-de-pasta.)
 2. **Criar `Txt.Engine`** ✅ — mover `Parser/`, `Gerador/`, `Catalogo/`, `Atributos/` (exceto `DescontinuadoAttribute`, que fica no Core), `Abstracoes/` (`RegistroSped` + `I*Sped`), `Streaming/`, sniffer da 1ª linha e 6 enums TXT-transversais (`IND_MOV` etc.); renomear `Core.SourceGenerators` → `Txt.Engine.SourceGenerators` (atualizar FQN dos atributos + usings gerados); repontar EFD Contribuições/ICMS-IPI/ECD para `Core + Txt.Engine + analyzer` (ECF quando existir). Maior PR (~1184 arquivos); mexe no source generator.
 3. **Criar `Xml.Engine`** ✅ — mover só `Core/Xml/` (`IdentificadorXmlFiscal`, `IDocumentoFiscalXml`, `TipoDocumentoFiscalXml`); repontar `NFeNFCe` para `Core + Xml.Engine`. `TipoAmbiente`/`TipoEmissao` ficam no Core (`ChaveAcesso` consome `TipoEmissao`); `XmlReaderExtensions` segue no `NFeNFCe`. PR pequeno.
-4. **Guarda-chuvas** (Stage 13) — `TecnoFisc.Sped.Txt`, `TecnoFisc.Sped` agora; `TecnoFisc.Sped.Xml` adiado para depois do CT-e (Stage 16). Só `<PackageReference>`, zero código.
+4. **Guarda-chuvas** (Stage 13) ✅ — `TecnoFisc.Sped.Txt` e `TecnoFisc.Sped` criados; `TecnoFisc.Sped.Xml` adiado para depois do CT-e (Stage 16). Só `<PackageReference>`, zero código.
 
 Round-trip e benchmarks devem continuar verdes a cada passo (a refatoração é move + repoint, não mudança de comportamento). Atualizar `slnx`, `Directory.Build.props`, READMEs e CHANGELOG por pacote.
 

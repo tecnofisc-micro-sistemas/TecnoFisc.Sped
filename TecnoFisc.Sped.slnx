@@ -1,5 +1,7 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/TecnoFisc.Sped/TecnoFisc.Sped.csproj" />
+    <Project Path="src/TecnoFisc.Sped.Txt/TecnoFisc.Sped.Txt.csproj" />
     <Project Path="src/TecnoFisc.Sped.Core/TecnoFisc.Sped.Core.csproj" />
     <Project Path="src/TecnoFisc.Sped.Txt.Engine/TecnoFisc.Sped.Txt.Engine.csproj" />
     <Project Path="src/TecnoFisc.Sped.Txt.Engine.SourceGenerators/TecnoFisc.Sped.Txt.Engine.SourceGenerators.csproj" />

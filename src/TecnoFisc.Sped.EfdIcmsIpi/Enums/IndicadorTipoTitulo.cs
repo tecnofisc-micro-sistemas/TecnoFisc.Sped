@@ -1,4 +1,4 @@
-namespace TecnoFisc.Sped.Core.Enums;
+namespace TecnoFisc.Sped.EfdIcmsIpi.Enums;
 
 /// <summary>
 /// Indicador do tipo de título de crédito — campo IND_TIT no Registro C140 (EFD ICMS-IPI).

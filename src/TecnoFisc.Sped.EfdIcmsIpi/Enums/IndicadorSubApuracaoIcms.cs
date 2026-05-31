@@ -1,4 +1,4 @@
-namespace TecnoFisc.Sped.Core.Enums;
+namespace TecnoFisc.Sped.EfdIcmsIpi.Enums;
 
 /// <summary>
 /// Indicador de outra apuracao do ICMS — campo <c>IND_APUR_ICMS</c> do Registro 1900

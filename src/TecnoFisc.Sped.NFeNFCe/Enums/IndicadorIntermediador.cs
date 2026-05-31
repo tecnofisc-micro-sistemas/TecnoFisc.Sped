@@ -1,4 +1,4 @@
-namespace TecnoFisc.Sped.Core.Enums;
+namespace TecnoFisc.Sped.NFeNFCe.Enums;
 
 /// <summary>Indicador de intermediador/marketplace — campo indIntermed do grupo ide.</summary>
 public enum IndicadorIntermediador

@@ -1,4 +1,4 @@
-namespace TecnoFisc.Sped.Core.Enums;
+namespace TecnoFisc.Sped.EfdIcmsIpi.Enums;
 
 /// <summary>
 /// Código da finalidade do arquivo — campo COD_FIN do Registro 0000 do EFD ICMS-IPI.

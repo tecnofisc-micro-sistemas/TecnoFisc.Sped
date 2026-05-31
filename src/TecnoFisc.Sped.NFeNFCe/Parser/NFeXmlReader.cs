@@ -3,6 +3,7 @@ using System.Xml;
 
 using TecnoFisc.Sped.Core.Enums;
 using TecnoFisc.Sped.Core.ValueObjects;
+using TecnoFisc.Sped.NFeNFCe.Enums;
 
 namespace TecnoFisc.Sped.NFeNFCe.Parser;
 

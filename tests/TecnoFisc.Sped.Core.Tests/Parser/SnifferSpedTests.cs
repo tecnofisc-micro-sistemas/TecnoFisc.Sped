@@ -1,3 +1,4 @@
+using TecnoFisc.Sped.Txt.Engine.Abstracoes;
 using TecnoFisc.Sped.Txt.Engine.Parser;
 
 namespace TecnoFisc.Sped.Core.Tests.Parser;
@@ -89,4 +90,47 @@ public sealed class SnifferSpedTests
 
     private static MemoryStream Sped(string conteudo)
         => new(EncodingSped.Latin1.GetBytes(conteudo), writable: false);
+
+    [Fact]
+    public async Task AbrirParserAsync_UsaFactoryDoProjetoIdentificado_EReposicionaStream()
+    {
+        await using var stream = Sped("|0000|LECD|01012023|31122023|EMPRESA|11222333000181|ES|\r\n");
+        var parserEcd = new LeitorFake();
+        var fabricas = new Dictionary<ProjetoSped, Func<ILeitorSped>>
+        {
+            [ProjetoSped.Ecd] = () => parserEcd,
+        };
+
+        var parser = await SnifferSped.AbrirParserAsync(stream, fabricas, TestContext.Current.CancellationToken);
+
+        parser.Should().BeSameAs(parserEcd);
+        stream.Position.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task AbrirParserAsync_SemFactoryDoProjeto_LancaNotSupportedException()
+    {
+        await using var stream = Sped("|0000|LECD|01012023|31122023|EMPRESA|11222333000181|ES|\r\n");
+        var fabricas = new Dictionary<ProjetoSped, Func<ILeitorSped>>();
+
+        Func<Task> act = async () => _ = await SnifferSped.AbrirParserAsync(
+            stream,
+            fabricas,
+            TestContext.Current.CancellationToken);
+
+        await act.Should().ThrowAsync<NotSupportedException>()
+            .WithMessage("*Ecd*");
+        stream.Position.Should().Be(0);
+    }
+
+    private sealed class LeitorFake : ILeitorSped
+    {
+        public async IAsyncEnumerable<RegistroSped> ReadStreamingAsync(
+            Stream entrada,
+            [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancelamento = default)
+        {
+            await Task.CompletedTask;
+            yield break;
+        }
+    }
 }

@@ -78,5 +78,5 @@ Baseada no uso real (grep por pacote consumidor):
 ### Pós-PRs (pendências separadas)
 - [ ] CHANGELOG por pacote (próximo release — novos pacotes `Txt.Engine`/`Xml.Engine`/`Txt.Engine.SourceGenerators`; breaking de namespace).
 - [ ] Passo 4 — guarda-chuvas (Stage 13): `Sped.Txt` + `Sped` agora; `Sped.Xml` após CT-e.
-- [ ] Stage 12 — sniffer TXT (`IdentificadorArquivoSped`/`SnifferSped`) ainda não existe (só o XML foi feito na Stage 14).
+- [x] Stage 12 — sniffer TXT (`SnifferSped`) implementado em `TecnoFisc.Sped.Txt.Engine`; XML ja existia em `TecnoFisc.Sped.Xml.Engine`.
 - [ ] Cleanup opcional: extrair `Txt.Engine.Tests` e `Xml.Engine.Tests` (hoje `Core.Tests` referencia os dois engines por conter testes da maquinaria movida).

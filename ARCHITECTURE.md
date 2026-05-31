@@ -725,7 +725,7 @@ Cada mundo identifica o documento a partir do início do stream, sem consumir o 
 **Sniffer TXT — `TecnoFisc.Sped.Txt.Engine`.** Identifica o leiaute SPED textual a partir da primeira linha `|0000|...|`; os campos seguintes (especialmente `COD_VER`) inferem o projeto (EFD Contribuições vs ICMS-IPI vs ECD vs ECF) e a versão.
 
 - `SnifferSped.IdentificarAsync(Stream)` lê **apenas a primeira linha não vazia** e devolve `MetadadosArquivoSped { ProjetoSped, VersaoLeiaute, EncodingDetectado, ... }`.
-- `SnifferSped.AbrirParserAsync(Stream)` devolve o `ILeitorSped` do leiaute identificado, stream reposicionado na origem (replay-safe). Delega para `ParserEfdContribuicoes`, `ParserEfdIcmsIpi`, `ParserEcd`, `ParserEcf`.
+- `SnifferSped.AbrirParserAsync(Stream, IReadOnlyDictionary<ProjetoSped, Func<ILeitorSped>>)` devolve o `ILeitorSped` do leiaute identificado, stream reposicionado na origem (replay-safe). O `Txt.Engine` nao referencia projetos de leiaute para nao inverter a direcao das dependencias; quem monta o ponto de entrada registra factories para `ParserEfdContribuicoes`, `ParserEfdIcmsIpi`, `ParserEcd` e, no futuro, `ParserEcf`.
 - Heurística: combinação `(Bloco do primeiro registro, campo discriminador, layout do `0000`)`. **Caso EFD:** `COD_VER` no `0000` dá projeto + versão. **Caso ECD:** o `0000` não tem `COD_VER` — campo 02 é o literal `"LECD"` (identifica o projeto na linha 1); a versão (`COD_VER_LC`) só aparece no `I010`, então a `VersaoLeiaute` exige ler até o `I010` (ou assumir o baseline único — leiaute 9 — enquanto não houver incrementos).
 - Sem reflexão no hot path — despacho via `switch` gerado em compile time (`Txt.Engine.SourceGenerators`, extensão de Stage 6) ou tabela estática.
 

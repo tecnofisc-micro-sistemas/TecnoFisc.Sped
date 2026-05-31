@@ -17,6 +17,9 @@ public sealed class UmbrellaPackageTests
             ]);
 
         PackageReferences(project).Should().BeEmpty("guarda-chuva local deve agregar projetos do repositorio");
+        BuildOutputShouldBeDisabled(project);
+        DefaultCompileItemsShouldBeDisabled(project);
+        Nu5128ShouldBeSuppressed(project);
         SourceFiles("src", "TecnoFisc.Sped.Txt")
             .Should().BeEmpty("guarda-chuvas nao carregam codigo proprio");
     }
@@ -34,6 +37,9 @@ public sealed class UmbrellaPackageTests
         ProjectReferences(project).Should().NotContain(reference => reference.Contains("NFeNFCe", StringComparison.Ordinal));
         ProjectReferences(project).Should().NotContain(reference => reference.Contains("Xml", StringComparison.Ordinal));
         PackageReferences(project).Should().BeEmpty("o pacote geral tambem deve agregar por ProjectReference local");
+        BuildOutputShouldBeDisabled(project);
+        DefaultCompileItemsShouldBeDisabled(project);
+        Nu5128ShouldBeSuppressed(project);
         SourceFiles("src", "TecnoFisc.Sped")
             .Should().BeEmpty("guarda-chuvas nao carregam codigo proprio");
     }
@@ -87,6 +93,21 @@ public sealed class UmbrellaPackageTests
             .Select(value => value!)
             .Order(StringComparer.Ordinal)
             .ToArray();
+
+    private static void BuildOutputShouldBeDisabled(XDocument project)
+        => PropertyValue(project, "IncludeBuildOutput")
+            .Should().Be("false", "guarda-chuvas agregam dependencias sem DLL propria no pacote");
+
+    private static void DefaultCompileItemsShouldBeDisabled(XDocument project)
+        => PropertyValue(project, "EnableDefaultCompileItems")
+            .Should().Be("false", "guarda-chuvas nao devem compilar itens implicitos");
+
+    private static void Nu5128ShouldBeSuppressed(XDocument project)
+        => PropertyValue(project, "NoWarn")
+            .Should().Contain("NU5128", "pacotes apenas com dependencias nao possuem assemblies lib/ref proprios");
+
+    private static string? PropertyValue(XDocument project, string propertyName)
+        => project.Descendants(propertyName).SingleOrDefault()?.Value;
 
     private static string RepositoryRoot()
     {

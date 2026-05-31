@@ -2,7 +2,8 @@
 
 > Operational appendix to `ARCHITECTURE.md` §4.9 + Stage 18. Refatoração estrutural:
 > Core monolítico → 4 camadas (Core universal + `Txt.Engine`/`Xml.Engine` + leiautes + guarda-chuvas).
-> Executada em **3 PRs** (passos 1–3); guarda-chuvas (passo 4) ficam para depois.
+> Passos 1–3 executados em PRs; o passo 4 agora criou `TecnoFisc.Sped.Txt` +
+> `TecnoFisc.Sped`. `TecnoFisc.Sped.Xml` permanece adiado para depois do CT-e.
 
 ## Baseline (antes de tocar em código)
 
@@ -77,6 +78,6 @@ Baseada no uso real (grep por pacote consumidor):
 
 ### Pós-PRs (pendências separadas)
 - [ ] CHANGELOG por pacote (próximo release — novos pacotes `Txt.Engine`/`Xml.Engine`/`Txt.Engine.SourceGenerators`; breaking de namespace).
-- [ ] Passo 4 — guarda-chuvas (Stage 13): `Sped.Txt` + `Sped` agora; `Sped.Xml` após CT-e.
+- [x] Passo 4 — guarda-chuvas (Stage 13): `TecnoFisc.Sped.Txt` + `TecnoFisc.Sped` criados; `TecnoFisc.Sped.Xml` permanece adiado para depois do CT-e.
 - [x] Stage 12 — sniffer TXT (`SnifferSped`) implementado em `TecnoFisc.Sped.Txt.Engine`; XML ja existia em `TecnoFisc.Sped.Xml.Engine`.
 - [ ] Cleanup opcional: extrair `Txt.Engine.Tests` e `Xml.Engine.Tests` (hoje `Core.Tests` referencia os dois engines por conter testes da maquinaria movida).

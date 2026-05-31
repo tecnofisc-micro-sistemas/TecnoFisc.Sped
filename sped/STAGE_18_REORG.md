@@ -42,11 +42,11 @@ Baseada no uso real (grep por pacote consumidor):
 
 ## PRs
 
-### PR 1 — Enxugar Core (enums de leiaute único) — `refactor/stage18-pr1-slim-core`
-- [ ] Mover 8 enums só-EfdIcmsIpi → `src/TecnoFisc.Sped.EfdIcmsIpi/Enums/` (namespace `TecnoFisc.Sped.EfdIcmsIpi.Enums`).
-- [ ] Mover 3 enums só-NFeNFCe → `src/TecnoFisc.Sped.NFeNFCe/Enums/` (namespace `TecnoFisc.Sped.NFeNFCe.Enums`).
-- [ ] Adicionar `using` do novo namespace nos arquivos consumidores.
-- [ ] Build + 4693 testes verdes. PR para `dev` (squash).
+### PR 1 — Enxugar Core (enums de leiaute único) — `refactor/stage18-pr1-slim-core` ✅ PR #509
+- [x] Mover 8 enums só-EfdIcmsIpi → `src/TecnoFisc.Sped.EfdIcmsIpi/Enums/` (namespace `TecnoFisc.Sped.EfdIcmsIpi.Enums`).
+- [x] Mover 3 enums só-NFeNFCe → `src/TecnoFisc.Sped.NFeNFCe/Enums/` (namespace `TecnoFisc.Sped.NFeNFCe.Enums`).
+- [x] Adicionar `using` do novo namespace nos consumidores (só onde faltava); remover `Core.Enums` órfão.
+- [x] Build 0/0 + 4693 testes verdes (verificado de forma independente). PR #509 aberto para `dev`.
 
 ### PR 2 — Criar `Txt.Engine` — `refactor/stage18-pr2-txt-engine`
 - [ ] Novo projeto `src/TecnoFisc.Sped.Txt.Engine/`; mover `Parser/`, `Gerador/`, `Catalogo/`, `Abstracoes/` (`RegistroSped`+`I*Sped`), `Streaming/`, atributos SPED (menos `Descontinuado`), `Erros/`? (avaliar — `ResultadoParse` é universal, fica no Core) + 6 enums TXT-transversais.

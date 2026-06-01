@@ -720,6 +720,8 @@ Quando ativado, segue o mesmo padrão de Stage 9: para cada novo leiaute publica
 
 ### Stage 12 — Identificadores dinâmicos de documento (sniffers, um por mundo)
 
+> **✅ Concluído na `0.7.0`** — `SnifferSped` (mundo TXT, `Txt.Engine`, PR #512) e `IdentificadorXmlFiscal` (mundo XML, `Xml.Engine`, entregue junto com a fundação NF-e).
+
 Cada mundo identifica o documento a partir do início do stream, sem consumir o resto. **Não há sniffer unificado no `Core`** — isso acoplaria os dois mundos (Critical rule 2, §6.1). Em vez disso, cada engine carrega o seu, com APIs análogas (§4.9):
 
 **Sniffer TXT — `TecnoFisc.Sped.Txt.Engine`.** Identifica o leiaute SPED textual a partir da primeira linha `|0000|...|`; os campos seguintes (especialmente `COD_VER`) inferem o projeto (EFD Contribuições vs ICMS-IPI vs ECD vs ECF) e a versão.
@@ -735,6 +737,8 @@ Tests por mundo cobrem todos os leiautes/tipos suportados + documento malformado
 
 ### Stage 13 — Guarda-chuvas TecnoFisc.Sped (Txt / Xml / tudo)
 
+> **✅ Concluído na `0.7.0`** (parcial por design) — `TecnoFisc.Sped.Txt` e `TecnoFisc.Sped` publicados (PR #513). `TecnoFisc.Sped.Xml` permanece adiado até existirem ≥2 pacotes XML (após o CT-e, Stage 16).
+
 Pacotes agregadores que referenciam leiautes em uma única dependência NuGet. Úteis para consumidores que querem suporte abrangente sem listar cada pacote no `csproj`. Originalmente um único metapacote `TecnoFisc.Sped`; com a reorganização em camadas (§4.9) passam a ser três guarda-chuvas:
 
 - `TecnoFisc.Sped.Txt` → `EfdContribuicoes`, `EfdIcmsIpi`, `Ecd` agora; `Ecf` entra na Stage 17.
@@ -749,6 +753,8 @@ Pacotes agregadores que referenciam leiautes em uma única dependência NuGet. �
 Publica agora porque ja ha tres leiautes textuais em uso (EFD Contribuições + EFD ICMS-IPI + ECD). `Ecf` sera adicionado ao `TecnoFisc.Sped.Txt` na Stage 17; `TecnoFisc.Sped.Xml` e a perna XML do pacote geral entram depois do CT-e.
 
 ### Stage 14 — TecnoFisc.Sped.NFeNFCe (XML, **read-only**)
+
+> **🚧 Em andamento — preview publicado na `0.7.0`.** Slices 14.1–14.4 entregues (fundação Core, estrutura do pacote, piloto NF-e 55, polimorfismo de impostos completo — PRs #505–#508). Pendentes: 14.5 (transp/cobr/pag/infAdic/protNFe), 14.6 (NFC-e 65), 14.7 (eventos), 14.8 (`ReadDirectoryAsync`), 14.9 (`Correlator`). Tracking: `sped/STAGE_14_NFE_NFCE.md` §8.
 
 **Funde os antigos Stage 14 (NFe) + Stage 15 (NFCe) em um único pacote** `TecnoFisc.Sped.NFeNFCe`, leiaute 4.00. NF-e (modelo 55) e NFC-e (modelo 65) usam o **mesmo XSD** e evoluem juntas (mesma Nota Técnica) — não se encaixam na premissa de cadências independentes que justifica a regra de independência de formato (§4.2). Logo: um pacote, dois tipos de modelo (`NFe`, `NFCe`). Spec operacional completa em `sped/STAGE_14_NFE_NFCE.md`.
 
@@ -773,7 +779,7 @@ Pacote para ECF (Escrituração Contábil Fiscal). Padrão `.txt` igual EFD/ECD.
 
 ### Stage 18 — Reorganização em camadas (Core universal + engines Txt/Xml)
 
-> **Status: passos 1–4 ✅ concluídos para Core, `Txt.Engine`, `Xml.Engine`, `TecnoFisc.Sped.Txt` e `TecnoFisc.Sped`** (PRs #509 enxugar Core, #510 `Txt.Engine`, #511 `Xml.Engine`, mais guarda-chuvas Stage 13). Tracking detalhado em `sped/STAGE_18_REORG.md`. Apenas `TecnoFisc.Sped.Xml` permanece adiado para depois do CT-e. Cada passo manteve build 0/0 + 4693 testes verdes.
+> **Status: passos 1–4 ✅ concluídos na `0.7.0`** para Core, `Txt.Engine`, `Xml.Engine`, `TecnoFisc.Sped.Txt` e `TecnoFisc.Sped` (PRs #509 enxugar Core, #510 `Txt.Engine`, #511 `Xml.Engine`, mais guarda-chuvas Stage 13). Tracking detalhado em `sped/STAGE_18_REORG.md`. Apenas `TecnoFisc.Sped.Xml` permanece adiado para depois do CT-e. Cada passo manteve build 0/0 + 4693 testes verdes.
 
 Refatoração estrutural que implementa o empacotamento em quatro camadas de §4.9. Motivada por: um consumidor que só lê XML (NF-e/NFC-e/CT-e) não deve ver no `Core` toda a maquinaria SPED-TXT (`RegistroSped`, catálogo, gerador, enums de bloco) que nunca usa. Resolve ruído de superfície de API + acoplamento conceitual; o custo é só de IL/discoverability (sem dep transitiva nem runtime — Hard Rule 1), por isso é refatoração de higiene, não de performance.
 

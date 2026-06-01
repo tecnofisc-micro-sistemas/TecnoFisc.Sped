@@ -4,13 +4,14 @@ Família de bibliotecas .NET para leitura, geração e manipulação tipada de a
 publicados pelos projetos do **SPED — Sistema Público de Escrituração Digital**
 (Receita Federal do Brasil).
 
-> Status atual: **0.7.0** publicado. Cobre EFD Contribuições V006 (leitura + geração,
+> Status atual: **0.7.1** publicado. Cobre EFD Contribuições V006 (leitura + geração,
 > round-trip validado), EFD ICMS-IPI baseline V015 + incrementos V016 → V020 (leiaute
 > vigente em 2026, **read-only**) e **ECD** leiaute 9 (Sped Contábil, vigente a partir do
 > ano-calendário 2020, **read-only** — parser e modelo tipado, sem geração). Os números
 > `006` (EFD Contribuições) e `015`–`020` (EFD ICMS-IPI) são o `COD_VER` do registro `0000`
 > de cada leiaute (não devem ser confundidos com a versão do Guia Prático); a ECD informa a
-> versão do leiaute em `I010.COD_VER_LC`, não no `0000`. A `0.7.0` é **breaking**: reorganiza
+> versão do leiaute em `I010.COD_VER_LC`, não no `0000`. A `0.7.x` é **breaking** em relação à
+> `0.6.0`: reorganiza
 > o antigo `Core` monolítico em `Core` universal + engines `Txt.Engine`/`Xml.Engine` (Stage 18),
 > adiciona os guarda-chuvas `TecnoFisc.Sped.Txt` e `TecnoFisc.Sped` (Stage 13) e os sniffers
 > de identificação de documento por mundo (Stage 12). Estreia ainda, em **preview**, o pacote
@@ -32,14 +33,14 @@ pacote afetado é versionado.
 
 | Projeto SPED | Pacote NuGet | Status |
 | --- | --- | --- |
-| EFD Contribuições | `TecnoFisc.Sped.EfdContribuicoes` | **0.7.0** — leiaute V006 completo (leitura + geração) |
-| EFD ICMS-IPI | `TecnoFisc.Sped.EfdIcmsIpi` | **0.7.0** — baseline V015 + incrementos V016 → V020 (vigente), **read-only** |
-| ECD | `TecnoFisc.Sped.Ecd` | **0.7.0** — baseline leiaute 9 completo (vigente), **read-only** |
-| NF-e / NFC-e | `TecnoFisc.Sped.NFeNFCe` | **0.7.0 preview** — só NF-e modelo 55 parcial (XML, read-only); NFC-e 65 e eventos em desenvolvimento |
+| EFD Contribuições | `TecnoFisc.Sped.EfdContribuicoes` | **0.7.1** — leiaute V006 completo (leitura + geração) |
+| EFD ICMS-IPI | `TecnoFisc.Sped.EfdIcmsIpi` | **0.7.1** — baseline V015 + incrementos V016 → V020 (vigente), **read-only** |
+| ECD | `TecnoFisc.Sped.Ecd` | **0.7.1** — baseline leiaute 9 completo (vigente), **read-only** |
+| NF-e / NFC-e | `TecnoFisc.Sped.NFeNFCe` | **0.7.1 preview** — só NF-e modelo 55 parcial (XML, read-only); NFC-e 65 e eventos em desenvolvimento |
 | CT-e | `TecnoFisc.Sped.CTe` | planejado (XML, read-only) |
 | ECF | `TecnoFisc.Sped.Ecf` | planejado (read-only) |
-| Guarda-chuva TXT | `TecnoFisc.Sped.Txt` | **0.7.0** — agrega EFD Contribuições, EFD ICMS-IPI e ECD |
-| Guarda-chuva geral | `TecnoFisc.Sped` | **0.7.0** — agrega `TecnoFisc.Sped.Txt`; passará a agregar XML após CT-e |
+| Guarda-chuva TXT | `TecnoFisc.Sped.Txt` | **0.7.1** — agrega EFD Contribuições, EFD ICMS-IPI e ECD |
+| Guarda-chuva geral | `TecnoFisc.Sped` | **0.7.1** — agrega `TecnoFisc.Sped.Txt`; passará a agregar XML após CT-e |
 | Guarda-chuva XML | `TecnoFisc.Sped.Xml` | planejado após CT-e — agregará NFe/NFC-e e CT-e |
 
 > **Modo de operação.** O único pacote com geração de arquivo confirmada é

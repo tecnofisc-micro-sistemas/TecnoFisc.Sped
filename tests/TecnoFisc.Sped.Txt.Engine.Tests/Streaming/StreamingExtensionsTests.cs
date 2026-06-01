@@ -2,7 +2,7 @@ using System.Runtime.CompilerServices;
 using TecnoFisc.Sped.Txt.Engine.Abstracoes;
 using TecnoFisc.Sped.Txt.Engine.Streaming;
 
-namespace TecnoFisc.Sped.Core.Tests.Streaming;
+namespace TecnoFisc.Sped.Txt.Engine.Tests.Streaming;
 
 public sealed class StreamingExtensionsTests
 {

@@ -1,6 +1,6 @@
 using TecnoFisc.Sped.Txt.Engine.Gerador;
 
-namespace TecnoFisc.Sped.Core.Tests.Gerador;
+namespace TecnoFisc.Sped.Txt.Engine.Tests.Gerador;
 
 public sealed class SerializadoresPrimitivosTests
 {

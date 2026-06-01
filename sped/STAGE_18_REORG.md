@@ -77,7 +77,7 @@ Baseada no uso real (grep por pacote consumidor):
 - [x] ARCHITECTURE.md: Stage 18 (passos 1–3) marcada concluída; exemplos corrigidos (`CodigoNaturezaContaContabil`→Txt.Engine; `TipoAmbiente`/`TipoEmissao`→Core); §7 Xml.Engine tree corrigida.
 
 ### Pós-PRs (pendências separadas)
-- [ ] CHANGELOG por pacote (próximo release — novos pacotes `Txt.Engine`/`Xml.Engine`/`Txt.Engine.SourceGenerators`; breaking de namespace).
+- [x] CHANGELOG por pacote (próximo release — novos pacotes `Txt.Engine`/`Xml.Engine`/`Txt.Engine.SourceGenerators`; breaking de namespace).
 - [x] Passo 4 — guarda-chuvas (Stage 13): `TecnoFisc.Sped.Txt` + `TecnoFisc.Sped` criados; `TecnoFisc.Sped.Xml` permanece adiado para depois do CT-e.
 - [x] Stage 12 — sniffer TXT (`SnifferSped`) implementado em `TecnoFisc.Sped.Txt.Engine`; XML ja existia em `TecnoFisc.Sped.Xml.Engine`.
-- [ ] Cleanup opcional: extrair `Txt.Engine.Tests` e `Xml.Engine.Tests` (hoje `Core.Tests` referencia os dois engines por conter testes da maquinaria movida).
+- [x] Cleanup opcional: `Txt.Engine.Tests` e `Xml.Engine.Tests` extraidos; `Core.Tests` voltou a referenciar somente `Core`.

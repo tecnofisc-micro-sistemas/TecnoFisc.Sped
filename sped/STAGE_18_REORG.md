@@ -8,8 +8,9 @@
 ## Baseline (antes de tocar em código)
 
 - Build: ✅ 0 warnings / 0 errors.
-- Testes: ✅ **4693** verdes — Core 274, NFeNFCe 98, Ecd 515, EfdContribuições 1661, EfdIcmsIpi 2145.
-- **Invariante do refactor:** mesmos 4693 testes verdes a cada checkpoint (move + repoint, sem mudança de comportamento).
+- Baseline pré-cleanup: 4693 testes verdes — Core 274, NFeNFCe 98, Ecd 515, EfdContribuições 1661, EfdIcmsIpi 2145.
+- Estado pós-cleanup: 4707 testes verdes — Core 129, Txt.Engine 147, Xml.Engine 12, NFeNFCe 98, Ecd 515, EfdContribuições 1661, EfdIcmsIpi 2145.
+- **Invariante do refactor:** cobertura preservada a cada checkpoint (move + repoint, sem mudança de comportamento); a contagem final aumentou por separação de projetos de teste, sem remoção de cobertura.
 
 ## Triagem dos enums de `Core/Enums` (regra dos três níveis, §4.9)
 
@@ -20,6 +21,7 @@ Baseada no uso real (grep por pacote consumidor):
 - `CodigoSituacaoDocumentoFiscal` (Tabela 4.1.2 Ato COTEPE)
 - `OrigemMercadoria` (tabela fiscal `orig`)
 - `ModalidadeFrete` (`modFrete`/IND_FRT convergente; órfão hoje, usado pelo slice 14.5)
+- `TipoAmbiente`, `TipoEmissao` (`ChaveAcesso` consome `TipoEmissao`; mover criaria dependência invertida Core→Xml.Engine)
 
 **→ `Txt.Engine` (transversal a ≥2 leiautes TXT) — PR 2:**
 - `CodigoNaturezaContaContabil` (EfdContribuições + EfdIcmsIpi)
@@ -30,7 +32,7 @@ Baseada no uso real (grep por pacote consumidor):
 - `TipoItem` (EfdContribuições + EfdIcmsIpi)
 
 **→ `Xml.Engine` (transversal XML, NFe + CT-e futuro) — PR 3:**
-- `TipoAmbiente`, `TipoEmissao`
+- Nenhum enum movido; PR 3 moveu os tipos de `Core/Xml/`.
 
 **→ pacote do leiaute (um único leiaute) — PR 1:**
 - EfdIcmsIpi (8): `IndicadorAtividadeIpi`, `IndicadorEmissorDocumento`, `IndicadorFinalidadeArquivo`, `IndicadorOrigemDocumentoAjusteIpi`, `IndicadorSubApuracaoIcms`, `IndicadorTipoAjusteIpi`, `IndicadorTipoTitulo`, `TipoMovimentacaoBemCiAp`
@@ -49,7 +51,7 @@ Baseada no uso real (grep por pacote consumidor):
 - [x] Adicionar `using` do novo namespace nos consumidores (só onde faltava); remover `Core.Enums` órfão.
 - [x] Build 0/0 + 4693 testes verdes (verificado de forma independente). PR #509 aberto para `dev`.
 
-### PR 2 — Criar `Txt.Engine` — `refactor/stage18-pr2-txt-engine` (em execução)
+### PR 2 — Criar `Txt.Engine` — `refactor/stage18-pr2-txt-engine` ✅
 
 **De-risking (confirmado por análise):**
 - NFeNFCe **não** importa nenhuma máquina TXT do Core → corte limpo, sem refactor de NFe.
@@ -67,12 +69,12 @@ Baseada no uso real (grep por pacote consumidor):
 - [x] Repontar EFD Contribuições/ICMS-IPI/ECD (csproj: + Txt.Engine, analyzer novo) + renames de `using` nos consumidores (~1184 arquivos). Atualizar `.slnx`.
 - [x] Build 0/0 + 4693 testes verdes (verificado independente). Dependência confirmada: Core sem refs; NFeNFCe e Txt.Engine só → Core.
 
-**Follow-up conhecido (não bloqueia):** `Core.Tests` passou a referenciar `Txt.Engine` (contém testes de Parser/Gerador/Catalogo/Abstracoes/Streaming, que agora vivem no engine). Cleanup futuro opcional: extrair um `Txt.Engine.Tests`.
+**Cleanup concluído:** testes de Parser/Gerador/Catalogo/Abstracoes/Streaming foram extraídos para `Txt.Engine.Tests`; testes XML do sniffer foram extraídos para `Xml.Engine.Tests`; `Core.Tests` referencia somente `Core`.
 
 ### PR 3 — Criar `Xml.Engine` — `refactor/stage18-pr3-xml-engine` ✅
 **Correção de triagem:** `TipoAmbiente`/`TipoEmissao` **ficam no Core** — `ChaveAcesso` (Core) consome `TipoEmissao` (mover criaria dep invertida Core→Xml.Engine). `XmlReaderExtensions` fica no NFeNFCe (helper de NF-e). Logo o PR só move os 3 arquivos de `Core/Xml/`.
 - [x] Novo projeto `src/TecnoFisc.Sped.Xml.Engine/`; mover `Core/Xml/` (IdentificadorXmlFiscal, IDocumentoFiscalXml, TipoDocumentoFiscalXml).
-- [x] Repontar `NFeNFCe` para `Core + Xml.Engine`; `Core.Tests` + Xml.Engine (testes do sniffer). Atualizar `.slnx`.
+- [x] Repontar `NFeNFCe` para `Core + Xml.Engine`; testes do sniffer XML extraídos para `Xml.Engine.Tests`. Atualizar `.slnx`.
 - [x] Build 0/0 + 4693 testes verdes (verificado independente). Dependência: Core/Txt.Engine não referenciam Xml.Engine.
 - [x] ARCHITECTURE.md: Stage 18 (passos 1–3) marcada concluída; exemplos corrigidos (`CodigoNaturezaContaContabil`→Txt.Engine; `TipoAmbiente`/`TipoEmissao`→Core); §7 Xml.Engine tree corrigida.
 

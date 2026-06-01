@@ -6,6 +6,8 @@
     <PackageTags>sped;txt;efd-contribuicoes;efd-icms-ipi;ecd;fiscal;brasil;tecnofisc</PackageTags>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <!-- Metapacote sem código: não há .pdb, então não gerar .snupkg (o symbol server rejeita pacote vazio com 400). -->
+    <IncludeSymbols>false</IncludeSymbols>
     <NoWarn>$(NoWarn);NU5128</NoWarn>
   </PropertyGroup>
 

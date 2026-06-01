@@ -40,7 +40,7 @@ Baseada no uso real (grep por pacote consumidor):
 
 ## Achados / decisões
 
-- **Doc desatualizado:** `ARCHITECTURE.md` §4.9 + Stage 18 citam `CodigoNaturezaContaContabil`→Ecd como exemplo de enum de leiaute único. Uso real = EfdContribuições+EfdIcmsIpi → `Txt.Engine`. **Corrigir o exemplo no doc** (trocar por um enum de leiaute único real, ex.: `IndicadorApuracaoIpi`... não — esse é 2 leiautes; usar `TipoMovimentacaoBemCiAp`→EfdIcmsIpi).
+- **Doc corrigido no PR 3/Stage 18:** `ARCHITECTURE.md` §4.9 + Stage 18 citavam `CodigoNaturezaContaContabil`→Ecd como exemplo de enum de leiaute único. Uso real = EfdContribuições+EfdIcmsIpi → `Txt.Engine`; o exemplo foi atualizado para um enum de leiaute único real (`TipoMovimentacaoBemCiAp`→EfdIcmsIpi).
 - **`Atributos/` divide:** `DescontinuadoAttribute` **fica no Core** (marcador de versionamento universal; usado por `CodigoSituacaoDocumentoFiscal` que fica no Core). Só `RegistroSpedAttribute`/`CampoSpedAttribute`/`BlocoSpedAttribute`/`SpedValorAttribute` vão para `Txt.Engine`. Senão Core→Txt.Engine (dependência invertida).
 
 ## PRs

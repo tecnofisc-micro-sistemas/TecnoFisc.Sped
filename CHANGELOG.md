@@ -6,48 +6,6 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ## [Não publicado]
 
-### TecnoFisc.Sped.Core
-
-#### Alterado (breaking)
-
-- Maquinaria especifica de TXT saiu do `Core` para `TecnoFisc.Sped.Txt.Engine`: abstracoes de registros/blocos/arquivos TXT, atributos `[RegistroSped]`/`[CampoSped]`/`[BlocoSped]`/`[SpedValor]`, catalogo, parser, gerador, streaming e enums transversais TXT. Consumidores que referenciavam esses tipos pelo namespace `TecnoFisc.Sped.Core.*` devem trocar para `TecnoFisc.Sped.Txt.Engine.*`.
-- Maquinaria especifica de XML saiu do `Core` para `TecnoFisc.Sped.Xml.Engine`: `IdentificadorXmlFiscal`, `IDocumentoFiscalXml` e `TipoDocumentoFiscalXml`. Consumidores devem trocar `TecnoFisc.Sped.Core.Xml` por `TecnoFisc.Sped.Xml.Engine`.
-- Enums de leiaute unico sairam do `Core` para seus pacotes donos: enums EFD ICMS-IPI para `TecnoFisc.Sped.EfdIcmsIpi.Enums` e enums NF-e/NFC-e para `TecnoFisc.Sped.NFeNFCe.Enums`.
-
-#### Mantido
-
-- Tipos universais continuam no `Core`: value objects fiscais, `ResultadoParse`/erros, `DescontinuadoAttribute` e enums fiscais transversais como `CodigoSituacaoDocumentoFiscal`, `IndicadorOperacao`, `OrigemMercadoria` e `ModalidadeFrete`.
-
-### TecnoFisc.Sped.Txt.Engine
-
-#### Adicionado
-
-- Novo pacote de maquinaria TXT compartilhada pelos leiautes textuais. Contem contratos base (`RegistroSped`, `IArquivoSped`, `IBlocoSped`, `ILeitorSped`, `IEscritorSped`, `IRegistroSpedCatalogo`), atributos de metadados TXT, catalogo, parser/gerador `.txt`, helpers de streaming, `SnifferSped` e enums transversais TXT.
-
-### TecnoFisc.Sped.Txt.Engine.SourceGenerators
-
-#### Alterado (breaking)
-
-- Pacote de source generators renomeado de `TecnoFisc.Sped.Core.SourceGenerators` para `TecnoFisc.Sped.Txt.Engine.SourceGenerators`. Continua sendo referenciado como analyzer (`OutputItemType="Analyzer"` e `ReferenceOutputAssembly="false"`) pelos pacotes de leiaute TXT.
-
-### TecnoFisc.Sped.Xml.Engine
-
-#### Adicionado
-
-- Novo pacote de maquinaria XML compartilhada pelos leiautes XML. Contem `IdentificadorXmlFiscal`, `IDocumentoFiscalXml` e `TipoDocumentoFiscalXml`, dependendo apenas de `TecnoFisc.Sped.Core`.
-
-### TecnoFisc.Sped.Txt
-
-#### Adicionado
-
-- Novo pacote guarda-chuva TXT, sem codigo proprio, agregando os leiautes textuais existentes (`TecnoFisc.Sped.EfdContribuicoes`, `TecnoFisc.Sped.EfdIcmsIpi` e `TecnoFisc.Sped.Ecd`).
-
-### TecnoFisc.Sped
-
-#### Adicionado
-
-- Novo pacote guarda-chuva raiz, sem codigo proprio, agregando `TecnoFisc.Sped.Txt`. O guarda-chuva XML permanece adiado ate a chegada do CT-e.
-
 ## [0.6.0] — 2026-05-26
 
 Adiciona o pacote **`TecnoFisc.Sped.Ecd`** (ECD — Escrituração Contábil Digital / Sped Contábil), cobrindo o leiaute 9 (vigente a partir do ano-calendário 2020) completo em modo **read-only**: 72 registros nos blocos `0 → C → I → J → K → 9`, parser streaming/buffered e modelo tipado, validado contra arquivo real anonimizado. No `Core`, adiciona `ReadingOptions` para descartar registros/blocos antes da materialização. Release aditiva (sem breaking changes em relação à `0.5.0`).

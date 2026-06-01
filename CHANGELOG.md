@@ -4,7 +4,21 @@ Todas as mudanças relevantes deste repositório são documentadas neste arquivo
 
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o projeto adota [Semantic Versioning](https://semver.org/lang/pt-BR/). Cada pacote NuGet possui versão independente; as seções abaixo agrupam as mudanças por release do repositório.
 
+## [0.7.1] — 2026-06-01
+
+Patch de **publicação**. Não há mudança de API nem de comportamento em relação à `0.7.0`: esta versão republica toda a família de pacotes num número de versão consistente após a publicação da `0.7.0` ter falhado parcialmente no NuGet.
+
+**O que aconteceu.** Na `0.7.0`, o push ao nuget.org abortou com HTTP 400 ao enviar o pacote de símbolos (`.snupkg`) de um metapacote guarda-chuva: como `TecnoFisc.Sped` e `TecnoFisc.Sped.Txt` não têm código (`IncludeBuildOutput=false`), o `.snupkg` saía sem `.pdb` e o symbol server o rejeita. Como `dotnet nuget push` para no primeiro erro, parte dos pacotes não foi publicada. Resultado: a `0.7.0` ficou incompleta no NuGet (faltaram `TecnoFisc.Sped`, `TecnoFisc.Sped.Core` e `TecnoFisc.Sped.EfdContribuicoes`), e o metapacote `TecnoFisc.Sped.Txt 0.7.0` ficou com dependência apontando para um `EfdContribuicoes 0.7.0` inexistente.
+
+**Correção.** `IncludeSymbols=false` nos dois metapacotes (não geram mais `.snupkg` vazio), permitindo publicar a família inteira de forma consistente na `0.7.1`. Consumidores devem usar **`0.7.1`**; as versões `0.7.0` parcialmente publicadas serão removidas da listagem (unlisted) e não devem ser usadas.
+
+### Corrigido
+
+- **Empacotamento.** `TecnoFisc.Sped` e `TecnoFisc.Sped.Txt` (metapacotes sem código) passam a definir `IncludeSymbols=false`, evitando o `.snupkg` vazio que o symbol server do nuget.org rejeita com HTTP 400 e que abortava a publicação. (#518)
+
 ## [0.7.0] — 2026-06-01
+
+> **Nota.** A publicação da `0.7.0` no NuGet ficou **incompleta** (ver `[0.7.1]`). Todo o conteúdo descrito abaixo está disponível na **`0.7.1`**, que é a versão a usar.
 
 Release de **reorganização em camadas** (Stage 18) somada à **fundação do mundo XML**. Quebra o antigo `Core` monolítico em `Core` universal + dois engines (`TecnoFisc.Sped.Txt.Engine`, `TecnoFisc.Sped.Xml.Engine`), introduz os guarda-chuvas `TecnoFisc.Sped.Txt` e `TecnoFisc.Sped` (Stage 13), adiciona os sniffers de identificação de documento por mundo (Stage 12) e estreia o pacote XML **`TecnoFisc.Sped.NFeNFCe`** em **preview** (NF-e modelo 55 parcial — ver ressalva na seção do pacote). Release **breaking**: consumidores do `Core` que referenciavam a maquinaria TXT/XML pelo namespace antigo precisam migrar para os novos engines (detalhes abaixo).
 
@@ -306,7 +320,8 @@ Release inicial. Conclui a Stage 4 de `ARCHITECTURE.md`: implementação complet
 - API streaming (`IAsyncEnumerable<RegistroSped>`) é objetivo da Stage 5 e não está disponível neste release.
 - Suporte a leiautes mais novos (V007+) entra na Stage 7.
 
-[Não publicado]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/compare/v0.7.0...HEAD
+[Não publicado]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/compare/v0.7.1...HEAD
+[0.7.1]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/releases/tag/v0.7.1
 [0.7.0]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/releases/tag/v0.7.0
 [0.6.0]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/releases/tag/v0.6.0
 [0.5.0]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/releases/tag/v0.5.0

@@ -1,2 +1,1 @@
-global using FluentAssertions;
-global using Xunit;
+// Global usings are added when engine tests move into this project.

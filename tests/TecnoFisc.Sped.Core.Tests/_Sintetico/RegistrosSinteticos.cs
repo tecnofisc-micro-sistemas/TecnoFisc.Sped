@@ -1,8 +1,7 @@
-using TecnoFisc.Sped.Core.ValueObjects;
 using TecnoFisc.Sped.Txt.Engine.Abstracoes;
 using TecnoFisc.Sped.Txt.Engine.Atributos;
 
-namespace TecnoFisc.Sped.Txt.Engine.Tests._Sintetico;
+namespace TecnoFisc.Sped.Core.Tests._Sintetico;
 
 /// <summary>
 /// Mini "layout" fictício usado pelos testes de catálogo, leitor e pilha hierárquica.

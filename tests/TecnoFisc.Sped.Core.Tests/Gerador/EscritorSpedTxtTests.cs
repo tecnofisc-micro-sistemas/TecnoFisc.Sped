@@ -1,11 +1,10 @@
-using TecnoFisc.Sped.Core.ValueObjects;
 using TecnoFisc.Sped.Txt.Engine.Abstracoes;
 using TecnoFisc.Sped.Txt.Engine.Catalogo;
 using TecnoFisc.Sped.Txt.Engine.Gerador;
 using TecnoFisc.Sped.Txt.Engine.Parser;
-using TecnoFisc.Sped.Txt.Engine.Tests._Sintetico;
+using TecnoFisc.Sped.Core.Tests._Sintetico;
 
-namespace TecnoFisc.Sped.Txt.Engine.Tests.Gerador;
+namespace TecnoFisc.Sped.Core.Tests.Gerador;
 
 public sealed class EscritorSpedTxtTests
 {

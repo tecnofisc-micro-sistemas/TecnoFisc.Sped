@@ -1,6 +1,6 @@
 using TecnoFisc.Sped.Txt.Engine.Atributos;
 
-namespace TecnoFisc.Sped.Txt.Engine.Tests.Atributos;
+namespace TecnoFisc.Sped.Core.Tests.Atributos;
 
 public sealed class AtributosTests
 {

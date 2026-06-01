@@ -2,7 +2,7 @@ using TecnoFisc.Sped.Txt.Engine.Abstracoes;
 using TecnoFisc.Sped.Txt.Engine.Atributos;
 using TecnoFisc.Sped.Txt.Engine.Catalogo;
 
-namespace TecnoFisc.Sped.Txt.Engine.Tests.Catalogo;
+namespace TecnoFisc.Sped.Core.Tests.Catalogo;
 
 /// <summary>
 /// Valida que o <see cref="CatalogoBuilder"/> rejeita, na construção do catálogo, registros com

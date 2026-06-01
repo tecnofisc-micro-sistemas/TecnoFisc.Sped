@@ -1,6 +1,6 @@
 using TecnoFisc.Sped.Txt.Engine.Parser;
 
-namespace TecnoFisc.Sped.Txt.Engine.Tests.Parser;
+namespace TecnoFisc.Sped.Core.Tests.Parser;
 
 public sealed class ParseadoresPrimitivosTests
 {

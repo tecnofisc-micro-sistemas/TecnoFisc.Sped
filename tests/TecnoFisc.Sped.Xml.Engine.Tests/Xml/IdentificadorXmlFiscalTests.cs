@@ -1,7 +1,6 @@
 using System.Text;
-using TecnoFisc.Sped.Xml.Engine;
 
-namespace TecnoFisc.Sped.Core.Tests.Xml;
+namespace TecnoFisc.Sped.Xml.Engine.Tests.Xml;
 
 public sealed class IdentificadorXmlFiscalTests
 {

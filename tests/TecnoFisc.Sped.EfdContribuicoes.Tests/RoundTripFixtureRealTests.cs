@@ -1,4 +1,4 @@
-using TecnoFisc.Sped.Core.Parser;
+using TecnoFisc.Sped.Txt.Engine.Parser;
 using TecnoFisc.Sped.EfdContribuicoes.Gerador;
 using TecnoFisc.Sped.EfdContribuicoes.Parser;
 
@@ -55,7 +55,7 @@ public sealed class RoundTripFixtureRealTests
             var bytesCrus = await File.ReadAllBytesAsync(caminhoFixture, TestContext.Current.CancellationToken);
             using var entrada = new MemoryStream(bytesCrus, writable: false);
 
-            var registros = new List<TecnoFisc.Sped.Core.Abstracoes.RegistroSped>();
+            var registros = new List<TecnoFisc.Sped.Txt.Engine.Abstracoes.RegistroSped>();
             await foreach (var registro in parser.ReadStreamingAsync(entrada, TestContext.Current.CancellationToken))
                 registros.Add(registro);
 

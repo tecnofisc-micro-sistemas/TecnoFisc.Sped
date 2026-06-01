@@ -4,7 +4,67 @@ Todas as mudanças relevantes deste repositório são documentadas neste arquivo
 
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o projeto adota [Semantic Versioning](https://semver.org/lang/pt-BR/). Cada pacote NuGet possui versão independente; as seções abaixo agrupam as mudanças por release do repositório.
 
-## [Não publicado]
+## [0.7.0] — 2026-06-01
+
+Release de **reorganização em camadas** (Stage 18) somada à **fundação do mundo XML**. Quebra o antigo `Core` monolítico em `Core` universal + dois engines (`TecnoFisc.Sped.Txt.Engine`, `TecnoFisc.Sped.Xml.Engine`), introduz os guarda-chuvas `TecnoFisc.Sped.Txt` e `TecnoFisc.Sped` (Stage 13), adiciona os sniffers de identificação de documento por mundo (Stage 12) e estreia o pacote XML **`TecnoFisc.Sped.NFeNFCe`** em **preview** (NF-e modelo 55 parcial — ver ressalva na seção do pacote). Release **breaking**: consumidores do `Core` que referenciavam a maquinaria TXT/XML pelo namespace antigo precisam migrar para os novos engines (detalhes abaixo).
+
+### TecnoFisc.Sped.Core
+
+#### Adicionado
+
+- Value objects fiscais novos, base do mundo XML NF-e/NFC-e (fundação Stage 14, slice 14.1): `Cest` (Código Especificador da Substituição Tributária, com dígito verificador), `Gtin` (GTIN-8/12/13/14 com validação de check digit), `CodigoMunicipioIbge` (código IBGE de 7 dígitos) e `Csosn` (Código de Situação da Operação no Simples Nacional). São transversais por design (Critical rule 2 / §4.2) — `ChaveAcesso` e `ModeloDocumento` continuam reusados sem duplicação. (#505)
+
+#### Alterado (breaking)
+
+- Maquinaria especifica de TXT saiu do `Core` para `TecnoFisc.Sped.Txt.Engine`: abstracoes de registros/blocos/arquivos TXT, atributos `[RegistroSped]`/`[CampoSped]`/`[BlocoSped]`/`[SpedValor]`, catalogo, parser, gerador, streaming e enums transversais TXT. Consumidores que referenciavam esses tipos pelo namespace `TecnoFisc.Sped.Core.*` devem trocar para `TecnoFisc.Sped.Txt.Engine.*`.
+- Maquinaria especifica de XML saiu do `Core` para `TecnoFisc.Sped.Xml.Engine`: `IdentificadorXmlFiscal`, `IDocumentoFiscalXml` e `TipoDocumentoFiscalXml`. Consumidores devem trocar `TecnoFisc.Sped.Core.Xml` por `TecnoFisc.Sped.Xml.Engine`.
+- Enums de leiaute unico sairam do `Core` para seus pacotes donos: enums EFD ICMS-IPI para `TecnoFisc.Sped.EfdIcmsIpi.Enums` e enums NF-e/NFC-e para `TecnoFisc.Sped.NFeNFCe.Enums`.
+
+#### Mantido
+
+- Tipos universais continuam no `Core`: value objects fiscais, `ResultadoParse`/erros, `DescontinuadoAttribute` e enums fiscais transversais como `CodigoSituacaoDocumentoFiscal`, `IndicadorOperacao`, `OrigemMercadoria` e `ModalidadeFrete`.
+
+### TecnoFisc.Sped.Txt.Engine
+
+#### Adicionado
+
+- Novo pacote de maquinaria TXT compartilhada pelos leiautes textuais. Contem contratos base (`RegistroSped`, `IArquivoSped`, `IBlocoSped`, `ILeitorSped`, `IEscritorSped`, `IRegistroSpedCatalogo`), atributos de metadados TXT, catalogo, parser/gerador `.txt`, helpers de streaming, `SnifferSped` e enums transversais TXT.
+- Sniffer SPED textual (Stage 12): `SnifferSped.IdentificarAsync(Stream)` lê apenas a primeira linha `|0000|…|` e devolve `MetadadosArquivoSped { ProjetoSped, VersaoLeiaute, EncodingDetectado, … }`; `SnifferSped.AbrirParserAsync(Stream, factories)` devolve o `ILeitorSped` do leiaute identificado com o stream reposicionado na origem (replay-safe). O engine não referencia projetos de leiaute — quem monta o ponto de entrada registra as factories de `ParserEfdContribuicoes`/`ParserEfdIcmsIpi`/`ParserEcd`. (#512)
+
+### TecnoFisc.Sped.Txt.Engine.SourceGenerators
+
+#### Alterado (breaking)
+
+- Pacote de source generators renomeado de `TecnoFisc.Sped.Core.SourceGenerators` para `TecnoFisc.Sped.Txt.Engine.SourceGenerators`. Continua sendo referenciado como analyzer (`OutputItemType="Analyzer"` e `ReferenceOutputAssembly="false"`) pelos pacotes de leiaute TXT.
+
+### TecnoFisc.Sped.Xml.Engine
+
+#### Adicionado
+
+- Novo pacote de maquinaria XML compartilhada pelos leiautes XML. Contem `IdentificadorXmlFiscal` (sniffer do mundo XML — Stage 12), `IDocumentoFiscalXml` e `TipoDocumentoFiscalXml`, dependendo apenas de `TecnoFisc.Sped.Core`. O sniffer lê o início do stream com `XmlReader` forward-only, order-independent e XXE-safe (DTD proibido), e devolve `TipoDocumentoFiscalXml` (NF-e/NFC-e/eventos/envelope SERPRO), discriminando modelo 55 de 65 pelo `<mod>`.
+
+### TecnoFisc.Sped.Txt
+
+#### Adicionado
+
+- Novo pacote guarda-chuva TXT, sem codigo proprio, agregando os leiautes textuais existentes (`TecnoFisc.Sped.EfdContribuicoes`, `TecnoFisc.Sped.EfdIcmsIpi` e `TecnoFisc.Sped.Ecd`).
+
+### TecnoFisc.Sped
+
+#### Adicionado
+
+- Novo pacote guarda-chuva raiz, sem codigo proprio, agregando `TecnoFisc.Sped.Txt`. O guarda-chuva XML permanece adiado ate a chegada do CT-e.
+
+### TecnoFisc.Sped.NFeNFCe
+
+#### Adicionado (preview)
+
+- **Pacote XML novo, read-only, em preview.** Estreia o primeiro leiaute do mundo XML (NF-e/NFC-e 4.00). Nesta release entrega as slices 14.1–14.4 da Stage 14: parser `XmlReader` forward-only, **order-independent** (tolera o XML canônico `nfeProc`/`NFe` e o envelope SERPRO de documento único), XXE-safe (`DtdProcessing.Prohibit`), e modelo tipado nativo da NF-e. (#505, #506, #507, #508)
+- API pública: `ParserNFe` (`ReadNFeAsync(Stream)` → `Task<NFe>`; `ReadAsync(Stream)` → `Task<IDocumentoFiscalXml>` para pattern matching), `ParserNFeOptions` e os modelos `NFe`, `Identificacao`, `Emitente`, `Destinatario`, `Endereco`, `Item`, `Produto`, `Total`. Encoding canônico UTF-8.
+- **Polimorfismo de impostos completo** (slice 14.4): grupo `imposto` com `Icms` (todos os CST `00`–`90` + `IcmsPart`/`IcmsST`/`IcmsSN` por CSOSN), `Ipi` (`IpiTrib`/`IpiNt`), `Pis` (`PisAliq`/`PisQtde`/`PisNt`/`PisOutr`/`PisSt`), `Cofins` (variantes análogas), `Ii` e `Issqn`.
+- Sniffer XML `IdentificadorXmlFiscal` (mundo XML da Stage 12) consumido aqui para discriminar NF-e (modelo 55) de NFC-e (modelo 65) pelo `<mod>`; ver seção `TecnoFisc.Sped.Xml.Engine`.
+
+> **Ressalva de preview.** O nome do pacote antecipa a cobertura-alvo (NF-e **e** NFC-e). Nesta `0.7.0` apenas a **NF-e modelo 55** está implementada e ainda **parcial**: faltam os grupos `transp`, `cobr`, `pag`, `infAdic`, `infRespTec`, `autXML` e `protNFe` (slice 14.5). **NFC-e modelo 65** (`infNFeSupl`/QR Code — slice 14.6), **eventos** (cancelamento/genérico — 14.7), `ReadDirectoryAsync` (14.8) e `Correlator` (14.9) ainda não existem. Use em produção apenas para os campos já cobertos; a API pode mudar até a cobertura completa. Tracking: `sped/STAGE_14_NFE_NFCE.md`.
 
 ## [0.6.0] — 2026-05-26
 
@@ -246,7 +306,8 @@ Release inicial. Conclui a Stage 4 de `ARCHITECTURE.md`: implementação complet
 - API streaming (`IAsyncEnumerable<RegistroSped>`) é objetivo da Stage 5 e não está disponível neste release.
 - Suporte a leiautes mais novos (V007+) entra na Stage 7.
 
-[Não publicado]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/compare/v0.6.0...HEAD
+[Não publicado]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/releases/tag/v0.7.0
 [0.6.0]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/releases/tag/v0.6.0
 [0.5.0]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/releases/tag/v0.5.0
 [0.4.0]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/releases/tag/v0.4.0

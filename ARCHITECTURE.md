@@ -73,7 +73,7 @@ TecnoFisc.Sped provides .NET classes and parsing/generation infrastructure for a
 ### 2.2 What the library is
 
 - A collection of .NET 10 NuGet packages, one per SPED project.
-- A common core (`TecnoFisc.Sped.Core`) with shared infrastructure.
+- A layered packaging model: a universal fiscal core (`TecnoFisc.Sped.Core`) shared by every package, plus two technology engines (`TecnoFisc.Sped.Txt.Engine`, `TecnoFisc.Sped.Xml.Engine`) carrying the format-specific machinery, plus umbrella bundles (`TecnoFisc.Sped.Txt` and `TecnoFisc.Sped` now; `TecnoFisc.Sped.Xml` planned after CT-e). See §4.9.
 - Strongly-typed record classes for each SPED record specification.
 - High-performance parsers using `PipeReader` and minimal allocations.
 - Generators that produce SPED-compliant output files.
@@ -98,7 +98,7 @@ Nem todos os pacotes precisam de gerador. A decisão é por caso de uso real:
 | `TecnoFisc.Sped.EfdContribuicoes` | ✅ | ✅ | Consumidor TecnoFisc emite o arquivo. |
 | `TecnoFisc.Sped.EfdIcmsIpi` | ✅ | ❌ | Uso é ingestão para análise; não há emissão. |
 | `TecnoFisc.Sped.Ecd` | ✅ | ⏸️ | Parser implementado (0.6.0). Gerador depende de confirmação externa — entra em stage dedicada quando demanda confirmada. |
-| `TecnoFisc.Sped.NFe` / `NFCe` / `CTe` | ✅ | ⏸️ | Caso de uso confirmado é ingestão dos XMLs já emitidos (validação de assinatura, leitura tipada). Geração/emissão para SEFAZ depende de confirmação externa não controlada só pelo usuário — entra em stage dedicada quando confirmada. |
+| `TecnoFisc.Sped.NFeNFCe` / `CTe` | ✅ | ⏸️ | Caso de uso confirmado é ingestão dos XMLs já emitidos (validação de assinatura, leitura tipada). Geração/emissão para SEFAZ depende de confirmação externa não controlada só pelo usuário — entra em stage dedicada quando confirmada. |
 | `TecnoFisc.Sped.Ecf` | ✅ | ⏸️ | Mesma regra do ECD. Último leiaute textual planejado (depois dos pacotes XML). |
 
 **Implicações dos pacotes read-only:**
@@ -122,15 +122,24 @@ Nem todos os pacotes precisam de gerador. A decisão é por caso de uso real:
 | EFD Contribuições | `TecnoFisc.Sped.EfdContribuicoes` | `.txt` (Latin1) |
 | EFD ICMS-IPI | `TecnoFisc.Sped.EfdIcmsIpi` | `.txt` (Latin1) |
 | ECD | `TecnoFisc.Sped.Ecd` | `.txt` (Latin1) |
-| NF-e | `TecnoFisc.Sped.NFe` | XML (UTF-8) |
-| NFC-e | `TecnoFisc.Sped.NFCe` | XML (UTF-8) |
+| NF-e / NFC-e | `TecnoFisc.Sped.NFeNFCe` | XML (UTF-8) |
 | CT-e | `TecnoFisc.Sped.CTe` | XML (UTF-8) |
 | ECF | `TecnoFisc.Sped.Ecf` | `.txt` (Latin1) |
 
-Além desses, dois pacotes transversais completam a família:
+Além desses, pacotes transversais completam a família, organizados em camadas (ver §4.9):
 
-- `TecnoFisc.Sped.Core` — infraestrutura compartilhada (value objects fiscais, parser/gerador genérico, abstrações de catálogo, identificador dinâmico de arquivos SPED que reconhece o leiaute pela primeira linha — ver §12).
-- `TecnoFisc.Sped` — metapacote que referencia todos os leiautes acima em uma única dependência (ver Stage 13).
+**Infraestrutura (camadas universal + por tecnologia):**
+
+- `TecnoFisc.Sped.Core` — **primitivos fiscais universais**, compartilhados pelos dois mundos (TXT e XML) sem nenhuma especificidade de formato: value objects fiscais (`Cnpj`, `Cfop`, `Ncm`, `ChaveAcesso`, …), tabelas regidas pelo Ato COTEPE (`ModeloDocumento`) e enums verdadeiramente cross-mundo. Depende de nada.
+- `TecnoFisc.Sped.Txt.Engine` — maquinaria do **mundo textual**: parser/gerador `.txt` (`LeitorSpedTxt`/`EscritorSpedTxt`), catálogo, atributos `[RegistroSped]`/`[CampoSped]`, base `RegistroSped`, pilha hierárquica, streaming, sniffer da primeira linha (`|0000|…`) e enums transversais a todo TXT (ex.: `IND_MOV`). Depende só do `Core`.
+- `TecnoFisc.Sped.Xml.Engine` — maquinaria do **mundo XML**: identificador de documento (`IdentificadorXmlFiscal`), contrato comum (`IDocumentoFiscalXml`), helpers de `XmlReader` forward-only e bases compartilhadas por NF-e/NFC-e/CT-e. Depende só do `Core`.
+- `TecnoFisc.Sped.Txt.Engine.SourceGenerators` — source generators (catálogo + serialização) referenciados como analyzer apenas pelos leiautes TXT.
+
+**Guarda-chuvas (bundles, só `<PackageReference>`, zero código):**
+
+- `TecnoFisc.Sped.Txt` — agrega os leiautes textuais disponíveis agora (`EfdContribuicoes`, `EfdIcmsIpi`, `Ecd`); `Ecf` entra na Stage 17.
+- `TecnoFisc.Sped.Xml` — planejado após CT-e; agregará os leiautes XML (`NFeNFCe`, `CTe`).
+- `TecnoFisc.Sped` — agrega `Txt` agora; agregará `Txt` + `Xml` quando o guarda-chuva XML existir. Ver Stage 13.
 
 Todos os outros projetos SPED listados no parágrafo de contexto ficam **explicitamente fora do escopo** e não devem ganhar pacote, stage no roadmap, nem entrada em tracking files.
 
@@ -140,7 +149,7 @@ Todos os outros projetos SPED listados no parágrafo de contexto ficam **explici
 
 ### 4.1 Self-containment
 
-Each project depends only on `TecnoFisc.Sped.Core` (which itself depends on nothing external). No project depends on databases, CSV files, or external configuration sources. Hierarchical metadata, layout versions, and validation rules are all embedded in the assembly.
+Every package depends only on other TecnoFisc.Sped packages — never on databases, CSV files, or external configuration sources. The root of the graph, `TecnoFisc.Sped.Core`, depends on nothing external. A leiaute package depends on `Core` plus exactly one technology engine (`Txt.Engine` **or** `Xml.Engine`, never both — see §4.9). Hierarchical metadata, layout versions, and validation rules are all embedded in the assembly.
 
 ### 4.2 Format independence (with shared authoritative tables)
 
@@ -150,15 +159,16 @@ Each SPED project gets its own package. The duplication rule applies at the **re
 
 **Ato COTEPE-referenced tables/enums live in `TecnoFisc.Sped.Core` (single source of truth).** EFD ICMS-IPI is the **regente** of the Ato COTEPE/ICMS no 44/2018 fiscal tables (`Tabela 4.1.1 - Modelos`, `Tabela 4.1.2 - Situação`, etc.). EFD Contribuições and other leiautes **reference** these tables — they do not redefine them. When the Ato COTEPE changes (e.g., `COD_SIT` codes 04 and 05 descontinuados a partir de 2023-01), the change propagates automatically to every leiaute that references the table. Duplicating the enum across leiautes would create silent drift bugs.
 
-**Concrete classification:**
+**Three-tier classification (see §4.9 for the placement rule).** Cada tabela/enum/value object cai em exatamente um de três níveis, pelo seu alcance de uso:
 
 | Type | Location | Rationale |
 | --- | --- | --- |
 | `RegistroC100`, `RegistroC170`, etc. | Per-leiaute project | Filhos, hierarquia, validações cross-record divergem. |
-| `ModeloDocumento` (Tabela 4.1.1), `SituacaoDocumento` (Tabela 4.1.2) | `Core` | Regidos por Ato COTEPE; EFD ICMS-IPI é regente; demais leiautes referenciam. |
-| `Cnpj`, `Cpf`, `Cfop`, `Ncm`, `Cest`, `Cst`, `ChaveAcesso` | `Core` | Conceitos fiscais transversais. |
-| `IndicadorOperacao`, `IndicadorEmitente`, `IndicadorPagamento`, `IndicadorFrete` | `Core` | Mesma semântica e mesmos valores em todos os leiautes dentro da janela fiscal de 5 anos. |
-| Enums específicos do leiaute (ex.: regimes de PIS/Cofins, blocos M de apuração) | Per-leiaute project | Não existem fora do leiaute. |
+| `Cnpj`, `Cpf`, `Cfop`, `Ncm`, `Cest`, `Cst`, `Csosn`, `ChaveAcesso`, `CodigoMunicipioIbge`, `Gtin` | `Core` (universal) | Value objects fiscais usados por TXT **e** XML. |
+| `ModeloDocumento` (Tabela 4.1.1), `SituacaoDocumento` (Tabela 4.1.2), `OrigemMercadoria` | `Core` (universal) | Regidos por Ato COTEPE ou cross-mundo; EFD ICMS-IPI é regente; demais leiautes referenciam. |
+| `IndicadorMovimentoBloco` (`IND_MOV`), `IndicadorApuracaoIpi`, `CodigoNaturezaContaContabil` e demais enums transversais **só** ao TXT | `Txt.Engine` | Aparecem em ≥2 leiautes textuais, em nenhum XML. |
+| `TipoAmbiente`, `TipoEmissao` (`tpAmb`/`tpEmis`) | `Core` (universal) | Pareciam só-XML, mas `ChaveAcesso` (Core) consome `TipoEmissao` → universais. `Xml.Engine` hoje não tem enums. |
+| `TipoMovimentacaoBemCiAp` (EFD ICMS-IPI), `FinalidadeEmissao`/`IndicadorPresenca`/`IndicadorIntermediador` (NF-e), regimes de PIS/Cofins, blocos M de apuração | Per-leiaute project | Existem em um único leiaute — não sobem para `Core` nem para o engine. |
 
 ### 4.3 Janela fiscal de 5 anos
 
@@ -167,8 +177,8 @@ A Receita Federal só permite revisão/escrituração dos últimos 5 anos. Marco
 Implicações práticas:
 
 - Versões anteriores de enums (ex.: `IND_PGTO` com código `9` antes de 2012-07; `IND_FRT` com semântica diferente antes de 2017-10/2018-01) **não precisam ser modeladas**.
-- Enums que aparentam divergir entre leiautes por marcos antigos (e.g., `IND_FRT` v3 a partir de 2017-10 no EFD Contribuições vs 2018-01 no EFD ICMS-IPI) **convergem** dentro da janela e são compartilháveis em `Core`.
-- Quando o corte avança (2027-01, 2028-01, ...), revisar enums Core para remover códigos descontinuados que saíram da janela.
+- Enums que aparentam divergir entre leiautes por marcos antigos (e.g., `IND_FRT` v3 a partir de 2017-10 no EFD Contribuições vs 2018-01 no EFD ICMS-IPI) **convergem** dentro da janela e tornam-se compartilháveis — na camada que a regra dos três níveis indicar (`Core` se cross-mundo, senão o engine do mundo; §4.9).
+- Quando o corte avança (2027-01, 2028-01, ...), revisar os enums compartilhados (Core + engines) para remover códigos descontinuados que saíram da janela.
 
 ### 4.4 Performance-first
 
@@ -214,6 +224,40 @@ SPED projects publish new layouts approximately yearly. A estratégia depende do
 
 Reflection at startup (once) for catalog discovery is acceptable. Reflection during parsing of millions of records is forbidden. Source generators (`IIncrementalGenerator`) produce factory delegates and metadata at compile time.
 
+### 4.9 Layered packaging (universal core + technology engines + umbrellas)
+
+**Problema.** Um `Core` único que misturasse value objects fiscais com o motor de parsing `.txt` forçaria um consumidor que só lê XML (NF-e/NFC-e/CT-e) a carregar — e ver no IntelliSense — toda a maquinaria SPED-TXT (`RegistroSped`, `EscritorSpedTxt`, catálogo, enums de bloco) que ele nunca usa. Não há custo de dependência transitiva (Hard Rule 1) nem de runtime (o .NET não JIT-a método não chamado, e código morto é *trimmable*), mas há **ruído de superfície de API** e um **acoplamento conceitual errado** (um pacote XML "dependendo de SPED-TXT").
+
+**Solução — quatro camadas.** Cada artefato vive na camada do seu alcance real, não num `Core` monolítico:
+
+```text
+Camada 1  TecnoFisc.Sped.Core          → primitivos fiscais UNIVERSAIS (TXT ∩ XML), zero especificidade
+Camada 2  TecnoFisc.Sped.Txt.Engine    → maquinaria do mundo textual  ┐ cada uma depende só do Core,
+          TecnoFisc.Sped.Xml.Engine    → maquinaria do mundo XML      ┘ e os dois engines se ignoram
+Camada 3  EfdContribuicoes, EfdIcmsIpi, → leiautes; cada um escolhe UM engine
+          Ecd, Ecf  |  NFeNFCe, CTe
+Camada 4  TecnoFisc.Sped.Txt / .Xml /  → guarda-chuvas (bundles); só <PackageReference>, ZERO código
+          TecnoFisc.Sped (tudo)
+```
+
+**Regra de triagem (onde colocar uma tabela/enum/value object).** Pela amplitude de uso:
+
+1. **Usado pelos dois mundos** (TXT e XML), ou regido pelo Ato COTEPE → **`Core`**. Ex.: `Cnpj`, `Cfop`, `Ncm`, `ChaveAcesso`, `ModeloDocumento`, `OrigemMercadoria`.
+2. **Usado por ≥2 leiautes do mesmo mundo, mas não do outro** → o **engine daquele mundo**. Ex. TXT: `IndicadorMovimentoBloco` (`IND_MOV`), `IndicadorApuracaoIpi`, `CodigoNaturezaContaContabil` (EFD Contribuições + ICMS-IPI). XML: nenhum hoje — o `Xml.Engine` carrega só o sniffer/contrato.
+3. **Usado por um único leiaute** → o **próprio pacote do leiaute**. Ex.: `TipoMovimentacaoBemCiAp` (EFD ICMS-IPI), `FinalidadeEmissao`/`IndicadorPresenca`/`IndicadorIntermediador` (NF-e).
+
+> **Nota de calibração (Stage 18 executada).** A triagem real ajustou dois exemplos que pareciam óbvios: `CodigoNaturezaContaContabil` é usado por EFD Contribuições **e** ICMS-IPI (→ `Txt.Engine`, não ECD); e `TipoAmbiente`/`TipoEmissao` **ficaram no `Core`** porque `ChaveAcesso` (value object do Core) decodifica o `tpEmis`. Lição: confira o uso real antes de assumir o nível.
+
+Quando um item sobe de nível (passa a ser usado por outro mundo), promove-se para a camada mais geral — nunca se duplica (drift bug, §4.2).
+
+**Convenção de nomes.** O engine fica **sob** o namespace do mundo (`TecnoFisc.Sped.Txt.Engine`), não num namespace `Engine.Txt` paralelo, para evitar colisão visual com o guarda-chuva `TecnoFisc.Sped.Txt` e deixar claro que é peça interna da família. O consumidor instala o guarda-chuva (ou um leiaute específico); os `*.Engine` são encanamento que raramente se referencia direto (análogo a `Microsoft.Extensions.Logging` vs `.Logging.Abstractions`).
+
+**Guarda-chuvas não carregam código.** São pacotes de agregação puros (`<PackageReference>` apenas). Colocar tipos neles reabriria a porta para o acoplamento que a Hard Rule 2 proíbe.
+
+**Branding.** NF-e/NFC-e/CT-e não são "escrituração", mas estão sob o guarda-chuva do projeto SPED da Receita; manter a raiz de marca `TecnoFisc.Sped.*` para todos é uma decisão deliberada. O `Core` **não** é renomeado.
+
+A implementação desta reorganização é a Stage 18 (§12), sequenciada de baixo para cima.
+
 ---
 
 ## 5. Technology stack
@@ -235,20 +279,24 @@ Reflection at startup (once) for catalog discovery is acceptable. Reflection dur
 ```text
 TecnoFisc.Sped/
 ├── src/
-│   ├── TecnoFisc.Sped/                               # Metapacote (referencia todos os leiautes)
-│   ├── TecnoFisc.Sped.Core/                          # Infra compartilhada + sniffer de arquivos SPED
-│   ├── TecnoFisc.Sped.Core.SourceGenerators/         # Source generators (catalog + serialization)
+│   ├── TecnoFisc.Sped/                               # Guarda-chuva geral (Txt agora; Xml após CT-e)
+│   ├── TecnoFisc.Sped.Txt/                           # Guarda-chuva textual (EFD Contribuições, EFD ICMS-IPI, ECD)
+│   ├── TecnoFisc.Sped.Xml/                           # Planejado após CT-e — guarda-chuva XML (NFeNFCe/CTe)
+│   ├── TecnoFisc.Sped.Core/                          # Camada 1 — primitivos fiscais universais
+│   ├── TecnoFisc.Sped.Txt.Engine/                    # Camada 2 — motor .txt + sniffer da 1ª linha
+│   ├── TecnoFisc.Sped.Txt.Engine.SourceGenerators/   # Source generators (catalog + serialization)
+│   ├── TecnoFisc.Sped.Xml.Engine/                    # Camada 2 — motor XML + IDocumentoFiscalXml
+│   ├── TecnoFisc.Sped.Xml.Engine.SourceGenerators/   # Source generators XML (futuro — ver §7.3)
 │   ├── TecnoFisc.Sped.EfdContribuicoes/              # EFD Contribuições (.txt)
 │   ├── TecnoFisc.Sped.EfdIcmsIpi/                    # EFD ICMS-IPI (.txt)
 │   ├── TecnoFisc.Sped.Ecd/                           # ECD (.txt)
-│   ├── TecnoFisc.Sped.NFe/                           # NF-e XML
-│   ├── TecnoFisc.Sped.NFCe/                          # NFC-e XML
+│   ├── TecnoFisc.Sped.NFeNFCe/                       # NF-e / NFC-e XML (leiaute 4.00, read-only)
 │   ├── TecnoFisc.Sped.CTe/                           # CT-e XML
 │   └── TecnoFisc.Sped.Ecf/                           # ECF (.txt)
 │
 ├── tests/
 │   ├── TecnoFisc.Sped.Core.Tests/
-│   ├── TecnoFisc.Sped.Core.SourceGenerators.Tests/
+│   ├── TecnoFisc.Sped.Txt.Engine.SourceGenerators.Tests/
 │   ├── TecnoFisc.Sped.EfdContribuicoes.Tests/
 │   └── ...
 │
@@ -262,80 +310,97 @@ TecnoFisc.Sped/
 ### 6.1 Dependency rules
 
 ```text
-TecnoFisc.Sped.Core                  ← (no dependencies)
-TecnoFisc.Sped.Core.SourceGenerators ← (no dependencies, references Roslyn analyzer APIs)
-TecnoFisc.Sped.EfdContribuicoes      ← Core, Core.SourceGenerators (analyzer)
-TecnoFisc.Sped.EfdIcmsIpi            ← Core, Core.SourceGenerators (analyzer)
-TecnoFisc.Sped.Ecd                   ← Core, Core.SourceGenerators (analyzer)
-TecnoFisc.Sped.NFe                   ← Core, Core.SourceGenerators (analyzer)
-TecnoFisc.Sped.NFCe                  ← Core, Core.SourceGenerators (analyzer)
-TecnoFisc.Sped.CTe                   ← Core, Core.SourceGenerators (analyzer)
-TecnoFisc.Sped.Ecf                   ← Core, Core.SourceGenerators (analyzer)
-TecnoFisc.Sped (metapacote)          ← todos os pacotes de leiaute acima
+# Camada 1 — núcleo universal
+TecnoFisc.Sped.Core                      ← (no dependencies)
+
+# Camada 2 — motores por tecnologia (cada um depende só do Core; ignoram-se mutuamente)
+TecnoFisc.Sped.Txt.Engine                ← Core
+TecnoFisc.Sped.Xml.Engine                ← Core
+TecnoFisc.Sped.Txt.Engine.SourceGenerators ← (no dependencies, references Roslyn analyzer APIs)
+TecnoFisc.Sped.Xml.Engine.SourceGenerators ← (no dependencies, references Roslyn analyzer APIs; gatilho futuro — §7.3)
+
+# Camada 3 — leiautes (cada um escolhe UM engine, nunca os dois)
+TecnoFisc.Sped.EfdContribuicoes          ← Core, Txt.Engine, Txt.Engine.SourceGenerators (analyzer)
+TecnoFisc.Sped.EfdIcmsIpi                ← Core, Txt.Engine, Txt.Engine.SourceGenerators (analyzer)
+TecnoFisc.Sped.Ecd                       ← Core, Txt.Engine, Txt.Engine.SourceGenerators (analyzer)
+TecnoFisc.Sped.Ecf                       ← Core, Txt.Engine, Txt.Engine.SourceGenerators (analyzer)
+TecnoFisc.Sped.NFeNFCe                   ← Core, Xml.Engine  (+ Xml.Engine.SourceGenerators quando existir)
+TecnoFisc.Sped.CTe                       ← Core, Xml.Engine  (+ Xml.Engine.SourceGenerators quando existir)
+
+# Camada 4 — guarda-chuvas (só PackageReference, zero código)
+TecnoFisc.Sped.Txt                       ← EfdContribuicoes, EfdIcmsIpi, Ecd (Ecf na Stage 17)
+TecnoFisc.Sped.Xml                       ← planejado após CT-e: NFeNFCe, CTe
+TecnoFisc.Sped                           ← Txt agora; Txt + Xml após CT-e
 ```
 
 **Critical rule 1:** No project in TecnoFisc.Sped depends on any database, file system configuration, or external service.
 
-**Critical rule 2:** Format-specific projects (`EfdContribuicoes`, `EfdIcmsIpi`, etc.) do NOT depend on each other. If `RegistroC100` exists in two projects, it is two distinct classes. **However**, this duplication rule applies only to **registros** (with their leiaute-specific filhos, hierarchy, and validations). Tables and enums regidos pelo Ato COTEPE/ICMS (e.g., `Tabela 4.1.1 - Modelos`, `Tabela 4.1.2 - Situação`) live in `TecnoFisc.Sped.Core` as a single source of truth — EFD ICMS-IPI is the regente; other leiautes reference. Duplicating those would create silent drift (see §4.2).
+**Critical rule 2:** Format-specific projects (`EfdContribuicoes`, `EfdIcmsIpi`, etc.) do NOT depend on each other, and the two engines (`Txt.Engine`, `Xml.Engine`) do NOT depend on each other. If `RegistroC100` exists in two projects, it is two distinct classes. **However**, this duplication rule applies only to **registros** (with their leiaute-specific filhos, hierarchy, and validations). Truly transversal items live in a shared layer per the three-tier rule (§4.9): universal fiscal primitives e tabelas/enums regidos pelo Ato COTEPE/ICMS (e.g., `Tabela 4.1.1 - Modelos`, `Tabela 4.1.2 - Situação`) ficam no `Core`; enums transversais a um único mundo ficam no engine daquele mundo. EFD ICMS-IPI is the regente; other leiautes reference. Duplicating those would create silent drift (see §4.2).
 
 **Critical rule 3:** The source generator project is referenced as an analyzer (`<ProjectReference OutputItemType="Analyzer" ReferenceOutputAssembly="false" />`), not as a runtime dependency. It produces code at compile time, ships nothing to the consumer at runtime.
 
+**Critical rule 4:** Umbrella packages (`TecnoFisc.Sped.Txt`, `.Xml`, `TecnoFisc.Sped`) carry **no code** — only `<PackageReference>` aggregation. They exist for install convenience, never as a home for shared types.
+
 ---
 
-## 7. TecnoFisc.Sped.Core
+## 7. Core e engines (camadas 1–2)
+
+> **Nota de reorganização (Stage 18, §4.9).** Até a Stage 17 todo o conteúdo abaixo morava num único `TecnoFisc.Sped.Core`. A Stage 18 divide-o em três projetos de infraestrutura: o `Core` universal e os dois engines (`Txt.Engine`, `Xml.Engine`). A composição-alvo é a seguinte.
 
 ### 7.1 Composition
+
+**Camada 1 — `TecnoFisc.Sped.Core` (primitivos fiscais universais, depende de nada):**
 
 ```text
 TecnoFisc.Sped.Core/
 ├── ValueObjects/
-│   ├── Cnpj.cs
-│   ├── Cpf.cs
-│   ├── Cfop.cs
-│   ├── Ncm.cs
-│   ├── Cest.cs
-│   ├── Cst.cs
-│   ├── ChaveAcesso.cs
-│   ├── InscricaoEstadual.cs
-│   └── CodigoMunicipio.cs
-│
-├── Abstracoes/
-│   ├── RegistroSped.cs                      # Abstract base for all SPED records
-│   ├── IBlocoSped.cs
-│   ├── IArquivoSped.cs
-│   ├── IRegistroSpedCatalogo.cs
-│   └── ILeitorSped.cs / IEscritorSped.cs
-│
-├── Atributos/
-│   ├── RegistroSpedAttribute.cs             # Marks SPED record classes
-│   ├── CampoSpedAttribute.cs                # Marks fields with order, type, optionality
-│   └── BlocoSpedAttribute.cs
-│
-├── Catalogo/
-│   ├── MetadadosRegistro.cs                 # Description of a record type
-│   ├── CatalogoBuilder.cs                   # Reflection-based builder (fallback)
-│   └── CatalogoSpedBase.cs                  # Base for source-generated catalogs
-│
-├── Parser/
-│   ├── LeitorSpedTxt.cs                     # PipeReader-based reader
-│   ├── PilhaHierarquica.cs                  # Parent stack for hierarchical linking
-│   ├── ParseadoresPrimitivos.cs             # Date, decimal, integer parsers
-│   └── EncodingSped.cs                      # Latin1/Windows-1252 helpers
-│
-├── Gerador/
-│   ├── EscritorSpedTxt.cs
-│   ├── SerializadoresPrimitivos.cs
-│   └── TotalizadorBlocos.cs                 # Generates X990 closers and 9999
-│
-├── Xml/
-│   ├── LeitorXmlBase.cs                     # For NF-e, NFC-e, CT-e
-│   └── ValidadorAssinaturaDigital.cs
-│
+│   ├── Cnpj.cs / Cpf.cs / InscricaoEstadual.cs / CodigoMunicipioIbge.cs
+│   ├── Cfop.cs / Ncm.cs / Cest.cs / Cst.cs / Csosn.cs / Gtin.cs
+│   └── ChaveAcesso.cs                        # chave de 44 dígitos — TXT e XML
+├── Enums/
+│   ├── ModeloDocumento.cs                    # Tabela 4.1.1 (Ato COTEPE)
+│   ├── OrigemMercadoria.cs                   # usado por C170 (TXT) e ICMS (XML)
+│   └── …                                     # apenas enums cross-mundo
 └── Erros/
-    ├── ErroFormato.cs
-    ├── ErroLayout.cs
-    └── ResultadoParse.cs
+    ├── ErroFormato.cs / ErroLayout.cs / ResultadoParse.cs   # tipos de resultado compartilhados
 ```
+
+**Camada 2 — `TecnoFisc.Sped.Txt.Engine` (motor textual, depende do `Core`):**
+
+```text
+TecnoFisc.Sped.Txt.Engine/
+├── Abstracoes/
+│   ├── RegistroSped.cs                       # Abstract base for all SPED records
+│   ├── IBlocoSped.cs / IArquivoSped.cs / IRegistroSpedCatalogo.cs
+│   └── ILeitorSped.cs / IEscritorSped.cs
+├── Atributos/
+│   ├── RegistroSpedAttribute.cs / CampoSpedAttribute.cs / BlocoSpedAttribute.cs
+├── Catalogo/
+│   ├── MetadadosRegistro.cs / MetadadosCampo.cs
+│   ├── CatalogoBuilder.cs                    # Reflection-based builder (fallback)
+│   └── CatalogoSpedBase.cs                   # Base for source-generated catalogs
+├── Parser/
+│   ├── LeitorSpedTxt.cs                      # PipeReader-based reader
+│   ├── PilhaHierarquica.cs / ParseadoresPrimitivos.cs / EncodingSped.cs
+│   └── IdentificadorArquivoSped.cs           # sniffer da 1ª linha |0000|… (Stage 12)
+├── Gerador/
+│   ├── EscritorSpedTxt.cs / SerializadoresPrimitivos.cs
+│   └── TotalizadorBlocos.cs                  # Generates X990 closers and 9999
+├── Streaming/
+└── Enums/
+    └── IndicadorMovimentoBloco.cs            # IND_MOV e demais enums só-TXT
+```
+
+**Camada 2 — `TecnoFisc.Sped.Xml.Engine` (motor XML, depende do `Core`):**
+
+```text
+TecnoFisc.Sped.Xml.Engine/
+├── IdentificadorXmlFiscal.cs                 # sniffer XML forward-only, XXE-safe
+├── IDocumentoFiscalXml.cs                    # contrato comum (chave de acesso)
+└── TipoDocumentoFiscalXml.cs                 # enum do tipo de documento (retorno do sniffer)
+```
+
+> `TipoAmbiente`/`TipoEmissao` **não** vivem aqui — ficaram no `Core` (universais; `ChaveAcesso` consome `TipoEmissao`). `XmlReaderExtensions` segue no `NFeNFCe` (helper específico de NF-e) até o CT-e justificar promovê-lo. Por isso o `Xml.Engine` nasce com apenas 3 tipos — a assimetria com o `Txt.Engine` é esperada (§4.9).
 
 ### 7.2 Hierarchical metadata strategy
 
@@ -350,7 +415,7 @@ The `partial` modifier matters because the source generator produces companion c
 
 ### 7.3 Source generator strategy
 
-The `TecnoFisc.Sped.Core.SourceGenerators` project contains an `IIncrementalGenerator` that:
+The `TecnoFisc.Sped.Txt.Engine.SourceGenerators` project (analyzer referenced only by the TXT leiaute packages) contains an `IIncrementalGenerator` that:
 
 1. Scans the consuming project for classes inheriting from `RegistroSped` and decorated with `[RegistroSped]`.
 2. Generates a static catalog class with all metadata pre-populated.
@@ -394,6 +459,17 @@ Catalog lookup during parsing is `Dictionary<string, MetadadosRegistro>` with `S
 **Phase 2 — Performance optimization:** introduce source generator. Public API does not change. Consumers automatically benefit on next package update. No breaking changes.
 
 This staged approach avoids over-engineering early and lets the source generator be designed once the library API has stabilized.
+
+### 7.7 Source generator do mundo XML (`Xml.Engine.SourceGenerators`, futuro)
+
+Por simetria com o TXT, **cada mundo carrega o seu próprio source generator** — nunca um analyzer compartilhado. A razão é concreta, não estética: um source generator é acoplado ao que escaneia, e os dois mundos não têm nada em comum para gerar:
+
+- **TXT** escaneia `[RegistroSped]`/`[CampoSped]` → gera catálogo + serialização posicional (`|campo|campo|`).
+- **XML** escanearia atributos de mapeamento nas classes de modelo (algo como `[ElementoXml("ide")]`/`[AtributoXml]`) → geraria o parsing `switch (reader.LocalName)` forward-only que hoje é escrito à mão (`NFeXmlReader.Icms.cs`, `NFeXmlReader.PisCofins.cs`, …).
+
+Um analyzer único que conhecesse os dois mundos violaria a regra "os dois engines se ignoram" (Critical rule 2, §6.1). Logo, o futuro `TecnoFisc.Sped.Xml.Engine.SourceGenerators` é referenciado como `OutputItemType="Analyzer"` apenas pelos leiautes XML (`NFeNFCe`, `CTe`), espelhando o `Txt.Engine.SourceGenerators`.
+
+**Gatilho (timing).** Não existe na v1 — hoje o `NFeNFCe` é read-only com parser escrito à mão (Stage 14, "sem source generator"). Nasce quando a repetição de parsing entre NF-e e CT-e (Stage 16) justificar a codegen, ou quando um gerador/emissão XML for confirmado (§2.5). Até lá, a camada `Xml.Engine` fica sem o sub-projeto de analyzer (assimetria temporária esperada, §4.9).
 
 ---
 
@@ -529,7 +605,9 @@ Performance regression in any benchmark blocks merging.
 - `Cnpj`, `Cpf`, `Cfop`, `Ncm`, `Cst`, `ChaveAcesso`, `InscricaoEstadual`.
 - Comprehensive unit tests (validation, equality, formatting).
 
-### Stage 2 — Core parsing infrastructure
+### Stage 2 — TXT parsing infrastructure
+
+> Bootstrapado dentro do `Core`; **pertence ao `TecnoFisc.Sped.Txt.Engine`** (maquinaria do mundo textual) — extraído na Stage 18, §4.9.
 
 - `RegistroSped` abstract base class.
 - `RegistroSpedAttribute` and `CampoSpedAttribute`.
@@ -539,7 +617,9 @@ Performance regression in any benchmark blocks merging.
 - `CatalogoBuilder.BuildFromAssembly` (reflection-based, cached).
 - Unit tests with synthetic record streams.
 
-### Stage 3 — Core generation infrastructure
+### Stage 3 — TXT generation infrastructure
+
+> Mesmo destino da Stage 2 — **`TecnoFisc.Sped.Txt.Engine`** (§4.9).
 
 - `EscritorSpedTxt`.
 - `TotalizadorBlocos` (X990 closers, 9999 file closer).
@@ -569,7 +649,7 @@ Publishing: SPED arquivos are all-or-nothing — a partial implementation cannot
 
 ### Stage 6 — Source generator (performance phase)
 
-- `TecnoFisc.Sped.Core.SourceGenerators` project.
+- `TecnoFisc.Sped.Core.SourceGenerators` project (renomeado para `TecnoFisc.Sped.Txt.Engine.SourceGenerators` na Stage 18, §4.9).
 - Generator scanning for `[RegistroSped]` and producing static catalog.
 - Generator producing factory delegates.
 - Migration of `EfdContribuicoes` to use generated catalog.
@@ -588,7 +668,7 @@ A Receita não publicou novo leiaute de EFD Contribuições desde V006 (vigente 
 
 ### Stage 8 — TecnoFisc.Sped.EfdIcmsIpi (EFD ICMS-IPI, **read-only**, baseline V015)
 
-Same internal structure as `EfdContribuicoes` **menos o gerador** (§2.5). Independent set of record classes — no inter-project references (per Hard Rule 2). Shared enums/value objects regidos pelo Ato COTEPE migrate to `Core` on first use (EFD ICMS-IPI is the regente — duplication = drift bug).
+Same internal structure as `EfdContribuicoes` **menos o gerador** (§2.5). Independent set of record classes — no inter-project references (per Hard Rule 2). Shared enums/value objects migrate to the right layer on first use, pela regra dos três níveis (§4.9): os regidos pelo Ato COTEPE / cross-mundo vão para o `Core` (EFD ICMS-IPI is the regente — duplication = drift bug); os transversais só ao TXT vão para o `Txt.Engine`.
 
 **Modo read-only.** O pacote expõe apenas parser + modelo tipado. Não existe `GeradorEfdIcmsIpi`. Não existem testes de round-trip parse→generate→parse — apenas testes de fixture-load + asserts sobre o modelo lido. Habilita a estratégia §4.7 read-only de modelo único do leiaute mais recente.
 
@@ -638,48 +718,81 @@ Publica `TecnoFisc.Sped.Ecd` (bump apropriado no release) quando todas as 72 sub
 
 Quando ativado, segue o mesmo padrão de Stage 9: para cada novo leiaute publicado, um tracking file `sped/STAGE_10_INCR_V0XX.md` descrevendo apenas o delta do read path. Constantes incrementais no enum `LayoutEcd` (`V010 = 10`, …). Cada leiaute = minor bump.
 
-### Stage 12 — Identificador dinâmico de arquivos SPED (sniffer)
+### Stage 12 — Identificadores dinâmicos de documento (sniffers, um por mundo)
 
-Componente novo em `TecnoFisc.Sped.Core` que **identifica o leiaute SPED a partir da primeira linha do arquivo**. A primeira linha de qualquer arquivo SPED é sempre o `|0000|...|`, e os campos imediatamente seguintes (especialmente `COD_VER`) permitem inferir o projeto (EFD Contribuições vs ICMS-IPI vs ECD vs ECF) e a versão exata do leiaute.
+> **✅ Concluído na `0.7.0`** — `SnifferSped` (mundo TXT, `Txt.Engine`, PR #512) e `IdentificadorXmlFiscal` (mundo XML, `Xml.Engine`, entregue junto com a fundação NF-e).
 
-Funcionamento:
+Cada mundo identifica o documento a partir do início do stream, sem consumir o resto. **Não há sniffer unificado no `Core`** — isso acoplaria os dois mundos (Critical rule 2, §6.1). Em vez disso, cada engine carrega o seu, com APIs análogas (§4.9):
 
-- API `SnifferSped.IdentificarAsync(Stream)` lê **apenas a primeira linha não vazia** sem consumir o resto. Devolve `MetadadosArquivoSped { ProjetoSped, VersaoLeiaute, EncodingDetectado, ... }`.
-- Caso o consumidor queira prosseguir, expõe `SnifferSped.AbrirParserAsync(Stream)` que devolve o `ILeitorSped` específico do leiaute identificado e o stream posicionado na origem (replay-safe). Internamente delega para `ParserEfdContribuicoes`, `ParserEfdIcmsIpi`, `ParserEcd`, `ParserEcf` conforme apropriado.
-- Heurística: combinação `(Bloco do primeiro registro, campo discriminador, layout do `0000`)`. Registros `0000` divergem entre leiautes em campos e tamanhos, então o discriminator é sólido. **Caso EFD** (Contribuições / ICMS-IPI): `COD_VER` no próprio `0000` dá projeto + versão. **Caso ECD:** o `0000` **não** tem `COD_VER` — o campo 02 é o literal `"LECD"`, que identifica o projeto pela primeira linha; a versão do leiaute (`COD_VER_LC`) só aparece no `I010`, então o sniffer reporta o projeto ECD na linha 1 mas a `VersaoLeiaute` exige ler até o `I010` (ou assumir o baseline único — leiaute 9 — enquanto não houver incrementos).
-- Sem reflexão no hot path — o despacho é via `switch` gerado em compile time pelo source generator (extensão de Stage 6) ou tabela estática.
+**Sniffer TXT — `TecnoFisc.Sped.Txt.Engine`.** Identifica o leiaute SPED textual a partir da primeira linha `|0000|...|`; os campos seguintes (especialmente `COD_VER`) inferem o projeto (EFD Contribuições vs ICMS-IPI vs ECD vs ECF) e a versão.
 
-Tests cobrem todos os leiautes suportados + arquivo malformado + EOF prematuro + encoding mismatch.
+- `SnifferSped.IdentificarAsync(Stream)` lê **apenas a primeira linha não vazia** e devolve `MetadadosArquivoSped { ProjetoSped, VersaoLeiaute, EncodingDetectado, ... }`.
+- `SnifferSped.AbrirParserAsync(Stream, IReadOnlyDictionary<ProjetoSped, Func<ILeitorSped>>)` devolve o `ILeitorSped` do leiaute identificado, stream reposicionado na origem (replay-safe). O `Txt.Engine` nao referencia projetos de leiaute para nao inverter a direcao das dependencias; quem monta o ponto de entrada registra factories para `ParserEfdContribuicoes`, `ParserEfdIcmsIpi`, `ParserEcd` e, no futuro, `ParserEcf`.
+- Heurística: combinação `(Bloco do primeiro registro, campo discriminador, layout do `0000`)`. **Caso EFD:** `COD_VER` no `0000` dá projeto + versão. **Caso ECD:** o `0000` não tem `COD_VER` — campo 02 é o literal `"LECD"` (identifica o projeto na linha 1); a versão (`COD_VER_LC`) só aparece no `I010`, então a `VersaoLeiaute` exige ler até o `I010` (ou assumir o baseline único — leiaute 9 — enquanto não houver incrementos).
+- Sem reflexão no hot path — despacho via `switch` gerado em compile time (`Txt.Engine.SourceGenerators`, extensão de Stage 6) ou tabela estática.
 
-### Stage 13 — Metapacote TecnoFisc.Sped
+**Sniffer XML — `TecnoFisc.Sped.Xml.Engine`.** Análogo para o mundo XML; **já entregue como `IdentificadorXmlFiscal`** (Stage 14). Lê o início do stream com `XmlReader` forward-only, order-independent e XXE-safe (DTD proibido), e devolve `TipoDocumentoFiscalXml` (NF-e/NFC-e/`procEventoNFe`/`eventoNFe`/envelope SERPRO; CT-e quando a Stage 16 chegar). Discrimina NF-e (modelo 55) de NFC-e (modelo 65) pelo `<mod>` dentro de `<ide>`. O análogo do `AbrirParserAsync` (devolver o parser XML tipado a partir do tipo identificado) entra junto com o pipeline multi-documento do `ParserNFe`.
 
-Pacote agregador (`TecnoFisc.Sped`) que referencia todos os pacotes de leiaute em uma única dependência NuGet. Útil para consumidores que querem suporte abrangente sem listar cada pacote no `csproj`.
+Tests por mundo cobrem todos os leiautes/tipos suportados + documento malformado + EOF prematuro + encoding mismatch.
 
-- Sem código próprio — apenas `<PackageReference>` para cada um dos pacotes de leiaute (`EfdContribuicoes`, `EfdIcmsIpi`, `Ecd`, `NFe`, `NFCe`, `CTe`, `Ecf`).
+### Stage 13 — Guarda-chuvas TecnoFisc.Sped (Txt / Xml / tudo)
+
+> **✅ Concluído na `0.7.0`** (parcial por design) — `TecnoFisc.Sped.Txt` e `TecnoFisc.Sped` publicados (PR #513). `TecnoFisc.Sped.Xml` permanece adiado até existirem ≥2 pacotes XML (após o CT-e, Stage 16).
+
+Pacotes agregadores que referenciam leiautes em uma única dependência NuGet. Úteis para consumidores que querem suporte abrangente sem listar cada pacote no `csproj`. Originalmente um único metapacote `TecnoFisc.Sped`; com a reorganização em camadas (§4.9) passam a ser três guarda-chuvas:
+
+- `TecnoFisc.Sped.Txt` → `EfdContribuicoes`, `EfdIcmsIpi`, `Ecd` agora; `Ecf` entra na Stage 17.
+- `TecnoFisc.Sped.Xml` → `NFeNFCe`, `CTe` depois da Stage 16 (adiado enquanto só existe `NFeNFCe`).
+- `TecnoFisc.Sped` → `Txt` agora; `Txt` + `Xml` quando o guarda-chuva XML existir.
+
+- Sem código próprio — apenas `<PackageReference>` (Critical rule 4, §6.1).
 - Versão acompanha a mais alta dos pacotes referenciados; bumps coordenados por release notes consolidados.
-- Documentação no README do pacote orienta consumidores a preferir o metapacote quando não souberem antecipadamente qual leiaute vão consumir, ou quando o sniffer (Stage 12) for o ponto de entrada.
+- README orienta o consumidor a usar os guarda-chuvas disponiveis agora (`TecnoFisc.Sped.Txt` para TXT; `TecnoFisc.Sped` para bundles disponiveis) e documenta `TecnoFisc.Sped.Xml` como futuro apos CT-e.
+- **Sequenciamento:** o `TecnoFisc.Sped.Xml` só passa a fazer sentido quando houver ≥2 pacotes XML (i.e., após o CT-e — Stage 16); antes disso ele embrulharia só o `NFeNFCe`. Os guarda-chuvas `Txt` e `Sped` valem assim que há ≥2 leiautes textuais.
 
-Publica `TecnoFisc.Sped 0.5.0` na primeira vez que todos os leiautes textuais estiverem em uso (EFD Contribuições + EFD ICMS-IPI + ECD; ECF pode ser placeholder até Stage 17).
+Publica agora porque ja ha tres leiautes textuais em uso (EFD Contribuições + EFD ICMS-IPI + ECD). `Ecf` sera adicionado ao `TecnoFisc.Sped.Txt` na Stage 17; `TecnoFisc.Sped.Xml` e a perna XML do pacote geral entram depois do CT-e.
 
-### Stage 14 — TecnoFisc.Sped.NFe (XML, **read-only**)
+### Stage 14 — TecnoFisc.Sped.NFeNFCe (XML, **read-only**)
 
-- XML parser baseado em `System.Xml.Linq` (ou `XmlReader` para arquivos grandes em modo streaming).
-- Classes de modelo fortemente tipadas mapeando o schema NF-e (procNFe, infNFe, det, total, transp, cobr, infAdic, etc.).
-- Validação de assinatura digital (apenas validação — não assinatura).
-- Encoding canônico do XML = UTF-8 (diferente dos `.txt` SPED que são Latin1).
-- **Modo read-only (§2.5).** Sem `GeradorNFe`, sem emissão para SEFAZ, sem round-trip parse→generate→parse. Caso de uso confirmado é ingestão dos XMLs já emitidos. Geração/emissão entra em stage dedicada se confirmada por demanda externa.
+> **🚧 Em andamento — preview publicado na `0.7.0`.** Slices 14.1–14.4 entregues (fundação Core, estrutura do pacote, piloto NF-e 55, polimorfismo de impostos completo — PRs #505–#508). Pendentes: 14.5 (transp/cobr/pag/infAdic/protNFe), 14.6 (NFC-e 65), 14.7 (eventos), 14.8 (`ReadDirectoryAsync`), 14.9 (`Correlator`). Tracking: `sped/STAGE_14_NFE_NFCE.md` §8.
 
-### Stage 15 — TecnoFisc.Sped.NFCe (XML, **read-only**)
+**Funde os antigos Stage 14 (NFe) + Stage 15 (NFCe) em um único pacote** `TecnoFisc.Sped.NFeNFCe`, leiaute 4.00. NF-e (modelo 55) e NFC-e (modelo 65) usam o **mesmo XSD** e evoluem juntas (mesma Nota Técnica) — não se encaixam na premissa de cadências independentes que justifica a regra de independência de formato (§4.2). Logo: um pacote, dois tipos de modelo (`NFe`, `NFCe`). Spec operacional completa em `sped/STAGE_14_NFE_NFCE.md`.
 
-Estrutura idêntica a Stage 14, schema NFC-e (Nota Fiscal de Consumidor Eletrônica, modelo 65). Muito código pode ser compartilhado com NF-e via base classes em `TecnoFisc.Sped.Core/Xml/`, mas os tipos públicos do leiaute ficam no pacote NFCe. Modo read-only (§2.5) — sem `GeradorNFCe`.
+- Parser `XmlReader` forward-only, **order-independent** (loop `switch (reader.LocalName)`) — lê o XML canônico e o envelope SERPRO na mesma velocidade. Sem DOM por arquivo.
+- Classes de modelo fortemente tipadas mapeando o leiaute (ide, emit, dest, det/prod, imposto polimórfico, total, transp, cobr, pag, infAdic, protNFe), nativas da NF-e (não moldadas em registro SPED).
+- NFC-e ≈ NF-e + `infNFeSupl` (QR Code) + `dest` opcional. Tipos distintos, sem polimorfismo entre os dois.
+- Eventos (`procEventoNFe`/`eventoNFe`): `EventoCancelamento` tipado + `EventoGenerico` fallback; correlação nota × eventos por `ChaveAcesso` (read-only/stateless).
+- Validação de assinatura digital fora da v1 (apenas leitura). Encoding canônico do XML = UTF-8.
+- **Modo read-only (§2.5).** Sem `GeradorNFe`/`GeradorNFCe`, sem emissão para SEFAZ, sem round-trip. **Sem source generator na v1** (não há `RegistroSped`; parser escrito à mão). O source generator XML (`Xml.Engine.SourceGenerators`, §7.7) é gatilho futuro — entra quando a repetição NFe↔CTe (Stage 16) ou um gerador confirmado justificar, morando no engine XML, nunca compartilhado com o TXT.
+
+### Stage 15 — absorvido pelo Stage 14
+
+O antigo Stage 15 (NFC-e como pacote separado) foi **absorvido pelo Stage 14** (pacote único `TecnoFisc.Sped.NFeNFCe`). Número mantido para não renumerar os stages a jusante (Stage 16 CT-e, Stage 17 ECF inalterados).
 
 ### Stage 16 — TecnoFisc.Sped.CTe (XML, **read-only**)
 
-Estrutura idêntica a Stage 14, schema CT-e (Conhecimento de Transporte Eletrônico, modelo 57). Validação de assinatura digital igual a NFe/NFCe. Específico do transporte: modais, carga, valores prestados. Modo read-only (§2.5) — sem `GeradorCTe`.
+Estrutura idêntica a Stage 14, schema CT-e (Conhecimento de Transporte Eletrônico, modelo 57). Validação de assinatura digital igual a NFe/NFCe. Específico do transporte: modais, carga, valores prestados. Modo read-only (§2.5) — sem `GeradorCTe`. É aqui que a repetição de parsing XML entre NF-e e CT-e pode justificar criar o `Xml.Engine.SourceGenerators` (§7.7) — avaliar ao iniciar a stage.
 
 ### Stage 17 — TecnoFisc.Sped.Ecf (baseline + incrementos, read-only inicial)
 
 Pacote para ECF (Escrituração Contábil Fiscal). Padrão `.txt` igual EFD/ECD. Read-only inicialmente (§2.5) — gerador depende de confirmação externa. Baseline = leiaute vigente quando a stage começar; incrementos seguem o mesmo modelo read-only de Stage 9 (constantes no enum `LayoutEcf`, tracking files por leiaute, minor bumps por versão).
+
+### Stage 18 — Reorganização em camadas (Core universal + engines Txt/Xml)
+
+> **Status: passos 1–4 ✅ concluídos na `0.7.0`** para Core, `Txt.Engine`, `Xml.Engine`, `TecnoFisc.Sped.Txt` e `TecnoFisc.Sped` (PRs #509 enxugar Core, #510 `Txt.Engine`, #511 `Xml.Engine`, mais guarda-chuvas Stage 13). Tracking detalhado em `sped/STAGE_18_REORG.md`. Apenas `TecnoFisc.Sped.Xml` permanece adiado para depois do CT-e. Cada passo manteve build 0/0 + 4693 testes verdes.
+
+Refatoração estrutural que implementa o empacotamento em quatro camadas de §4.9. Motivada por: um consumidor que só lê XML (NF-e/NFC-e/CT-e) não deve ver no `Core` toda a maquinaria SPED-TXT (`RegistroSped`, catálogo, gerador, enums de bloco) que nunca usa. Resolve ruído de superfície de API + acoplamento conceitual; o custo é só de IL/discoverability (sem dep transitiva nem runtime — Hard Rule 1), por isso é refatoração de higiene, não de performance.
+
+**Janela.** Fazer **pré-1.0**, enquanto a superfície XML ainda é mínima (um pacote `NFeNFCe`, poucos arquivos em `Core/Xml`). Pós-1.0 vira tabu de breaking change. É transversal ao progresso dos leiautes — pode ser agendada independentemente, mediante trigger explícito do usuário (não pular à frente sem pedido).
+
+**Sequência (bottom-up; cada passo é um PR):**
+
+1. **Enxugar o `Core`** ✅ — triar `Core/Enums` pela regra dos três níveis (§4.9): 8 enums só-EfdIcmsIpi→EfdIcmsIpi, `FinalidadeEmissao`/`IndicadorPresenca`/`IndicadorIntermediador`→NFeNFCe; enums transversais ficam para os passos 2/3. (Classificação 1-a-1 pelo uso real — é o grosso do trabalho, não o move-de-pasta.)
+2. **Criar `Txt.Engine`** ✅ — mover `Parser/`, `Gerador/`, `Catalogo/`, `Atributos/` (exceto `DescontinuadoAttribute`, que fica no Core), `Abstracoes/` (`RegistroSped` + `I*Sped`), `Streaming/`, sniffer da 1ª linha e 6 enums TXT-transversais (`IND_MOV` etc.); renomear `Core.SourceGenerators` → `Txt.Engine.SourceGenerators` (atualizar FQN dos atributos + usings gerados); repontar EFD Contribuições/ICMS-IPI/ECD para `Core + Txt.Engine + analyzer` (ECF quando existir). Maior PR (~1184 arquivos); mexe no source generator.
+3. **Criar `Xml.Engine`** ✅ — mover só `Core/Xml/` (`IdentificadorXmlFiscal`, `IDocumentoFiscalXml`, `TipoDocumentoFiscalXml`); repontar `NFeNFCe` para `Core + Xml.Engine`. `TipoAmbiente`/`TipoEmissao` ficam no Core (`ChaveAcesso` consome `TipoEmissao`); `XmlReaderExtensions` segue no `NFeNFCe`. PR pequeno.
+4. **Guarda-chuvas** (Stage 13) ✅ — `TecnoFisc.Sped.Txt` e `TecnoFisc.Sped` criados; `TecnoFisc.Sped.Xml` adiado para depois do CT-e (Stage 16). Só `<PackageReference>`, zero código.
+
+Round-trip e benchmarks devem continuar verdes a cada passo (a refatoração é move + repoint, não mudança de comportamento). Atualizar `slnx`, `Directory.Build.props`, READMEs e CHANGELOG por pacote.
 
 ---
 
@@ -708,7 +821,7 @@ Pacote para ECF (Escrituração Contábil Fiscal). Padrão `.txt` igual EFD/ECD.
 - AAA (Arrange, Act, Assert) with blank lines.
 - FluentAssertions.
 - BenchmarkDotNet for performance-sensitive code.
-- Coverage target: 90%+ on Core, 85%+ on format projects.
+- Coverage target: 90%+ on Core e engines (`Txt.Engine`/`Xml.Engine`), 85%+ on format projects.
 - Round-trip tests for every record type.
 
 ### 13.4 Commits
@@ -763,7 +876,7 @@ When starting a session in this repository:
 6. Respect dependency rules from Section 6.1.
 7. **NEVER** add database, file-system configuration, or external service dependencies to any project.
 8. **NEVER** make format-specific projects depend on each other.
-9. **Registros duplicate per leiaute; Ato COTEPE-referenced tables/enums (Tabela 4.1.1, 4.1.2, etc.) live in `Core`** — see §4.2.
+9. **Registros duplicate per leiaute; tabelas/enums transversais sobem pela regra dos três níveis (§4.9):** universal (TXT ∩ XML, ou Ato COTEPE) → `Core`; transversal a um único mundo → `Txt.Engine`/`Xml.Engine`; de um único leiaute → o próprio pacote. Engines não se referenciam; guarda-chuvas não têm código. See §4.2 + §6.1.
 10. **5-year fiscal window:** ignore versionamento de campos com vigência anterior a `(hoje - 5 anos)`. Dentro da janela, marcos temporais antigos não são modelados em código (vide §4.3).
 11. **EFD ICMS-IPI é o regente do Ato COTEPE.** Quando uma tabela/enum aparecer referenciada em múltiplos leiautes, extrair uma vez no leiaute-origem (EFD ICMS-IPI) e tratar como compartilhada.
 12. **Modo de operação do pacote dita a estratégia de versionamento (§2.5 + §4.7).** EFD ICMS-IPI, ECD, NF-e, NFC-e, CT-e e ECF são read-only por padrão — sem `Gerador/`, sem round-trip de geração, modelo único do leiaute mais recente. EFD Contribuições é o único pacote read+write confirmado. Não criar gerador para pacote read-only sem promover oficialmente a stage de migração.

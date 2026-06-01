@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Maquinaria de leitura/geração de arquivos SPED-TXT da família TecnoFisc.Sped: abstrações de registro, atributos de leiaute, catálogo, parser (PipeReader/Span) e gerador. Independente de leiaute específico.</Description>
+    <PackageId>TecnoFisc.Sped.Txt.Engine</PackageId>
+    <PackageTags>sped;efd;txt;parser;fiscal;brasil;tecnofisc</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TecnoFisc.Sped.Core\TecnoFisc.Sped.Core.csproj" />
+  </ItemGroup>
+
+</Project>

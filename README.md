@@ -4,16 +4,20 @@ Família de bibliotecas .NET para leitura, geração e manipulação tipada de a
 publicados pelos projetos do **SPED — Sistema Público de Escrituração Digital**
 (Receita Federal do Brasil).
 
-> Status atual: **0.6.0** publicado. Cobre EFD Contribuições V006 (leitura + geração,
+> Status atual: **0.7.0** publicado. Cobre EFD Contribuições V006 (leitura + geração,
 > round-trip validado), EFD ICMS-IPI baseline V015 + incrementos V016 → V020 (leiaute
 > vigente em 2026, **read-only**) e **ECD** leiaute 9 (Sped Contábil, vigente a partir do
 > ano-calendário 2020, **read-only** — parser e modelo tipado, sem geração). Os números
 > `006` (EFD Contribuições) e `015`–`020` (EFD ICMS-IPI) são o `COD_VER` do registro `0000`
 > de cada leiaute (não devem ser confundidos com a versão do Guia Prático); a ECD informa a
-> versão do leiaute em `I010.COD_VER_LC`, não no `0000`. A `0.6.0` é aditiva: adiciona o
-> pacote `TecnoFisc.Sped.Ecd` e `ReadingOptions` no `Core` (descarte de registros/blocos na
-> leitura). Próximos passos rastreados no `ARCHITECTURE.md` — todos read-only, na ordem
-> **NF-e → NFC-e → CT-e → ECF**. Veja o `CHANGELOG.md` para detalhes.
+> versão do leiaute em `I010.COD_VER_LC`, não no `0000`. A `0.7.0` é **breaking**: reorganiza
+> o antigo `Core` monolítico em `Core` universal + engines `Txt.Engine`/`Xml.Engine` (Stage 18),
+> adiciona os guarda-chuvas `TecnoFisc.Sped.Txt` e `TecnoFisc.Sped` (Stage 13) e os sniffers
+> de identificação de documento por mundo (Stage 12). Estreia ainda, em **preview**, o pacote
+> XML `TecnoFisc.Sped.NFeNFCe` — cobertura atual limitada a **NF-e modelo 55 parcial** (NFC-e 65,
+> eventos e os grupos transp/cobr/pag/protNFe ainda em desenvolvimento). Próximos passos
+> rastreados no `ARCHITECTURE.md` — todos read-only, na ordem **CT-e → ECF**. Veja o
+> `CHANGELOG.md` para detalhes.
 
 ## Visão geral
 
@@ -28,30 +32,31 @@ pacote afetado é versionado.
 
 | Projeto SPED | Pacote NuGet | Status |
 | --- | --- | --- |
-| EFD Contribuições | `TecnoFisc.Sped.EfdContribuicoes` | **0.6.0** — leiaute V006 completo (leitura + geração) |
-| EFD ICMS-IPI | `TecnoFisc.Sped.EfdIcmsIpi` | **0.6.0** — baseline V015 + incrementos V016 → V020 (vigente), **read-only** |
-| ECD | `TecnoFisc.Sped.Ecd` | **0.6.0** — baseline leiaute 9 completo (vigente), **read-only** |
-| NF-e | `TecnoFisc.Sped.NFe` | planejado (XML, read-only) |
-| NFC-e | `TecnoFisc.Sped.NFCe` | planejado (XML, read-only) |
+| EFD Contribuições | `TecnoFisc.Sped.EfdContribuicoes` | **0.7.0** — leiaute V006 completo (leitura + geração) |
+| EFD ICMS-IPI | `TecnoFisc.Sped.EfdIcmsIpi` | **0.7.0** — baseline V015 + incrementos V016 → V020 (vigente), **read-only** |
+| ECD | `TecnoFisc.Sped.Ecd` | **0.7.0** — baseline leiaute 9 completo (vigente), **read-only** |
+| NF-e / NFC-e | `TecnoFisc.Sped.NFeNFCe` | **0.7.0 preview** — só NF-e modelo 55 parcial (XML, read-only); NFC-e 65 e eventos em desenvolvimento |
 | CT-e | `TecnoFisc.Sped.CTe` | planejado (XML, read-only) |
 | ECF | `TecnoFisc.Sped.Ecf` | planejado (read-only) |
-| Metapacote agregador | `TecnoFisc.Sped` | planejado — referencia todos os leiautes acima em uma única dependência |
+| Guarda-chuva TXT | `TecnoFisc.Sped.Txt` | **0.7.0** — agrega EFD Contribuições, EFD ICMS-IPI e ECD |
+| Guarda-chuva geral | `TecnoFisc.Sped` | **0.7.0** — agrega `TecnoFisc.Sped.Txt`; passará a agregar XML após CT-e |
+| Guarda-chuva XML | `TecnoFisc.Sped.Xml` | planejado após CT-e — agregará NFe/NFC-e e CT-e |
 
 > **Modo de operação.** O único pacote com geração de arquivo confirmada é
 > `TecnoFisc.Sped.EfdContribuicoes` (leitura + escrita, round-trip simétrico). Todos
-> os demais — EFD ICMS-IPI e ECD (implementados), mais NF-e, NFC-e, CT-e e ECF
-> (planejados, nesta ordem) — são **read-only** (parser + modelo tipado). Promoção para
+> os demais — EFD ICMS-IPI e ECD (implementados), NFeNFCe (preview, NF-e 55 parcial),
+> mais CT-e e ECF (planejados, nesta ordem) — são **read-only** (parser + modelo tipado). Promoção para
 > read+write em qualquer um deles depende de confirmação externa e entra como stage
 > dedicada (`ARCHITECTURE.md` §2.5).
 
-`TecnoFisc.Sped.Core` é a infraestrutura compartilhada (value objects fiscais, parser/gerador
-genérico, abstrações de catálogo, identificador dinâmico de arquivos SPED) consumida por
-todos os pacotes de leiaute. `TecnoFisc.Sped.Core.SourceGenerators` é o source generator que
-produz, em tempo de compilação, o catálogo estático de registros — referenciado como
-Analyzer pelos projetos de leiaute, não embarca no runtime do consumidor.
+`TecnoFisc.Sped.Core` contém os primitivos fiscais universais. A maquinaria textual vive em
+`TecnoFisc.Sped.Txt.Engine`; a maquinaria XML vive em `TecnoFisc.Sped.Xml.Engine`. Para
+consumidores que querem todos os leiautes textuais em uma única dependência, use
+`TecnoFisc.Sped.Txt`. O pacote `TecnoFisc.Sped` agrega os guarda-chuvas disponíveis; hoje ele
+puxa o mundo TXT e será ampliado com `TecnoFisc.Sped.Xml` depois do CT-e.
 
-**Escopo definitivo.** A biblioteca cobre exatamente os sete leiautes listados na tabela
-acima mais o metapacote agregador. Outros projetos SPED (eSocial, EFD-Reinf, NFS-e, MDF-e,
+**Escopo definitivo.** A biblioteca cobre os leiautes listados na tabela acima e os
+guarda-chuvas explicitamente marcados como disponíveis/planejados. Outros projetos SPED (eSocial, EFD-Reinf, NFS-e, MDF-e,
 e-Financeira, DeRE, Central de Balanços) ficam **fora do escopo** e não serão
 implementados — ver `ARCHITECTURE.md` §3 para a tabela autoritativa.
 
@@ -94,12 +99,12 @@ await foreach (var registro in parser.ReadStreamingAsync(entrada))
 
 ### Persistir em banco com `OfType<T>()` + `Batch(n)`
 
-`TecnoFisc.Sped.Core.Streaming` traz dois helpers que removem o boilerplate comum
+`TecnoFisc.Sped.Txt.Engine.Streaming` traz dois helpers que removem o boilerplate comum
 de ingestão SPED → banco. `OfType<T>` filtra o stream pelo tipo concreto sem cast
 manual; `Batch(n)` agrupa em lotes para bulk-insert.
 
 ```csharp
-using TecnoFisc.Sped.Core.Streaming;
+using TecnoFisc.Sped.Txt.Engine.Streaming;
 using TecnoFisc.Sped.EfdContribuicoes.Parser;
 using TecnoFisc.Sped.EfdContribuicoes.Registros.BlocoC;
 
@@ -128,7 +133,7 @@ registro pai antes do filho. `WithContext()` enriquece o stream com um
 pai já emitido.
 
 ```csharp
-using TecnoFisc.Sped.Core.Streaming;
+using TecnoFisc.Sped.Txt.Engine.Streaming;
 using TecnoFisc.Sped.EfdContribuicoes.Parser;
 using TecnoFisc.Sped.EfdContribuicoes.Registros.BlocoC;
 
@@ -209,7 +214,7 @@ e `9999` (contagem global) — basta entregar a árvore de registros.
 - **Round-trip simétrico onde há geração.** Nos pacotes read+write (hoje apenas
   `EfdContribuicoes`), ler → gerar → ler precisa devolver o mesmo arquivo (modulo
   normalizações deliberadas). Invariante coberta por testes. Nos pacotes read-only
-  (EFD ICMS-IPI e ECD; NFe/NFCe/CTe/ECF planejados), a invariante é apenas leitura
+  (EFD ICMS-IPI e ECD implementados; NFeNFCe em preview; CT-e/ECF planejados), a invariante é apenas leitura
   estável: a mesma entrada sempre produz o mesmo modelo tipado.
 
 ## Arquivos assinados pelo PVA
@@ -255,17 +260,23 @@ dotnet run -c Release --project benchmarks/TecnoFisc.Sped.Benchmarks -- --probe 
 ```text
 TecnoFisc.Sped/
 ├── src/
-│   ├── TecnoFisc.Sped.Core/                  # Value objects fiscais + infra compartilhada + sniffer
-│   ├── TecnoFisc.Sped.Core.SourceGenerators/ # Source generator do catálogo (analyzer)
+│   ├── TecnoFisc.Sped/                       # Guarda-chuva geral (Txt agora; Xml após CT-e)
+│   ├── TecnoFisc.Sped.Txt/                   # Guarda-chuva textual (EFD Contribuições, EFD ICMS-IPI, ECD)
+│   ├── TecnoFisc.Sped.Core/                  # Value objects fiscais universais
+│   ├── TecnoFisc.Sped.Txt.Engine/            # Motor .txt + catálogo + parser/gerador + sniffer TXT
+│   ├── TecnoFisc.Sped.Txt.Engine.SourceGenerators/ # Source generator do catálogo TXT (analyzer)
+│   ├── TecnoFisc.Sped.Xml.Engine/            # Motor XML + IDocumentoFiscalXml + sniffer XML
 │   ├── TecnoFisc.Sped.EfdContribuicoes/      # Leiaute EFD Contribuições V006
 │   ├── TecnoFisc.Sped.EfdIcmsIpi/            # Leiaute EFD ICMS-IPI baseline V015 + V016-V020 (read-only)
-│   └── TecnoFisc.Sped.Ecd/                   # Leiaute ECD 9 (Sped Contábil, read-only)
-│   # Stages futuros (planejados): NFe, NFCe, CTe, Ecf + metapacote TecnoFisc.Sped
+│   ├── TecnoFisc.Sped.Ecd/                   # Leiaute ECD 9 (Sped Contábil, read-only)
+│   └── TecnoFisc.Sped.NFeNFCe/               # NF-e/NFC-e 4.00 (XML, read-only)
+│   # Stages futuros (planejados): CTe, Ecf, TecnoFisc.Sped.Xml
 ├── tests/
 │   ├── TecnoFisc.Sped.Core.Tests/
 │   ├── TecnoFisc.Sped.EfdContribuicoes.Tests/
 │   ├── TecnoFisc.Sped.EfdIcmsIpi.Tests/
-│   └── TecnoFisc.Sped.Ecd.Tests/
+│   ├── TecnoFisc.Sped.Ecd.Tests/
+│   └── TecnoFisc.Sped.NFeNFCe.Tests/
 ├── benchmarks/
 │   └── TecnoFisc.Sped.Benchmarks/            # BenchmarkDotNet (.NET 10)
 ├── sped/

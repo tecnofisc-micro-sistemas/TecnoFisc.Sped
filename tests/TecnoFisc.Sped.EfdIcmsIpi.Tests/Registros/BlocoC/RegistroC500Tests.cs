@@ -1,10 +1,10 @@
 using System.Reflection;
 
-using TecnoFisc.Sped.Core.Abstracoes;
-using TecnoFisc.Sped.Core.Atributos;
-using TecnoFisc.Sped.Core.Catalogo;
-using TecnoFisc.Sped.Core.Gerador;
-using TecnoFisc.Sped.Core.Parser;
+using TecnoFisc.Sped.Txt.Engine.Abstracoes;
+using TecnoFisc.Sped.Txt.Engine.Atributos;
+using TecnoFisc.Sped.Txt.Engine.Catalogo;
+using TecnoFisc.Sped.Txt.Engine.Gerador;
+using TecnoFisc.Sped.Txt.Engine.Parser;
 
 namespace TecnoFisc.Sped.EfdIcmsIpi.Tests.Registros.BlocoC;
 
@@ -129,7 +129,7 @@ public sealed class RegistroC500Tests
         meta.Campos[38].Definidor(registro, "25,00".AsSpan());     // OutrasDed
 
         registro.IndOper.Should().Be(TecnoFisc.Sped.Core.Enums.IndicadorOperacao.Entrada);
-        registro.IndEmit.Should().Be(TecnoFisc.Sped.Core.Enums.IndicadorEmissorDocumento.EmissaoPropria);
+        registro.IndEmit.Should().Be(TecnoFisc.Sped.EfdIcmsIpi.Enums.IndicadorEmissorDocumento.EmissaoPropria);
         registro.CodPart.Should().Be("PART001");
         registro.CodMod.Should().Be("06");
         registro.CodSit.Should().Be(TecnoFisc.Sped.Core.Enums.CodigoSituacaoDocumentoFiscal.DocumentoRegular);

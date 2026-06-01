@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Pacote guarda-chuva dos leiautes SPED textuais da TecnoFisc: EFD Contribuições, EFD ICMS-IPI e ECD em uma única dependência NuGet.</Description>
+    <PackageId>TecnoFisc.Sped.Txt</PackageId>
+    <PackageTags>sped;txt;efd-contribuicoes;efd-icms-ipi;ecd;fiscal;brasil;tecnofisc</PackageTags>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TecnoFisc.Sped.EfdContribuicoes\TecnoFisc.Sped.EfdContribuicoes.csproj" />
+    <ProjectReference Include="..\TecnoFisc.Sped.EfdIcmsIpi\TecnoFisc.Sped.EfdIcmsIpi.csproj" />
+    <ProjectReference Include="..\TecnoFisc.Sped.Ecd\TecnoFisc.Sped.Ecd.csproj" />
+  </ItemGroup>
+
+</Project>

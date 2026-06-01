@@ -1,4 +1,4 @@
-using TecnoFisc.Sped.Core.Parser;
+using TecnoFisc.Sped.Txt.Engine.Parser;
 using TecnoFisc.Sped.EfdContribuicoes.Gerador;
 using TecnoFisc.Sped.EfdContribuicoes.Parser;
 

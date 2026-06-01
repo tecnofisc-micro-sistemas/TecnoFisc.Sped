@@ -1,5 +1,5 @@
-using TecnoFisc.Sped.Core.Abstracoes;
-using TecnoFisc.Sped.Core.Atributos;
+using TecnoFisc.Sped.Txt.Engine.Abstracoes;
+using TecnoFisc.Sped.Txt.Engine.Atributos;
 using TecnoFisc.Sped.Core.Enums;
 using TecnoFisc.Sped.Core.ValueObjects;
 using TecnoFisc.Sped.EfdIcmsIpi.Enums;

@@ -1,6 +1,6 @@
-using TecnoFisc.Sped.Xml.Engine;
+using TecnoFisc.Sped.Core.ValueObjects;
 
-namespace TecnoFisc.Sped.Core.Tests.Xml;
+namespace TecnoFisc.Sped.Xml.Engine.Tests.Xml;
 
 public class IDocumentoFiscalXmlTests
 {

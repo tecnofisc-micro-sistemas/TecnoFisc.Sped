@@ -1,12 +1,13 @@
 using System.Text;
 
+using TecnoFisc.Sped.Core.ValueObjects;
 using TecnoFisc.Sped.Txt.Engine.Abstracoes;
 using TecnoFisc.Sped.Txt.Engine.Catalogo;
 using TecnoFisc.Sped.Txt.Engine.Gerador;
 using TecnoFisc.Sped.Txt.Engine.Parser;
-using TecnoFisc.Sped.Core.Tests._Sintetico;
+using TecnoFisc.Sped.Txt.Engine.Tests._Sintetico;
 
-namespace TecnoFisc.Sped.Core.Tests.Gerador;
+namespace TecnoFisc.Sped.Txt.Engine.Tests.Gerador;
 
 /// <summary>
 /// Invariante de round-trip do Stage 3: parse → generate → parse precisa preservar o

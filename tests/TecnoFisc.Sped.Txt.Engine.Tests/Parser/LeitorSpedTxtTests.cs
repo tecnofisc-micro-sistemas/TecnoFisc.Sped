@@ -4,9 +4,9 @@ using TecnoFisc.Sped.Txt.Engine.Abstracoes;
 using TecnoFisc.Sped.Txt.Engine.Catalogo;
 using TecnoFisc.Sped.Core.Erros;
 using TecnoFisc.Sped.Txt.Engine.Parser;
-using TecnoFisc.Sped.Core.Tests._Sintetico;
+using TecnoFisc.Sped.Txt.Engine.Tests._Sintetico;
 
-namespace TecnoFisc.Sped.Core.Tests.Parser;
+namespace TecnoFisc.Sped.Txt.Engine.Tests.Parser;
 
 public sealed class LeitorSpedTxtTests
 {

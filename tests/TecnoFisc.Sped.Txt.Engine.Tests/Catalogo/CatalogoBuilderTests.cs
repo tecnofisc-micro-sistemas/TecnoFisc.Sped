@@ -1,7 +1,8 @@
+using TecnoFisc.Sped.Core.ValueObjects;
 using TecnoFisc.Sped.Txt.Engine.Catalogo;
-using TecnoFisc.Sped.Core.Tests._Sintetico;
+using TecnoFisc.Sped.Txt.Engine.Tests._Sintetico;
 
-namespace TecnoFisc.Sped.Core.Tests.Catalogo;
+namespace TecnoFisc.Sped.Txt.Engine.Tests.Catalogo;
 
 public sealed class CatalogoBuilderTests
 {

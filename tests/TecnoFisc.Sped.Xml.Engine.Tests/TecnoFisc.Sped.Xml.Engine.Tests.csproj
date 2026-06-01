@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\TecnoFisc.Sped.Core\TecnoFisc.Sped.Core.csproj" />
+    <ProjectReference Include="..\..\src\TecnoFisc.Sped.Xml.Engine\TecnoFisc.Sped.Xml.Engine.csproj" />
   </ItemGroup>
 
 </Project>

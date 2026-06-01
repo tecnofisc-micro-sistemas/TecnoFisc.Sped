@@ -13,6 +13,8 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/TecnoFisc.Sped.Core.Tests/TecnoFisc.Sped.Core.Tests.csproj" />
+    <Project Path="tests/TecnoFisc.Sped.Txt.Engine.Tests/TecnoFisc.Sped.Txt.Engine.Tests.csproj" />
+    <Project Path="tests/TecnoFisc.Sped.Xml.Engine.Tests/TecnoFisc.Sped.Xml.Engine.Tests.csproj" />
     <Project Path="tests/TecnoFisc.Sped.EfdContribuicoes.Tests/TecnoFisc.Sped.EfdContribuicoes.Tests.csproj" />
     <Project Path="tests/TecnoFisc.Sped.EfdIcmsIpi.Tests/TecnoFisc.Sped.EfdIcmsIpi.Tests.csproj" />
     <Project Path="tests/TecnoFisc.Sped.Ecd.Tests/TecnoFisc.Sped.Ecd.Tests.csproj" />

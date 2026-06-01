@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>Implementação .NET dos documentos fiscais eletrônicos em XML — NF-e (modelo 55) e NFC-e (modelo 65), leiaute 4.00. Pacote read-only: parser order-independent (tolera o XML canônico e o envelope SERPRO) + modelo tipado, sem geração/emissão.</Description>
+    <Description>Documentos fiscais eletrônicos em XML — NF-e (modelo 55) e NFC-e (modelo 65), leiaute 4.00. Pacote read-only: parser order-independent (tolera o XML canônico e o envelope SERPRO) + modelo tipado, sem geração/emissão. PREVIEW: nesta versão cobre apenas NF-e modelo 55 (parcial — ide/emit/dest/total/item + impostos polimórficos); NFC-e 65, eventos e os grupos transp/cobr/pag/protNFe da NF-e ainda estão em desenvolvimento. Ver CHANGELOG.</Description>
     <PackageId>TecnoFisc.Sped.NFeNFCe</PackageId>
     <PackageTags>sped;nfe;nfce;nf-e;nfc-e;nota-fiscal;xml;fiscal;brasil;tecnofisc</PackageTags>
   </PropertyGroup>

@@ -87,18 +87,18 @@ Conventional Commits prefixes in English (`feat:`, `fix:`, `refactor:`, `test:`,
 
 ## Release flow (CRITICAL)
 
-Tags de release **NÃO** saem de `dev`. Saem de `main`. Sequência canônica:
+Publicação em nuget.org é automática no merge para `main`. Sequência canônica:
 
 1. Trabalho de feature/fix: branch curta → PR para `dev` → **Squash and Merge** (regra padrão acima).
-2. Quando acumular escopo suficiente para release (ou quando o usuário pedir explicitamente):
-   - Bumpar `Directory.Build.props` `<Version>` no próprio PR de release dentro de `dev` (caso ainda não esteja correto).
-   - Consolidar `CHANGELOG.md` movendo `[Não publicado]` para `[X.Y.Z] — yyyy-mm-dd`.
-   - Atualizar `README.md` status.
+2. Quando acumular escopo suficiente para release (ou quando o usuário pedir explicitamente), preparar o release ainda em `dev`:
+   - Bumpar `Directory.Build.props` `<Version>` para a próxima versão SemVer.
+   - Consolidar `CHANGELOG.md` em `[X.Y.Z] — yyyy-mm-dd`.
+   - Atualizar `README.md` status quando o conteúdo público mudar.
 3. Abrir PR `dev` → `main`. Estratégia: **Merge commit** (preserva history dos commits granulares). Não usar squash — main precisa ver os commits individuais para auditoria.
-4. **Tag `vX.Y.Z` no commit de merge em `main`** (não em dev). Push da tag → `release.yml` (`on: push: tags: v*`) faz build/test/pack/push nuget.org + GitHub Release.
+4. Merge em `main` dispara `.github/workflows/release.yml`, que faz build/test/pack, valida que `vX.Y.Z` ainda não existe, valida que os pacotes `X.Y.Z` ainda não existem no nuget.org, publica os `.nupkg`, cria a tag `vX.Y.Z` no commit de merge e cria a GitHub Release.
 5. Continuar trabalho em `dev` para a próxima release.
 
-Erro recorrente a evitar: taggar `dev` direto e disparar publicação com `main` desatualizada. Se o pacote já foi publicado por engano dessa forma, o conserto é abrir PR `dev` → `main` (catch-up) sem re-tag — pacotes NuGet são imutáveis. Apenas releases futuras seguem o fluxo correto.
+Não criar tags manualmente para releases normais. A tag é saída do workflow de release, não entrada. Se uma publicação parcial ocorrer, NuGet é imutável: corrigir em nova versão patch, nunca tentar republicar o mesmo `X.Y.Z`.
 
 ## Documentation language
 

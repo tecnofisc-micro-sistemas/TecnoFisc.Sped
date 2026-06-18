@@ -35,6 +35,20 @@ public sealed class SnifferSpedTests
     }
 
     [Fact]
+    public async Task IdentificarAsync_MantemContratoLeveSemMetadadosFiscais()
+    {
+        await using var stream = Sped("|0000|006|0|||01022025|28022025|EMPRESA|11222333000181|MG|3126901||00|2|\r\n");
+
+        var metadados = await SnifferSped.IdentificarAsync(stream, TestContext.Current.CancellationToken);
+
+        metadados.Projeto.Should().Be(ProjetoSped.EfdContribuicoes);
+        metadados.VersaoLeiaute.Should().Be(6);
+        metadados.GetType().GetProperty("Cnpj").Should().BeNull();
+        metadados.GetType().GetProperty("DataInicial").Should().BeNull();
+        metadados.GetType().GetProperty("DataFinal").Should().BeNull();
+    }
+
+    [Fact]
     public async Task IdentificarAsync_EfdIcmsIpiV015_RetornaMetadados()
     {
         await using var stream = Sped("|0000|015|1|01012021|31012021|EMPRESA|11222333000181||MG|123456789|3139409|||B|1|\n");

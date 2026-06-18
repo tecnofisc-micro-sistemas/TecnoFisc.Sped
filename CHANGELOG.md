@@ -4,6 +4,25 @@ Todas as mudanças relevantes deste repositório são documentadas neste arquivo
 
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o projeto adota [Semantic Versioning](https://semver.org/lang/pt-BR/). Cada pacote NuGet possui versão independente; as seções abaixo agrupam as mudanças por release do repositório.
 
+## [Não publicado]
+
+## [0.8.0] — 2026-06-18
+
+Release de automação de publicação e enriquecimento do sniffer TXT.
+
+### TecnoFisc.Sped.Txt.Engine
+
+#### Adicionado
+
+- Sniffer fiscal TXT opt-in: novo `SnifferSpedFiscal.IdentificarAsync(Stream)` devolve os metadados fiscais básicos encontrados no registro `0000` (`Cnpj`, período inicial e período final), mantendo o `SnifferSped` existente como API leve de identificação de projeto/leiaute.
+
+### Infraestrutura
+
+#### Alterado
+
+- Publicação NuGet automatizada no merge para `main`: o workflow de release agora lê a versão de `Directory.Build.props`, valida tag/pacotes duplicados, empacota, publica no nuget.org, cria a tag `vX.Y.Z` e gera a GitHub Release sem etapa manual de tag.
+- CI volta a ficar focado em build/test; o empacotamento de release passa a ser responsabilidade exclusiva do workflow `Release`.
+
 ## [0.7.1] — 2026-06-01
 
 Patch de **publicação**. Não há mudança de API nem de comportamento em relação à `0.7.0`: esta versão republica toda a família de pacotes num número de versão consistente após a publicação da `0.7.0` ter falhado parcialmente no NuGet.
@@ -320,7 +339,8 @@ Release inicial. Conclui a Stage 4 de `ARCHITECTURE.md`: implementação complet
 - API streaming (`IAsyncEnumerable<RegistroSped>`) é objetivo da Stage 5 e não está disponível neste release.
 - Suporte a leiautes mais novos (V007+) entra na Stage 7.
 
-[Não publicado]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/compare/v0.7.1...HEAD
+[Não publicado]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/releases/tag/v0.8.0
 [0.7.1]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/releases/tag/v0.7.1
 [0.7.0]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/releases/tag/v0.7.0
 [0.6.0]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/releases/tag/v0.6.0

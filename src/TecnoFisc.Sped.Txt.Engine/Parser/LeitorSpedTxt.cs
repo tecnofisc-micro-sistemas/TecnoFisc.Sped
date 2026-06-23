@@ -134,6 +134,36 @@ public sealed class LeitorSpedTxt : ILeitorSped
     }
 
     /// <summary>
+    /// Parseia uma única linha SPED canônica (<c>|REG|...|</c>) isoladamente, sem hierarquia nem
+    /// streaming. Nunca lança por erro de campo: o registro (em <see cref="ResultadoParse{T}.Valor"/>)
+    /// traz os campos conversíveis preenchidos e os que falharam no valor default, com os erros em
+    /// <see cref="Abstracoes.RegistroSped.ErrosDeFormato"/>. Devolve falha apenas quando nenhum
+    /// registro pôde ser produzido (linha sem '|' nas pontas ou código desconhecido pelo catálogo).
+    /// </summary>
+    public ResultadoParse<RegistroSped> ParseLinha(ReadOnlySpan<char> linha, long numeroLinha = 0)
+    {
+        if (linha.IsEmpty || linha[0] != '|' || linha[^1] != '|')
+            return ResultadoParse<RegistroSped>.Falhar(
+                new ErroFormato(numeroLinha, null, null, "Linha SPED deve iniciar e terminar com '|'.")
+                {
+                    ValorBruto = linha.IsEmpty ? null : linha.ToString()
+                });
+
+        var pilha = new PilhaHierarquica();   // descartável: ParseLinha não constrói hierarquia
+        var registro = InterpretarLinha(linha, numeroLinha, pilha, versaoLeiaute: 0,
+            metadadosResolvido: null, forcarLenienteCampo: true, forcarLenienteLayout: true);
+
+        if (registro is RegistroNaoReconhecido sentinela)
+            return ResultadoParse<RegistroSped>.Falhar(
+                new ErroFormato(numeroLinha, sentinela.Codigo, null, sentinela.Erro.Mensagem));
+
+        return registro is null
+            ? ResultadoParse<RegistroSped>.Falhar(
+                new ErroFormato(numeroLinha, null, null, "Linha não produziu registro."))
+            : ResultadoParse<RegistroSped>.Ok(registro);
+    }
+
+    /// <summary>
     /// Decide se o registro deve ser descartado conforme <see cref="ReadingOptions"/>:
     /// <list type="bullet">
     ///   <item>se estamos na subárvore de um registro ignorado por código, descarta descendentes
@@ -431,7 +461,9 @@ public sealed class LeitorSpedTxt : ILeitorSped
         long numeroLinha,
         PilhaHierarquica pilha,
         int versaoLeiaute,
-        MetadadosRegistro? metadadosResolvido)
+        MetadadosRegistro? metadadosResolvido,
+        bool? forcarLenienteCampo = null,
+        bool? forcarLenienteLayout = null)
     {
         if (linha.IsEmpty)
             return null;
@@ -447,8 +479,8 @@ public sealed class LeitorSpedTxt : ILeitorSped
         // remove pipes inicial e final; o conteúdo restante é separado por '|'.
         var conteudo = linha[1..^1];
 
-        bool lenienteCampo = _opcoes.LenientFieldParsing;
-        bool lenienteLayout = _opcoes.LenientLayout;
+        bool lenienteCampo = forcarLenienteCampo ?? _opcoes.LenientFieldParsing;
+        bool lenienteLayout = forcarLenienteLayout ?? _opcoes.LenientLayout;
 
         MetadadosRegistro? metadados = null;
         RegistroSped? registro = null;

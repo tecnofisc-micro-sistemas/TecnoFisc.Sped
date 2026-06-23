@@ -14,7 +14,8 @@ public abstract class RegistroSped
 
     /// <summary>
     /// Erros de conversão de campo capturados em modo leniente (ver
-    /// <see cref="Parser.ReadingOptions.LenientFieldParsing"/>).
+    /// <see cref="Parser.ReadingOptions.LenientFieldParsing"/> e
+    /// <see cref="Parser.LeitorSpedTxt.ParseLinha"/>).
     /// Vazia quando o registro foi lido sem problemas ou em modo estrito. O campo correspondente
     /// a cada erro permanece no valor default.
     /// </summary>

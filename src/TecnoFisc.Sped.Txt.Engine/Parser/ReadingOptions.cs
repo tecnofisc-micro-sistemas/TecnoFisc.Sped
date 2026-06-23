@@ -30,6 +30,15 @@ public sealed class ReadingOptions
     public IReadOnlySet<string> BlocosIgnorados { get; init; } = new HashSet<string>(StringComparer.Ordinal);
 
     /// <summary>
+    /// Quando <c>true</c>, uma falha de conversão de campo (FormatException/ArgumentException/
+    /// OverflowException no Definidor) NÃO aborta a leitura: o campo fica no default, o erro é
+    /// acumulado em <see cref="Abstracoes.RegistroSped.ErrosDeFormato"/> e o parsing continua.
+    /// Padrão: <c>false</c> (lança ErroFormatoSpedException no primeiro erro de campo).
+    /// Não afeta erros de LAYOUT (registro desconhecido).
+    /// </summary>
+    public bool LenientFieldParsing { get; init; }
+
+    /// <summary>
     /// <c>true</c> quando há ao menos um filtro configurado. O leitor usa isto para pular toda a
     /// lógica de descarte (fast-path) quando nada deve ser ignorado.
     /// </summary>

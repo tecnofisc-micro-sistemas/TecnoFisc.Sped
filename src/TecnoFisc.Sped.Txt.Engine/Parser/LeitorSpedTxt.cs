@@ -447,8 +447,30 @@ public sealed class LeitorSpedTxt : ILeitorSped
         // remove pipes inicial e final; o conteúdo restante é separado por '|'.
         var conteudo = linha[1..^1];
 
+        bool lenienteCampo = _opcoes.LenientFieldParsing;
+
         MetadadosRegistro? metadados = null;
         RegistroSped? registro = null;
+
+        // Aplica um campo; em modo leniente, captura a falha de conversão, acumula no registro
+        // (campo permanece no default) e segue. Em modo estrito, mantém o comportamento atual.
+        void Definir(MetadadosCampo campo, ReadOnlySpan<char> valor)
+        {
+            try
+            {
+                campo.Definidor(registro!, valor);
+            }
+            catch (Exception ex) when (ex is FormatException or ArgumentException or OverflowException)
+            {
+                var erro = new ErroFormato(numeroLinha, metadados!.Codigo, campo.Nome, ex.Message)
+                {
+                    ValorBruto = valor.ToString()
+                };
+                if (!lenienteCampo)
+                    throw new ErroFormatoSpedException(erro, ex);
+                registro!.RegistrarErroDeFormato(erro);
+            }
+        }
         // Posição na nomenclatura do Guia Prático: 1 = REG; 2..N = campos do layout.
         int posicaoCampo = 1;
         int inicioCampo = 0;
@@ -478,42 +500,31 @@ public sealed class LeitorSpedTxt : ILeitorSped
                 if (indice < metadados.Campos.Count)
                 {
                     var campo = metadados.Campos[indice];
-                    try
+                    if (campo.CapturaTudo)
                     {
-                        if (campo.CapturaTudo)
+                        // Campo variádico (*): captura tudo que resta na linha a partir
+                        // de inicioCampo, incluindo os separadores | intermediários.
+                        Definir(campo, conteudo[inicioCampo..]);
+                        break;
+                    }
+                    if (campo.CampoArquivo)
+                    {
+                        // Campo-arquivo de registro multi-linha (ex.: ARQ_RTF): captura tudo
+                        // entre inicioCampo e o último '|' do conteúdo (que separa do token de
+                        // fim), preservando '|' e CRLFs embutidos. O campo seguinte é o token.
+                        var resto = conteudo[inicioCampo..];
+                        int idxSep = resto.LastIndexOf('|');
+                        if (idxSep < 0)
                         {
-                            // Campo variádico (*): captura tudo que resta na linha a partir
-                            // de inicioCampo, incluindo os separadores | intermediários.
-                            campo.Definidor(registro, conteudo[inicioCampo..]);
+                            Definir(campo, resto);
                             break;
                         }
-                        if (campo.CampoArquivo)
-                        {
-                            // Campo-arquivo de registro multi-linha (ex.: ARQ_RTF): captura tudo
-                            // entre inicioCampo e o último '|' do conteúdo (que separa do token de
-                            // fim), preservando '|' e CRLFs embutidos. O campo seguinte é o token.
-                            var resto = conteudo[inicioCampo..];
-                            int idxSep = resto.LastIndexOf('|');
-                            if (idxSep < 0)
-                            {
-                                campo.Definidor(registro, resto);
-                                break;
-                            }
-                            campo.Definidor(registro, resto[..idxSep]);
-                            if (indice + 1 < metadados.Campos.Count)
-                                metadados.Campos[indice + 1].Definidor(registro, resto[(idxSep + 1)..]);
-                            break;
-                        }
-                        campo.Definidor(registro, fatia);
+                        Definir(campo, resto[..idxSep]);
+                        if (indice + 1 < metadados.Campos.Count)
+                            Definir(metadados.Campos[indice + 1], resto[(idxSep + 1)..]);
+                        break;
                     }
-                    catch (Exception ex) when (ex is FormatException
-                                                  or ArgumentException
-                                                  or OverflowException)
-                    {
-                        throw new ErroFormatoSpedException(
-                            new ErroFormato(numeroLinha, metadados.Codigo, campo.Nome, ex.Message),
-                            ex);
-                    }
+                    Definir(campo, fatia);
                 }
                 // Campos posteriores ao último declarado são ignorados — layouts novos
                 // podem adicionar colunas no fim sem quebrar leitores antigos.

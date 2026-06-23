@@ -1,3 +1,4 @@
+using TecnoFisc.Sped.Core.Erros;
 using TecnoFisc.Sped.Txt.Engine.Abstracoes;
 using TecnoFisc.Sped.Txt.Engine.Parser;
 using TecnoFisc.Sped.Ecd.Generated;
@@ -59,4 +60,11 @@ public sealed class ParserEcd : ILeitorSped
     /// </summary>
     public Task<ArquivoEcd> ReadAsync(Stream entrada, CancellationToken cancelamento = default)
         => ArquivoEcd.LoadAsync(ReadStreamingAsync(entrada, cancelamento), cancelamento);
+
+    /// <summary>
+    /// Parseia uma única linha SPED isoladamente, tolerante por natureza (ver
+    /// <see cref="LeitorSpedTxt.ParseLinha"/>). Não constrói hierarquia.
+    /// </summary>
+    public ResultadoParse<RegistroSped> ParseLinha(ReadOnlySpan<char> linha, long numeroLinha = 0)
+        => _leitor.ParseLinha(linha, numeroLinha);
 }

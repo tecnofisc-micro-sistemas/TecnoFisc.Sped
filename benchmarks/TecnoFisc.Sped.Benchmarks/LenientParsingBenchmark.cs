@@ -1,7 +1,5 @@
 using System.Text;
-
 using BenchmarkDotNet.Attributes;
-
 using TecnoFisc.Sped.EfdContribuicoes.Parser;
 using TecnoFisc.Sped.Txt.Engine.Parser;
 
@@ -58,7 +56,7 @@ public class LenientParsingBenchmark
         sb.Append('|').Append("C990").Append('|').Append(qtdBlocoC).Append("|\r\n");
         sb.Append('|').Append("9999").Append('|').Append(totalLinhas).Append("|\r\n");
 
-        _arquivo = Encoding.Latin1.GetBytes(sb.ToString());
+        _arquivo = EncodingSped.Latin1.GetBytes(sb.ToString());
     }
 
     /// <summary>Caminho estrito (baseline): qualquer falha de campo lançaria exceção.</summary>

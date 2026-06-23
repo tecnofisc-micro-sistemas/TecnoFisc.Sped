@@ -448,6 +448,7 @@ public sealed class LeitorSpedTxt : ILeitorSped
         var conteudo = linha[1..^1];
 
         bool lenienteCampo = _opcoes.LenientFieldParsing;
+        bool lenienteLayout = _opcoes.LenientLayout;
 
         MetadadosRegistro? metadados = null;
         RegistroSped? registro = null;
@@ -486,9 +487,17 @@ public sealed class LeitorSpedTxt : ILeitorSped
             {
                 metadados = metadadosResolvido;
                 if (metadados is null && !_catalogo.TentarObter(fatia, out metadados))
-                    throw new ErroLayoutSpedException(
-                        new ErroLayout(numeroLinha, fatia.ToString(),
-                            "Código de registro desconhecido pelo catálogo."));
+                {
+                    var erroLayout = new ErroLayout(numeroLinha, fatia.ToString(),
+                        "Código de registro desconhecido pelo catálogo.");
+                    if (!lenienteLayout)
+                        throw new ErroLayoutSpedException(erroLayout);
+
+                    // Sentinela: pendura como folha no topo atual (sem empilhar, nunca vira pai).
+                    var sentinela = new RegistroNaoReconhecido(fatia.ToString(), linha.ToString(), erroLayout);
+                    pilha.Topo?.AdicionarFilho(sentinela);
+                    return sentinela;
+                }
 
                 // [Descontinuado] é informacional no read path (ARCHITECTURE §4.7 read-only):
                 // arquivos históricos ainda contêm o registro e precisam ser parseáveis.

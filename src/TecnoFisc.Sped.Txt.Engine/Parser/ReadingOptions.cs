@@ -34,9 +34,17 @@ public sealed class ReadingOptions
     /// OverflowException no Definidor) NÃO aborta a leitura: o campo fica no default, o erro é
     /// acumulado em <see cref="Abstracoes.RegistroSped.ErrosDeFormato"/> e o parsing continua.
     /// Padrão: <c>false</c> (lança ErroFormatoSpedException no primeiro erro de campo).
-    /// Não afeta erros de LAYOUT (registro desconhecido).
+    /// Não afeta erros de layout (registro desconhecido) — ver <see cref="LenientLayout"/>.
     /// </summary>
     public bool LenientFieldParsing { get; init; }
+
+    /// <summary>
+    /// Quando <c>true</c>, um código de registro desconhecido pelo catálogo NÃO aborta a leitura:
+    /// o leitor emite um <see cref="Abstracoes.RegistroNaoReconhecido"/> (linha crua + erro) como
+    /// folha na hierarquia e continua. Padrão: <c>false</c> (lança ErroLayoutSpedException,
+    /// comportamento atual). Independente de <see cref="LenientFieldParsing"/>.
+    /// </summary>
+    public bool LenientLayout { get; init; }
 
     /// <summary>
     /// <c>true</c> quando há ao menos um filtro configurado. O leitor usa isto para pular toda a

@@ -142,6 +142,8 @@ public sealed class LeitorSpedTxt : ILeitorSped
     /// </summary>
     public ResultadoParse<RegistroSped> ParseLinha(ReadOnlySpan<char> linha, long numeroLinha = 0)
     {
+        // Duplica-se o guard de pipes aqui: ParseLinha devolve Falha (nunca lança),
+        // enquanto InterpretarLinha lança ErroFormatoSpedException — contratos divergem.
         if (linha.IsEmpty || linha[0] != '|' || linha[^1] != '|')
             return ResultadoParse<RegistroSped>.Falhar(
                 new ErroFormato(numeroLinha, null, null, "Linha SPED deve iniciar e terminar com '|'.")

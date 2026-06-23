@@ -1,3 +1,5 @@
+using TecnoFisc.Sped.Core.Erros;
+
 namespace TecnoFisc.Sped.Txt.Engine.Abstracoes;
 
 /// <summary>
@@ -8,6 +10,18 @@ namespace TecnoFisc.Sped.Txt.Engine.Abstracoes;
 public abstract class RegistroSped
 {
     private readonly List<RegistroSped> _filhos = [];
+    private List<ErroFormato>? _errosDeFormato;
+
+    /// <summary>
+    /// Erros de conversão de campo capturados em modo leniente (ver
+    /// <see cref="Parser.ReadingOptions.LenientFieldParsing"/> e
+    /// <see cref="Parser.LeitorSpedTxt.ParseLinha"/>).
+    /// Vazia quando o registro foi lido sem problemas ou em modo estrito. O campo correspondente
+    /// a cada erro permanece no valor default.
+    /// </summary>
+    public IReadOnlyList<ErroFormato> ErrosDeFormato => _errosDeFormato ?? (IReadOnlyList<ErroFormato>)[];
+
+    internal void RegistrarErroDeFormato(ErroFormato erro) => (_errosDeFormato ??= []).Add(erro);
 
     /// <summary>Código do registro como aparece no arquivo SPED (ex.: "0000", "C100").</summary>
     public abstract string Codigo { get; }

@@ -15,7 +15,7 @@
     <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
     <NeutralLanguage>pt-BR</NeutralLanguage>
     <InvariantGlobalization>true</InvariantGlobalization>
-    <Version>0.8.0</Version>
+    <Version>0.9.0</Version>
     <!--
       CS1591 (missing XML doc) silenced enquanto a biblioteca está em scaffolding.
       Quando os docs públicos forem escritos (Stage 7+), remover esta linha.

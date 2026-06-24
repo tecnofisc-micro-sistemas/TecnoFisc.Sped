@@ -6,6 +6,25 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ## [Não publicado]
 
+## [0.9.0] — 2026-06-24
+
+Release de **parsing tolerante opt-in**: o leitor TXT passa a oferecer modos lenientes em que uma falha de campo ou um registro desconhecido não aborta mais a linha/arquivo, deixando o consumidor materializar apontamentos em vez de só receber uma exceção. Tudo **opt-in e backward-compatible** — o comportamento padrão (lançar no primeiro erro) é preservado. (#525)
+
+### TecnoFisc.Sped.Core
+
+#### Adicionado
+
+- `ErroFormato.ValorBruto` (`TecnoFisc.Sped.Core.Erros`) — propriedade `init` nullable que preserva o texto cru do campo que falhou a conversão, permitindo ao consumidor exibir/registrar o valor original. Aditiva: não muda o construtor posicional nem o `ToString()`.
+
+### TecnoFisc.Sped.Txt.Engine
+
+#### Adicionado
+
+- `ReadingOptions.LenientFieldParsing` (`TecnoFisc.Sped.Txt.Engine.Parser`) — quando `true`, uma falha de conversão de campo não aborta a leitura: o campo fica no default, o erro é acumulado em `RegistroSped.ErrosDeFormato` (lista lazy, zero alocação no caminho feliz) e o parsing continua. Padrão `false` reproduz o comportamento atual (lança `ErroFormatoSpedException` no primeiro erro).
+- `ReadingOptions.LenientLayout` (mesmo namespace) — quando `true`, um código de registro desconhecido pelo catálogo não aborta a leitura: o leitor emite um `RegistroNaoReconhecido` (linha crua + `ErroLayout`) como folha na hierarquia e continua. O sentinela nunca vira pai. Padrão `false` reproduz o comportamento atual (lança `ErroLayoutSpedException`). Independente de `LenientFieldParsing`.
+- `RegistroNaoReconhecido` (`TecnoFisc.Sped.Txt.Engine.Abstracoes`) — registro sentinela sempre-folha emitido sob `LenientLayout`, carregando a linha crua e o erro de layout.
+- `LeitorSpedTxt.ParseLinha` (`TecnoFisc.Sped.Txt.Engine.Parser`) — método público novo que parseia uma única linha isolada, sem hierarquia nem streaming, sempre leniente. Devolve `Ok(registro)` com eventuais erros de campo em `ErrosDeFormato`; `Falha` apenas quando nenhum registro sai (linha sem pipes ou código desconhecido).
+
 ## [0.8.0] — 2026-06-18
 
 Release de automação de publicação e enriquecimento do sniffer TXT.
@@ -339,7 +358,8 @@ Release inicial. Conclui a Stage 4 de `ARCHITECTURE.md`: implementação complet
 - API streaming (`IAsyncEnumerable<RegistroSped>`) é objetivo da Stage 5 e não está disponível neste release.
 - Suporte a leiautes mais novos (V007+) entra na Stage 7.
 
-[Não publicado]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/compare/v0.8.0...HEAD
+[Não publicado]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/releases/tag/v0.9.0
 [0.8.0]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/releases/tag/v0.8.0
 [0.7.1]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/releases/tag/v0.7.1
 [0.7.0]: https://github.com/tecnofisc-micro-sistemas/TecnoFisc.Sped/releases/tag/v0.7.0

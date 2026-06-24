@@ -6,14 +6,13 @@ on:
   workflow_dispatch:
     inputs:
       dry_run:
-        description: 'Empacota mas não publica (apenas valida)'
+        description: 'Roda o semantic-release em modo dry-run (calcula a versão e as notas, mas NÃO empacota, publica, taggeia nem cria release)'
         required: false
-        default: 'true'
-        type: choice
-        options:
-          - 'true'
-          - 'false'
+        default: true
+        type: boolean
 
+# semantic-release cria tag + GitHub Release (contents: write).
+# Não há push de volta na main: a versão é computada e injetada no dotnet pack.
 permissions:
   contents: write
 
@@ -30,12 +29,14 @@ env:
 
 jobs:
   release:
-    name: Build, Pack, Tag & Push to nuget.org
+    name: Compute version, Pack, Push to nuget.org, Tag & Release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v5
         with:
+          # Histórico completo: semantic-release precisa de todos os commits e tags
+          # para descobrir o último release e analisar os Conventional Commits desde então.
           fetch-depth: 0
 
       - name: Setup .NET (from global.json)
@@ -44,37 +45,16 @@ jobs:
           global-json-file: global.json
           dotnet-quality: preview
 
-      - name: Read release version
-        shell: bash
-        run: |
-          version=$(grep -oP '(?<=<Version>)[^<]+' Directory.Build.props | head -n1)
-          if [ -z "$version" ]; then
-            echo "::error::Não foi possível ler <Version> em Directory.Build.props."
-            exit 1
-          fi
-          if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+([-.][0-9A-Za-z.-]+)?$ ]]; then
-            echo "::error::Versão '$version' não parece SemVer/NuGet válida."
-            exit 1
-          fi
-          echo "VERSION=$version" >> "$GITHUB_ENV"
-          echo "TAG_NAME=v$version" >> "$GITHUB_ENV"
-          echo "Release version: $version"
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 20
 
-      - name: Validate release tag does not exist
-        shell: bash
-        run: |
-          git fetch --tags --force
-          if git rev-parse -q --verify "refs/tags/$TAG_NAME" >/dev/null; then
-            echo "::error::Tag $TAG_NAME já existe. Bump Directory.Build.props antes de publicar."
-            exit 1
-          fi
+      - name: Install release toolchain
+        run: npm ci
 
-      - name: Validate manual publish source
-        if: github.event_name == 'workflow_dispatch' && inputs.dry_run == 'false' && github.ref != 'refs/heads/main'
-        run: |
-          echo "::error::Publicação manual com dry_run=false só pode rodar a partir da branch main."
-          exit 1
-
+      # Gate de build/test antes de qualquer publicação (a versão real só é
+      # injetada no pack feito pelo semantic-release; aqui basta validar o código).
       - name: Restore
         run: dotnet restore TecnoFisc.Sped.slnx
 
@@ -84,106 +64,29 @@ jobs:
       - name: Test
         run: dotnet test TecnoFisc.Sped.slnx --configuration Release --no-build --logger "trx;LogFileName=test-results.trx" --results-directory ./TestResults
 
-      - name: Pack
-        run: dotnet pack TecnoFisc.Sped.slnx --configuration Release --no-build --output ./artifacts
+      # semantic-release orquestra tudo: commit-analyzer (versão) → release-notes →
+      # exec (dotnet pack -p:Version=X → dotnet nuget push) → github (tag vX + Release + assets).
+      # A ordem dos plugins garante que o push ao nuget.org acontece ANTES da criação da tag:
+      # se o push falhar, nenhuma tag órfã é criada e o run pode ser re-executado (--skip-duplicate).
+      - name: Semantic Release (dry-run)
+        if: github.event_name == 'workflow_dispatch' && inputs.dry_run
+        run: npx semantic-release --dry-run
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
 
-      - name: Validate packages are not already on nuget.org
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = 'Stop'
-          Add-Type -AssemblyName System.IO.Compression.FileSystem
-
-          $packages = Get-ChildItem -Path ./artifacts -Filter *.nupkg
-          if ($packages.Count -eq 0) {
-            Write-Error 'Nenhum .nupkg foi gerado em ./artifacts.'
-          }
-
-          foreach ($package in $packages) {
-            $zip = [System.IO.Compression.ZipFile]::OpenRead($package.FullName)
-            try {
-              $nuspec = $zip.Entries | Where-Object { $_.FullName -like '*.nuspec' } | Select-Object -First 1
-              if ($null -eq $nuspec) {
-                Write-Error "Pacote $($package.Name) não contém .nuspec."
-              }
-
-              $reader = [System.IO.StreamReader]::new($nuspec.Open())
-              try {
-                [xml]$xml = $reader.ReadToEnd()
-              }
-              finally {
-                $reader.Dispose()
-              }
-
-              $id = [string]$xml.package.metadata.id
-              $version = [string]$xml.package.metadata.version
-              if ($version -ne $env:VERSION) {
-                Write-Error "Pacote $id tem versão $version, mas Directory.Build.props define $env:VERSION."
-              }
-
-              $flatId = $id.ToLowerInvariant()
-              $flatVersion = $version.ToLowerInvariant()
-              $url = "https://api.nuget.org/v3-flatcontainer/$flatId/$flatVersion/$flatId.$flatVersion.nupkg"
-
-              $packageExists = $false
-              try {
-                Invoke-WebRequest -Uri $url -Method Head -ErrorAction Stop | Out-Null
-                $packageExists = $true
-              }
-              catch {
-                $statusCode = $_.Exception.Response.StatusCode.value__
-                if ($statusCode -eq 404) {
-                  Write-Host "OK: $id $version ainda não existe no nuget.org."
-                }
-                else {
-                  throw
-                }
-              }
-
-              if ($packageExists) {
-                Write-Error "Pacote $id $version já existe no nuget.org. Bump a versão antes de publicar."
-              }
-            }
-            finally {
-              $zip.Dispose()
-            }
-          }
+      - name: Semantic Release (publish)
+        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run)
+        run: npx semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
 
       - name: Upload packages (artifact)
+        if: always()
         uses: actions/upload-artifact@v5
         with:
-          name: nupkgs-${{ env.VERSION }}
+          name: nupkgs
           path: ./artifacts/*
+          if-no-files-found: ignore
           retention-days: 30
-
-      - name: Push to nuget.org
-        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.dry_run == 'false'))
-        env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-        run: |
-          if [ -z "$NUGET_API_KEY" ]; then
-            echo "::error::Secret NUGET_API_KEY ausente. Configure em Settings → Secrets and variables → Actions."
-            exit 1
-          fi
-          dotnet nuget push "./artifacts/*.nupkg" \
-            --api-key "$NUGET_API_KEY" \
-            --source https://api.nuget.org/v3/index.json \
-            --skip-duplicate
-
-      - name: Create release tag
-        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.dry_run == 'false'))
-        shell: bash
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag -a "$TAG_NAME" -m "Release $VERSION"
-          git push origin "$TAG_NAME"
-
-      - name: Create GitHub Release
-        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.dry_run == 'false'))
-        uses: softprops/action-gh-release@v3
-        with:
-          tag_name: ${{ env.TAG_NAME }}
-          name: ${{ env.TAG_NAME }}
-          files: ./artifacts/*
-          generate_release_notes: true
-          fail_on_unmatched_files: true

@@ -87,18 +87,14 @@ Conventional Commits prefixes in English (`feat:`, `fix:`, `refactor:`, `test:`,
 
 ## Release flow (CRITICAL)
 
-Publicação em nuget.org é automática no merge para `main`. Sequência canônica:
+Publicação em nuget.org é **contínua e automática**, orquestrada por **semantic-release** (`.github/workflows/release.yml` + `.releaserc.json`). **Não há bump manual de versão nem PR de release.** A versão é **computada** a partir dos Conventional Commits, não editada em arquivo. Sequência canônica:
 
-1. Trabalho de feature/fix: branch curta → PR para `dev` → **Squash and Merge** (regra padrão acima).
-2. Quando acumular escopo suficiente para release (ou quando o usuário pedir explicitamente), preparar o release ainda em `dev`:
-   - Bumpar `Directory.Build.props` `<Version>` para a próxima versão SemVer.
-   - Consolidar `CHANGELOG.md` em `[X.Y.Z] — yyyy-mm-dd`.
-   - Atualizar `README.md` status quando o conteúdo público mudar.
-3. Abrir PR `dev` → `main`. Estratégia: **Merge commit** (preserva history dos commits granulares). Não usar squash — main precisa ver os commits individuais para auditoria.
-4. Merge em `main` dispara `.github/workflows/release.yml`, que faz build/test/pack, valida que `vX.Y.Z` ainda não existe, valida que os pacotes `X.Y.Z` ainda não existem no nuget.org, publica os `.nupkg`, cria a tag `vX.Y.Z` no commit de merge e cria a GitHub Release.
-5. Continuar trabalho em `dev` para a próxima release.
+1. Trabalho de feature/fix: branch curta → PR para `dev` → **Squash and Merge** (regra padrão acima). **O título do PR/squash é a unidade de Conventional Commit analisada pelo semantic-release** — título malformado gera versão errada (o workflow `PR Title Lint` valida isto no PR).
+2. Quando houver escopo para release, abrir PR `dev` → `main`. Estratégia: **Merge commit** (preserva history dos commits granulares). Não usar squash — main precisa ver os commits individuais para auditoria. **Não bumpar `Directory.Build.props`** (carrega só o placeholder `0.0.0-dev`).
+3. Merge em `main` dispara o workflow `Release`, que: roda build/test (gate), depois `npx semantic-release` → calcula a próxima versão (`fix:`→patch, `feat:`→minor, `feat!:`/`BREAKING CHANGE:`→major), empacota com `dotnet pack -p:Version=X.Y.Z`, publica os `.nupkg` no nuget.org (`--skip-duplicate`), cria a tag `vX.Y.Z` e gera a GitHub Release. Commits `chore:`/`docs:` não geram release.
+4. `CHANGELOG.md` é **curado à mão** (narrativa por pacote) mas **não dirige o release** — as Release Notes do GitHub são auto-geradas. Atualizar `README.md`/`CHANGELOG.md` é trabalho de conteúdo normal em `dev`, não etapa de release.
 
-Não criar tags manualmente para releases normais. A tag é saída do workflow de release, não entrada. Se uma publicação parcial ocorrer, NuGet é imutável: corrigir em nova versão patch, nunca tentar republicar o mesmo `X.Y.Z`.
+Não criar tags manualmente: a tag é **saída** do workflow, não entrada. NuGet é imutável — se uma publicação parcial ocorrer, o próximo merge com um `fix:` gera uma nova versão patch; nunca tentar republicar o mesmo `X.Y.Z`. A ordem dos plugins garante que o push ao nuget.org ocorre **antes** da criação da tag, então falha de push não deixa tag órfã. Para validar sem publicar, rodar o workflow `Release` manualmente com `dry_run=true`.
 
 ## Documentation language
 

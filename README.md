@@ -261,16 +261,24 @@ dotnet run -c Release --project benchmarks/TecnoFisc.Sped.Benchmarks -- --probe 
 
 ## Publicação NuGet
 
-O release é automatizado via GitHub Actions. O PR de release para `main` deve conter
-o bump de `<Version>` em `Directory.Build.props`, o `CHANGELOG.md` consolidado e o
-status público do `README.md` atualizado. Depois do merge em `main`, o workflow
-`Release` valida build/test/pack, confirma que a tag `vX.Y.Z` e os pacotes `X.Y.Z`
-ainda não existem, publica os `.nupkg` no nuget.org, cria a tag e gera a GitHub
-Release.
+A publicação é **contínua e automática**, orquestrada por
+[semantic-release](https://semantic-release.gitbook.io/) no workflow `Release`. **Não há
+bump manual de versão nem PR de release**: o merge em `main` (via o PR `dev → main`) dispara
+o pipeline, que computa a próxima versão a partir dos **Conventional Commits** desde o último
+release, injeta essa versão no empacotamento (`dotnet pack -p:Version=X.Y.Z`), publica os
+`.nupkg` no nuget.org, cria a tag `vX.Y.Z` e gera a GitHub Release — tudo numa única execução,
+sem intervenção humana.
 
-Para validar sem publicar, execute manualmente o workflow `Release` com
-`dry_run=true`. Para publicar manualmente uma versão já validada, execute o mesmo
-workflow com `dry_run=false`.
+A versão é **computada**, não editada: `Directory.Build.props` carrega só o placeholder
+`0.0.0-dev` para builds locais. A regra de bump segue o SemVer a partir do prefixo do commit:
+`fix:` → patch, `feat:` → minor, `feat!:`/`BREAKING CHANGE:` → major. Commits `chore:`/`docs:`
+não geram release.
+
+> O `CHANGELOG.md` permanece **curado à mão** para a narrativa por pacote, mas não dirige mais
+> o release — as Release Notes do GitHub são geradas automaticamente a partir dos commits.
+
+Para validar sem publicar (calcular a versão e as notas sem empacotar/publicar), execute
+manualmente o workflow `Release` com `dry_run=true`.
 
 ## Estrutura do repositório
 

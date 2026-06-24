@@ -1,0 +1,41 @@
+name: PR Title Lint
+
+# O título do PR vira o título do squash-merge em `dev`, que é a unidade de
+# Conventional Commit analisada pelo semantic-release para calcular a próxima
+# versão. Um título malformado geraria versão errada (ou nenhum release), então
+# validamos aqui antes do merge.
+
+on:
+  pull_request:
+    branches: [dev, main]
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  pull-requests: read
+
+concurrency:
+  group: pr-title-lint-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  lint-title:
+    name: Validate Conventional Commit title
+    runs-on: ubuntu-latest
+    steps:
+      - name: Lint PR title
+        uses: amannn/action-semantic-pull-request@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # Prefixos aceitos (Conventional Commits, em inglês — CLAUDE.md §Commits).
+          types: |
+            feat
+            fix
+            perf
+            refactor
+            docs
+            test
+            build
+            ci
+            chore
+            revert

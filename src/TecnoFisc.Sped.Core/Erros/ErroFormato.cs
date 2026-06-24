@@ -10,6 +10,10 @@ public sealed record ErroFormato(
     string? Campo,
     string Mensagem)
 {
+    /// <summary>Texto cru do campo que falhou a conversão (preservado para o consumidor). Null quando
+    /// o erro não está associado a um valor de campo específico (ex.: linha sem '|').</summary>
+    public string? ValorBruto { get; init; }
+
     public override string ToString()
         => CodigoRegistro is null
             ? $"Linha {Linha}: {Mensagem}"

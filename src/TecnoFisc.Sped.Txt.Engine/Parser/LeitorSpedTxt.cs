@@ -134,6 +134,38 @@ public sealed class LeitorSpedTxt : ILeitorSped
     }
 
     /// <summary>
+    /// Parseia uma única linha SPED canônica (<c>|REG|...|</c>) isoladamente, sem hierarquia nem
+    /// streaming. Nunca lança por erro de campo: o registro (em <see cref="ResultadoParse{T}.Valor"/>)
+    /// traz os campos conversíveis preenchidos e os que falharam no valor default, com os erros em
+    /// <see cref="Abstracoes.RegistroSped.ErrosDeFormato"/>. Devolve falha apenas quando nenhum
+    /// registro pôde ser produzido (linha sem '|' nas pontas ou código desconhecido pelo catálogo).
+    /// </summary>
+    public ResultadoParse<RegistroSped> ParseLinha(ReadOnlySpan<char> linha, long numeroLinha = 0)
+    {
+        // Duplica-se o guard de pipes aqui: ParseLinha devolve Falha (nunca lança),
+        // enquanto InterpretarLinha lança ErroFormatoSpedException — contratos divergem.
+        if (linha.IsEmpty || linha[0] != '|' || linha[^1] != '|')
+            return ResultadoParse<RegistroSped>.Falhar(
+                new ErroFormato(numeroLinha, null, null, "Linha SPED deve iniciar e terminar com '|'.")
+                {
+                    ValorBruto = linha.IsEmpty ? null : linha.ToString()
+                });
+
+        var pilha = new PilhaHierarquica();   // descartável: ParseLinha não constrói hierarquia
+        var registro = InterpretarLinha(linha, numeroLinha, pilha, versaoLeiaute: 0,
+            metadadosResolvido: null, forcarLenienteCampo: true, forcarLenienteLayout: true);
+
+        if (registro is RegistroNaoReconhecido sentinela)
+            return ResultadoParse<RegistroSped>.Falhar(
+                new ErroFormato(numeroLinha, sentinela.Codigo, null, sentinela.Erro.Mensagem));
+
+        return registro is null
+            ? ResultadoParse<RegistroSped>.Falhar(
+                new ErroFormato(numeroLinha, null, null, "Linha não produziu registro."))
+            : ResultadoParse<RegistroSped>.Ok(registro);
+    }
+
+    /// <summary>
     /// Decide se o registro deve ser descartado conforme <see cref="ReadingOptions"/>:
     /// <list type="bullet">
     ///   <item>se estamos na subárvore de um registro ignorado por código, descarta descendentes
@@ -431,7 +463,9 @@ public sealed class LeitorSpedTxt : ILeitorSped
         long numeroLinha,
         PilhaHierarquica pilha,
         int versaoLeiaute,
-        MetadadosRegistro? metadadosResolvido)
+        MetadadosRegistro? metadadosResolvido,
+        bool? forcarLenienteCampo = null,
+        bool? forcarLenienteLayout = null)
     {
         if (linha.IsEmpty)
             return null;
@@ -447,8 +481,31 @@ public sealed class LeitorSpedTxt : ILeitorSped
         // remove pipes inicial e final; o conteúdo restante é separado por '|'.
         var conteudo = linha[1..^1];
 
+        bool lenienteCampo = forcarLenienteCampo ?? _opcoes.LenientFieldParsing;
+        bool lenienteLayout = forcarLenienteLayout ?? _opcoes.LenientLayout;
+
         MetadadosRegistro? metadados = null;
         RegistroSped? registro = null;
+
+        // Aplica um campo; em modo leniente, captura a falha de conversão, acumula no registro
+        // (campo permanece no default) e segue. Em modo estrito, mantém o comportamento atual.
+        void Definir(MetadadosCampo campo, ReadOnlySpan<char> valor)
+        {
+            try
+            {
+                campo.Definidor(registro!, valor);
+            }
+            catch (Exception ex) when (ex is FormatException or ArgumentException or OverflowException)
+            {
+                var erro = new ErroFormato(numeroLinha, metadados!.Codigo, campo.Nome, ex.Message)
+                {
+                    ValorBruto = valor.ToString()
+                };
+                if (!lenienteCampo)
+                    throw new ErroFormatoSpedException(erro, ex);
+                registro!.RegistrarErroDeFormato(erro);
+            }
+        }
         // Posição na nomenclatura do Guia Prático: 1 = REG; 2..N = campos do layout.
         int posicaoCampo = 1;
         int inicioCampo = 0;
@@ -464,9 +521,17 @@ public sealed class LeitorSpedTxt : ILeitorSped
             {
                 metadados = metadadosResolvido;
                 if (metadados is null && !_catalogo.TentarObter(fatia, out metadados))
-                    throw new ErroLayoutSpedException(
-                        new ErroLayout(numeroLinha, fatia.ToString(),
-                            "Código de registro desconhecido pelo catálogo."));
+                {
+                    var erroLayout = new ErroLayout(numeroLinha, fatia.ToString(),
+                        "Código de registro desconhecido pelo catálogo.");
+                    if (!lenienteLayout)
+                        throw new ErroLayoutSpedException(erroLayout);
+
+                    // Sentinela: pendura como folha no topo atual (sem empilhar, nunca vira pai).
+                    var sentinela = new RegistroNaoReconhecido(fatia.ToString(), linha.ToString(), erroLayout);
+                    pilha.Topo?.AdicionarFilho(sentinela);
+                    return sentinela;
+                }
 
                 // [Descontinuado] é informacional no read path (ARCHITECTURE §4.7 read-only):
                 // arquivos históricos ainda contêm o registro e precisam ser parseáveis.
@@ -478,42 +543,31 @@ public sealed class LeitorSpedTxt : ILeitorSped
                 if (indice < metadados.Campos.Count)
                 {
                     var campo = metadados.Campos[indice];
-                    try
+                    if (campo.CapturaTudo)
                     {
-                        if (campo.CapturaTudo)
+                        // Campo variádico (*): captura tudo que resta na linha a partir
+                        // de inicioCampo, incluindo os separadores | intermediários.
+                        Definir(campo, conteudo[inicioCampo..]);
+                        break;
+                    }
+                    if (campo.CampoArquivo)
+                    {
+                        // Campo-arquivo de registro multi-linha (ex.: ARQ_RTF): captura tudo
+                        // entre inicioCampo e o último '|' do conteúdo (que separa do token de
+                        // fim), preservando '|' e CRLFs embutidos. O campo seguinte é o token.
+                        var resto = conteudo[inicioCampo..];
+                        int idxSep = resto.LastIndexOf('|');
+                        if (idxSep < 0)
                         {
-                            // Campo variádico (*): captura tudo que resta na linha a partir
-                            // de inicioCampo, incluindo os separadores | intermediários.
-                            campo.Definidor(registro, conteudo[inicioCampo..]);
+                            Definir(campo, resto);
                             break;
                         }
-                        if (campo.CampoArquivo)
-                        {
-                            // Campo-arquivo de registro multi-linha (ex.: ARQ_RTF): captura tudo
-                            // entre inicioCampo e o último '|' do conteúdo (que separa do token de
-                            // fim), preservando '|' e CRLFs embutidos. O campo seguinte é o token.
-                            var resto = conteudo[inicioCampo..];
-                            int idxSep = resto.LastIndexOf('|');
-                            if (idxSep < 0)
-                            {
-                                campo.Definidor(registro, resto);
-                                break;
-                            }
-                            campo.Definidor(registro, resto[..idxSep]);
-                            if (indice + 1 < metadados.Campos.Count)
-                                metadados.Campos[indice + 1].Definidor(registro, resto[(idxSep + 1)..]);
-                            break;
-                        }
-                        campo.Definidor(registro, fatia);
+                        Definir(campo, resto[..idxSep]);
+                        if (indice + 1 < metadados.Campos.Count)
+                            Definir(metadados.Campos[indice + 1], resto[(idxSep + 1)..]);
+                        break;
                     }
-                    catch (Exception ex) when (ex is FormatException
-                                                  or ArgumentException
-                                                  or OverflowException)
-                    {
-                        throw new ErroFormatoSpedException(
-                            new ErroFormato(numeroLinha, metadados.Codigo, campo.Nome, ex.Message),
-                            ex);
-                    }
+                    Definir(campo, fatia);
                 }
                 // Campos posteriores ao último declarado são ignorados — layouts novos
                 // podem adicionar colunas no fim sem quebrar leitores antigos.

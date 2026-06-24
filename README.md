@@ -4,7 +4,7 @@ Família de bibliotecas .NET para leitura, geração e manipulação tipada de a
 publicados pelos projetos do **SPED — Sistema Público de Escrituração Digital**
 (Receita Federal do Brasil).
 
-> Status atual: **0.8.0** publicado. Cobre EFD Contribuições V006 (leitura + geração,
+> Status atual: **0.9.0** publicado. Cobre EFD Contribuições V006 (leitura + geração,
 > round-trip validado), EFD ICMS-IPI baseline V015 + incrementos V016 → V020 (leiaute
 > vigente em 2026, **read-only**) e **ECD** leiaute 9 (Sped Contábil, vigente a partir do
 > ano-calendário 2020, **read-only** — parser e modelo tipado, sem geração). Os números
@@ -18,8 +18,10 @@ publicados pelos projetos do **SPED — Sistema Público de Escrituração Digit
 > XML `TecnoFisc.Sped.NFeNFCe` — cobertura atual limitada a **NF-e modelo 55 parcial** (NFC-e 65,
 > eventos e os grupos transp/cobr/pag/protNFe ainda em desenvolvimento). Próximos passos
 > rastreados no `ARCHITECTURE.md` — todos read-only, na ordem **CT-e → ECF**. A `0.8.0`
-> adiciona o sniffer fiscal TXT opt-in para extrair CNPJ e período do registro `0000`. Veja o
-> `CHANGELOG.md` para detalhes.
+> adiciona o sniffer fiscal TXT opt-in para extrair CNPJ e período do registro `0000`. A `0.9.0`
+> adiciona **parsing tolerante opt-in** no leitor TXT (`ReadingOptions.LenientFieldParsing` e
+> `LenientLayout`, mais `LeitorSpedTxt.ParseLinha`): campo falho ou registro desconhecido deixam
+> de abortar a leitura quando o consumidor optar por isso. Veja o `CHANGELOG.md` para detalhes.
 
 ## Visão geral
 
@@ -34,14 +36,14 @@ pacote afetado é versionado.
 
 | Projeto SPED | Pacote NuGet | Status |
 | --- | --- | --- |
-| EFD Contribuições | `TecnoFisc.Sped.EfdContribuicoes` | **0.8.0** — leiaute V006 completo (leitura + geração) |
-| EFD ICMS-IPI | `TecnoFisc.Sped.EfdIcmsIpi` | **0.8.0** — baseline V015 + incrementos V016 → V020 (vigente), **read-only** |
-| ECD | `TecnoFisc.Sped.Ecd` | **0.8.0** — baseline leiaute 9 completo (vigente), **read-only** |
-| NF-e / NFC-e | `TecnoFisc.Sped.NFeNFCe` | **0.8.0 preview** — só NF-e modelo 55 parcial (XML, read-only); NFC-e 65 e eventos em desenvolvimento |
+| EFD Contribuições | `TecnoFisc.Sped.EfdContribuicoes` | **0.9.0** — leiaute V006 completo (leitura + geração) |
+| EFD ICMS-IPI | `TecnoFisc.Sped.EfdIcmsIpi` | **0.9.0** — baseline V015 + incrementos V016 → V020 (vigente), **read-only** |
+| ECD | `TecnoFisc.Sped.Ecd` | **0.9.0** — baseline leiaute 9 completo (vigente), **read-only** |
+| NF-e / NFC-e | `TecnoFisc.Sped.NFeNFCe` | **0.9.0 preview** — só NF-e modelo 55 parcial (XML, read-only); NFC-e 65 e eventos em desenvolvimento |
 | CT-e | `TecnoFisc.Sped.CTe` | planejado (XML, read-only) |
 | ECF | `TecnoFisc.Sped.Ecf` | planejado (read-only) |
-| Guarda-chuva TXT | `TecnoFisc.Sped.Txt` | **0.8.0** — agrega EFD Contribuições, EFD ICMS-IPI e ECD |
-| Guarda-chuva geral | `TecnoFisc.Sped` | **0.8.0** — agrega `TecnoFisc.Sped.Txt`; passará a agregar XML após CT-e |
+| Guarda-chuva TXT | `TecnoFisc.Sped.Txt` | **0.9.0** — agrega EFD Contribuições, EFD ICMS-IPI e ECD |
+| Guarda-chuva geral | `TecnoFisc.Sped` | **0.9.0** — agrega `TecnoFisc.Sped.Txt`; passará a agregar XML após CT-e |
 | Guarda-chuva XML | `TecnoFisc.Sped.Xml` | planejado após CT-e — agregará NFe/NFC-e e CT-e |
 
 > **Modo de operação.** O único pacote com geração de arquivo confirmada é

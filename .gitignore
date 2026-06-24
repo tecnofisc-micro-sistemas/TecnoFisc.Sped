@@ -48,6 +48,11 @@ coverage*.info
 # BenchmarkDotNet
 BenchmarkDotNet.Artifacts/
 
+# Node toolchain de release (semantic-release, CI-only — package.json/lock SÃO versionados)
+node_modules/
+npm-debug.log*
+.npm/
+
 # Rider / ReSharper
 _ReSharper*/
 *.[Rr]e[Ss]harper

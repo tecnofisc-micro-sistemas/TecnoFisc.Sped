@@ -60,6 +60,7 @@ Current development has shipped (release `0.4.0`) EFD Contribuições V006 (read
 5. **Performance-sensitive code requires a BenchmarkDotNet benchmark.** Performance regressions block merge.
 6. **Janela fiscal de 5 anos.** Receita só permite revisão dos últimos 5 anos. Marcos de versionamento de campos com vigência anterior ao corte (hoje, anteriores a 2021-01) **não são modelados** em código. Versões antigas de enums (`IND_PGTO` pré-2012-07, `IND_FRT` pré-2017-10/2018-01, etc.) ficam de fora — só a versão vigente no corte e a evolução posterior contam. Ver `ARCHITECTURE.md` §4.3.
 7. **Merges em `dev` são sempre Squash and Merge.** Branches de trabalho podem ter commits granulares durante a implementação, mas o merge para `dev` deve entrar como um único commit squashed do PR.
+8. **Conventional Commits são load-bearing para o versionamento — nunca crie commit/título de PR fora do padrão.** A publicação é contínua via semantic-release (ver `## Release flow`): a **versão do release é computada a partir da mensagem do commit**, não editada em arquivo. O **título do PR** (que vira o título do squash em `dev`) e cada **commit** devem ser Conventional Commits válidos: `<tipo>[escopo opcional][!]: <descrição>`, tipo em inglês minúsculo. Tipos aceitos: `feat`, `fix`, `perf`, `refactor`, `docs`, `test`, `build`, `ci`, `chore`, `revert`. Bump: `fix:`→patch, `feat:`→minor, `feat!:`/`BREAKING CHANGE:`→major (promove a `1.0.0`). Um título malformado gera versão errada ou nenhuma publicação. O workflow `PR Title Lint` rejeita títulos fora do padrão — mas o agente **não** deve depender do lint: emita commits e títulos corretos por padrão. Em dúvida sobre o tipo, prefira `chore:`/`docs:` (não geram release) a inventar prefixo.
 
 ## Naming convention (CRITICAL — see ARCHITECTURE.md §1.3)
 
@@ -81,9 +82,19 @@ Substantivos do domínio SPED em **português**; verbos, factories estáticos e 
 - Parsing uses `PipeReader` + `ReadOnlySpan<byte>` + `Utf8Parser.TryParse`. No `StreamReader.ReadLine` allocating strings per record.
 - Round-trip invariant: parse → generate → parse must equal the original (modulo deliberate normalization). Cover with property-based or fixture round-trip tests for every record type.
 
-## Commits
+## Commits (CRITICAL — drives versioning, ver Hard rule 8)
 
-Conventional Commits prefixes in English (`feat:`, `fix:`, `refactor:`, `test:`, `docs:`, `perf:`), message body in Portuguese. Branches podem ter commits granulares, um por ideia coesa. Ao integrar em `dev`, usar sempre Squash and Merge.
+**Todo commit e todo título de PR é um Conventional Commit válido.** Isto não é estilo: o semantic-release **computa a versão do release a partir dessas mensagens** (ver `## Release flow`). Mensagem fora do padrão = release quebrado.
+
+Formato: `<tipo>[escopo]?[!]?: <descrição em inglês imperativo, minúsculo>`. **Prefixo/tipo em inglês**, corpo do commit em português.
+
+- **Tipos aceitos:** `feat`, `fix`, `perf`, `refactor`, `docs`, `test`, `build`, `ci`, `chore`, `revert`. Não inventar outros (o `PR Title Lint` rejeita).
+- **Impacto na versão:** `fix:`→**patch** · `feat:`→**minor** · `feat!:` ou rodapé `BREAKING CHANGE:`→**major** (promove a `1.0.0`). `chore:`/`docs:`/`refactor:`/`test:`/`build:`/`ci:`/`style:` → **não geram release**.
+- **Escopo** (opcional) nomeia o módulo: `feat(txt):`, `fix(efdicmsipi):`, `feat(core):`.
+- **Exemplos válidos:** `feat(txt): parsing tolerante opt-in`, `fix(core): corrigir digito verificador do Cnpj`, `chore: bump dependências de teste`, `feat(nfe)!: renomear ParserNFe.ReadAsync` (breaking).
+- **Proibido:** título sem prefixo (`atualiza README`), prefixo em português (`recurso:`, `correção:`), prefixo inexistente (`update:`, `wip:`), ou mistura (`Feat:` capitalizado).
+
+Branches podem ter commits granulares, um por ideia coesa, **cada um já em Conventional Commit**. Ao integrar em `dev`, usar sempre **Squash and Merge** — o **título do PR** vira o título do squash e é a unidade que o semantic-release analisa, então o título do PR precisa ser um Conventional Commit correto e refletir o maior impacto do conjunto (se o PR tem um `feat` e dois `fix`, o título é `feat:`).
 
 ## Release flow (CRITICAL)
 

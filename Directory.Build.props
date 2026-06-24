@@ -15,7 +15,13 @@
     <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
     <NeutralLanguage>pt-BR</NeutralLanguage>
     <InvariantGlobalization>true</InvariantGlobalization>
-    <Version>0.9.0</Version>
+    <!--
+      Placeholder de desenvolvimento. A versão real de release é COMPUTADA pelo
+      semantic-release a partir dos Conventional Commits e injetada no empacotamento
+      via `dotnet pack -p:Version=X.Y.Z` (ver .releaserc.json e .github/workflows/release.yml).
+      Builds/packs locais saem como 0.0.0-dev — não publicar manualmente.
+    -->
+    <Version>0.0.0-dev</Version>
     <!--
       CS1591 (missing XML doc) silenced enquanto a biblioteca está em scaffolding.
       Quando os docs públicos forem escritos (Stage 7+), remover esta linha.

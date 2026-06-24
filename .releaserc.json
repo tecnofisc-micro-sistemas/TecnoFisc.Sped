@@ -1,0 +1,27 @@
+{
+  "branches": ["main"],
+  "tagFormat": "v${version}",
+  "plugins": [
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/release-notes-generator",
+    [
+      "@semantic-release/exec",
+      {
+        "verifyConditionsCmd": "test -n \"$NUGET_API_KEY\" || { echo '::error::Secret NUGET_API_KEY ausente.'; exit 1; }",
+        "prepareCmd": "dotnet pack TecnoFisc.Sped.slnx --configuration Release -p:Version=${nextRelease.version} --output artifacts",
+        "publishCmd": "dotnet nuget push \"artifacts/*.nupkg\" --api-key \"$NUGET_API_KEY\" --source https://api.nuget.org/v3/index.json --skip-duplicate"
+      }
+    ],
+    [
+      "@semantic-release/github",
+      {
+        "assets": [
+          { "path": "artifacts/*.nupkg" },
+          { "path": "artifacts/*.snupkg" }
+        ],
+        "successComment": false,
+        "failComment": false
+      }
+    ]
+  ]
+}

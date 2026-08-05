@@ -26,6 +26,7 @@ artifacts/
 
 # Visual Studio / Rider / VS Code
 .vs/
+.worktrees/
 .idea/
 *.suo
 *.user

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import tempfile
 from dataclasses import dataclass
@@ -12,6 +13,13 @@ from typing import Callable, Iterable
 from ecf_layout.cache import CacheKey, converter_fingerprint, sha256_file
 from ecf_layout.converter import EmptyMarkdownError, convert_page
 from ecf_layout.fragmenter import fragment_pages_with_errors, write_fragments
+from ecf_layout.manifest import (
+    ManifestValidationError,
+    records_from_work_dir,
+    validate_and_promote,
+    write_quarantine,
+)
+from ecf_layout.render import render_suspicious_pages
 
 
 Converter = Callable[[Path, int], str]
@@ -79,7 +87,18 @@ def main(argv: list[str] | None = None) -> int:
     prepare.add_argument("--pdf", type=Path, required=True)
     prepare.add_argument("--work-dir", type=Path, required=True)
     prepare.add_argument("--pages", type=_parse_pages, required=True)
+    validate = subcommands.add_parser("validate")
+    validate.add_argument("--work-dir", type=Path, required=True)
+    validate.add_argument(
+        "--pdf",
+        type=Path,
+        default=Path("sped/guides/Manual_ECF_Leiaute_12_29_01_2026.pdf"),
+    )
+    validate.add_argument("--render-suspicious", action="store_true")
     args = parser.parse_args(argv)
+
+    if args.command == "validate":
+        return _validate(args.work_dir, args.pdf, render_suspicious=args.render_suspicious)
 
     pages = args.pages
     result = prepare_pages(args.pdf, args.work_dir, pages)
@@ -100,3 +119,29 @@ def main(argv: list[str] | None = None) -> int:
     if unique_count != EXPECTED_FRAGMENT_COUNT:
         print(f"fragment error: expected {EXPECTED_FRAGMENT_COUNT} unique codes, found {unique_count}")
     return 0 if accepted else 1
+
+
+def _validate(work_dir: Path, pdf: Path, *, render_suspicious: bool) -> int:
+    try:
+        records = records_from_work_dir(work_dir)
+        validate_and_promote(records, work_dir)
+    except ManifestValidationError as error:
+        quarantine_path = work_dir / "quarantine.json"
+        if quarantine_path.is_file():
+            report = json.loads(quarantine_path.read_text(encoding="utf-8"))
+        else:
+            report = {"items": [{"code": None, "reasons": [str(error)], "pages": []}]}
+            write_quarantine(work_dir, report["items"])
+        if render_suspicious:
+            rendered = render_suspicious_pages(pdf, report["items"], work_dir / "rendered")
+            for item in report["items"]:
+                item["renderedPages"] = [
+                    str(rendered[page]) for page in item.get("pages", []) if page in rendered
+                ]
+            write_quarantine(work_dir, report["items"])
+        print(f"validation failed: {error}")
+        print(f"quarantined: {len(report['items'])}")
+        return 1
+    print(f"validated: {len(records)} records")
+    print("quarantined: 0")
+    return 0

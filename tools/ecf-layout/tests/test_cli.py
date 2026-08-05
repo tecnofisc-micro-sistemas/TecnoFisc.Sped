@@ -1,8 +1,10 @@
+import json
 from pathlib import Path
 
 import ecf_layout.cli as cli
 from ecf_layout.cache import CacheKey
 from ecf_layout.cli import PrepareResult
+from ecf_layout.manifest import EXPECTED_CODES, block_for_code
 
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -47,3 +49,42 @@ def test_prepare_fails_closed_when_fragmentation_has_errors(tmp_path: Path, monk
 
     assert exit_code == 1
     assert list(fragments_dir.glob("*.md")) == []
+
+
+def test_validate_writes_candidate_without_promoting(tmp_path: Path, monkeypatch) -> None:
+    records = [
+        {
+            "code": code,
+            "block": block_for_code(code),
+            "title": f"Registro {code}",
+            "pageStart": position + 1,
+            "pageEnd": position + 1,
+            "level": "1",
+            "occurrence": "1:1",
+            "fields": [
+                {
+                    "number": 1,
+                    "name": "REG",
+                    "description": "Identificacao",
+                    "type": "C",
+                    "size": "4",
+                    "decimals": "-",
+                    "required": "Sim",
+                    "validValues": f"[{code}]",
+                }
+            ],
+            "reviewed": False,
+        }
+        for position, code in enumerate(EXPECTED_CODES)
+    ]
+    monkeypatch.setattr(cli, "records_from_work_dir", lambda _work_dir: records)
+
+    exit_code = cli.main(["validate", "--work-dir", str(tmp_path)])
+
+    candidate = json.loads(
+        (tmp_path / "candidate" / "layout-12-manifest.json").read_text(encoding="utf-8")
+    )
+    assert exit_code == 0
+    assert len(candidate) == 180
+    assert json.loads((tmp_path / "quarantine.json").read_text(encoding="utf-8")) == {"items": []}
+    assert list(tmp_path.glob("layout-12-manifest.json")) == []

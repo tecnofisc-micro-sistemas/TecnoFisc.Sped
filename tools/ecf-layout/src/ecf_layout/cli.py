@@ -11,6 +11,7 @@ from typing import Callable, Iterable
 
 from ecf_layout.cache import CacheKey, converter_fingerprint, sha256_file
 from ecf_layout.converter import EmptyMarkdownError, convert_page
+from ecf_layout.fragmenter import fragment_pages_with_errors, write_fragments
 
 
 Converter = Callable[[Path, int], str]
@@ -79,6 +80,18 @@ def main(argv: list[str] | None = None) -> int:
     prepare.add_argument("--pages", type=_parse_pages, required=True)
     args = parser.parse_args(argv)
 
-    result = prepare_pages(args.pdf, args.work_dir, args.pages)
+    pages = args.pages
+    result = prepare_pages(args.pdf, args.work_dir, pages)
     print(f"prepared: {result.converted} converted, {result.cache_hits} cache hits")
+    pdf_sha256 = sha256_file(args.pdf)
+    converter_sha256 = converter_fingerprint()
+    cached_pages = [
+        (page, CacheKey(pdf_sha256, converter_sha256, page).output_path(args.work_dir / "cache").read_text(encoding="utf-8"))
+        for page in pages
+    ]
+    fragmentation = fragment_pages_with_errors(cached_pages)
+    write_fragments(fragmentation.fragments, args.work_dir / "fragments")
+    print(f"fragmented: {len({fragment.code for fragment in fragmentation.fragments})} unique codes")
+    for error in fragmentation.errors:
+        print(f"fragment error: {error}")
     return 0

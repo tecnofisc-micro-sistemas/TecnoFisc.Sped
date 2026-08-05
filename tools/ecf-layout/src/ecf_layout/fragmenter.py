@@ -116,6 +116,7 @@ def _fields(lines: list[tuple[int, str]]) -> tuple[list[str], str | None]:
     fields: list[str] = []
     expected_ordinal = 1
     in_segment = False
+    interruption_pending = False
     field_table_closed = False
     header_seen = False
     for _, line in lines:
@@ -124,11 +125,31 @@ def _fields(lines: list[tuple[int, str]]) -> tuple[list[str], str | None]:
                 return [], "competing field tables"
             header_seen = True
             in_segment = True
+            interruption_pending = False
             continue
         if not in_segment:
+            if not interruption_pending:
+                continue
+            if not line.strip():
+                continue
+            row = _field_row(line)
+            interruption_pending = False
+            if row is not None:
+                ordinal, field = row
+                if ordinal != expected_ordinal:
+                    reason = (
+                        "competing field tables"
+                        if ordinal < expected_ordinal
+                        else f"non-contiguous field table at {ordinal}"
+                    )
+                    return [], reason
+                fields.append(field)
+                expected_ordinal += 1
+                in_segment = True
             continue
         if not line.startswith("|"):
             in_segment = False
+            interruption_pending = not line.strip()
             continue
         if re.fullmatch(r"\|(?:---\|)+\s*", line.rstrip("\r\n")):
             continue
@@ -149,10 +170,12 @@ def _fields(lines: list[tuple[int, str]]) -> tuple[list[str], str | None]:
         elif _first_cell(line):
             field_table_closed = True
             in_segment = False
+            interruption_pending = False
 
         if boundary:
             field_table_closed = True
             in_segment = False
+            interruption_pending = False
 
     if not header_seen:
         return [], "0 candidate field tables"

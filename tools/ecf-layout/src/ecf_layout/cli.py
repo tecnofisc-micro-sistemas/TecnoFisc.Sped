@@ -15,6 +15,7 @@ from ecf_layout.fragmenter import fragment_pages_with_errors, write_fragments
 
 
 Converter = Callable[[Path, int], str]
+EXPECTED_FRAGMENT_COUNT = 180
 
 
 @dataclass(frozen=True)
@@ -90,8 +91,12 @@ def main(argv: list[str] | None = None) -> int:
         for page in pages
     ]
     fragmentation = fragment_pages_with_errors(cached_pages)
-    write_fragments(fragmentation.fragments, args.work_dir / "fragments")
-    print(f"fragmented: {len({fragment.code for fragment in fragmentation.fragments})} unique codes")
+    unique_count = len({fragment.code for fragment in fragmentation.fragments})
+    accepted = not fragmentation.errors and unique_count == EXPECTED_FRAGMENT_COUNT
+    write_fragments(fragmentation.fragments if accepted else [], args.work_dir / "fragments")
+    print(f"fragmented: {unique_count} unique codes")
     for error in fragmentation.errors:
         print(f"fragment error: {error}")
-    return 0
+    if unique_count != EXPECTED_FRAGMENT_COUNT:
+        print(f"fragment error: expected {EXPECTED_FRAGMENT_COUNT} unique codes, found {unique_count}")
+    return 0 if accepted else 1

@@ -104,6 +104,26 @@ def test_quarantines_restarted_competing_field_table() -> None:
     assert result.errors == ["record TEST: competing field tables"]
 
 
+def test_quarantines_field_ordinal_gap_after_table_interruption() -> None:
+    markdown = """# **4.5. Leiaute dos Registros**
+
+# **Registro TEST: Registro interrompido**
+
+||**Nível Hierárquico – 1**|||**Ocorrência – 1:1**||
+
+|**Nº**|**Campo**|**Descrição**|**Tipo**|**Tamanho**|**Decimal**|**Valores Válidos**|**Obrigatório**|
+|---|---|---|---|---|---|---|---|
+|**1**|REG|Identificação do registro.|C|4|-|[TEST]|Sim|
+
+|**3**|CAMPO_3|Campo depois da interrupção.|C|10|-|-|Não|
+"""
+
+    result = fragment_pages_with_errors([(100, markdown)])
+
+    assert result.fragments == []
+    assert result.errors == ["record TEST: non-contiguous field table at 3"]
+
+
 def test_recovers_metadata_split_across_table_cells() -> None:
     markdown = (FIXTURES / "split-metadata.md").read_text(encoding="utf-8")
 

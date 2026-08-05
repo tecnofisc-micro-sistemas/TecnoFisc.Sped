@@ -96,3 +96,12 @@ sped/fixtures/
 
 # Claude Code memory (local-only)
 memory/
+
+# Local ECF layout conversion cache and source manual extracts
+.local/ecf-layout/
+
+# Isolated Python tooling environments and bytecode
+tools/ecf-layout/.venv/
+tools/ecf-layout/.pytest_cache/
+**/__pycache__/
+*.py[cod]

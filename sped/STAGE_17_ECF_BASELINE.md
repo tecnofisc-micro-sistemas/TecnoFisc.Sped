@@ -23,14 +23,14 @@
 | 17.020 | C350 | Identificação da Data dos Saldos das Contas de Resultado Antes do Encerramento | 114 | 115 | C | [x] |
 | 17.021 | C355 | Detalhes dos Saldos das Contas de Resultado Antes do Encerramento | 115 | 116 | C | [x] |
 | 17.022 | C990 | Encerramento do Bloco C | 116 | 117 | C | [x] |
-| 17.023 | E001 | Abertura do Bloco E | 117 | 118 | E | [ ] |
-| 17.024 | E010 | Saldos Finais Recuperados da ECF Anterior | 118 | 119 | E | [ ] |
-| 17.025 | E015 | Contas Contábeis Mapeadas | 119 | 121 | E | [ ] |
-| 17.026 | E020 | Saldos Finais das Contas na Parte B do e-Lalur da ECF Imediatamente Anterior | 121 | 122 | E | [ ] |
-| 17.027 | E030 | Identificação do Período | 122 | 124 | E | [ ] |
-| 17.028 | E155 | Detalhes dos Saldos Contábeis Calculados com Base nas ECD | 124 | 125 | E | [ ] |
-| 17.029 | E355 | Detalhes dos Saldos das Contas de Resultado Antes do Encerramento | 125 | 126 | E | [ ] |
-| 17.030 | E990 | Encerramento do Bloco E | 126 | 127 | E | [ ] |
+| 17.023 | E001 | Abertura do Bloco E | 117 | 118 | E | [x] |
+| 17.024 | E010 | Saldos Finais Recuperados da ECF Anterior | 118 | 119 | E | [x] |
+| 17.025 | E015 | Contas Contábeis Mapeadas | 119 | 121 | E | [x] |
+| 17.026 | E020 | Saldos Finais das Contas na Parte B do e-Lalur da ECF Imediatamente Anterior | 121 | 122 | E | [x] |
+| 17.027 | E030 | Identificação do Período | 122 | 124 | E | [x] |
+| 17.028 | E155 | Detalhes dos Saldos Contábeis Calculados com Base nas ECD | 124 | 125 | E | [x] |
+| 17.029 | E355 | Detalhes dos Saldos das Contas de Resultado Antes do Encerramento | 125 | 126 | E | [x] |
+| 17.030 | E990 | Encerramento do Bloco E | 126 | 127 | E | [x] |
 | 17.031 | J001 | Abertura do Bloco J | 127 | 128 | J | [ ] |
 | 17.032 | J050 | Plano de Contas do Contribuinte | 128 | 131 | J | [ ] |
 | 17.033 | J051 | Plano de Contas Referencial | 131 | 133 | J | [ ] |

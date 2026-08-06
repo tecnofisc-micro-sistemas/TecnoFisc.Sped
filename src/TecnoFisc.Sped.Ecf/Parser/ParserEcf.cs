@@ -32,8 +32,18 @@ public sealed class ParserEcf : ILeitorSped
     {
         ArgumentNullException.ThrowIfNull(catalogo);
         ArgumentNullException.ThrowIfNull(opcoes);
-        _leitor = new LeitorSpedTxt(catalogo, opcoes);
+        _leitor = new LeitorSpedTxt(catalogo, ComVigenciaDoLeiaute(opcoes));
     }
+
+    private static ReadingOptions ComVigenciaDoLeiaute(ReadingOptions opcoes)
+        => new()
+        {
+            RegistrosIgnorados = opcoes.RegistrosIgnorados,
+            BlocosIgnorados = opcoes.BlocosIgnorados,
+            LenientFieldParsing = opcoes.LenientFieldParsing,
+            LenientLayout = opcoes.LenientLayout,
+            RespeitarVigenciaDoLeiaute = true,
+        };
 
     /// <summary>Lê um registro por vez, preservando os vínculos hierárquicos.</summary>
     public IAsyncEnumerable<RegistroSped> ReadStreamingAsync(

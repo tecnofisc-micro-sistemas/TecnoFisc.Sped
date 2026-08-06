@@ -70,6 +70,7 @@ public sealed class LeitorSpedTxt : ILeitorSped
         // da subárvore de um registro ignorado por código; sobrevive entre iterações de ReadAsync.
         bool hasFilter = _opcoes.HasFilter;
         int nivelCorteSubarvore = -1;
+        int nivelCorteVigencia = -1;
 
         try
         {
@@ -85,6 +86,12 @@ public sealed class LeitorSpedTxt : ILeitorSped
                 {
                     long linhaRegistro = numeroLinha + 1;
                     numeroLinha += linhasFisicas;
+
+                    if (_opcoes.RespeitarVigenciaDoLeiaute && versaoLeiaute > 0 &&
+                        ShouldIgnoreByVersion(metadados, versaoLeiaute, ref nivelCorteVigencia))
+                    {
+                        continue;
+                    }
 
                     // Descarte antes de materializar: registro ignorado não é decodificado (multi-linha
                     // não paga o custo dos 30 MB do ARQ_RTF) nem entra na hierarquia/stream.
@@ -194,6 +201,30 @@ public sealed class LeitorSpedTxt : ILeitorSped
             return true;
 
         if (_opcoes.RegistrosIgnorados.Contains(metadados.Codigo))
+        {
+            nivelCorteSubarvore = metadados.Nivel;
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool ShouldIgnoreByVersion(
+        MetadadosRegistro? metadados,
+        int versaoLeiaute,
+        ref int nivelCorteSubarvore)
+    {
+        if (metadados is null)
+            return false;
+
+        if (nivelCorteSubarvore >= 0)
+        {
+            if (metadados.Nivel > nivelCorteSubarvore)
+                return true;
+            nivelCorteSubarvore = -1;
+        }
+
+        if (metadados.IntroduzidoEm > 0 && metadados.IntroduzidoEm > versaoLeiaute)
         {
             nivelCorteSubarvore = metadados.Nivel;
             return true;
@@ -508,6 +539,7 @@ public sealed class LeitorSpedTxt : ILeitorSped
         }
         // Posição na nomenclatura do Guia Prático: 1 = REG; 2..N = campos do layout.
         int posicaoCampo = 1;
+        int indiceCampoMetadados = 0;
         int inicioCampo = 0;
 
         for (int i = 0; i <= conteudo.Length; i++)
@@ -539,10 +571,15 @@ public sealed class LeitorSpedTxt : ILeitorSped
             }
             else if (metadados is not null && registro is not null)
             {
-                int indice = posicaoCampo - 2;
-                if (indice < metadados.Campos.Count)
+                while (indiceCampoMetadados < metadados.Campos.Count &&
+                       !CampoAtivo(metadados.Campos[indiceCampoMetadados], versaoLeiaute))
                 {
-                    var campo = metadados.Campos[indice];
+                    indiceCampoMetadados++;
+                }
+
+                if (indiceCampoMetadados < metadados.Campos.Count)
+                {
+                    var campo = metadados.Campos[indiceCampoMetadados++];
                     if (campo.CapturaTudo)
                     {
                         // Campo variádico (*): captura tudo que resta na linha a partir
@@ -563,8 +600,13 @@ public sealed class LeitorSpedTxt : ILeitorSped
                             break;
                         }
                         Definir(campo, resto[..idxSep]);
-                        if (indice + 1 < metadados.Campos.Count)
-                            Definir(metadados.Campos[indice + 1], resto[(idxSep + 1)..]);
+                        while (indiceCampoMetadados < metadados.Campos.Count &&
+                               !CampoAtivo(metadados.Campos[indiceCampoMetadados], versaoLeiaute))
+                        {
+                            indiceCampoMetadados++;
+                        }
+                        if (indiceCampoMetadados < metadados.Campos.Count)
+                            Definir(metadados.Campos[indiceCampoMetadados], resto[(idxSep + 1)..]);
                         break;
                     }
                     Definir(campo, fatia);
@@ -583,5 +625,9 @@ public sealed class LeitorSpedTxt : ILeitorSped
         var pai = pilha.Empilhar(registro, metadados.Nivel);
         pai?.AdicionarFilho(registro);
         return registro;
+
+        bool CampoAtivo(MetadadosCampo campo, int versao)
+            => !_opcoes.RespeitarVigenciaDoLeiaute || versao <= 0 ||
+               campo.DesdeVersao <= 0 || campo.DesdeVersao <= versao;
     }
 }

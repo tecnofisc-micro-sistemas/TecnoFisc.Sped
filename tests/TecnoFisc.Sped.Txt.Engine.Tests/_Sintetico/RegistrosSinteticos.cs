@@ -15,6 +15,9 @@ public sealed class Registro0000Sintetico : RegistroSped
 {
     public override string Codigo => "0000";
 
+    public override int VersaoLeiaute
+        => int.TryParse(CodVer, out int versao) ? versao : 0;
+
     [CampoSped(Ordem = 2, Tamanho = 4, Obrigatorio = true)]
     public string? CodVer { get; set; }
 
@@ -269,4 +272,19 @@ public sealed class RegistroZ100Sintetico : RegistroSped
 
     [CampoSped(Ordem = 3, DesdeVersao = 312)]
     public string? IndComplemento { get; set; }
+}
+
+[RegistroSped(Codigo = "Z200", Nivel = 2, Bloco = "Z", IntroduzidoEm = 310)]
+public sealed class RegistroZ200Sintetico : RegistroSped
+{
+    public override string Codigo => "Z200";
+
+    [CampoSped(Ordem = 2)]
+    public string? Antes { get; set; }
+
+    [CampoSped(Ordem = 3, DesdeVersao = 312)]
+    public string? Futuro { get; set; }
+
+    [CampoSped(Ordem = 4)]
+    public string? Depois { get; set; }
 }

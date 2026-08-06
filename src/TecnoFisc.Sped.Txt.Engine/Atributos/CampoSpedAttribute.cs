@@ -43,9 +43,9 @@ public sealed class CampoSpedAttribute : Attribute
 
     /// <summary>
     /// Versão do leiaute em que o campo passou a existir. Convenção: valor numérico do enum
-    /// <c>LayoutXxx</c> do módulo (ex.: <c>(int)LayoutEfdIcmsIpi.V015</c> = 15). O parser/gerador
-    /// usa este valor para incluir o campo somente quando a versão lida do <c>Registro0000</c>
-    /// for maior ou igual. <c>0</c> (default) significa "presente em todas as versões".
+    /// <c>LayoutXxx</c> do módulo (ex.: <c>(int)LayoutEfdIcmsIpi.V015</c> = 15). O gerador e os
+    /// parsers que habilitam vigência sintática incluem o campo somente quando a versão lida do
+    /// <c>Registro0000</c> for maior ou igual. <c>0</c> (default) significa "presente em todas as versões".
     /// </summary>
     /// <remarks>
     /// Como SPED é strict-incremental por convenção da Receita, não há contraparte

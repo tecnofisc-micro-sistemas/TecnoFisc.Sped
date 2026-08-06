@@ -129,6 +129,65 @@ def test_fields_are_active_only_from_their_declared_layout_version() -> None:
         )
 
 
+def test_embedded_file_field_is_framed_as_one_logical_record_and_preserves_structure() -> None:
+    manifest = _manifest(
+        _record(
+            "Y800",
+            1,
+            _field(2, "TIPO_DOC", field_type="N", size="3", valid_values="[001;002;003]"),
+            _field(3, "DESCRICAO"),
+            _field(4, "HASH", size="41"),
+            _field(5, "ARQ_RTF", size="Não há"),
+            _field(6, "IND_FIM_RTF", size="7", valid_values="[Y800FIM]"),
+        )
+    )
+    source = _source(
+        "|Y800|003|NOTAS||{\\rtf1\r\nlinha|sigilo\r\n}|Y800FIM|"
+    )
+
+    first = anonymize_bytes(
+        source,
+        fixture_id="embedded-file",
+        denylist=("sigilo",),
+        manifest=manifest,
+    )
+    second = anonymize_bytes(
+        source,
+        fixture_id="embedded-file",
+        denylist=("sigilo",),
+        manifest=manifest,
+    )
+
+    assert first == second
+    assert first.count(b"|Y800|") == 1
+    assert first.count(b"\r\n") == 5
+    assert b"linha|sigilo" not in first
+    assert b"|Y800FIM|\r\n" in first
+
+
+def test_embedded_file_field_without_physical_line_terminator_fails_closed() -> None:
+    manifest = _manifest(
+        _record(
+            "Y800",
+            1,
+            _field(2, "TIPO_DOC", field_type="N", size="3", valid_values="[003]"),
+            _field(3, "DESCRICAO"),
+            _field(4, "HASH", size="41"),
+            _field(5, "ARQ_RTF", size="Não há"),
+            _field(6, "IND_FIM_RTF", size="7", valid_values="[Y800FIM]"),
+        )
+    )
+    source = _source("|Y800|003|NOTAS||conteudo|Y800FIM|ainda-conteudo")
+
+    with pytest.raises(AnonymizationError, match="invalid source"):
+        anonymize_bytes(
+            source,
+            fixture_id="truncated-file",
+            denylist=(),
+            manifest=manifest,
+        )
+
+
 def test_table_required_markers_do_not_infer_tax_obligation_for_blank_values() -> None:
     manifest = _manifest(
         _record(

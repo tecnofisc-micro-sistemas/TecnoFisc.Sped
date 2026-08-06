@@ -1,6 +1,11 @@
 using System.Text.Json.Nodes;
+using System.Text;
 
 using TecnoFisc.Sped.Ecf.Generated;
+using TecnoFisc.Sped.Ecf.Parser;
+using TecnoFisc.Sped.Ecf.Registros.Bloco0;
+using TecnoFisc.Sped.Txt.Engine.Abstracoes;
+using TecnoFisc.Sped.Txt.Engine.Enums;
 using TecnoFisc.Sped.Ecf.Tests.Manifesto;
 namespace TecnoFisc.Sped.Ecf.Tests.Versionamento;
 
@@ -69,6 +74,55 @@ public sealed class CompatibilidadeLayoutEcfTests
         EstaDisponivel(12, 12).Should().BeTrue();
     }
 
+    [Theory]
+    [InlineData(9, "Y750", "|Y750|000001|DESCRICAO|VALOR|")]
+    [InlineData(10, "N605", "|N605|000111||-10000,25|D|")]
+    [InlineData(10, "X360", "|X360|000001|DESCRICAO DINAMICA|R$ -1.234,56|")]
+    [InlineData(10, "X365", "|X365|E00001|ENTIDADE CONTROLADA|")]
+    [InlineData(10, "X366", "|X366|000002|RELACAO DINAMICA|VALOR LIVRE|")]
+    [InlineData(10, "X370", "|X370|E00001|03|ENTIDADE CONTROLADA|076||101|SERVICOS CONTROLADOS|1234,56|S|100,00|25,50|01|MLT|JUSTIFICATIVA|S|N|S|N|S|")]
+    [InlineData(10, "X371", "|X371|2328.2.0001||25,00|D|")]
+    [InlineData(10, "X375", "|X375|000003|METODO DINAMICO|VALOR SEM NORMALIZACAO|")]
+    [InlineData(10, "X485", "|X485|12|ATO DECLARATORIO|11222333000181|000000000000000123|000000000000000456|000000000000000789|123/2025|06012025|01012025|31122025|")]
+    [InlineData(11, "X451", "|X451|000001|REMESSA|VALOR|")]
+    [InlineData(12, "Y730", "|Y730|0010|0050|31122025|PJ|00394460000141|-999,99|OBSERVACAO|")]
+    public async Task Parser_RespeitaIntroducaoDoRegistroNaVersaoDeclarada(
+        int introduzidoEm,
+        string codigo,
+        string linha)
+    {
+        var abaixo = await LerAsync(introduzidoEm - 1, linha);
+        var naIntroducao = await LerAsync(introduzidoEm, linha);
+
+        abaixo.Should().NotContain(registro => registro.Codigo == codigo);
+        naIntroducao.Should().ContainSingle(registro => registro.Codigo == codigo);
+    }
+
+    [Theory]
+    [InlineData(9, false, null)]
+    [InlineData(10, true, null)]
+    [InlineData(11, true, null)]
+    [InlineData(12, true, "CEBAS-TESTE")]
+    public async Task Parser_PreservaReusoPosicional0020_31EAtivaCampo32SomenteNoLeiaute12(
+        int versao,
+        bool posicao31Ativa,
+        string? cebasEsperado)
+    {
+        var valores = new List<string> { "1", "1" };
+        valores.AddRange(Enumerable.Repeat("N", 27));
+        valores.Add("S");
+        valores.Add("CEBAS-TESTE");
+        string linha0020 = "|0020|" + string.Join('|', valores) + "|";
+
+        var registro = (await LerAsync(versao, linha0020)).OfType<Registro0020>().Single();
+
+        registro.IndicadorPosicao31.Should().Be(
+            posicao31Ativa ? IndicadorSimNao.Sim : IndicadorSimNao.Nao);
+        registro.IndPrTransf.Should().Be(registro.IndicadorPosicao31);
+        registro.PossuiCebras.Should().Be(registro.IndicadorPosicao31);
+        registro.Cebas.Should().Be(cebasEsperado);
+    }
+
     [Fact]
     public void MetadadoOmitido_PermaneceCompativelComLeiaute8()
     {
@@ -125,6 +179,19 @@ public sealed class CompatibilidadeLayoutEcfTests
 
     private static bool EstaDisponivel(int introduzidoEm, int versao)
         => introduzidoEm == 0 || introduzidoEm <= versao;
+
+    private static async Task<List<RegistroSped>> LerAsync(int versao, string linha)
+    {
+        string arquivo =
+            $"|0000|LECF|{versao:0000}|11111111000191|EMPRESA TESTE|0|0|||01012025|31122025|N||0||\r\n" +
+            linha + "\r\n" +
+            "|9999|3|\r\n";
+        var registros = new List<RegistroSped>();
+        await using var stream = new MemoryStream(Encoding.Latin1.GetBytes(arquivo));
+        await foreach (var registro in new ParserEcf().ReadStreamingAsync(stream))
+            registros.Add(registro);
+        return registros;
+    }
 
     private static (string Manifesto, string Schema) LerArtefatosCopiados()
     {

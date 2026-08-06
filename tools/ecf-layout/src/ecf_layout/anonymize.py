@@ -292,20 +292,18 @@ def _parse_source(
     text = _decode_source(source)
     if not text or "\x00" in text:
         raise AnonymizationError("invalid source")
-    lines = text.splitlines()
-    if not lines or any(not line for line in lines):
-        raise AnonymizationError("invalid source")
-
     ordered_manifest = _validate_manifest(manifest)
     by_code = {record["code"]: record for record in ordered_manifest}
+    lines = _logical_record_lines(text, by_code)
     basic: list[tuple[str, tuple[str, ...]]] = []
     for line in lines:
         if not line.startswith("|") or not line.endswith("|"):
             raise AnonymizationError("invalid source")
-        cells = tuple(line[1:-1].split("|"))
-        code = cells[0] if cells else ""
+        code_end = line.find("|", 1)
+        code = line[1:code_end] if code_end > 1 else ""
         if not _CODE_PATTERN.fullmatch(code) or code not in by_code:
             raise AnonymizationError("invalid source")
+        cells = _split_record_cells(line, by_code[code])
         basic.append((code, cells))
 
     if basic[0][0] != "0000" or basic[-1][0] != "9999":
@@ -367,6 +365,96 @@ def _parse_source(
     if total_seen["0000"] != 1 or total_seen["9999"] != 1:
         raise AnonymizationError("invalid source")
     return parsed, version, ordered_manifest
+
+
+def _logical_record_lines(text: str, by_code: dict[str, dict]) -> list[str]:
+    physical: list[tuple[str, str]] = []
+    start = 0
+    for match in re.finditer(r"\r\n|\r|\n", text):
+        physical.append((text[start : match.start()], match.group(0)))
+        start = match.end()
+    if start < len(text):
+        physical.append((text[start:], ""))
+    if not physical or any(not line for line, _ in physical):
+        raise AnonymizationError("invalid source")
+
+    logical: list[str] = []
+    pending: list[str] | None = None
+    pending_token: str | None = None
+    previous_break = ""
+    for line, line_break in physical:
+        if pending is not None:
+            if not previous_break:
+                raise AnonymizationError("invalid source")
+            pending.extend((previous_break, line))
+            if line.endswith(f"|{pending_token}|"):
+                logical.append("".join(pending))
+                pending = None
+                pending_token = None
+            previous_break = line_break
+            continue
+
+        code_end = line.find("|", 1) if line.startswith("|") else -1
+        code = line[1:code_end] if code_end > 1 else ""
+        metadata = by_code.get(code)
+        if metadata is None:
+            raise AnonymizationError("invalid source")
+        spec = _embedded_file_spec(metadata)
+        if spec is None:
+            if not line.endswith("|"):
+                raise AnonymizationError("invalid source")
+            logical.append(line)
+        else:
+            _, token = spec
+            if line.endswith(f"|{token}|"):
+                logical.append(line)
+            else:
+                pending = [line]
+                pending_token = token
+        previous_break = line_break
+
+    if pending is not None:
+        raise AnonymizationError("invalid source")
+    return logical
+
+
+def _embedded_file_spec(record: dict) -> tuple[int, str] | None:
+    fields = record["fields"]
+    candidates = [
+        position
+        for position, field in enumerate(fields)
+        if str(field.get("name", "")).upper().startswith("ARQ_")
+    ]
+    if not candidates:
+        return None
+    if len(candidates) != 1:
+        raise AnonymizationError("invalid manifest")
+    position = candidates[0]
+    if position + 1 != len(fields) - 1:
+        raise AnonymizationError("invalid manifest")
+    terminator = fields[position + 1]
+    if not str(terminator.get("name", "")).upper().startswith("IND_FIM_"):
+        raise AnonymizationError("invalid manifest")
+    rule = _domain_rule(terminator)
+    if rule is None or rule[0] != "options" or len(rule[1]) != 1:
+        raise AnonymizationError("invalid manifest")
+    return position, rule[1][0]
+
+
+def _split_record_cells(line: str, metadata: dict) -> tuple[str, ...]:
+    content = line[1:-1]
+    spec = _embedded_file_spec(metadata)
+    if spec is None:
+        return tuple(content.split("|"))
+
+    file_position, token = spec
+    prefix = content.split("|", file_position)
+    if len(prefix) != file_position + 1:
+        raise AnonymizationError("invalid source")
+    file_value, separator, terminator = prefix[-1].rpartition("|")
+    if not separator or terminator != token:
+        raise AnonymizationError("invalid source")
+    return tuple([*prefix[:-1], file_value, terminator])
 
 
 def _decode_source(source: bytes) -> str:

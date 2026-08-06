@@ -47,6 +47,14 @@ public sealed class ReadingOptions
     public bool LenientLayout { get; init; }
 
     /// <summary>
+    /// Quando <c>true</c>, omite registros anteriores a <c>IntroduzidoEm</c> e não atribui
+    /// campos anteriores a <c>DesdeVersao</c>, usando a versão declarada pelo registro 0000.
+    /// O padrão permanece <c>false</c> para preservar o modelo informacional dos pacotes
+    /// read-only que não optaram por vigência sintática.
+    /// </summary>
+    public bool RespeitarVigenciaDoLeiaute { get; init; }
+
+    /// <summary>
     /// <c>true</c> quando há ao menos um filtro configurado. O leitor usa isto para pular toda a
     /// lógica de descarte (fast-path) quando nada deve ser ignorado.
     /// </summary>

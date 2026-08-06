@@ -214,8 +214,8 @@ SPED projects publish new layouts approximately yearly. A estratégia depende do
 
 - Existe **uma única modelagem** correspondente ao **leiaute mais recente** dentro da janela fiscal de 5 anos.
 - Sem subclasses por versão. Sem catálogo polimórfico por versão. `Dictionary<string, MetadadosRegistro>` 1:1 permanece.
-- `LayoutXxx` enum existe apenas para representar o `COD_VER` lido do `Registro0000` e expô-lo ao consumidor; **não** filtra propriedades nem registros durante o parse.
-- `[CampoSped(DesdeVersao = V0XX)]` e `[RegistroSped(IntroduzidoEm = V0XX)]` viram **informacionais** (doc/auditoria) — campos novos em arquivos antigos ficam vazios (`null`/`default`), registros novos não aparecem.
+- `LayoutXxx` enum representa o `COD_VER` lido do `Registro0000` e o expõe ao consumidor. Por padrão não filtra propriedades nem registros durante o parse; um parser especializado pode habilitar vigência sintática quando os deltas oficiais da sua janela forem integralmente comprovados.
+- `[CampoSped(DesdeVersao = V0XX)]` e `[RegistroSped(IntroduzidoEm = V0XX)]` são **informacionais** (doc/auditoria) por padrão. A ECF habilita a aplicação no read path para os leiautes 8–12: campos posteriores ficam vazios (`null`/`default`) e registros posteriores são omitidos com sua subárvore.
 - `[Descontinuado(EmVersao = V0XX)]` vira informacional **no read path** — registros descontinuados continuam sendo reconhecidos pelo parser porque ainda aparecem em arquivos históricos.
 - Campos com **regressão de tipo** (raríssimo — texto → numérico ou vice-versa entre versões dentro da janela) são modelados como `string` lazy; o consumidor converte se precisar. Justificativa: mantém compatibilidade com arquivos de qualquer versão dentro da janela ao custo de tipagem fraca no campo regredido.
 - Migrar pacote para read+write no futuro = reativar a estratégia padrão (subclasses + catálogo polimórfico + atributos com efeito real).

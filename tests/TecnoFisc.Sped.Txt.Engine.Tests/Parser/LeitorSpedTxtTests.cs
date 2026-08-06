@@ -71,6 +71,76 @@ public sealed class LeitorSpedTxtTests
     }
 
     [Fact]
+    public async Task LerStreamingAsync_VigenciaDesativada_MantemMetadadosInformacionais()
+    {
+        const string sped =
+            "|0000|309|01012025|31012025|EMPRESA|11222333000181|\r\n" +
+            "|C001|0|\r\n" +
+            "|Z100|BASE|FUTURO|\r\n" +
+            "|9999|4|\r\n";
+
+        var registros = await LerTodosAsync(sped);
+
+        registros.OfType<RegistroZ100Sintetico>().Single().IndComplemento.Should().Be("FUTURO");
+    }
+
+    [Fact]
+    public async Task LerStreamingAsync_VigenciaAtivada_OmiteRegistroAntesDaIntroducao()
+    {
+        const string sped =
+            "|0000|309|01012025|31012025|EMPRESA|11222333000181|\r\n" +
+            "|C001|0|\r\n" +
+            "|Z100|BASE|\r\n" +
+            "|C170|1|ITEM|1|1,00|\r\n" +
+            "|9999|5|\r\n";
+        var opcoes = new ReadingOptions { RespeitarVigenciaDoLeiaute = true };
+
+        var registros = await LerComOpcoesAsync(sped, opcoes);
+
+        registros.Select(registro => registro.Codigo).Should().Equal("0000", "C001", "9999");
+    }
+
+    [Theory]
+    [InlineData("310", null)]
+    [InlineData("311", null)]
+    [InlineData("312", "FUTURO")]
+    public async Task LerStreamingAsync_VigenciaAtivada_AtribuiCampoSomenteDesdeSuaVersao(
+        string versao,
+        string? complementoEsperado)
+    {
+        string sped =
+            $"|0000|{versao}|01012025|31012025|EMPRESA|11222333000181|\r\n" +
+            "|C001|0|\r\n" +
+            "|Z100|BASE|FUTURO|\r\n" +
+            "|9999|4|\r\n";
+        var opcoes = new ReadingOptions { RespeitarVigenciaDoLeiaute = true };
+
+        var registros = await LerComOpcoesAsync(sped, opcoes);
+
+        var registro = registros.OfType<RegistroZ100Sintetico>().Single();
+        registro.CodConf.Should().Be("BASE");
+        registro.IndComplemento.Should().Be(complementoEsperado);
+    }
+
+    [Fact]
+    public async Task LerStreamingAsync_VigenciaAtivada_IndexaPelosCamposAtivos()
+    {
+        const string sped =
+            "|0000|310|01012025|31012025|EMPRESA|11222333000181|\r\n" +
+            "|C001|0|\r\n" +
+            "|Z200|ANTES|DEPOIS|\r\n" +
+            "|9999|4|\r\n";
+        var opcoes = new ReadingOptions { RespeitarVigenciaDoLeiaute = true };
+
+        var registro = (await LerComOpcoesAsync(sped, opcoes))
+            .OfType<RegistroZ200Sintetico>().Single();
+
+        registro.Antes.Should().Be("ANTES");
+        registro.Futuro.Should().BeNull();
+        registro.Depois.Should().Be("DEPOIS");
+    }
+
+    [Fact]
     public async Task LerStreamingAsync_RegistroMultilinhaIgnorado_NaoMaterializa()
     {
         // Y800 (multi-linha) ignorado: o leitor localiza o terminador e avança sem decodificar o

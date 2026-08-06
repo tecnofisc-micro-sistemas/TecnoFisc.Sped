@@ -3,7 +3,7 @@ from subprocess import CompletedProcess
 
 import pytest
 
-from ecf_layout.cache import CacheKey
+from ecf_layout.cache import CacheKey, converter_fingerprint
 from ecf_layout.converter import ConversionFailed
 from ecf_layout.cli import prepare_pages
 
@@ -16,6 +16,28 @@ def test_cache_key_changes_when_pdf_or_converter_changes() -> None:
     assert original != changed_pdf
     assert original != changed_converter
     assert changed_pdf != changed_converter
+
+
+def test_converter_fingerprint_hashes_only_conversion_affecting_sources(tmp_path: Path) -> None:
+    package_dir = tmp_path / "ecf_layout"
+    package_dir.mkdir()
+    (package_dir / "converter.py").write_text("converter = 1\n", encoding="utf-8")
+    (package_dir / "fixups.py").write_text("fixups = 1\n", encoding="utf-8")
+    (package_dir / "fragmenter.py").write_text("fragmenter = 1\n", encoding="utf-8")
+    (package_dir / "manifest.py").write_text("manifest = 1\n", encoding="utf-8")
+
+    original = converter_fingerprint(package_dir)
+
+    (package_dir / "fragmenter.py").write_text("fragmenter = 2\n", encoding="utf-8")
+    (package_dir / "manifest.py").write_text("manifest = 2\n", encoding="utf-8")
+    assert converter_fingerprint(package_dir) == original
+
+    (package_dir / "converter.py").write_text("converter = 2\n", encoding="utf-8")
+    changed_converter = converter_fingerprint(package_dir)
+    assert changed_converter != original
+
+    (package_dir / "fixups.py").write_text("fixups = 2\n", encoding="utf-8")
+    assert converter_fingerprint(package_dir) != changed_converter
 
 
 def test_prepare_reuses_completed_pages_and_converts_only_missing_pages(tmp_path: Path) -> None:

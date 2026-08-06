@@ -134,16 +134,16 @@
 | 17.131 | X353 | Demonstrativo de Consolidação | 467 | 469 | X | [x] |
 | 17.132 | X354 | Demonstrativo de Prejuízos Acumulados | 469 | 471 | X | [x] |
 | 17.133 | X355 | Demonstrativo de Rendas Ativas e Passivas | 471 | 473 | X | [x] |
-| 17.134 | X356 | Demonstrativo de Estrutura Societária | 473 | 474 | X | [ ] |
-| 17.135 | X357 | Investidoras Diretas | 474 | 476 | X | [ ] |
-| 17.136 | X360 | Informações Gerais Sobre Preços de Transferência | 476 | 478 | X | [ ] |
-| 17.137 | X365 | Informações Sobre as Contrapartes nas Transações Controladas | 478 | 479 | X | [ ] |
-| 17.138 | X366 | Entidades Com as Quais Realiza Transações Controladas | 479 | 481 | X | [ ] |
-| 17.139 | X370 | Informações Sobre as Transações Controladas | 481 | 487 | X | [ ] |
-| 17.140 | X371 | Informações Sobre Ajustes Compensatórios | 487 | 488 | X | [ ] |
-| 17.141 | X375 | Informações Relacionadas aos Métodos | 488 | 491 | X | [ ] |
-| 17.142 | X390 | Origem e Aplicação de Recursos – Imunes e Isentas | 491 | 493 | X | [ ] |
-| 17.143 | X400 | Comércio Eletrônico e Tecnologia da Informação – Informações das Vendas | 493 | 496 | X | [ ] |
+| 17.134 | X356 | Demonstrativo de Estrutura Societária | 473 | 474 | X | [x] |
+| 17.135 | X357 | Investidoras Diretas | 474 | 476 | X | [x] |
+| 17.136 | X360 | Informações Gerais Sobre Preços de Transferência | 476 | 478 | X | [x] |
+| 17.137 | X365 | Informações Sobre as Contrapartes nas Transações Controladas | 478 | 479 | X | [x] |
+| 17.138 | X366 | Entidades Com as Quais Realiza Transações Controladas | 479 | 481 | X | [x] |
+| 17.139 | X370 | Informações Sobre as Transações Controladas | 481 | 487 | X | [x] |
+| 17.140 | X371 | Informações Sobre Ajustes Compensatórios | 487 | 488 | X | [x] |
+| 17.141 | X375 | Informações Relacionadas aos Métodos | 488 | 491 | X | [x] |
+| 17.142 | X390 | Origem e Aplicação de Recursos – Imunes e Isentas | 491 | 493 | X | [x] |
+| 17.143 | X400 | Comércio Eletrônico e Tecnologia da Informação – Informações das Vendas | 493 | 496 | X | [x] |
 | 17.144 | X410 | Comércio Eletrônico – Informação de _Homepage_ /Servidor | 496 | 498 | X | [ ] |
 | 17.145 | X420 | _Royalties_ Recebidos ou Pagos a Beneficiários do Brasil e do Exterior | 498 | 504 | X | [ ] |
 | 17.146 | X430 | Rendimentos Relativos a Serviços, Juros e Dividendos Recebidos do Brasil e do Exterior | 504 | 511 | X | [ ] |

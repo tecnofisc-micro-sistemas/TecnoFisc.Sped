@@ -17,7 +17,7 @@ _RECORD = re.compile(r"^(?:#+\s+)?(?:\*\*)?Registro\s+([0-9A-Z]{4}):")
 _LEVEL = re.compile(r"NívelHierárquico[–-](\d+)", re.IGNORECASE)
 _OCCURRENCE = re.compile(r"Ocorrência[–-]([0-9]+(?::(?:[0-9]+|N))?)", re.IGNORECASE)
 _FIELD_HEADER = re.compile(
-    r"Nº.*Campo.*Descrição.*Tipo.*Tamanho.*Decimal.*(?:Valores\s+)?Válidos.*Obrigatório",
+    r"N\s*º.*Campo.*Descrição.*Tipo.*Tamanho.*Decimal.*(?:Valores\s+)?Válidos.*Obrigatório",
     re.IGNORECASE,
 )
 _RULES_BOUNDARY = re.compile(r"\*\*[IVX]+\s*[–-]\s*Regr", re.IGNORECASE)
@@ -115,67 +115,45 @@ def write_fragments(fragments: Iterable[RecordFragment], directory: Path) -> Non
 def _fields(lines: list[tuple[int, str]]) -> tuple[list[str], str | None]:
     fields: list[str] = []
     expected_ordinal = 1
-    in_segment = False
-    interruption_pending = False
     field_table_closed = False
     header_seen = False
+    continuation_header = False
     for _, line in lines:
         if _is_field_header(line):
             if field_table_closed:
                 return [], "competing field tables"
+            continuation_header = header_seen and bool(fields)
             header_seen = True
-            in_segment = True
-            interruption_pending = False
             continue
-        if not in_segment:
-            if not interruption_pending:
-                continue
-            if not line.strip():
-                continue
-            row = _field_row(line)
-            interruption_pending = False
-            if row is not None:
-                ordinal, field = row
-                if ordinal != expected_ordinal:
-                    reason = (
-                        "competing field tables"
-                        if ordinal < expected_ordinal
-                        else f"non-contiguous field table at {ordinal}"
-                    )
-                    return [], reason
-                fields.append(field)
-                expected_ordinal += 1
-                in_segment = True
-            continue
-        if not line.startswith("|"):
-            in_segment = False
-            interruption_pending = not line.strip()
+        if not header_seen or field_table_closed:
             continue
         if re.fullmatch(r"\|(?:---\|)+\s*", line.rstrip("\r\n")):
             continue
 
         boundary = bool(_RULES_BOUNDARY.search(line))
-        row = _field_row(line)
+        row = _field_row(line, expected_ordinal)
         if row is not None:
             ordinal, field = row
             if ordinal != expected_ordinal:
-                reason = (
-                    "competing field tables"
-                    if ordinal < expected_ordinal
-                    else f"non-contiguous field table at {ordinal}"
-                )
-                return [], reason
+                if ordinal < expected_ordinal:
+                    if continuation_header:
+                        return [], "competing field tables"
+                    field_table_closed = True
+                    continue
+                if _is_structural_field_name(field):
+                    return [], f"non-contiguous field table at {ordinal}"
+                continue
             fields.append(field)
             expected_ordinal += 1
-        elif _first_cell(line):
+            continuation_header = False
+            if boundary:
+                field_table_closed = True
+        elif boundary:
             field_table_closed = True
-            in_segment = False
-            interruption_pending = False
-
-        if boundary:
-            field_table_closed = True
-            in_segment = False
-            interruption_pending = False
+        else:
+            first_cell = _first_cell(line)
+            if first_cell and not first_cell[0].isdigit():
+                field_table_closed = True
 
     if not header_seen:
         return [], "0 candidate field tables"
@@ -187,11 +165,13 @@ def _fields(lines: list[tuple[int, str]]) -> tuple[list[str], str | None]:
 def _is_field_header(line: str) -> bool:
     if not line.startswith("|"):
         return False
-    plain = re.sub(r"<[^>]+>", " ", line).replace("**", "")
+    plain = re.sub(r"<[^>]+>", " ", line).replace("**", "").replace("|", " ")
     return bool(_FIELD_HEADER.search(plain))
 
 
-def _field_row(line: str) -> tuple[int, str] | None:
+def _field_row(line: str, expected_ordinal: int | None = None) -> tuple[int, str] | None:
+    if not line.startswith("|"):
+        return None
     cells = line.rstrip("\r\n").split("|")
     if len(cells) < 3:
         return None
@@ -200,10 +180,39 @@ def _field_row(line: str) -> tuple[int, str] | None:
         return None
     ordinal = int(first[0])
     if len(first) > 1:
-        field = first[1]
+        field_parts = first[1:]
     else:
-        field = "".join(_cell_parts(cells[2])).strip()
-    return (ordinal, field) if field else None
+        second = _cell_parts(cells[2])
+        if (
+            expected_ordinal is not None
+            and len(second) > 1
+            and second[0].isdigit()
+            and int(first[0] + second[0]) == expected_ordinal
+        ):
+            ordinal = expected_ordinal
+            field_parts = second[1:]
+        else:
+            field_parts = second
+    field = _leading_structural_field_name(field_parts)
+    return (ordinal, field) if _is_structural_field_name(field) else None
+
+
+def _leading_structural_field_name(parts: list[str]) -> str:
+    field_parts: list[str] = []
+    for part in parts:
+        if not _is_structural_field_name(part):
+            break
+        field_parts.append(part)
+    return "".join(field_parts).strip()
+
+
+def _is_structural_field_name(value: str) -> bool:
+    if re.search(r"\s", value) and "_" not in value and "/" not in value:
+        return False
+    compact = re.sub(r"\s+", "", value)
+    if not compact or not compact[0].isalpha() or compact.upper() != compact:
+        return False
+    return all(character.isalnum() or character in "_/-" for character in compact)
 
 
 def _cell_parts(cell: str) -> list[str]:

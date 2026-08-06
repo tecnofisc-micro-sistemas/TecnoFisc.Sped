@@ -9822,6 +9822,136 @@
         "decimals": "-",
         "required": "Não",
         "validValues": "[101 a 113;199 201; 202; 299 301 a 304; 399 401 a 406; 499"
+      },
+      {
+        "number": 8,
+        "name": "DESCR_BSDI",
+        "description": "Descrição da transação controlada.",
+        "type": "C",
+        "size": "-",
+        "decimals": "-",
+        "required": "Sim",
+        "validValues": "-"
+      },
+      {
+        "number": 9,
+        "name": "VL_TRANSACAO",
+        "description": "Valor da transação controlada.",
+        "type": "N",
+        "size": "019",
+        "decimals": "002",
+        "required": "Sim",
+        "validValues": "-"
+      },
+      {
+        "number": 10,
+        "name": "IND_AJUSTES",
+        "description": "Houve ajustes em função das regras de preços de transferência? S – Sim N–Não",
+        "type": "C",
+        "size": "-",
+        "decimals": "-",
+        "required": "Sim",
+        "validValues": "[S;N]"
+      },
+      {
+        "number": 11,
+        "name": "VL_ESPONTANEO",
+        "description": "Valor do ajuste espontâneo.",
+        "type": "N",
+        "size": "019",
+        "decimals": "002",
+        "required": "Sim",
+        "validValues": "-"
+      },
+      {
+        "number": 12,
+        "name": "VL_COMPENSATORIO",
+        "description": "Valor do ajuste compensatório.",
+        "type": "N",
+        "size": "019",
+        "decimals": "002",
+        "required": "Sim",
+        "validValues": "-"
+      },
+      {
+        "number": 13,
+        "name": "TIP_AJ_COMPENSATORIO",
+        "description": "01 – Aumento da receita 02 – Redução de custo 03 – Redução de despesas 99-Outros",
+        "type": "C",
+        "size": "-",
+        "decimals": "-",
+        "required": "Não",
+        "validValues": "[01;02;03;99]"
+      },
+      {
+        "number": 14,
+        "name": "METODO",
+        "description": "Método de preços de transferência utilizado: PIC – Preços Independentes Comparados PRL – Preço de Revenda Menos Lucro MCL – Custo Mais Lucro MLT – Margem Líquida da Transação MDL – Divisão do Lucro OUT–Outro Método",
+        "type": "C",
+        "size": "3",
+        "decimals": "-",
+        "required": "Sim",
+        "validValues": "[PIC; PRL; MCL; MLT; MDL; OUT]"
+      },
+      {
+        "number": 15,
+        "name": "DESCRICAO",
+        "description": "Descrição do método de preços de transferência utilizado com uma breve justificativa do porquê os outros métodos previstos no art. 33 não se aplicam ou não produzem resultados confiáveis, quando selecionada a opção 'Outro Método'(art. 45 da IN RFB nº2.161/2023) na linha anterior.",
+        "type": "C",
+        "size": "-",
+        "decimals": "-",
+        "required": "Não",
+        "validValues": "-"
+      },
+      {
+        "number": 16,
+        "name": "COMP_INTENCIONAL",
+        "description": "Houve compensações intencionais (art. 27 da IN RFB nº 2.161/2023)? S – Sim N–Não",
+        "type": "C",
+        "size": "1",
+        "decimals": "-",
+        "required": "Sim",
+        "validValues": "[S;N]"
+      },
+      {
+        "number": 17,
+        "name": "SINERGIA",
+        "description": "Houve efeitos de sinergia (art. 31 da IN RFB nº 2.161/2023)? S – Sim N–Não",
+        "type": "C",
+        "size": "1",
+        "decimals": "-",
+        "required": "Sim",
+        "validValues": "[S;N]"
+      },
+      {
+        "number": 18,
+        "name": "IND_TRANS_COMBINADAS",
+        "description": "A transação foi avaliada combinadamente com outras transações (art. 25 da IN RFB nº 2.161/2023)? S – Sim N-Não",
+        "type": "C",
+        "size": "1",
+        "decimals": "-",
+        "required": "Sim",
+        "validValues": "[S;N]"
+      },
+      {
+        "number": 19,
+        "name": "IND_DADOS_MULTIP",
+        "description": "Houve utilização de dados de múltiplos anos (art. 30 da IN RFB nº 2.161/2023)? S – Sim N–Não",
+        "type": "C",
+        "size": "1",
+        "decimals": "-",
+        "required": "Sim",
+        "validValues": "[S;N]"
+      },
+      {
+        "number": 20,
+        "name": "IND_SIMPLIFIC",
+        "description": "O contribuinte adotou a medida de simplificação para serviços intragrupo de baixo valor agregado (art. 53 da IN RFB nº 2.161/2023)? S – Sim N – Não",
+        "type": "C",
+        "size": "1",
+        "decimals": "-",
+        "required": "Sim",
+        "validValues": "[S;N]"
       }
     ]
   },
@@ -10578,6 +10708,86 @@
         "decimals": "-",
         "required": "Sim",
         "validValues": "-"
+      },
+      {
+        "number": 4,
+        "name": "CNPJ_INCORP",
+        "description": "Inscrição da “Incorporação Afetada” no Cadastro Nacional da Pessoa Jurídica (CNPJ) Inscrição no CNPJ (formatoCC.CCC.CCC/CCCC-CC- deverá ser preenchido sem pontos ou barra) de cada incorporação, quantas forem vinculadas ao evento “109 - Inscrição de Incorporação Imobiliária - Patrimônio de Afetação\", consoante art. 3º, II, da IN RFB nº 1.435, de 2013.",
+        "type": "C",
+        "size": "014",
+        "decimals": "-",
+        "required": "Não",
+        "validValues": ""
+      },
+      {
+        "number": 5,
+        "name": "ID_OBRA_2018",
+        "description": "Identificação da Obra/Construção - CONTRATO FIRMADO OU OBRAS INICIADAS ATÉ 31 DE DEZEMBRO DE 2018. Somente preencher quando X485.TIPO_BENEF for igual a “10 - RET - PMCMV e/ou RET – PCVA”.",
+        "type": "N",
+        "size": "018",
+        "decimals": "-",
+        "required": "Não",
+        "validValues": ""
+      },
+      {
+        "number": 6,
+        "name": "ID_OBRA_2020",
+        "description": "Identificação da Obra/Construção - CONTRATO FIRMADO OU OBRAS INICIADAS A PARTIR DE 1º DE JANEIRO DE 2020. Somente preencher quando X485.TIPO_BENEF for igual a “10 - RET - PMCMV e/ou RET – PCVA”.",
+        "type": "N",
+        "size": "018",
+        "decimals": "-",
+        "required": "Não",
+        "validValues": ""
+      },
+      {
+        "number": 7,
+        "name": "ID_OBRA_EEI",
+        "description": "Identificação da Obra/Construção. Somentepreencherquando X485.TIPO_BENEF for igual a “11 – RET-EEI”.",
+        "type": "N",
+        "size": "018",
+        "decimals": "-",
+        "required": "Não",
+        "validValues": ""
+      },
+      {
+        "number": 8,
+        "name": "PORT_CEBAS",
+        "description": "Número da Portaria que concedeu o CEBAS Atual Número da Portaria, publicada no Diário Oficial da União (DOU) que concedeu o Certificado de Entidade Beneficente de Assistência Social (CEBAS) vigente, emitido pela autoridade executiva federal responsável pela área de saúde, educação ou assistência social, conforme a área de atuação preponderante da entidade (Lei Complementar nº 187, de 2021, art. 35). O campo deve ser preenchido no seguinte formato: NNN/AAAA. Somente preencher quando X485.TIPO_BENEF for igual a “12 – ENTIDADE BENEFICENTE DE ASSISTÊNCIA SOCIAL IMUNE DE CONTRIBUIÇÕES SOCIAIS”.",
+        "type": "N",
+        "size": "007",
+        "decimals": "-",
+        "required": "Não",
+        "validValues": ""
+      },
+      {
+        "number": 9,
+        "name": "DT_DOU_PORT_CEBAS",
+        "description": "Data da Publicação da Portaria que concedeu o CEBAS Atual no DOU Data em que a Portaria que concedeu/renovou o Certificado de Entidade Beneficente de Assistência Social (CEBAS) atual, emitido pela autoridade executiva federal responsável pela área de saúde, educação ou assistência social, conforme a área de atuação preponderante da entidade, foi publicada no Diário Oficial da União (DOU) (Lei Complementar nº 187, de 2021, art. 35). Somente preencher quando X485.TIPO_BENEF for igual a “12 – ENTIDADE BENEFICENTE DE ASSISTÊNCIA SOCIAL IMUNE DE CONTRIBUIÇÕES SOCIAIS”.",
+        "type": "N",
+        "size": "008",
+        "decimals": "DDMMAAAA",
+        "required": "Não",
+        "validValues": ""
+      },
+      {
+        "number": 10,
+        "name": "DT_INI_PORT_CEBAS",
+        "description": "Data de Início de Vigência da Portaria que concedeu o CEBAS Atual Data de início de vigência da Portaria, publicada no Diário Oficial da União (DOU) que concedeu/renovou o Certificado de Entidade Beneficente de Assistência Social (CEBAS) atual, emitido pela autoridade executiva federal responsável pela área de saúde, educação ou assistência social, conforme a área de atuação preponderante da entidade (Lei Complementar nº 187, de 2021, arts. 35 a 37). O campo deve ser preenchido no seguinte formato: DD/MM/AAAA. Somente preencher quando X485.TIPO_BENEF for igual a “12 – ENTIDADE BENEFICENTE DE ASSISTÊNCIA SOCIAL IMUNE DE CONTRIBUIÇÕES SOCIAIS”.",
+        "type": "N",
+        "size": "008",
+        "decimals": "DDMMAAAA",
+        "required": "Não",
+        "validValues": ""
+      },
+      {
+        "number": 11,
+        "name": "DT_FIN_PORT_CEBAS",
+        "description": "Data de Fim de Vigência da Portaria que concedeu o CEBAS Atual Data de fim de vigência da Portaria, publicada no Diário Oficial da União (DOU) que concedeu/renovou o Certificado de Entidade Beneficente de Assistência Social (CEBAS) atual, emitido pela autoridade executiva federal responsável pela área de saúde, educação ou assistência social, conforme a área de atuação preponderante da entidade (Lei Complementar nº 187, de 2021, arts. 35 a 37). O campo deve ser preenchido no seguinte formato: DD/MM/AAAA. Somente preencher quando X485.TIPO_BENEF for igual a “12 – ENTIDADE BENEFICENTE DE ASSISTÊNCIA SOCIAL IMUNE DE CONTRIBUIÇÕES SOCIAIS”.",
+        "type": "N",
+        "size": "008",
+        "decimals": "DDMMAAAA",
+        "required": "Não",
+        "validValues": ""
       }
     ]
   },
@@ -11910,6 +12120,16 @@
         "decimals": "2",
         "required": "Não",
         "validValues": "-"
+      },
+      {
+        "number": 18,
+        "name": "IND_AVAL_ESTOQ",
+        "description": "Método de Avaliação de Estoques: 1 – Custo Médio Ponderado 2 – PEPS (Primeiro que entra, primeiro que sai) 3 – Arbitramento - art. 296, Inc. I e II, do RIR/99 4 – Custo Específico 5 – Valor Realizável Líquido 6 – Inventário Periódico 7 – Outros 8 – Não há (Exemplo: Empresas Prestadoras de Serviços)",
+        "type": "C",
+        "size": "1",
+        "decimals": "-",
+        "required": "Não",
+        "validValues": "[1; 2; 3; 4; 5; 6; 7; 8]"
       }
     ]
   },

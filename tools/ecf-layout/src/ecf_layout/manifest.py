@@ -9,7 +9,7 @@ import tempfile
 from collections import Counter
 from pathlib import Path
 from ecf_layout.cache import sha256_file
-from ecf_layout.fragmenter import RecordFragment, fragment_pages_with_errors
+from ecf_layout.fragmenter import RecordFragment, _field_row, fragment_pages_with_errors
 
 
 CANONICAL_CODES_BY_BLOCK = {
@@ -154,9 +154,10 @@ def record_from_fragment(fragment: RecordFragment) -> dict:
             continue
         cells = line.rstrip().strip("|").split("|")
         first_parts = _parts(cells[0]) if cells else []
-        number_match = re.fullmatch(r"(\d+)", first_parts[0]) if first_parts else None
-        if number_match:
-            number = int(number_match.group(1))
+        expected_number = len(parsed_fields) + 1
+        row = _field_row(f"|{line.rstrip().strip('|')}|\n", expected_number)
+        if row is not None:
+            number, _field_name = row
             if not 1 <= number <= len(fragment.fields) or number in parsed_fields:
                 continue
             expected_name = fragment.fields[number - 1]
@@ -354,8 +355,21 @@ def _parse_field_cells(
     if conditional is not None:
         return conditional
 
+    omitted_valid_values = _parse_omitted_valid_values_cells(
+        number, expected_name, cells
+    )
+    if omitted_valid_values is not None:
+        return omitted_valid_values
+
     tokens = [part for cell in cells for part in (_parts(cell) or [""])]
     name_index = 1
+    if (
+        len(tokens) > 2
+        and tokens[0].isdigit()
+        and tokens[1].isdigit()
+        and int(tokens[0] + tokens[1]) == number
+    ):
+        name_index = 2
     parsed_name = tokens[name_index] if len(tokens) > name_index else expected_name
     name_end = name_index
     name_matches = True
@@ -423,6 +437,38 @@ def _parse_conditional_required_cells(
         required_parts[0],
     ]
     return _field(number, parsed_name, description, values), name_matches
+
+
+def _parse_omitted_valid_values_cells(
+    number: int, expected_name: str, cells: list[str]
+) -> tuple[dict, bool] | None:
+    if len(cells) != 7:
+        return None
+    type_parts = _parts(cells[3])
+    size_parts = _parts(cells[4])
+    decimal_parts = _parts(cells[5])
+    required_parts = _parts(cells[6])
+    if (
+        len(type_parts) != 1
+        or type_parts[0] not in {"C", "N", "NS", "D"}
+        or len(size_parts) != 1
+        or len(decimal_parts) != 1
+        or not required_parts
+        or required_parts[0] not in _REQUIRED_MARKER_SET
+    ):
+        return None
+
+    name = "".join(_parts(cells[1]))
+    name_matches = _identifier_key(name) == _identifier_key(expected_name)
+    parsed_name = expected_name if name_matches else name
+    values = [
+        type_parts[0],
+        size_parts[0],
+        decimal_parts[0],
+        "",
+        required_parts[0],
+    ]
+    return _field(number, parsed_name, _plain(cells[2]), values), name_matches
 
 
 def _field(number: int, name: str, description: str, values: list[str]) -> dict:

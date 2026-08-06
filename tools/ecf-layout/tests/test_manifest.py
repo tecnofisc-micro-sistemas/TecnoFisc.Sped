@@ -199,6 +199,95 @@ def test_builds_only_structural_manifest_data_from_fragment() -> None:
     assert "REGRA_PROIBIDA" not in json.dumps(record, ensure_ascii=False)
 
 
+def test_parses_metadata_when_field_ordinal_is_split_across_adjacent_cells() -> None:
+    fragment = RecordFragment(
+        code="0001",
+        block="0",
+        page_start=564,
+        page_end=564,
+        level="1",
+        occurrence="1:1",
+        fields=["REG", "IND_AVAL_ESTOQ"],
+        markdown="""# **Registro 0001: Abertura**
+|**1**|REG|Identificacao.|C|4|-|[0001]|Sim|
+|**0**|**2**<br>IND_AVAL_ESTOQ|Metodo de avaliacao.<br>C<br>1<br>-|[1;2;3]|Nao||
+""",
+    )
+
+    record = manifest.record_from_fragment(fragment)
+
+    assert record["fields"][1] == {
+        "number": 2,
+        "name": "IND_AVAL_ESTOQ",
+        "description": "Metodo de avaliacao.",
+        "type": "C",
+        "size": "1",
+        "decimals": "-",
+        "required": "Nao",
+        "validValues": "[1;2;3]",
+    }
+    assert "ambiguities" not in record
+
+
+def test_parses_field_when_empty_valid_values_column_is_omitted() -> None:
+    fragment = RecordFragment(
+        code="0001",
+        block="0",
+        page_start=523,
+        page_end=523,
+        level="1",
+        occurrence="1:1",
+        fields=["REG", "CNPJ_INCORP"],
+        markdown="""# **Registro 0001: Abertura**
+|**1**|REG|Identificacao.|C|4|-|[0001]|Sim|
+|**2**|CNPJ_INCORP|Inscricao da incorporacao afetada.|C|014|-|Não|
+""",
+    )
+
+    record = manifest.record_from_fragment(fragment)
+
+    assert record["fields"][1] == {
+        "number": 2,
+        "name": "CNPJ_INCORP",
+        "description": "Inscricao da incorporacao afetada.",
+        "type": "C",
+        "size": "014",
+        "decimals": "-",
+        "required": "Não",
+        "validValues": "",
+    }
+    assert "ambiguities" not in record
+
+
+def test_does_not_treat_packed_size_and_decimal_cells_as_omitted_column() -> None:
+    fragment = RecordFragment(
+        code="0001",
+        block="0",
+        page_start=58,
+        page_end=58,
+        level="1",
+        occurrence="1:1",
+        fields=["REG"],
+        markdown="""# **Registro 0001: Abertura**
+|**1**|REG|Identificacao.|C|4<br>-|[0001]|Sim|
+""",
+    )
+
+    record = manifest.record_from_fragment(fragment)
+
+    assert record["fields"][0] == {
+        "number": 1,
+        "name": "REG",
+        "description": "Identificacao.",
+        "type": "C",
+        "size": "4",
+        "decimals": "-",
+        "required": "Sim",
+        "validValues": "[0001]",
+    }
+    assert "ambiguities" not in record
+
+
 def test_keeps_conditional_required_marker_in_its_column() -> None:
     fragment = RecordFragment(
         code="0001",

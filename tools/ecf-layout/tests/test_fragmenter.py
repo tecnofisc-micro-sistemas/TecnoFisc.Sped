@@ -74,6 +74,99 @@ def test_merges_continued_field_table_headers() -> None:
     assert fragment_pages([(122, markdown)])[0].fields == ["REG", "DT_INI", "DT_FIN", "PER_APUR"]
 
 
+def test_recovers_continued_field_table_after_page_chrome_and_embedded_rows() -> None:
+    markdown = (FIXTURES / "continued-field-table-with-page-chrome.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert fragment_pages([(481, markdown)])[0].fields == [
+        "REG",
+        "CAMPO_INICIAL",
+        "CAMPO_CONTINUADO",
+        "CAMPO_FINAL",
+    ]
+
+
+def test_recovers_field_ordinal_split_across_adjacent_cells() -> None:
+    markdown = (FIXTURES / "split-field-ordinal.md").read_text(encoding="utf-8")
+
+    assert fragment_pages([(564, markdown)])[0].fields == ["REG", "IND_AVAL_ESTOQ"]
+
+
+def test_keeps_hyphenated_field_name_and_ignores_example_record_line() -> None:
+    markdown = """# **4.5. Leiaute dos Registros**
+
+# **Registro TEST: Registro com campo hifenizado**
+
+**Nível Hierárquico – 2 Ocorrência – 0:1**
+
+|**Nº**|**Campo**|**Descrição**|**Tipo**|**Tamanho**|**Decimal**|**Valores Válidos**|**Obrigatório**|
+|---|---|---|---|---|---|---|---|
+|**1**|REG|Identificação do registro.|C|4|-|[TEST]|Sim|
+|**2**|IND_E-COM_TI|Indicador de comércio eletrônico.|C|1|-|[S;N]|Sim|
+
+# **|TEST|S|**
+"""
+
+    assert fragment_pages([(81, markdown)])[0].fields == ["REG", "IND_E-COM_TI"]
+
+
+def test_recovers_field_when_name_and_description_share_one_cell() -> None:
+    markdown = """# **4.5. Leiaute dos Registros**
+
+# **Registro TEST: Registro com celula mesclada**
+
+**Nível Hierárquico – 2 Ocorrência – 0:1**
+
+|**Nº**|**Campo**|**Descrição**|**Tipo**|**Tamanho**|**Decimal**|**Valores Válidos**|**Obrigatório**|
+|---|---|---|---|---|---|---|---|
+|**1**|REG|Identificação do registro.|C|4|-|[TEST]|Sim|
+
+|**Nº**|**Campo**|**Descrição**|**Tipo**|**Tamanho**|**Decimal**|**Valores Válidos**|**Obrigatório**|
+|---|---|---|---|---|---|---|---|
+|**2**|IND_VALOR<br>Indicador do valor:<br>D - Devedor<br>C - Credor|C|1|-|[D;C]|Sim|
+"""
+
+    assert fragment_pages([(241, markdown)])[0].fields == ["REG", "IND_VALOR"]
+
+
+def test_recovers_final_field_before_rules_boundary_in_same_cell() -> None:
+    markdown = """# **4.5. Leiaute dos Registros**
+
+# **Registro TEST: Registro com fronteira mesclada**
+
+**Nível Hierárquico – 2 Ocorrência – 0:1**
+
+|**Nº**|**Campo**|**Descrição**|**Tipo**|**Tamanho**|**Decimal**|**Valores Válidos**|**Obrigatório**|
+|---|---|---|---|---|---|---|---|
+|**1**|REG|Identificação do registro.|C|4|-|[TEST]|Sim|
+|**2**<br>CAMPO_FINAL<br>**I – Regras de Validação do Registro**|Descrição do campo.|C|-|-|-|Não|
+|**Nº**|**Campo**|**Regras de Validação do Campo**|**Tipo**|
+|**2**|CAMPO_FINAL|REGRA_TESTE|Erro|
+"""
+
+    assert fragment_pages([(560, markdown)])[0].fields == ["REG", "CAMPO_FINAL"]
+
+
+def test_recovers_split_ordinal_after_fragmented_continuation_header() -> None:
+    markdown = """# **4.5. Leiaute dos Registros**
+
+# **Registro TEST: Registro com cabeçalho fragmentado**
+
+**Nível Hierárquico – 2 Ocorrência – 0:1**
+
+|**Nº**|**Campo**|**Descrição**|**Tipo**|**Tamanho**|**Decimal**|**Valores Válidos**|**Obrigatório**|
+|---|---|---|---|---|---|---|---|
+|**1**|REG|Identificação do registro.|C|4|-|[TEST]|Sim|
+
+|**N**|**º**<br>**Campo**|**Descrição**<br>**Tipo**<br>**Tamanho**<br>**Decimal**|**Valores**<br>**Válidos**|**Obrigatório**||
+|---|---|---|---|---|---|
+|**0**|**2**<br>IND_AVAL_ESTOQ|Método de avaliação de estoques.<br>C<br>1<br>-|[1;2;3]|Não||
+"""
+
+    assert fragment_pages([(566, markdown)])[0].fields == ["REG", "IND_AVAL_ESTOQ"]
+
+
 def test_ignores_reference_table_after_detailed_fields() -> None:
     markdown = (FIXTURES / "field-and-reference-table.md").read_text(encoding="utf-8")
 

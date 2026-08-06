@@ -7,6 +7,9 @@ from hashlib import sha256
 from pathlib import Path
 
 
+_CONVERSION_SOURCES = ("converter.py", "fixups.py")
+
+
 @dataclass(frozen=True)
 class CacheKey:
     pdf_sha256: str
@@ -22,11 +25,12 @@ def sha256_file(path: Path) -> str:
 
 
 def converter_fingerprint(package_dir: Path | None = None) -> str:
-    """Hash every current package source deterministically, including future fixups."""
+    """Hash only the source files that affect converted page contents."""
     source_dir = package_dir or Path(__file__).parent
     digest = sha256()
-    for source in sorted(source_dir.rglob("*.py"), key=lambda path: path.relative_to(source_dir).as_posix()):
-        relative_path = source.relative_to(source_dir).as_posix().encode("utf-8")
+    for relative_name in _CONVERSION_SOURCES:
+        source = source_dir / relative_name
+        relative_path = relative_name.encode("utf-8")
         source_bytes = source.read_bytes()
         digest.update(len(relative_path).to_bytes(4, "big"))
         digest.update(relative_path)

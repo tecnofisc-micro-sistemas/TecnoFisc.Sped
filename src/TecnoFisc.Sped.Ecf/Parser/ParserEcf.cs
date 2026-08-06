@@ -1,6 +1,6 @@
 using TecnoFisc.Sped.Core.Erros;
+using TecnoFisc.Sped.Ecf.Generated;
 using TecnoFisc.Sped.Txt.Engine.Abstracoes;
-using TecnoFisc.Sped.Txt.Engine.Catalogo;
 using TecnoFisc.Sped.Txt.Engine.Parser;
 
 namespace TecnoFisc.Sped.Ecf.Parser;
@@ -8,7 +8,7 @@ namespace TecnoFisc.Sped.Ecf.Parser;
 /// <summary>Leitor especializado dos leiautes ECF suportados.</summary>
 public sealed class ParserEcf : ILeitorSped
 {
-    private static readonly IRegistroSpedCatalogo _catalogoPadrao = CriarCatalogoPadrao();
+    private static readonly IRegistroSpedCatalogo _catalogoPadrao = new CatalogoSpedGerado();
 
     private readonly LeitorSpedTxt _leitor;
 
@@ -49,19 +49,4 @@ public sealed class ParserEcf : ILeitorSped
     public ResultadoParse<RegistroSped> ParseLinha(ReadOnlySpan<char> linha, long numeroLinha = 0)
         => _leitor.ParseLinha(linha, numeroLinha);
 
-    private static IRegistroSpedCatalogo CriarCatalogoPadrao()
-    {
-        var assembly = typeof(ParserEcf).Assembly;
-        var tipoCatalogoGerado = assembly.GetType(
-            "TecnoFisc.Sped.Ecf.Generated.CatalogoSpedGerado",
-            throwOnError: false,
-            ignoreCase: false);
-
-        if (tipoCatalogoGerado is null)
-            return CatalogoBuilder.BuildFromAssembly(assembly);
-
-        return Activator.CreateInstance(tipoCatalogoGerado) as IRegistroSpedCatalogo
-            ?? throw new InvalidOperationException(
-                $"O catálogo gerado '{tipoCatalogoGerado.FullName}' não implementa {nameof(IRegistroSpedCatalogo)}.");
-    }
 }

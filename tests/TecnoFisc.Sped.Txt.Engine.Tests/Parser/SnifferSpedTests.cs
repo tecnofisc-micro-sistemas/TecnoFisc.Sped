@@ -5,6 +5,9 @@ namespace TecnoFisc.Sped.Txt.Engine.Tests.Parser;
 
 public sealed class SnifferSpedTests
 {
+    private const string LinhaEcfCompleta =
+        "|0000|LECF|0011|11111111000191|EMPRESA TESTE|0|0|||01012025|31122025|N||0||";
+
     [Fact]
     public void MetadadosArquivoSped_ArmazenaValores()
     {
@@ -72,6 +75,55 @@ public sealed class SnifferSpedTests
         metadados.VersaoLeiaute.Should().Be(9);
         metadados.CodigoVersaoDeclarado.Should().Be("LECD");
         stream.Position.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task IdentificarAsync_Lecf_RetornaEcfVersaoDeclaradaERestauraPosicao()
+    {
+        await using var stream = Sped("PREFIXO" + LinhaEcfCompleta + "\r\n|0001|0|\r\n");
+        stream.Position = "PREFIXO".Length;
+
+        var metadados = await SnifferSped.IdentificarAsync(stream, TestContext.Current.CancellationToken);
+
+        metadados.Projeto.Should().Be(ProjetoSped.Ecf);
+        metadados.VersaoLeiaute.Should().Be(11);
+        metadados.CodigoVersaoDeclarado.Should().Be("0011");
+        metadados.PrimeiraLinha.Should().Be(LinhaEcfCompleta);
+        stream.Position.Should().Be("PREFIXO".Length);
+    }
+
+    [Theory]
+    [InlineData("|0000|lecf|0012|11222333000181|EMPRESA TESTE|0|0|||01012025|31122025|N||0||")]
+    [InlineData("|0000|XECF|0012|11222333000181|EMPRESA TESTE|0|0|||01012025|31122025|N||0||")]
+    [InlineData("|0000|LECF|0007|11222333000181|EMPRESA TESTE|0|0|||01012025|31122025|N||0||")]
+    [InlineData("|0000|LECF|0013|11222333000181|EMPRESA TESTE|0|0|||01012025|31122025|N||0||")]
+    [InlineData("|0000|LECF|0012|11222333000181|EMPRESA TESTE|0|0|||01012025|31122025|N||0|")]
+    [InlineData("|0000|LECF|0012|11222333000181|EMPRESA TESTE|0|0|||01012025|31122025|N||0|||")]
+    [InlineData("|0000|LECF|0012|11222333000181|EMPRESA TESTE|0|0|||01012025|31122025|N||0||EXTRA")]
+    [InlineData("|0000|LECF|0012|11222333000181|EMPRESA TESTE|")]
+    public async Task IdentificarAsync_LecfQuaseValido_RetornaDesconhecido(string linha)
+    {
+        await using var stream = Sped(linha);
+
+        var metadados = await SnifferSped.IdentificarAsync(stream, TestContext.Current.CancellationToken);
+
+        metadados.Projeto.Should().Be(ProjetoSped.Desconhecido);
+        metadados.VersaoLeiaute.Should().Be(0);
+        stream.Position.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task IdentificarAsync_Cancelado_RestauraPosicaoSeekable()
+    {
+        await using var stream = Sped("PREFIXO" + LinhaEcfCompleta);
+        stream.Position = "PREFIXO".Length;
+        using var cancelamento = new CancellationTokenSource();
+        cancelamento.Cancel();
+
+        Func<Task> act = async () => _ = await SnifferSped.IdentificarAsync(stream, cancelamento.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
+        stream.Position.Should().Be("PREFIXO".Length);
     }
 
     [Fact]

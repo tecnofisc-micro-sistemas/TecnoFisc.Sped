@@ -66,6 +66,9 @@ public static class SnifferSped
         if (discriminador == "LECD")
             return new MetadadosArquivoSped(ProjetoSped.Ecd, 9, EncodingSped.Latin1, linha, discriminador);
 
+        if (discriminador == "LECF")
+            return ClassificarEcf(linha, campos);
+
         if (!int.TryParse(discriminador, out int versao))
             return Desconhecido(linha, discriminador);
 
@@ -80,6 +83,39 @@ public static class SnifferSped
 
             _ => Desconhecido(linha, discriminador),
         };
+    }
+
+    private static MetadadosArquivoSped ClassificarEcf(string linha, string[] campos)
+    {
+        const int quantidadeCamposComDelimitadores = 17;
+        const int quantidadePipes = 16;
+
+        string? versaoDeclarada = campos.Length > 3 ? campos[3] : null;
+        if (campos.Length != quantidadeCamposComDelimitadores
+            || linha.Count(static caractere => caractere == '|') != quantidadePipes
+            || campos[^1].Length != 0)
+        {
+            return Desconhecido(linha, versaoDeclarada);
+        }
+
+        int versao = versaoDeclarada switch
+        {
+            "0008" => 8,
+            "0009" => 9,
+            "0010" => 10,
+            "0011" => 11,
+            "0012" => 12,
+            _ => 0,
+        };
+
+        return versao == 0
+            ? Desconhecido(linha, versaoDeclarada)
+            : new MetadadosArquivoSped(
+                ProjetoSped.Ecf,
+                versao,
+                EncodingSped.Latin1,
+                linha,
+                versaoDeclarada);
     }
 
     private static MetadadosArquivoSped Desconhecido(string primeiraLinha, string? codigoVersaoDeclarado)

@@ -2,7 +2,7 @@
 
 | Substage | Record | Title | Start page | End page | Block | Status |
 | --- | --- | --- | ---: | ---: | --- | --- |
-| 17.002 | 0000 | Abertura do Arquivo Digital e Identificação da Pessoa Jurídica | 58 | 67 | 0 | [ ] |
+| 17.002 | 0000 | Abertura do Arquivo Digital e Identificação da Pessoa Jurídica | 58 | 67 | 0 | [x] |
 | 17.003 | 0001 | Abertura do Bloco 0 | 67 | 68 | 0 | [ ] |
 | 17.004 | 0010 | Parâmetros de Tributação | 68 | 77 | 0 | [ ] |
 | 17.005 | 0020 | Parâmetros Complementares | 77 | 91 | 0 | [ ] |

@@ -13,6 +13,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="JsonSchema.Net" />
     <PackageReference Include="coverlet.collector">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
@@ -26,12 +27,19 @@
   <ItemGroup>
     <None Include="..\..\sped\ecf\layout-12-manifest.json"
           Link="Manifesto\layout-12-manifest.json"
-          CopyToOutputDirectory="PreserveNewest" />
+          CopyToOutputDirectory="Always" />
     <None Include="..\..\sped\ecf\layout-12-manifest.schema.json"
           Link="Manifesto\layout-12-manifest.schema.json"
-          CopyToOutputDirectory="PreserveNewest" />
+          CopyToOutputDirectory="Always" />
     <None Update="Fixtures\**\*.txt"
-          CopyToOutputDirectory="PreserveNewest" />
+          CopyToOutputDirectory="Always" />
+
+    <EmbeddedResource Include="..\..\sped\ecf\layout-12-manifest.json"
+                      LogicalName="TecnoFisc.Sped.Ecf.Tests.Source.layout-12-manifest.json" />
+    <EmbeddedResource Include="..\..\sped\ecf\layout-12-manifest.schema.json"
+                      LogicalName="TecnoFisc.Sped.Ecf.Tests.Source.layout-12-manifest.schema.json" />
+    <EmbeddedResource Include="Fixtures\Sinteticas\minimo.txt"
+                      LogicalName="TecnoFisc.Sped.Ecf.Tests.Source.minimo.txt" />
   </ItemGroup>
 
 </Project>

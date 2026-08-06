@@ -1,13 +1,15 @@
 using System.Globalization;
 using System.Text;
+using System.Text.RegularExpressions;
 
+using TecnoFisc.Sped.Core.ValueObjects;
 using TecnoFisc.Sped.Ecf.Generated;
 using TecnoFisc.Sped.Txt.Engine.Abstracoes;
 using TecnoFisc.Sped.Txt.Engine.Catalogo;
 
 namespace TecnoFisc.Sped.Ecf.Tests.Manifesto;
 
-internal static class AssertRegistroEcf
+internal static partial class AssertRegistroEcf
 {
     private static readonly CatalogoSpedGerado _catalogo = new();
     private static readonly Lazy<ManifestoEcf> _manifesto = new(ManifestoEcf.Carregar);
@@ -80,6 +82,56 @@ internal static class AssertRegistroEcf
 
         var divergencias = new List<string>();
         CompararMetadados(_manifesto.Value.Obter(metadados.Codigo), metadados, divergencias);
+        FalharSeHouverDivergencias(divergencias);
+    }
+
+    internal static void FieldMetadataMatchesManifest(
+        string codigo,
+        string nomeCampo,
+        Type tipo,
+        int tamanho,
+        int decimais,
+        bool obrigatorio)
+    {
+        ArgumentNullException.ThrowIfNull(codigo);
+        ArgumentNullException.ThrowIfNull(nomeCampo);
+        ArgumentNullException.ThrowIfNull(tipo);
+
+        var registro = _manifesto.Value.Obter(codigo);
+        var campo = registro.Fields.SingleOrDefault(
+            item => string.Equals(item.Name, nomeCampo, StringComparison.Ordinal));
+        if (campo is null)
+        {
+            throw new Xunit.Sdk.XunitException(
+                $"Registro {codigo}: campo '{nomeCampo}' não existe no manifesto.");
+        }
+
+        string contexto = $"registro {codigo}, campo nº {campo.Number} {campo.Name}";
+        var divergencias = new List<string>();
+        AdicionarDivergencia(
+            divergencias,
+            contexto,
+            "tamanho",
+            NormalizarTamanho(campo),
+            tamanho);
+        AdicionarDivergencia(
+            divergencias,
+            contexto,
+            "decimais",
+            NormalizarDecimais(campo.Decimals),
+            decimais);
+        AdicionarDivergencia(
+            divergencias,
+            contexto,
+            "obrigatório",
+            NormalizarObrigatorio(campo.Required),
+            obrigatorio);
+        if (!TipoCompativel(campo, tipo))
+        {
+            divergencias.Add(
+                $"{contexto}: tipo do manifesto '{campo.Type}' incompatível com CLR '{tipo.FullName}'");
+        }
+
         FalharSeHouverDivergencias(divergencias);
     }
 
@@ -198,7 +250,7 @@ internal static class AssertRegistroEcf
             divergencias,
             contexto,
             "tamanho",
-            NormalizarTamanho(esperado.Size),
+            NormalizarTamanho(esperado),
             atual.Tamanho);
         AdicionarDivergencia(
             divergencias,
@@ -224,28 +276,31 @@ internal static class AssertRegistroEcf
     private static bool TipoCompativel(ManifestoCampoEcf campo, Type tipo)
     {
         Type alvo = Nullable.GetUnderlyingType(tipo) ?? tipo;
+        CampoSemantica semantica = ClassificarSemantica(campo);
 
-        if (campo.Type == "D")
+        if (semantica is CampoSemantica.Data)
             return alvo == typeof(DateOnly);
+
+        if (semantica is CampoSemantica.Cpf)
+            return alvo == typeof(Cpf);
+
+        if (semantica is CampoSemantica.Cnpj)
+            return alvo == typeof(Cnpj);
+
+        if (semantica is CampoSemantica.DocumentoComposto)
+            return alvo == typeof(string);
+
+        if (campo.Type == "C")
+            return alvo == typeof(string) || alvo == typeof(char) || alvo.IsEnum;
 
         if (campo.Type == "NS")
             return alvo == typeof(decimal);
 
-        if (campo.Type == "C")
-        {
-            if (NomeRepresentaCnpj(campo))
-                return alvo.Name == "Cnpj";
-            if (NomeRepresentaCpf(campo))
-                return alvo.Name == "Cpf";
-
-            return alvo == typeof(string) || alvo == typeof(char) || alvo.IsEnum;
-        }
+        if (campo.Type == "D")
+            return alvo == typeof(DateOnly);
 
         if (campo.Type != "N")
             return false;
-
-        if (NomeRepresentaData(campo))
-            return alvo == typeof(DateOnly);
 
         if (NormalizarDecimais(campo.Decimals) > 0)
             return alvo == typeof(decimal);
@@ -258,36 +313,63 @@ internal static class AssertRegistroEcf
                alvo.IsEnum;
     }
 
-    private static bool NomeRepresentaCnpj(ManifestoCampoEcf campo)
-        => campo.Name.Contains("CNPJ", StringComparison.Ordinal) ||
-           campo.Name is "COD_SCP";
-
-    private static bool NomeRepresentaCpf(ManifestoCampoEcf campo)
-        => campo.Name.Contains("CPF", StringComparison.Ordinal);
-
-    private static bool NomeRepresentaData(ManifestoCampoEcf campo)
-        => (campo.Name.StartsWith("DT_", StringComparison.Ordinal) ||
-            campo.Name.StartsWith("VIG_", StringComparison.Ordinal)) &&
-           NormalizarTamanho(campo.Size) == 8;
-
-    private static int NormalizarTamanho(string valor)
+    private static CampoSemantica ClassificarSemantica(ManifestoCampoEcf campo)
     {
-        if (int.TryParse(valor, NumberStyles.None, CultureInfo.InvariantCulture, out int tamanho))
-            return tamanho;
+        string textoNormativo = $"{campo.Name} {campo.Description}";
+        bool declaraCpf = CpfTokenPattern().IsMatch(textoNormativo);
+        bool declaraCnpj = CnpjTokenPattern().IsMatch(textoNormativo);
+        bool declaraNif = NifTokenPattern().IsMatch(textoNormativo);
 
-        int abreParenteses = valor.IndexOf('(');
-        int fechaParenteses = valor.IndexOf(')', abreParenteses + 1);
-        if (abreParenteses >= 0 && fechaParenteses > abreParenteses + 1 &&
-            int.TryParse(
-                valor.AsSpan(abreParenteses + 1, fechaParenteses - abreParenteses - 1),
+        int documentosDeclarados = (declaraCpf ? 1 : 0) +
+                                   (declaraCnpj ? 1 : 0) +
+                                   (declaraNif ? 1 : 0);
+        if (documentosDeclarados > 1)
+            return CampoSemantica.DocumentoComposto;
+
+        int tamanho = NormalizarTamanho(campo);
+        if (declaraCpf && tamanho == 11)
+            return CampoSemantica.Cpf;
+        if (declaraCnpj && tamanho == 14)
+            return CampoSemantica.Cnpj;
+
+        bool declaraData = campo.Type == "D" ||
+                            (campo.Type == "N" &&
+                             tamanho == 8 &&
+                             DataTokenPattern().IsMatch(textoNormativo));
+        return declaraData ? CampoSemantica.Data : CampoSemantica.Generico;
+    }
+
+    private static int NormalizarTamanho(ManifestoCampoEcf campo)
+    {
+        var tamanhos = ExtrairInteiros(campo.Size).ToList();
+        if ((CpfTokenPattern().IsMatch(campo.Decimals) ||
+             CnpjTokenPattern().IsMatch(campo.Decimals) ||
+             NifTokenPattern().IsMatch(campo.Decimals)) &&
+            !int.TryParse(
+                campo.Decimals,
                 NumberStyles.None,
                 CultureInfo.InvariantCulture,
-                out tamanho))
+                out _))
         {
-            return tamanho;
+            tamanhos.AddRange(ExtrairInteiros(campo.Decimals));
         }
 
-        return 0;
+        return tamanhos.Count == 0 ? 0 : tamanhos.Max();
+    }
+
+    private static IEnumerable<int> ExtrairInteiros(string valor)
+    {
+        foreach (Match match in IntegerPattern().Matches(valor))
+        {
+            if (int.TryParse(
+                match.ValueSpan,
+                NumberStyles.None,
+                CultureInfo.InvariantCulture,
+                out int numero))
+            {
+                yield return numero;
+            }
+        }
     }
 
     private static int NormalizarDecimais(string valor)
@@ -317,6 +399,21 @@ internal static class AssertRegistroEcf
 
         return resultado.ToString();
     }
+
+    [GeneratedRegex("(?<![A-Z0-9])CPF(?![A-Z0-9])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex CpfTokenPattern();
+
+    [GeneratedRegex("(?<![A-Z0-9])CNPJ(?![A-Z0-9])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex CnpjTokenPattern();
+
+    [GeneratedRegex("(?<![A-Z0-9])NIF(?![A-Z0-9])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex NifTokenPattern();
+
+    [GeneratedRegex("(?<![A-Z0-9])DATA(?![A-Z0-9])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex DataTokenPattern();
+
+    [GeneratedRegex("[0-9]+", RegexOptions.CultureInvariant)]
+    private static partial Regex IntegerPattern();
 
     private static void AdicionarDivergencia<T>(
         List<string> divergencias,
@@ -349,5 +446,19 @@ internal static class AssertRegistroEcf
         throw new Xunit.Sdk.XunitException(
             "Divergências entre manifesto e implementação ECF:" + Environment.NewLine +
             string.Join(Environment.NewLine, divergencias.Select(item => $"- {item}")));
+    }
+
+    /// <summary>
+    /// Matriz semântica derivada de marcadores normativos de documento/data, nunca do código
+    /// do registro. Formas exclusivas exigem o value object forte; formas compostas preservam
+    /// <see cref="string"/> para não perder CPF/CNPJ/NIF alternativos.
+    /// </summary>
+    private enum CampoSemantica
+    {
+        Generico,
+        Data,
+        Cpf,
+        Cnpj,
+        DocumentoComposto,
     }
 }

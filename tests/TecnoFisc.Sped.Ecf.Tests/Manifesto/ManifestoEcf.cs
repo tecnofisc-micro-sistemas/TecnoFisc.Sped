@@ -1,6 +1,9 @@
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
+
+using Json.Schema;
 
 namespace TecnoFisc.Sped.Ecf.Tests.Manifesto;
 
@@ -53,10 +56,14 @@ internal sealed partial class ManifestoEcf
         ArgumentNullException.ThrowIfNull(manifestoJson);
         ArgumentNullException.ThrowIfNull(schemaJson);
 
-        using var schema = JsonDocument.Parse(schemaJson);
+        using var schema = ParseSchema(schemaJson);
         var raizSchema = schema.RootElement;
-        ValidarCabecalhoSchema(raizSchema);
+        JsonSchema schemaCompilado = BuildSchema(raizSchema);
         var canonicos = LerSequenciaCanonica(raizSchema);
+
+        using var manifesto = ParseManifestoJson(manifestoJson);
+        ValidarCodigosCanonicosJson(manifesto.RootElement, canonicos);
+        ValidarContraSchema(manifesto.RootElement, schemaCompilado);
 
         ManifestoRegistroEcf[] registros;
         try
@@ -75,6 +82,167 @@ internal sealed partial class ManifestoEcf
         return new ManifestoEcf(
             registros,
             canonicos.Select(item => item.Code).ToArray());
+    }
+
+    private static void ValidarCodigosCanonicosJson(JsonElement manifesto, Canonico[] canonicos)
+    {
+        if (manifesto.ValueKind is not JsonValueKind.Array)
+            return;
+
+        var codigos = new List<string>(manifesto.GetArrayLength());
+        foreach (var registro in manifesto.EnumerateArray())
+        {
+            if (registro.ValueKind is not JsonValueKind.Object ||
+                !registro.TryGetProperty("code", out var codigo) ||
+                codigo.ValueKind is not JsonValueKind.String)
+            {
+                return;
+            }
+
+            codigos.Add(codigo.GetString()!);
+        }
+
+        var primeiraPosicao = new Dictionary<string, int>(StringComparer.Ordinal);
+        for (int indice = 0; indice < codigos.Count; indice++)
+        {
+            string codigo = codigos[indice];
+            if (!primeiraPosicao.TryAdd(codigo, indice))
+            {
+                throw new InvalidDataException(
+                    $"Código duplicado '{codigo}' no manifesto ECF, posições " +
+                    $"{primeiraPosicao[codigo] + 1} e {indice + 1}.");
+            }
+        }
+
+        var codigosSchema = canonicos.Select(item => item.Code).ToHashSet(StringComparer.Ordinal);
+        for (int indice = 0; indice < codigos.Count; indice++)
+        {
+            string codigo = codigos[indice];
+            if (!codigosSchema.Contains(codigo))
+            {
+                throw new InvalidDataException(
+                    $"O código '{codigo}' na posição {indice + 1} não existe no schema canônico do leiaute 12.");
+            }
+
+            if (indice < canonicos.Length &&
+                !string.Equals(codigo, canonicos[indice].Code, StringComparison.Ordinal))
+            {
+                throw new InvalidDataException(
+                    $"Divergência na ordem canônica na posição {indice + 1}: " +
+                    $"esperado '{canonicos[indice].Code}', encontrado '{codigo}'.");
+            }
+        }
+    }
+
+    private static JsonDocument ParseSchema(string schemaJson)
+    {
+        try
+        {
+            var schema = JsonDocument.Parse(schemaJson);
+            ValidarCabecalhoSchema(schema.RootElement);
+            return schema;
+        }
+        catch (InvalidDataException)
+        {
+            throw;
+        }
+        catch (Exception excecao) when (
+            excecao is JsonException or JsonSchemaException or InvalidOperationException or KeyNotFoundException)
+        {
+            throw new InvalidDataException(
+                $"O schema ECF Draft 2020-12 está malformado: {excecao.Message}",
+                excecao);
+        }
+    }
+
+    private static JsonSchema BuildSchema(JsonElement schemaJson)
+    {
+        try
+        {
+            return JsonSchema.Build(
+                schemaJson,
+                new BuildOptions
+                {
+                    Dialect = Dialect.Draft202012,
+                    SchemaRegistry = new SchemaRegistry(),
+                });
+        }
+        catch (Exception excecao) when (excecao is JsonSchemaException or InvalidOperationException)
+        {
+            throw new InvalidDataException(
+                $"O schema ECF Draft 2020-12 está malformado em prefixItems/keywords: {excecao.Message}",
+                excecao);
+        }
+    }
+
+    private static JsonDocument ParseManifestoJson(string manifestoJson)
+    {
+        try
+        {
+            return JsonDocument.Parse(manifestoJson);
+        }
+        catch (JsonException excecao)
+        {
+            throw new InvalidDataException(
+                $"O manifesto ECF não contém JSON válido: {excecao.Message}",
+                excecao);
+        }
+    }
+
+    private static void ValidarContraSchema(JsonElement manifesto, JsonSchema schema)
+    {
+        var resultado = schema.Evaluate(
+            manifesto,
+            new EvaluationOptions { OutputFormat = OutputFormat.List });
+        if (resultado.IsValid)
+            return;
+
+        var erros = (resultado.Details ?? [])
+            .Where(item => !item.IsValid && item.Errors is not null)
+            .Select(item => FormatarErroSchema(item, manifesto))
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+
+        throw new InvalidDataException(
+            "O manifesto ECF viola o schema Draft 2020-12:" + Environment.NewLine +
+            string.Join(Environment.NewLine, erros.Select(erro => $"- {erro}")));
+    }
+
+    private static string FormatarErroSchema(EvaluationResults resultado, JsonElement manifesto)
+    {
+        string caminho = resultado.InstanceLocation.ToString();
+        string contexto = ContextoRegistro(caminho, manifesto);
+        string detalhes = string.Join(
+            "; ",
+            resultado.Errors!.Select(erro => $"{erro.Key}: {erro.Value}"));
+        return $"{contexto}{caminho}: {detalhes}";
+    }
+
+    private static string ContextoRegistro(string caminho, JsonElement manifesto)
+    {
+        if (manifesto.ValueKind is not JsonValueKind.Array ||
+            caminho.Length < 2 ||
+            caminho[0] != '/')
+        {
+            return string.Empty;
+        }
+
+        int fimIndice = caminho.IndexOf('/', 1);
+        ReadOnlySpan<char> textoIndice = fimIndice < 0
+            ? caminho.AsSpan(1)
+            : caminho.AsSpan(1, fimIndice - 1);
+        if (!int.TryParse(textoIndice, NumberStyles.None, CultureInfo.InvariantCulture, out int indice) ||
+            indice < 0 ||
+            indice >= manifesto.GetArrayLength())
+        {
+            return string.Empty;
+        }
+
+        var registro = manifesto[indice];
+        if (!registro.TryGetProperty("code", out var codigo) || codigo.ValueKind is not JsonValueKind.String)
+            return string.Empty;
+
+        return $"registro {codigo.GetString()} em ";
     }
 
     private static void ExigirArquivoCopiado(string caminho, string tipo)
@@ -225,6 +393,13 @@ internal sealed partial class ManifestoEcf
 
             if (campoIndice == 0 && !string.Equals(campo.Name, "REG", StringComparison.Ordinal))
                 throw new InvalidDataException($"Registro {registro.Code}: o campo nº 1 deve ser REG.");
+
+            if (campo.Required is not ("Sim" or "Não" or "S" or "N" or "-" or "Sim”" or "sim"))
+            {
+                throw new InvalidDataException(
+                    $"O schema semântico do registro {registro.Code}, fields/{campoIndice}/required " +
+                    $"não reconhece o marcador '{campo.Required}'.");
+            }
         }
     }
 

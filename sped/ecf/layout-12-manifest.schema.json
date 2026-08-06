@@ -6,9 +6,7 @@
   "minItems": 180,
   "maxItems": 180,
   "uniqueItems": true,
-  "items": {
-    "$ref": "#/$defs/record"
-  },
+  "items": false,
   "$defs": {
     "record": {
       "type": "object",
@@ -31,7 +29,25 @@
         },
         "block": {
           "type": "string",
-          "enum": ["0", "C", "E", "J", "K", "L", "M", "N", "P", "Q", "T", "U", "V", "W", "X", "Y", "9"]
+          "enum": [
+            "0",
+            "C",
+            "E",
+            "J",
+            "K",
+            "L",
+            "M",
+            "N",
+            "P",
+            "Q",
+            "T",
+            "U",
+            "V",
+            "W",
+            "X",
+            "Y",
+            "9"
+          ]
         },
         "title": {
           "type": "string",
@@ -92,7 +108,12 @@
         },
         "type": {
           "type": "string",
-          "enum": ["C", "N", "NS", "D"]
+          "enum": [
+            "C",
+            "N",
+            "NS",
+            "D"
+          ]
         },
         "size": {
           "type": "string"
@@ -108,5 +129,3068 @@
         }
       }
     }
-  }
+  },
+  "$comment": "Canonical code/block/order is encoded by prefixItems. Relational invariants pageEnd >= pageStart and contiguous field numbers are enforced by tooling semantic validation because JSON Schema does not express them directly.",
+  "prefixItems": [
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "0000"
+            },
+            "block": {
+              "const": "0"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "0001"
+            },
+            "block": {
+              "const": "0"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "0010"
+            },
+            "block": {
+              "const": "0"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "0020"
+            },
+            "block": {
+              "const": "0"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "0021"
+            },
+            "block": {
+              "const": "0"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "0030"
+            },
+            "block": {
+              "const": "0"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "0035"
+            },
+            "block": {
+              "const": "0"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "0930"
+            },
+            "block": {
+              "const": "0"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "0990"
+            },
+            "block": {
+              "const": "0"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "C001"
+            },
+            "block": {
+              "const": "C"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "C040"
+            },
+            "block": {
+              "const": "C"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "C050"
+            },
+            "block": {
+              "const": "C"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "C051"
+            },
+            "block": {
+              "const": "C"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "C053"
+            },
+            "block": {
+              "const": "C"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "C100"
+            },
+            "block": {
+              "const": "C"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "C150"
+            },
+            "block": {
+              "const": "C"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "C155"
+            },
+            "block": {
+              "const": "C"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "C157"
+            },
+            "block": {
+              "const": "C"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "C350"
+            },
+            "block": {
+              "const": "C"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "C355"
+            },
+            "block": {
+              "const": "C"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "C990"
+            },
+            "block": {
+              "const": "C"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "E001"
+            },
+            "block": {
+              "const": "E"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "E010"
+            },
+            "block": {
+              "const": "E"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "E015"
+            },
+            "block": {
+              "const": "E"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "E020"
+            },
+            "block": {
+              "const": "E"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "E030"
+            },
+            "block": {
+              "const": "E"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "E155"
+            },
+            "block": {
+              "const": "E"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "E355"
+            },
+            "block": {
+              "const": "E"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "E990"
+            },
+            "block": {
+              "const": "E"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "J001"
+            },
+            "block": {
+              "const": "J"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "J050"
+            },
+            "block": {
+              "const": "J"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "J051"
+            },
+            "block": {
+              "const": "J"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "J053"
+            },
+            "block": {
+              "const": "J"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "J100"
+            },
+            "block": {
+              "const": "J"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "J990"
+            },
+            "block": {
+              "const": "J"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "K001"
+            },
+            "block": {
+              "const": "K"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "K030"
+            },
+            "block": {
+              "const": "K"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "K155"
+            },
+            "block": {
+              "const": "K"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "K156"
+            },
+            "block": {
+              "const": "K"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "K355"
+            },
+            "block": {
+              "const": "K"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "K356"
+            },
+            "block": {
+              "const": "K"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "K915"
+            },
+            "block": {
+              "const": "K"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "K935"
+            },
+            "block": {
+              "const": "K"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "K990"
+            },
+            "block": {
+              "const": "K"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "L001"
+            },
+            "block": {
+              "const": "L"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "L030"
+            },
+            "block": {
+              "const": "L"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "L100"
+            },
+            "block": {
+              "const": "L"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "L200"
+            },
+            "block": {
+              "const": "L"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "L210"
+            },
+            "block": {
+              "const": "L"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "L300"
+            },
+            "block": {
+              "const": "L"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "L990"
+            },
+            "block": {
+              "const": "L"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "M001"
+            },
+            "block": {
+              "const": "M"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "M010"
+            },
+            "block": {
+              "const": "M"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "M030"
+            },
+            "block": {
+              "const": "M"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "M300"
+            },
+            "block": {
+              "const": "M"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "M305"
+            },
+            "block": {
+              "const": "M"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "M310"
+            },
+            "block": {
+              "const": "M"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "M312"
+            },
+            "block": {
+              "const": "M"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "M315"
+            },
+            "block": {
+              "const": "M"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "M350"
+            },
+            "block": {
+              "const": "M"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "M355"
+            },
+            "block": {
+              "const": "M"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "M360"
+            },
+            "block": {
+              "const": "M"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "M362"
+            },
+            "block": {
+              "const": "M"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "M365"
+            },
+            "block": {
+              "const": "M"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "M410"
+            },
+            "block": {
+              "const": "M"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "M415"
+            },
+            "block": {
+              "const": "M"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "M500"
+            },
+            "block": {
+              "const": "M"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "M510"
+            },
+            "block": {
+              "const": "M"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "M990"
+            },
+            "block": {
+              "const": "M"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "N001"
+            },
+            "block": {
+              "const": "N"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "N030"
+            },
+            "block": {
+              "const": "N"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "N500"
+            },
+            "block": {
+              "const": "N"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "N600"
+            },
+            "block": {
+              "const": "N"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "N605"
+            },
+            "block": {
+              "const": "N"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "N610"
+            },
+            "block": {
+              "const": "N"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "N615"
+            },
+            "block": {
+              "const": "N"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "N620"
+            },
+            "block": {
+              "const": "N"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "N630"
+            },
+            "block": {
+              "const": "N"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "N650"
+            },
+            "block": {
+              "const": "N"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "N660"
+            },
+            "block": {
+              "const": "N"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "N670"
+            },
+            "block": {
+              "const": "N"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "N990"
+            },
+            "block": {
+              "const": "N"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "P001"
+            },
+            "block": {
+              "const": "P"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "P030"
+            },
+            "block": {
+              "const": "P"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "P100"
+            },
+            "block": {
+              "const": "P"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "P130"
+            },
+            "block": {
+              "const": "P"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "P150"
+            },
+            "block": {
+              "const": "P"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "P200"
+            },
+            "block": {
+              "const": "P"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "P230"
+            },
+            "block": {
+              "const": "P"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "P300"
+            },
+            "block": {
+              "const": "P"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "P400"
+            },
+            "block": {
+              "const": "P"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "P500"
+            },
+            "block": {
+              "const": "P"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "P990"
+            },
+            "block": {
+              "const": "P"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "Q001"
+            },
+            "block": {
+              "const": "Q"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "Q100"
+            },
+            "block": {
+              "const": "Q"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "Q990"
+            },
+            "block": {
+              "const": "Q"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "T001"
+            },
+            "block": {
+              "const": "T"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "T030"
+            },
+            "block": {
+              "const": "T"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "T120"
+            },
+            "block": {
+              "const": "T"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "T150"
+            },
+            "block": {
+              "const": "T"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "T170"
+            },
+            "block": {
+              "const": "T"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "T181"
+            },
+            "block": {
+              "const": "T"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "T990"
+            },
+            "block": {
+              "const": "T"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "U001"
+            },
+            "block": {
+              "const": "U"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "U030"
+            },
+            "block": {
+              "const": "U"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "U100"
+            },
+            "block": {
+              "const": "U"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "U150"
+            },
+            "block": {
+              "const": "U"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "U180"
+            },
+            "block": {
+              "const": "U"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "U182"
+            },
+            "block": {
+              "const": "U"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "U990"
+            },
+            "block": {
+              "const": "U"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "V001"
+            },
+            "block": {
+              "const": "V"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "V010"
+            },
+            "block": {
+              "const": "V"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "V020"
+            },
+            "block": {
+              "const": "V"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "V030"
+            },
+            "block": {
+              "const": "V"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "V100"
+            },
+            "block": {
+              "const": "V"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "V990"
+            },
+            "block": {
+              "const": "V"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "W001"
+            },
+            "block": {
+              "const": "W"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "W100"
+            },
+            "block": {
+              "const": "W"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "W200"
+            },
+            "block": {
+              "const": "W"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "W250"
+            },
+            "block": {
+              "const": "W"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "W300"
+            },
+            "block": {
+              "const": "W"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "W990"
+            },
+            "block": {
+              "const": "W"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "X001"
+            },
+            "block": {
+              "const": "X"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "X280"
+            },
+            "block": {
+              "const": "X"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "X292"
+            },
+            "block": {
+              "const": "X"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "X340"
+            },
+            "block": {
+              "const": "X"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "X350"
+            },
+            "block": {
+              "const": "X"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "X351"
+            },
+            "block": {
+              "const": "X"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "X352"
+            },
+            "block": {
+              "const": "X"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "X353"
+            },
+            "block": {
+              "const": "X"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "X354"
+            },
+            "block": {
+              "const": "X"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "X355"
+            },
+            "block": {
+              "const": "X"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "X356"
+            },
+            "block": {
+              "const": "X"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "X357"
+            },
+            "block": {
+              "const": "X"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "X360"
+            },
+            "block": {
+              "const": "X"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "X365"
+            },
+            "block": {
+              "const": "X"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "X366"
+            },
+            "block": {
+              "const": "X"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "X370"
+            },
+            "block": {
+              "const": "X"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "X371"
+            },
+            "block": {
+              "const": "X"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "X375"
+            },
+            "block": {
+              "const": "X"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "X390"
+            },
+            "block": {
+              "const": "X"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "X400"
+            },
+            "block": {
+              "const": "X"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "X410"
+            },
+            "block": {
+              "const": "X"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "X420"
+            },
+            "block": {
+              "const": "X"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "X430"
+            },
+            "block": {
+              "const": "X"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "X450"
+            },
+            "block": {
+              "const": "X"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "X451"
+            },
+            "block": {
+              "const": "X"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "X460"
+            },
+            "block": {
+              "const": "X"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "X470"
+            },
+            "block": {
+              "const": "X"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "X480"
+            },
+            "block": {
+              "const": "X"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "X485"
+            },
+            "block": {
+              "const": "X"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "X490"
+            },
+            "block": {
+              "const": "X"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "X500"
+            },
+            "block": {
+              "const": "X"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "X510"
+            },
+            "block": {
+              "const": "X"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "X990"
+            },
+            "block": {
+              "const": "X"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "Y001"
+            },
+            "block": {
+              "const": "Y"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "Y520"
+            },
+            "block": {
+              "const": "Y"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "Y570"
+            },
+            "block": {
+              "const": "Y"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "Y590"
+            },
+            "block": {
+              "const": "Y"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "Y600"
+            },
+            "block": {
+              "const": "Y"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "Y612"
+            },
+            "block": {
+              "const": "Y"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "Y620"
+            },
+            "block": {
+              "const": "Y"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "Y630"
+            },
+            "block": {
+              "const": "Y"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "Y640"
+            },
+            "block": {
+              "const": "Y"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "Y650"
+            },
+            "block": {
+              "const": "Y"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "Y660"
+            },
+            "block": {
+              "const": "Y"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "Y672"
+            },
+            "block": {
+              "const": "Y"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "Y680"
+            },
+            "block": {
+              "const": "Y"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "Y681"
+            },
+            "block": {
+              "const": "Y"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "Y682"
+            },
+            "block": {
+              "const": "Y"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "Y720"
+            },
+            "block": {
+              "const": "Y"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "Y730"
+            },
+            "block": {
+              "const": "Y"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "Y750"
+            },
+            "block": {
+              "const": "Y"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "Y800"
+            },
+            "block": {
+              "const": "Y"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "Y990"
+            },
+            "block": {
+              "const": "Y"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "9001"
+            },
+            "block": {
+              "const": "9"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "9100"
+            },
+            "block": {
+              "const": "9"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "9900"
+            },
+            "block": {
+              "const": "9"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "9990"
+            },
+            "block": {
+              "const": "9"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "#/$defs/record"
+        },
+        {
+          "properties": {
+            "code": {
+              "const": "9999"
+            },
+            "block": {
+              "const": "9"
+            }
+          }
+        }
+      ]
+    }
+  ]
 }

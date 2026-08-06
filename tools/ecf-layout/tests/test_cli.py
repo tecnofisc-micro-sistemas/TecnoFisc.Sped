@@ -5,7 +5,7 @@ import ecf_layout.cli as cli
 from ecf_layout.cache import CacheKey
 from ecf_layout.cli import PrepareResult
 from ecf_layout.manifest import EXPECTED_CODES, block_for_code
-from ecf_layout.artifacts import render_tracker
+from ecf_layout.artifacts import apply_review_evidence, build_artifacts
 
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -188,15 +188,44 @@ def test_build_artifacts_command_generates_candidate_pair_without_promotion(
 def test_promote_command_replaces_reviewed_candidate_pair(tmp_path: Path) -> None:
     work_dir = tmp_path / "work"
     candidate_dir = work_dir / "candidate"
-    candidate_dir.mkdir(parents=True)
-    records = _artifact_records(reviewed=True)
-    (candidate_dir / "layout-12-manifest.json").write_text(
-        json.dumps(records), encoding="utf-8"
+    candidate_manifest = candidate_dir / "layout-12-manifest.json"
+    candidate_tracker = candidate_dir / "STAGE_17_ECF_BASELINE.md"
+    pdf = tmp_path / "manual.pdf"
+    pdf.write_bytes(b"reviewed manual")
+    records = _artifact_records(reviewed=False)
+    build_artifacts(
+        records,
+        work_dir,
+        candidate_manifest,
+        candidate_tracker,
+        pdf=pdf,
     )
-    (candidate_dir / "STAGE_17_ECF_BASELINE.md").write_text(
-        render_tracker(records), encoding="utf-8"
+    generation = json.loads(
+        (candidate_dir / "generation.json").read_text(encoding="utf-8")
     )
-    (work_dir / "quarantine.json").write_text('{"items": []}', encoding="utf-8")
+    review = {
+        "generationId": generation["generationId"],
+        "pdfSha256": generation["pdfSha256"],
+        "candidateSha256": generation["reviewCandidateSha256"],
+        "range": {"startIndex": 1, "endIndex": 180},
+        "uniquePagesOpened": 180,
+        "allPagesOpened": True,
+        "records": [
+            {
+                "index": index,
+                "code": record["code"],
+                "pageStart": record["pageStart"],
+                "pageEnd": record["pageEnd"],
+                "reviewed": True,
+                "note": "Confirmed against the rendered manual page.",
+            }
+            for index, record in enumerate(records, start=1)
+        ],
+        "ambiguities": [],
+    }
+    review_path = tmp_path / "review.json"
+    review_path.write_text(json.dumps(review), encoding="utf-8")
+    apply_review_evidence(work_dir, [review_path])
     manifest_out = tmp_path / "promoted" / "layout-12-manifest.json"
     tracker_out = tmp_path / "promoted" / "STAGE_17_ECF_BASELINE.md"
     manifest_out.parent.mkdir()

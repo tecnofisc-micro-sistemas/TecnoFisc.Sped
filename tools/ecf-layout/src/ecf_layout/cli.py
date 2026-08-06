@@ -11,7 +11,12 @@ from pathlib import Path
 from typing import Callable, Iterable
 
 from ecf_layout.cache import CacheKey, converter_fingerprint, sha256_file
-from ecf_layout.artifacts import ArtifactPromotionError, build_artifacts, promote_artifacts
+from ecf_layout.artifacts import (
+    ArtifactPromotionError,
+    build_artifacts,
+    invalidate_generation,
+    promote_artifacts,
+)
 from ecf_layout.converter import EmptyMarkdownError, convert_page
 from ecf_layout.fragmenter import fragment_pages_with_errors, write_fragments
 from ecf_layout.manifest import (
@@ -116,8 +121,20 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "build-artifacts":
         try:
             records = records_from_work_dir(args.work_dir, args.pdf)
-            build_artifacts(records, args.work_dir, args.manifest_out, args.tracker_out)
-        except (ManifestValidationError, OSError, UnicodeError) as error:
+            build_artifacts(
+                records,
+                args.work_dir,
+                args.manifest_out,
+                args.tracker_out,
+                pdf=args.pdf,
+            )
+        except (
+            ArtifactPromotionError,
+            ManifestValidationError,
+            OSError,
+            UnicodeError,
+        ) as error:
+            invalidate_generation(args.work_dir, str(error))
             print(f"artifact build failed: {error}")
             return 1
         print(f"built: {len(records)} manifest entries and {len(records)} tracker rows")

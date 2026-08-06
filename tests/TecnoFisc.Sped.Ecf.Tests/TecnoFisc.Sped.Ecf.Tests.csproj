@@ -23,4 +23,15 @@
     <ProjectReference Include="..\..\src\TecnoFisc.Sped.Ecf\TecnoFisc.Sped.Ecf.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="..\..\sped\ecf\layout-12-manifest.json"
+          Link="Manifesto\layout-12-manifest.json"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\sped\ecf\layout-12-manifest.schema.json"
+          Link="Manifesto\layout-12-manifest.schema.json"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Fixtures\**\*.txt"
+          CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

@@ -101,6 +101,7 @@ memory/
 .local/ecf-layout/
 **/.artifact.lock
 **/.artifact-pairs/
+**/.artifact-targets/
 
 # Isolated Python tooling environments and bytecode
 tools/ecf-layout/.venv/

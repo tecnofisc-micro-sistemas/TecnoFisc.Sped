@@ -450,6 +450,7 @@ def test_review_evidence_rejects_content_or_pdf_mutation_without_code_page_chang
 
 
 TRANSACTION_BOUNDARIES = [
+    "after_transaction_mkdir",
     "after_staging_descriptor_0",
     "after_staging_descriptor_1",
     "after_staging_descriptor_2",
@@ -464,6 +465,12 @@ TRANSACTION_BOUNDARIES = [
     "after_committed_descriptor_1",
     "after_committed_descriptor_2",
     "after_committed",
+    "after_target_marker_0_0",
+    "after_target_marker_0_1",
+    "after_target_marker_0_2",
+    "after_target_marker_1_0",
+    "after_target_marker_1_1",
+    "after_target_marker_1_2",
     "after_marker_0",
     "after_marker_1",
     "after_marker_2",
@@ -472,6 +479,124 @@ TRANSACTION_BOUNDARIES = [
     "after_removed_descriptor_2",
     "after_journal_removed",
 ]
+
+
+@pytest.mark.parametrize("outputs_exist", [False, True], ids=["new", "existing"])
+def test_empty_pre_intent_transaction_is_removed_and_next_publish_converges(
+    tmp_path: Path, outputs_exist: bool
+) -> None:
+    artifacts = importlib.import_module("ecf_layout.artifacts")
+    first = tmp_path / "published" / "manifest.json"
+    second = tmp_path / "published" / "tracker.md"
+    if outputs_exist:
+        artifacts.replace_artifacts_durably(
+            tmp_path,
+            [(first, b"old manifest"), (second, b"old tracker")],
+        )
+
+    class AbruptStop(BaseException):
+        pass
+
+    def interrupt(boundary: str) -> None:
+        if boundary == "after_transaction_mkdir":
+            raise AbruptStop(boundary)
+
+    with pytest.raises(AbruptStop):
+        artifacts.replace_artifacts_durably(
+            tmp_path,
+            [(first, b"new manifest"), (second, b"new tracker")],
+            interrupt=interrupt,
+        )
+
+    transaction_root = tmp_path / ".artifact-transactions"
+    transaction_dirs = list(transaction_root.iterdir())
+    assert len(transaction_dirs) == 1
+    assert not any(transaction_dirs[0].iterdir())
+
+    artifacts.recover_artifact_transaction(tmp_path)
+    assert not transaction_root.exists()
+    expected = (
+        (b"old manifest", b"old tracker") if outputs_exist else (None, None)
+    )
+    assert _pair_state(first, second) == expected
+
+    artifacts.replace_artifacts_durably(
+        tmp_path,
+        [(first, b"later manifest"), (second, b"later tracker")],
+    )
+    assert artifacts.read_artifact_pair(tmp_path, first, second) == (
+        b"later manifest",
+        b"later tracker",
+    )
+
+
+@pytest.mark.parametrize("outputs_exist", [False, True], ids=["new", "existing"])
+def test_marker_preflight_failure_does_not_create_transaction_namespace(
+    tmp_path: Path, outputs_exist: bool, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    artifacts = importlib.import_module("ecf_layout.artifacts")
+    first = tmp_path / "published" / "manifest.json"
+    second = tmp_path / "published" / "tracker.md"
+    if outputs_exist:
+        artifacts.replace_artifacts_durably(
+            tmp_path,
+            [(first, b"old manifest"), (second, b"old tracker")],
+        )
+    real_preflight = artifacts._preflight_pair_markers
+    failed = False
+
+    def fail_once(*args: object, **kwargs: object) -> None:
+        nonlocal failed
+        if not failed:
+            failed = True
+            raise artifacts.ArtifactPromotionError("injected marker preflight failure")
+        real_preflight(*args, **kwargs)
+
+    monkeypatch.setattr(artifacts, "_preflight_pair_markers", fail_once)
+    with pytest.raises(
+        artifacts.ArtifactPromotionError, match="injected marker preflight"
+    ):
+        artifacts.replace_artifacts_durably(
+            tmp_path,
+            [(first, b"new manifest"), (second, b"new tracker")],
+        )
+
+    assert not (tmp_path / ".artifact-transactions").exists()
+    artifacts.recover_artifact_transaction(tmp_path)
+    artifacts.replace_artifacts_durably(
+        tmp_path,
+        [(first, b"later manifest"), (second, b"later tracker")],
+    )
+    assert artifacts.read_artifact_pair(tmp_path, first, second) == (
+        b"later manifest",
+        b"later tracker",
+    )
+
+
+def test_unknown_nonempty_pre_intent_transaction_fails_closed(tmp_path: Path) -> None:
+    artifacts = importlib.import_module("ecf_layout.artifacts")
+    first = tmp_path / "published" / "manifest.json"
+    second = tmp_path / "published" / "tracker.md"
+
+    class AbruptStop(BaseException):
+        pass
+
+    def interrupt(boundary: str) -> None:
+        if boundary == "after_transaction_mkdir":
+            raise AbruptStop(boundary)
+
+    with pytest.raises(AbruptStop):
+        artifacts.replace_artifacts_durably(
+            tmp_path,
+            [(first, b"new manifest"), (second, b"new tracker")],
+            interrupt=interrupt,
+        )
+    transaction_dir = next((tmp_path / ".artifact-transactions").iterdir())
+    (transaction_dir / "unknown.bin").write_bytes(b"unproven")
+
+    with pytest.raises(artifacts.ArtifactPromotionError, match="intent|unproven"):
+        artifacts.recover_artifact_transaction(tmp_path)
+    assert (transaction_dir / "unknown.bin").read_bytes() == b"unproven"
 
 
 def _pair_state(first: Path, second: Path) -> tuple[bytes | None, bytes | None]:
@@ -1420,6 +1545,96 @@ def test_stale_recovery_cannot_overwrite_a_later_cross_workdir_commit(
     assert not (stale_work / ".artifact-transactions").exists()
 
 
+@pytest.mark.parametrize(
+    "boundary",
+    [
+        "after_replace_0",
+        "after_replace_1",
+        "after_committed",
+        "after_marker_2",
+    ],
+)
+@pytest.mark.parametrize("shared_first", [False, True], ids=["forward", "reverse"])
+def test_overlapping_later_commit_supersedes_stale_recovery_per_target(
+    tmp_path: Path, boundary: str, shared_first: bool
+) -> None:
+    artifacts = importlib.import_module("ecf_layout.artifacts")
+    stale_work = tmp_path / "stale-work"
+    later_work = tmp_path / "later-work"
+    first = tmp_path / "a-first" / "first.json"
+    shared = tmp_path / "b-shared" / "shared.json"
+    third = tmp_path / "c-third" / "third.json"
+    artifacts.replace_artifacts_durably(
+        stale_work,
+        [(first, b"old first"), (shared, b"old shared")],
+    )
+
+    class AbruptStop(BaseException):
+        pass
+
+    def interrupt(current: str) -> None:
+        if current == boundary:
+            raise AbruptStop(current)
+
+    stale_replacements = [
+        (shared, b"stale shared"),
+        (first, b"stale first"),
+    ] if shared_first else [
+        (first, b"stale first"),
+        (shared, b"stale shared"),
+    ]
+    with pytest.raises(AbruptStop):
+        artifacts.replace_artifacts_durably(
+            stale_work,
+            stale_replacements,
+            interrupt=interrupt,
+        )
+    later_replacements = [
+        (third, b"later third"),
+        (shared, b"later shared"),
+    ] if shared_first else [
+        (shared, b"later shared"),
+        (third, b"later third"),
+    ]
+    artifacts.replace_artifacts_durably(later_work, later_replacements)
+    later_marker = artifacts._load_pair_marker_quorum(
+        later_work, [shared, third]
+    )
+
+    artifacts.recover_artifact_transaction(stale_work)
+
+    assert first.read_bytes() == b"old first"
+    assert artifacts.read_artifact_pair(
+        tmp_path / "reader", shared, third
+    ) == (b"later shared", b"later third")
+    shared_marker = artifacts._load_target_marker_quorum(shared)
+    assert shared_marker["transactionId"] == later_marker["transactionId"]
+    assert shared_marker["sha256"] == artifacts.sha256_bytes(b"later shared")
+    assert shared_marker["version"] >= 2
+    assert not (stale_work / ".artifact-transactions").exists()
+
+
+@pytest.mark.parametrize("lost_replica", [0, 1, 2])
+def test_target_identity_quorum_tolerates_loss_of_each_single_replica(
+    tmp_path: Path, lost_replica: int
+) -> None:
+    artifacts = importlib.import_module("ecf_layout.artifacts")
+    first = tmp_path / "published" / "first.json"
+    second = tmp_path / "published" / "second.json"
+    artifacts.replace_artifacts_durably(
+        tmp_path / "work",
+        [(first, b"first"), (second, b"second")],
+    )
+    marker_paths = artifacts._target_marker_paths(first)
+    marker_paths[lost_replica].unlink()
+
+    marker = artifacts._load_target_marker_quorum(first)
+
+    assert marker["target"] == str(first.resolve())
+    assert marker["sha256"] == artifacts.sha256_bytes(b"first")
+    assert marker["version"] == 1
+
+
 def test_artifact_lock_is_os_backed_across_processes(tmp_path: Path) -> None:
     artifacts = importlib.import_module("ecf_layout.artifacts")
     writer_work_dir = tmp_path / "writer-work"
@@ -1819,6 +2034,64 @@ def _make_filesystem_alias(source: Path, alias: Path, alias_kind: str) -> None:
             alias.symlink_to(source)
     except OSError:
         pytest.skip(f"{alias_kind} is not supported for this test user")
+
+
+def test_final_component_symlink_is_rejected_before_destination_locking(
+    tmp_path: Path,
+) -> None:
+    artifacts = importlib.import_module("ecf_layout.artifacts")
+    first = tmp_path / "real-a" / "first.json"
+    shared = tmp_path / "real-b" / "shared.json"
+    third = tmp_path / "third" / "third.json"
+    alias = tmp_path / "alias" / "shared-link.json"
+    artifacts.replace_artifacts_durably(
+        tmp_path / "work-a",
+        [(first, b"old first"), (shared, b"old shared")],
+    )
+    _make_filesystem_alias(shared, alias, "symlink")
+    paused = threading.Event()
+    release = threading.Event()
+    errors: list[BaseException] = []
+
+    def interrupt(boundary: str) -> None:
+        if boundary == "after_replace_0":
+            paused.set()
+            if not release.wait(timeout=5):
+                raise TimeoutError("real-path writer was not released")
+
+    def real_writer() -> None:
+        try:
+            artifacts.replace_artifacts_durably(
+                tmp_path / "work-a",
+                [(first, b"real first"), (shared, b"real shared")],
+                interrupt=interrupt,
+                lock_timeout=5,
+            )
+        except BaseException as error:
+            errors.append(error)
+
+    thread = threading.Thread(target=real_writer)
+    thread.start()
+    assert paused.wait(timeout=5)
+    try:
+        with pytest.raises(artifacts.ArtifactPathError, match="symlink|reparse"):
+            artifacts.replace_artifacts_durably(
+                tmp_path / "work-b",
+                [(alias, b"alias shared"), (third, b"alias third")],
+                lock_timeout=0.05,
+            )
+        assert alias.is_symlink()
+        assert shared.read_bytes() == b"old shared"
+        assert not third.exists()
+    finally:
+        release.set()
+        thread.join(timeout=5)
+
+    assert not thread.is_alive()
+    assert errors == []
+    assert artifacts.read_artifact_pair(
+        tmp_path / "reader", first, shared
+    ) == (b"real first", b"real shared")
 
 
 @pytest.mark.parametrize("alias_kind", ["hardlink", "symlink"])

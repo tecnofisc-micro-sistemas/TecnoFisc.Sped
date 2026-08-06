@@ -45,6 +45,7 @@ _TRANSACTION_DESCRIPTOR_NAME = "descriptor.json"
 _TRANSACTION_INTENT_NAME = "intent.json"
 _RECOVERY_QUARANTINE_NAME = "recovery-quarantine.json"
 _PAIR_MARKER_DIR_NAME = ".artifact-pairs"
+_TARGET_MARKER_DIR_NAME = ".artifact-targets"
 _LOCK_NAME = ".artifact.lock"
 _LOCK_MAGIC = b"ecf-layout-artifact-lock-v1\n"
 _DEFAULT_LOCK_TIMEOUT = 10.0
@@ -112,6 +113,9 @@ def build_artifacts(
         quarantine_path,
         *journal_paths,
     ]
+    _preflight_output_destinations(
+        [manifest_out, tracker_out, generation_path, build_state_path, quarantine_path]
+    )
     with _artifact_lock(
         work_dir,
         targets=[
@@ -202,6 +206,7 @@ def promote_artifacts(
         work_dir / "quarantine.json",
         *_root_descriptor_paths(work_dir),
     ]
+    _preflight_output_destinations([Path(manifest_out), Path(tracker_out)])
     with _artifact_lock(
         work_dir,
         targets=[Path(manifest_out), Path(tracker_out)],
@@ -896,6 +901,7 @@ def replace_artifacts_durably(
     work_dir = Path(work_dir)
     protected_paths = [Path(path) for path in (protected_paths or [])]
     targets = [Path(path) for path, _data in replacements]
+    _preflight_output_destinations(targets)
     with _artifact_lock(
         work_dir,
         targets=targets,
@@ -930,6 +936,7 @@ def _replace_artifacts_durably_locked(
     if not replacements:
         raise ArtifactPathError("a durable transaction requires at least one target")
     targets = [Path(path) for path, _data in replacements]
+    _preflight_output_destinations(targets)
     transaction_root = work_dir / _TRANSACTION_DIR_NAME
     root_descriptors = _root_descriptor_paths(work_dir)
     _ensure_distinct_paths(
@@ -941,16 +948,18 @@ def _replace_artifacts_durably_locked(
 
     transaction_id = uuid.uuid4().hex
     transaction_dir = transaction_root / transaction_id
-    _ensure_private_directory(transaction_root, protected_paths=protected_paths)
     _ensure_distinct_paths([transaction_dir, *targets, *protected_paths])
-    transaction_dir.mkdir(exist_ok=False)
-    _sync_directory(transaction_dir.parent)
     descriptor_paths = [
         *root_descriptors,
         transaction_dir / _TRANSACTION_DESCRIPTOR_NAME,
     ]
     intent_path = transaction_dir / _TRANSACTION_INTENT_NAME
     entries: list[dict] = []
+    base_payloads: list[list[Path]] = []
+    base_target_states = _preflight_target_markers(
+        targets, protected_paths=protected_paths
+    )
+    base_snapshots: list[bytes | None] = []
     for index, (target, data) in enumerate(replacements):
         target = Path(target)
         payload_paths = [
@@ -958,6 +967,15 @@ def _replace_artifacts_durably_locked(
             target.parent
             / f".{target.name}.{transaction_id}.{index}.recovery.bin",
         ]
+        base_payload_paths = [
+            transaction_dir / f"old-{index}.0.bin",
+            target.parent
+            / f".{target.name}.{transaction_id}.{index}.rollback.bin",
+        ]
+        base_state = base_target_states[index]
+        base_data = _committed_base_snapshot(target, base_state)
+        base_snapshots.append(base_data)
+        base_payloads.append(base_payload_paths if base_data is not None else [])
         entries.append(
             {
                 "target": str(target.resolve()),
@@ -965,7 +983,12 @@ def _replace_artifacts_durably_locked(
                 "sha256": sha256_bytes(data),
             }
         )
-    all_payloads = [Path(path) for entry in entries for path in entry["payloads"]]
+    all_payloads = [
+        Path(path)
+        for entry in entries
+        for path in entry["payloads"]
+    ]
+    all_payloads.extend(path for paths in base_payloads for path in paths)
     marker_paths = _pair_marker_paths(work_dir, targets)
     _ensure_distinct_paths(
         [
@@ -986,11 +1009,34 @@ def _replace_artifacts_durably_locked(
     except ArtifactPromotionError:
         base_transaction_id = None
 
+    _ensure_private_directory(transaction_root, protected_paths=protected_paths)
+    transaction_dir.mkdir(exist_ok=False)
+    _sync_directory(transaction_dir.parent)
+    _interrupt(interrupt, "after_transaction_mkdir")
+
     intent = {
-        "schemaVersion": 1,
+        "schemaVersion": 2,
         "transactionId": transaction_id,
         "baseTransactionId": base_transaction_id,
         "targets": [str(path.resolve()) for path in targets],
+        "baseTargets": [
+            {
+                "target": str(target.resolve()),
+                "version": state["version"] if state is not None else 0,
+                "transactionId": (
+                    state["transactionId"] if state is not None else None
+                ),
+                "exists": state["exists"] if state is not None else snapshot is not None,
+                "sha256": (
+                    state["sha256"]
+                    if state is not None
+                    else (sha256_bytes(snapshot) if snapshot is not None else None)
+                ),
+            }
+            for target, state, snapshot in zip(
+                targets, base_target_states, base_snapshots, strict=True
+            )
+        ],
     }
     _create_durable_file_exclusive(
         intent_path, _pretty_json_bytes(intent), protected_paths=protected_paths
@@ -1014,6 +1060,15 @@ def _replace_artifacts_durably_locked(
             _create_durable_file_exclusive(
                 Path(payload_path), data, protected_paths=protected_paths
             )
+    for base_data, payload_paths in zip(
+        base_snapshots, base_payloads, strict=True
+    ):
+        if base_data is None:
+            continue
+        for payload_path in payload_paths:
+            _create_durable_file_exclusive(
+                payload_path, base_data, protected_paths=protected_paths
+            )
     _interrupt(interrupt, "after_payloads")
 
     descriptor["state"] = "prepared"
@@ -1030,6 +1085,13 @@ def _replace_artifacts_durably_locked(
         _write_json_durably(path, descriptor, protected_paths=protected_paths)
         _interrupt(interrupt, f"after_committed_descriptor_{index}")
     _interrupt(interrupt, "after_committed")
+
+    _commit_target_markers(
+        descriptor,
+        intent,
+        protected_paths=protected_paths,
+        interrupt=interrupt,
+    )
 
     _commit_pair_markers(
         work_dir,
@@ -1105,6 +1167,10 @@ def _recover_artifact_transaction_locked(work_dir: Path) -> None:
         _remove_empty_transaction_directories(transaction_root)
         return
 
+    intent = _load_transaction_intent(
+        work_dir, transaction_root / descriptor["transactionId"]
+    )
+
     for entry in descriptor["entries"]:
         data = _recoverable_payload(entry)
         if data is None:
@@ -1124,6 +1190,11 @@ def _recover_artifact_transaction_locked(work_dir: Path) -> None:
         [Path(entry["target"]) for entry in descriptor["entries"]],
         allow_incomplete=True,
     )
+    _preflight_target_markers(
+        [Path(entry["target"]) for entry in descriptor["entries"]],
+        allow_incomplete=True,
+    )
+    _commit_target_markers(descriptor, intent)
     _commit_pair_markers(work_dir, descriptor)
     _cleanup_transaction(descriptor)
     _remove_empty_transaction_directories(transaction_root)
@@ -1201,6 +1272,11 @@ def _recover_or_reject_orphan_transactions(
     for transaction_dir in list(transaction_root.iterdir()):
         if not transaction_dir.is_dir() or transaction_dir.is_symlink():
             raise ArtifactPromotionError("unexpected artifact transaction storage entry")
+        if not any(transaction_dir.iterdir()):
+            transaction_dir.rmdir()
+            _sync_directory(transaction_root)
+            recovered = True
+            continue
         intent = _load_transaction_intent(work_dir, transaction_dir)
         targets = [Path(path) for path in intent["targets"]]
         marker = _find_pair_marker_by_transaction(
@@ -1249,8 +1325,14 @@ def _load_transaction_intent(work_dir: Path, transaction_dir: Path) -> dict:
     if (
         not isinstance(intent, dict)
         or set(intent)
-        != {"schemaVersion", "transactionId", "baseTransactionId", "targets"}
-        or intent.get("schemaVersion") != 1
+        != {
+            "schemaVersion",
+            "transactionId",
+            "baseTransactionId",
+            "targets",
+            "baseTargets",
+        }
+        or intent.get("schemaVersion") != 2
         or intent.get("transactionId") != transaction_dir.name
         or not _is_lower_hex(intent.get("transactionId"), length=32)
         or (
@@ -1260,8 +1342,38 @@ def _load_transaction_intent(work_dir: Path, transaction_dir: Path) -> dict:
         or not isinstance(intent.get("targets"), list)
         or not intent["targets"]
         or any(not isinstance(path, str) for path in intent["targets"])
+        or not isinstance(intent.get("baseTargets"), list)
+        or len(intent["baseTargets"]) != len(intent["targets"])
     ):
         raise ArtifactPromotionError("artifact transaction intent is malformed")
+    for target_value, base in zip(
+        intent["targets"], intent["baseTargets"], strict=True
+    ):
+        if (
+            not isinstance(base, dict)
+            or set(base)
+            != {"target", "version", "transactionId", "exists", "sha256"}
+            or not isinstance(base.get("target"), str)
+            or Path(base["target"]).resolve() != Path(target_value).resolve()
+            or not isinstance(base.get("version"), int)
+            or isinstance(base.get("version"), bool)
+            or base["version"] < 0
+            or (
+                base["version"] == 0
+                and base.get("transactionId") is not None
+            )
+            or (
+                base["version"] > 0
+                and not _is_lower_hex(base.get("transactionId"), length=32)
+            )
+            or not isinstance(base.get("exists"), bool)
+            or (
+                base["exists"]
+                and not _is_lower_hex(base.get("sha256"), length=64)
+            )
+            or (not base["exists"] and base.get("sha256") is not None)
+        ):
+            raise ArtifactPromotionError("artifact transaction base target is malformed")
     targets = [Path(path) for path in intent["targets"]]
     transaction_root = Path(work_dir) / _TRANSACTION_DIR_NAME
     _ensure_distinct_paths(
@@ -1294,14 +1406,86 @@ def _discard_superseded_transaction(work_dir: Path, descriptor: dict) -> bool:
         raise ArtifactPromotionError(
             "artifact transaction intent disagrees with descriptor targets"
         )
-    try:
-        marker = _load_pair_marker_quorum(work_dir, descriptor_targets)
-        _verify_marker_targets(marker)
-    except ArtifactPromotionError:
+    base_by_target = {
+        os.path.normcase(str(Path(base["target"]).resolve())): base
+        for base in intent["baseTargets"]
+    }
+    classifications: list[tuple[dict, dict | None, str]] = []
+    for entry in descriptor["entries"]:
+        target = Path(entry["target"])
+        base = base_by_target[os.path.normcase(str(target.resolve()))]
+        marker = _load_target_marker_for_recovery(
+            target, entry, base, transaction_id
+        )
+        if marker is None:
+            if base["version"] != 0:
+                raise ArtifactPromotionError(
+                    "committed target identity disappeared during recovery"
+                )
+            classification = "base"
+        elif (
+            marker["version"] == base["version"]
+            and marker["transactionId"] == base["transactionId"]
+        ):
+            classification = "base"
+        elif (
+            marker["version"] == base["version"] + 1
+            and marker["transactionId"] == transaction_id
+        ):
+            classification = "this"
+        elif marker["version"] > base["version"]:
+            classification = "later"
+        else:
+            raise ArtifactPromotionError(
+                "committed target identity is ambiguous during recovery"
+            )
+        classifications.append((entry, marker, classification))
+
+    if not any(item[2] == "later" for item in classifications):
         return False
-    marker_transaction_id = marker["transactionId"]
-    if marker_transaction_id == intent["baseTransactionId"]:
-        return False
+
+    for entry, marker, classification in classifications:
+        if classification != "later":
+            continue
+        assert marker is not None
+        target = Path(entry["target"])
+        if (
+            not marker["exists"]
+            or not target.is_file()
+            or target.is_symlink()
+            or sha256_file(target) != marker["sha256"]
+        ):
+            raise ArtifactPromotionError(
+                "later committed target identity does not match its live artifact"
+            )
+
+    rollback_payloads: dict[int, bytes] = {}
+    for index, (entry, _marker, classification) in enumerate(classifications):
+        if classification == "later":
+            continue
+        target = Path(entry["target"])
+        base = base_by_target[os.path.normcase(str(target.resolve()))]
+        if not base["exists"]:
+            continue
+        data = _recoverable_base_payload(descriptor, index, base)
+        if data is None:
+            raise ArtifactPromotionError(
+                "stale artifact transaction lost every valid base payload copy"
+            )
+        rollback_payloads[index] = data
+
+    for index, (entry, _marker, classification) in enumerate(classifications):
+        if classification == "later":
+            continue
+        target = Path(entry["target"])
+        base = base_by_target[os.path.normcase(str(target.resolve()))]
+        if base["exists"]:
+            _write_bytes_durably_atomically(target, rollback_payloads[index])
+        elif target.exists() or target.is_symlink():
+            _read_owned_regular_file(target)
+            _unlink_durably(target)
+        _restore_target_marker_base(base)
+
     _cleanup_invalid_transaction(
         work_dir,
         transaction_dir,
@@ -1309,6 +1493,48 @@ def _discard_superseded_transaction(work_dir: Path, descriptor: dict) -> bool:
         invalid_descriptors=[Path(path) for path in descriptor["descriptorPaths"]],
     )
     return True
+
+
+def _recoverable_base_payload(
+    descriptor: dict, index: int, base: dict
+) -> bytes | None:
+    if not base["exists"]:
+        return None
+    entry = descriptor["entries"][index]
+    target = Path(entry["target"])
+    transaction_dir = (
+        Path(descriptor["descriptorPaths"][2]).parent
+    )
+    paths = [
+        transaction_dir / f"old-{index}.0.bin",
+        target.parent
+        / f".{target.name}.{descriptor['transactionId']}.{index}.rollback.bin",
+    ]
+    for path in paths:
+        try:
+            data = _read_owned_regular_file(path, protected_paths=[target])
+        except (ArtifactPromotionError, OSError):
+            continue
+        if sha256_bytes(data) == base["sha256"]:
+            return data
+    if target.is_file() and not target.is_symlink():
+        data = target.read_bytes()
+        if sha256_bytes(data) == base["sha256"]:
+            return data
+    return None
+
+
+def _restore_target_marker_base(base: dict) -> None:
+    target = Path(base["target"])
+    marker_paths = _target_marker_paths(target)
+    if base["version"] == 0:
+        for path in marker_paths:
+            if path.exists() or path.is_symlink():
+                _read_owned_regular_file(path, protected_paths=[target])
+                _unlink_durably(path)
+        return
+    marker = _target_marker_from_base(base)
+    _write_target_marker(marker, protected_paths=[target])
 
 
 def _cleanup_invalid_transaction(
@@ -1324,6 +1550,10 @@ def _cleanup_invalid_transaction(
         cleanup_paths.append(
             target.parent
             / f".{target.name}.{transaction_id}.{index}.recovery.bin"
+        )
+        cleanup_paths.append(
+            target.parent
+            / f".{target.name}.{transaction_id}.{index}.rollback.bin"
         )
     for path in cleanup_paths:
         if not path.exists() and not path.is_symlink():
@@ -1355,6 +1585,249 @@ def _root_descriptor_paths(work_dir: Path) -> list[Path]:
         Path(work_dir) / _JOURNAL_NAME,
         Path(work_dir) / _JOURNAL_BACKUP_NAME,
     ]
+
+
+def _target_id(target: Path) -> str:
+    identity = os.path.normcase(str(Path(target).resolve())) + "\n"
+    return sha256_bytes(identity.encode("utf-8"))
+
+
+def _target_marker_paths(target: Path) -> list[Path]:
+    target = Path(target).resolve()
+    marker_dir = target.parent / _TARGET_MARKER_DIR_NAME / _target_id(target)
+    return [marker_dir / f"marker-{index}.json" for index in range(3)]
+
+
+def _validate_target_marker(marker: object, target: Path) -> None:
+    target = Path(target).resolve()
+    if (
+        not isinstance(marker, dict)
+        or set(marker)
+        != {
+            "schemaVersion",
+            "targetId",
+            "target",
+            "transactionId",
+            "version",
+            "exists",
+            "sha256",
+            "markerPaths",
+        }
+        or marker.get("schemaVersion") != 1
+        or marker.get("targetId") != _target_id(target)
+        or not isinstance(marker.get("target"), str)
+        or Path(marker["target"]).resolve() != target
+        or not _is_lower_hex(marker.get("transactionId"), length=32)
+        or not isinstance(marker.get("version"), int)
+        or isinstance(marker.get("version"), bool)
+        or marker["version"] < 1
+        or not isinstance(marker.get("exists"), bool)
+        or (
+            marker["exists"]
+            and not _is_lower_hex(marker.get("sha256"), length=64)
+        )
+        or (not marker["exists"] and marker.get("sha256") is not None)
+        or not isinstance(marker.get("markerPaths"), list)
+        or len(marker["markerPaths"]) != 3
+        or any(not isinstance(path, str) for path in marker["markerPaths"])
+    ):
+        raise ArtifactPromotionError("committed target marker is malformed")
+    expected_paths = _target_marker_paths(target)
+    if [Path(path).resolve() for path in marker["markerPaths"]] != [
+        path.resolve() for path in expected_paths
+    ]:
+        raise ArtifactPromotionError("committed target marker paths are invalid")
+
+
+def _load_target_marker_quorum(target: Path) -> dict:
+    target = Path(target)
+    valid: list[dict] = []
+    for path in _target_marker_paths(target):
+        if not path.is_file() or path.is_symlink():
+            continue
+        try:
+            marker = _load_json_snapshot(_read_owned_regular_file(path))
+            _validate_target_marker(marker, target)
+            assert isinstance(marker, dict)
+            valid.append(marker)
+        except (ArtifactPromotionError, OSError, UnicodeError, json.JSONDecodeError):
+            continue
+    groups: dict[str, list[dict]] = {}
+    for marker in valid:
+        groups.setdefault(_marker_identity(marker), []).append(marker)
+    quorum = [group for group in groups.values() if len(group) >= 2]
+    if len(quorum) != 1:
+        raise ArtifactPromotionError("committed target identity has no two-of-three quorum")
+    return quorum[0][0]
+
+
+def _preflight_target_markers(
+    targets: list[Path],
+    *,
+    protected_paths: list[Path] | None = None,
+    allow_incomplete: bool = False,
+) -> list[dict | None]:
+    protected_paths = [Path(path) for path in (protected_paths or [])]
+    states: list[dict | None] = []
+    for target in targets:
+        marker_paths = _target_marker_paths(target)
+        _ensure_distinct_paths([*marker_paths, *targets, *protected_paths])
+        marker_root = marker_paths[0].parent.parent
+        _ensure_private_directory(marker_root, protected_paths=protected_paths)
+        _ensure_private_directory(marker_paths[0].parent, protected_paths=protected_paths)
+        if not any(path.exists() or path.is_symlink() for path in marker_paths):
+            states.append(None)
+            continue
+        try:
+            states.append(_load_target_marker_quorum(target))
+        except ArtifactPromotionError:
+            if not allow_incomplete:
+                raise
+            states.append(None)
+    return states
+
+
+def _committed_base_snapshot(target: Path, marker: dict | None) -> bytes | None:
+    target = Path(target)
+    if marker is None:
+        if not target.exists():
+            return None
+        return _read_owned_regular_file(target)
+    if not marker["exists"]:
+        return None
+    try:
+        data = _read_owned_regular_file(target)
+    except OSError:
+        data = None
+    if data is not None and sha256_bytes(data) == marker["sha256"]:
+        return data
+
+    pattern = f".{target.name}.*.*.rollback.bin"
+    for candidate in target.parent.glob(pattern):
+        try:
+            candidate_data = _read_owned_regular_file(candidate, protected_paths=[target])
+        except (ArtifactPromotionError, OSError):
+            continue
+        if sha256_bytes(candidate_data) == marker["sha256"]:
+            return candidate_data
+    raise ArtifactPromotionError(
+        "committed target identity does not have a recoverable base snapshot"
+    )
+
+
+def _target_marker_from_base(base: dict) -> dict:
+    target = Path(base["target"])
+    marker_paths = _target_marker_paths(target)
+    return {
+        "schemaVersion": 1,
+        "targetId": _target_id(target),
+        "target": str(target.resolve()),
+        "transactionId": base["transactionId"],
+        "version": base["version"],
+        "exists": base["exists"],
+        "sha256": base["sha256"],
+        "markerPaths": [str(path.resolve()) for path in marker_paths],
+    }
+
+
+def _write_target_marker(marker: dict, *, protected_paths: list[Path] | None = None) -> None:
+    protected_paths = [Path(path) for path in (protected_paths or [])]
+    data = _pretty_json_bytes(marker)
+    for path_value in marker["markerPaths"]:
+        path = Path(path_value)
+        if path.exists() or path.is_symlink():
+            _read_owned_regular_file(path, protected_paths=protected_paths)
+            _write_bytes_durably_atomically(path, data, protected_paths=protected_paths)
+        else:
+            _create_durable_file_exclusive(path, data, protected_paths=protected_paths)
+
+
+def _commit_target_markers(
+    descriptor: dict,
+    intent: dict,
+    *,
+    protected_paths: list[Path] | None = None,
+    interrupt: InterruptHook | None = None,
+) -> None:
+    bases = {
+        os.path.normcase(str(Path(base["target"]).resolve())): base
+        for base in intent["baseTargets"]
+    }
+    for entry_index, entry in enumerate(descriptor["entries"]):
+        target = Path(entry["target"])
+        base = bases[os.path.normcase(str(target.resolve()))]
+        marker = _target_marker_for_commit(
+            entry, base, descriptor["transactionId"]
+        )
+        marker_paths = [Path(path) for path in marker["markerPaths"]]
+        data = _pretty_json_bytes(marker)
+        for replica_index, path in enumerate(marker_paths):
+            if path.exists() or path.is_symlink():
+                _read_owned_regular_file(path, protected_paths=protected_paths)
+                _write_bytes_durably_atomically(
+                    path, data, protected_paths=protected_paths
+                )
+            else:
+                _create_durable_file_exclusive(
+                    path, data, protected_paths=protected_paths
+                )
+            _interrupt(
+                interrupt,
+                f"after_target_marker_{entry_index}_{replica_index}",
+            )
+
+
+def _target_marker_for_commit(entry: dict, base: dict, transaction_id: str) -> dict:
+    target = Path(entry["target"])
+    marker_paths = _target_marker_paths(target)
+    return {
+        "schemaVersion": 1,
+        "targetId": _target_id(target),
+        "target": str(target.resolve()),
+        "transactionId": transaction_id,
+        "version": base["version"] + 1,
+        "exists": True,
+        "sha256": entry["sha256"],
+        "markerPaths": [str(path.resolve()) for path in marker_paths],
+    }
+
+
+def _load_target_marker_for_recovery(
+    target: Path, entry: dict, base: dict, transaction_id: str
+) -> dict | None:
+    marker_paths = _target_marker_paths(target)
+    if not any(path.exists() or path.is_symlink() for path in marker_paths):
+        return None
+    try:
+        return _load_target_marker_quorum(target)
+    except ArtifactPromotionError as quorum_error:
+        valid: list[dict] = []
+        for path in marker_paths:
+            if not path.exists() and not path.is_symlink():
+                continue
+            try:
+                marker = _load_json_snapshot(_read_owned_regular_file(path))
+                _validate_target_marker(marker, target)
+                assert isinstance(marker, dict)
+                valid.append(marker)
+            except (ArtifactPromotionError, OSError, UnicodeError, json.JSONDecodeError):
+                raise ArtifactPromotionError(
+                    "incomplete committed target identity is not recoverable"
+                ) from quorum_error
+        expected = _target_marker_for_commit(entry, base, transaction_id)
+        allowed = {_marker_identity(expected)}
+        if base["version"] > 0:
+            allowed.add(_marker_identity(_target_marker_from_base(base)))
+        if not valid or any(_marker_identity(marker) not in allowed for marker in valid):
+            raise ArtifactPromotionError(
+                "incomplete committed target identity is not corroborated"
+            ) from quorum_error
+        own = [
+            marker
+            for marker in valid
+            if marker["transactionId"] == transaction_id
+        ]
+        return own[0] if own else valid[0]
 
 
 def _pair_set_id(targets: list[Path]) -> str:
@@ -1620,6 +2093,7 @@ def _validate_transaction_descriptor(work_dir: Path, descriptor: object) -> None
 
     targets: list[Path] = []
     payloads: list[Path] = []
+    base_payloads: list[Path] = []
     for index, entry in enumerate(descriptor["entries"]):
         if (
             not isinstance(entry, dict)
@@ -1644,7 +2118,19 @@ def _validate_transaction_descriptor(work_dir: Path, descriptor: object) -> None
             raise ArtifactPromotionError("artifact transaction payload paths are invalid")
         targets.append(target)
         payloads.extend(entry_payloads)
-    _ensure_distinct_paths([*targets, *descriptor_paths, *payloads])
+        base_payloads.extend(
+            [
+                transaction_dir / f"old-{index}.0.bin",
+                target.parent
+                / (
+                    f".{target.name}.{descriptor['transactionId']}."
+                    f"{index}.rollback.bin"
+                ),
+            ]
+        )
+    _ensure_distinct_paths(
+        [*targets, *descriptor_paths, *payloads, *base_payloads]
+    )
 
 
 def _transaction_identity(descriptor: dict) -> str:
@@ -1683,9 +2169,17 @@ def _cleanup_transaction(descriptor: dict) -> None:
 
 
 def _remove_payload_copies(entries: list[dict]) -> None:
-    for entry in entries:
+    for index, entry in enumerate(entries):
         for path_value in entry["payloads"]:
             _unlink_durably(Path(path_value))
+        transaction_dir = Path(entry["payloads"][0]).parent
+        target = Path(entry["target"])
+        for path in (
+            transaction_dir / f"old-{index}.0.bin",
+            target.parent
+            / f".{target.name}.{transaction_dir.name}.{index}.rollback.bin",
+        ):
+            _unlink_durably(path)
 
 
 def _unlink_durably(path: Path) -> None:
@@ -1758,6 +2252,7 @@ def invalidate_generation(
     """Durably make every prior candidate generation non-promotable."""
     work_dir = Path(work_dir)
     targets = [work_dir / "build-state.json", work_dir / "quarantine.json"]
+    _preflight_output_destinations(targets)
     with _artifact_lock(work_dir, targets=targets, timeout=lock_timeout):
         _recover_artifact_transaction_locked(work_dir)
         _invalidate_generation_locked(work_dir, reason)
@@ -1822,6 +2317,22 @@ def _read_owned_regular_file(
     if not stat.S_ISREG(metadata.st_mode) or metadata.st_nlink != 1:
         raise ArtifactPathError(f"dynamic artifact path is not owned: {path}")
     return path.read_bytes()
+
+
+def _preflight_output_destinations(paths: list[Path]) -> None:
+    """Reject an existing final-component link before acquiring destination locks."""
+    reparse_flag = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
+    for value in paths:
+        path = Path(value)
+        try:
+            metadata = path.lstat()
+        except FileNotFoundError:
+            continue
+        attributes = getattr(metadata, "st_file_attributes", 0)
+        if stat.S_ISLNK(metadata.st_mode) or attributes & reparse_flag:
+            raise ArtifactPathError(
+                f"artifact output destination is a symlink or reparse point: {path}"
+            )
 
 
 def _ensure_private_directory(

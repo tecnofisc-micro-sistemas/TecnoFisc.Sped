@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Callable, Iterable
 
 from ecf_layout.cache import CacheKey, converter_fingerprint, sha256_file
+from ecf_layout.artifacts import ArtifactPromotionError, build_artifacts, promote_artifacts
 from ecf_layout.converter import EmptyMarkdownError, convert_page
 from ecf_layout.fragmenter import fragment_pages_with_errors, write_fragments
 from ecf_layout.manifest import (
@@ -95,10 +96,45 @@ def main(argv: list[str] | None = None) -> int:
         default=Path("sped/guides/Manual_ECF_Leiaute_12_29_01_2026.pdf"),
     )
     validate.add_argument("--render-suspicious", action="store_true")
+    build = subcommands.add_parser("build-artifacts")
+    build.add_argument("--work-dir", type=Path, required=True)
+    build.add_argument(
+        "--pdf",
+        type=Path,
+        default=Path("sped/guides/Manual_ECF_Leiaute_12_29_01_2026.pdf"),
+    )
+    build.add_argument("--manifest-out", type=Path, required=True)
+    build.add_argument("--tracker-out", type=Path, required=True)
+    promote = subcommands.add_parser("promote")
+    promote.add_argument("--work-dir", type=Path, required=True)
+    promote.add_argument("--manifest-out", type=Path, required=True)
+    promote.add_argument("--tracker-out", type=Path, required=True)
     args = parser.parse_args(argv)
 
     if args.command == "validate":
         return _validate(args.work_dir, args.pdf, render_suspicious=args.render_suspicious)
+    if args.command == "build-artifacts":
+        try:
+            records = records_from_work_dir(args.work_dir, args.pdf)
+            build_artifacts(records, args.work_dir, args.manifest_out, args.tracker_out)
+        except (ManifestValidationError, OSError, UnicodeError) as error:
+            print(f"artifact build failed: {error}")
+            return 1
+        print(f"built: {len(records)} manifest entries and {len(records)} tracker rows")
+        return 0
+    if args.command == "promote":
+        try:
+            promote_artifacts(
+                args.work_dir,
+                args.manifest_out,
+                args.tracker_out,
+                schema_path=args.manifest_out.with_name("layout-12-manifest.schema.json"),
+            )
+        except ArtifactPromotionError as error:
+            print(f"promotion failed: {error}")
+            return 1
+        print("promoted: 180 reviewed manifest entries and 180 tracker rows")
+        return 0
 
     pages = args.pages
     result = prepare_pages(args.pdf, args.work_dir, pages)

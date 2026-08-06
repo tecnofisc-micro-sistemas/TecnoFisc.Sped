@@ -5,6 +5,7 @@ import ecf_layout.cli as cli
 from ecf_layout.cache import CacheKey
 from ecf_layout.cli import PrepareResult
 from ecf_layout.manifest import EXPECTED_CODES, block_for_code
+from ecf_layout.artifacts import render_tracker
 
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -126,3 +127,104 @@ def test_validate_converts_invalid_cache_encoding_to_current_quarantine(tmp_path
     assert len(report["items"]) == 1
     assert "invalid text encoding in cache input" in report["items"][0]["reasons"][0]
     assert "stale failure" not in report["items"][0]["reasons"][0]
+
+
+def _artifact_records(*, reviewed: bool) -> list[dict]:
+    return [
+        {
+            "code": code,
+            "block": block_for_code(code),
+            "title": f"Registro {code}",
+            "pageStart": position + 1,
+            "pageEnd": position + 1,
+            "level": "1",
+            "occurrence": "1:1",
+            "fields": [
+                {
+                    "number": 1,
+                    "name": "REG",
+                    "description": "Identificacao",
+                    "type": "C",
+                    "size": "4",
+                    "decimals": "-",
+                    "required": "Sim",
+                    "validValues": f"[{code}]",
+                }
+            ],
+            "reviewed": reviewed,
+        }
+        for position, code in enumerate(EXPECTED_CODES)
+    ]
+
+
+def test_build_artifacts_command_generates_candidate_pair_without_promotion(
+    tmp_path: Path, monkeypatch
+) -> None:
+    work_dir = tmp_path / "work"
+    candidate_manifest = work_dir / "candidate" / "layout-12-manifest.json"
+    candidate_tracker = work_dir / "candidate" / "STAGE_17_ECF_BASELINE.md"
+    monkeypatch.setattr(
+        cli, "records_from_work_dir", lambda _work_dir, _pdf: _artifact_records(reviewed=False)
+    )
+
+    exit_code = cli.main(
+        [
+            "build-artifacts",
+            "--work-dir",
+            str(work_dir),
+            "--manifest-out",
+            str(candidate_manifest),
+            "--tracker-out",
+            str(candidate_tracker),
+        ]
+    )
+
+    assert exit_code == 0
+    assert len(json.loads(candidate_manifest.read_text(encoding="utf-8"))) == 180
+    assert candidate_tracker.read_text(encoding="utf-8").count("| 17.") == 180
+    assert not (tmp_path / "layout-12-manifest.json").exists()
+
+
+def test_promote_command_replaces_reviewed_candidate_pair(tmp_path: Path) -> None:
+    work_dir = tmp_path / "work"
+    candidate_dir = work_dir / "candidate"
+    candidate_dir.mkdir(parents=True)
+    records = _artifact_records(reviewed=True)
+    (candidate_dir / "layout-12-manifest.json").write_text(
+        json.dumps(records), encoding="utf-8"
+    )
+    (candidate_dir / "STAGE_17_ECF_BASELINE.md").write_text(
+        render_tracker(records), encoding="utf-8"
+    )
+    (work_dir / "quarantine.json").write_text('{"items": []}', encoding="utf-8")
+    manifest_out = tmp_path / "promoted" / "layout-12-manifest.json"
+    tracker_out = tmp_path / "promoted" / "STAGE_17_ECF_BASELINE.md"
+    manifest_out.parent.mkdir()
+    (manifest_out.parent / "layout-12-manifest.schema.json").write_text(
+        json.dumps(
+            {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "array",
+                "minItems": 180,
+                "maxItems": 180,
+                "items": {"type": "object"},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    exit_code = cli.main(
+        [
+            "promote",
+            "--work-dir",
+            str(work_dir),
+            "--manifest-out",
+            str(manifest_out),
+            "--tracker-out",
+            str(tracker_out),
+        ]
+    )
+
+    assert exit_code == 0
+    assert len(json.loads(manifest_out.read_text(encoding="utf-8"))) == 180
+    assert tracker_out.read_text(encoding="utf-8").count("| [ ] |") == 180

@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Local tooling for preparing the ECF layout manual"
 requires-python = ">=3.11"
 dependencies = [
+    "jsonschema==4.25.0",
     "pymupdf4llm==1.28.0",
     "pytest",
 ]

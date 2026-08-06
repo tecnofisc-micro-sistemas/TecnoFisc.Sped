@@ -137,7 +137,11 @@ def record_from_fragment(fragment: RecordFragment) -> dict:
         fragment.markdown,
         flags=re.MULTILINE,
     )
-    title = _plain(title_match.group(1)) if title_match else ""
+    title = (
+        _plain(re.split(r"<br\s*/?>", title_match.group(1), maxsplit=1, flags=re.IGNORECASE)[0])
+        if title_match
+        else ""
+    )
     parsed_fields: dict[int, dict] = {}
     ambiguities: list[str] = []
     current_number: int | None = None

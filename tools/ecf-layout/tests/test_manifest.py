@@ -365,6 +365,25 @@ def test_reconstructs_split_uppercase_field_name_suffix_without_record_exception
     assert "ambiguities" not in record
 
 
+def test_title_stops_at_first_visual_line_when_picture_text_fuses_narrative() -> None:
+    fragment = RecordFragment(
+        code="Y730",
+        block="Y",
+        page_start=577,
+        page_end=581,
+        level="2",
+        occurrence="0:N",
+        fields=["REG"],
+        markdown="""Registro Y730: Identificação de donatários/destinatários<br>Texto narrativo que não pertence ao título.<br><!-- End of picture text -->
+|**1**|REG|Identificação do registro.|C|4|-|[Y730]|Sim|
+""",
+    )
+
+    record = manifest.record_from_fragment(fragment)
+
+    assert record["title"] == "Identificação de donatários/destinatários"
+
+
 def test_cache_selection_is_bound_to_supplied_pdf_hash(tmp_path: Path, monkeypatch) -> None:
     pdf = tmp_path / "manual.pdf"
     pdf.write_bytes(b"normative manual")

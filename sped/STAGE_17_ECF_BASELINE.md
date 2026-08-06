@@ -105,13 +105,13 @@
 | 17.102 | T170 | Apuração da Base de Cálculo da CSLL com Base no Lucro Arbitrado | 366 | 368 | T | [x] |
 | 17.103 | T181 | Cálculo da CSLL com Base no Lucro Arbitrado | 368 | 370 | T | [x] |
 | 17.104 | T990 | Encerramento do Bloco T | 370 | 376 | T | [x] |
-| 17.105 | U001 | Abertura do Bloco U | 376 | 377 | U | [ ] |
-| 17.106 | U030 | Identificação dos Períodos e Formas de Apuração do IRPJ e da CSLL das Empresas Imunes e Isentas | 377 | 379 | U | [ ] |
-| 17.107 | U100 | Balanço Patrimonial | 379 | 384 | U | [ ] |
-| 17.108 | U150 | Demonstração do Resultado | 384 | 388 | U | [ ] |
-| 17.109 | U180 | Cálculo do IRPJ das Empresas Imunes e Isentas | 388 | 390 | U | [ ] |
-| 17.110 | U182 | Cálculo da Contribuição Social sobre o Lucro Líquido (CSLL) das Empresas Imunes e Isentas | 390 | 392 | U | [ ] |
-| 17.111 | U990 | Encerramento do Bloco U | 392 | 395 | U | [ ] |
+| 17.105 | U001 | Abertura do Bloco U | 376 | 377 | U | [x] |
+| 17.106 | U030 | Identificação dos Períodos e Formas de Apuração do IRPJ e da CSLL das Empresas Imunes e Isentas | 377 | 379 | U | [x] |
+| 17.107 | U100 | Balanço Patrimonial | 379 | 384 | U | [x] |
+| 17.108 | U150 | Demonstração do Resultado | 384 | 388 | U | [x] |
+| 17.109 | U180 | Cálculo do IRPJ das Empresas Imunes e Isentas | 388 | 390 | U | [x] |
+| 17.110 | U182 | Cálculo da Contribuição Social sobre o Lucro Líquido (CSLL) das Empresas Imunes e Isentas | 390 | 392 | U | [x] |
+| 17.111 | U990 | Encerramento do Bloco U | 392 | 395 | U | [x] |
 | 17.112 | V001 | Abertura do Bloco V | 395 | 396 | V | [ ] |
 | 17.113 | V010 | DEREX - Instituição | 396 | 397 | V | [ ] |
 | 17.114 | V020 | Responsável pela Movimentação | 397 | 398 | V | [ ] |

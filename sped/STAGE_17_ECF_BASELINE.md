@@ -53,16 +53,16 @@
 | 17.050 | L210 | Informativo da Composição de Custos | 226 | 228 | L | [x] |
 | 17.051 | L300 | Demonstração do Resultado Líquido no Período Fiscal | 228 | 231 | L | [x] |
 | 17.052 | L990 | Encerramento do Bloco L | 231 | 232 | L | [x] |
-| 17.053 | M001 | Abertura do Bloco M | 232 | 233 | M | [ ] |
-| 17.054 | M010 | Identificação da Conta na Parte B do e-Lalur e do e-Lacs | 233 | 237 | M | [ ] |
-| 17.055 | M030 | Identificação dos Períodos e Formas de Apuração do IRPJ e da CSLL das Empresas Tributadas pelo Lucro Real | 237 | 240 | M | [ ] |
-| 17.056 | M300 | Demonstração do Lucro Real – Lançamentos da Parte A do e-Lalur | 240 | 246 | M | [ ] |
-| 17.057 | M305 | Conta da Parte B do e-Lalur | 246 | 248 | M | [ ] |
-| 17.058 | M310 | Contas Contábeis Relacionadas ao Lançamento da Parte A do e-Lalur | 248 | 250 | M | [ ] |
-| 17.059 | M312 | Números dos Lançamentos Relacionados à Conta Contábil | 250 | 251 | M | [ ] |
-| 17.060 | M315 | Identificação de Processos Judiciais e Administrativos Referentes ao Lançamento | 251 | 252 | M | [ ] |
-| 17.061 | M350 | Demonstração da Base de Cálculo da CSLL – Lançamentos da Parte A do e-Lacs | 252 | 258 | M | [ ] |
-| 17.062 | M355 | Conta da Parte B do e-Lacs | 258 | 260 | M | [ ] |
+| 17.053 | M001 | Abertura do Bloco M | 232 | 233 | M | [x] |
+| 17.054 | M010 | Identificação da Conta na Parte B do e-Lalur e do e-Lacs | 233 | 237 | M | [x] |
+| 17.055 | M030 | Identificação dos Períodos e Formas de Apuração do IRPJ e da CSLL das Empresas Tributadas pelo Lucro Real | 237 | 240 | M | [x] |
+| 17.056 | M300 | Demonstração do Lucro Real – Lançamentos da Parte A do e-Lalur | 240 | 246 | M | [x] |
+| 17.057 | M305 | Conta da Parte B do e-Lalur | 246 | 248 | M | [x] |
+| 17.058 | M310 | Contas Contábeis Relacionadas ao Lançamento da Parte A do e-Lalur | 248 | 250 | M | [x] |
+| 17.059 | M312 | Números dos Lançamentos Relacionados à Conta Contábil | 250 | 251 | M | [x] |
+| 17.060 | M315 | Identificação de Processos Judiciais e Administrativos Referentes ao Lançamento | 251 | 252 | M | [x] |
+| 17.061 | M350 | Demonstração da Base de Cálculo da CSLL – Lançamentos da Parte A do e-Lacs | 252 | 258 | M | [x] |
+| 17.062 | M355 | Conta da Parte B do e-Lacs | 258 | 260 | M | [x] |
 | 17.063 | M360 | Contas Contábeis Relacionadas ao Lançamento da Parte A do e-Lacs | 260 | 262 | M | [ ] |
 | 17.064 | M362 | Números dos Lançamentos Relacionados à Conta Contábil | 262 | 263 | M | [ ] |
 | 17.065 | M365 | Identificação de Processos Judiciais e Administrativos Referentes ao Lançamento | 263 | 264 | M | [ ] |

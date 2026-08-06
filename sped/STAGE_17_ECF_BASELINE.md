@@ -63,14 +63,14 @@
 | 17.060 | M315 | Identificação de Processos Judiciais e Administrativos Referentes ao Lançamento | 251 | 252 | M | [x] |
 | 17.061 | M350 | Demonstração da Base de Cálculo da CSLL – Lançamentos da Parte A do e-Lacs | 252 | 258 | M | [x] |
 | 17.062 | M355 | Conta da Parte B do e-Lacs | 258 | 260 | M | [x] |
-| 17.063 | M360 | Contas Contábeis Relacionadas ao Lançamento da Parte A do e-Lacs | 260 | 262 | M | [ ] |
-| 17.064 | M362 | Números dos Lançamentos Relacionados à Conta Contábil | 262 | 263 | M | [ ] |
-| 17.065 | M365 | Identificação de Processos Judiciais e Administrativos Referentes ao Lançamento | 263 | 264 | M | [ ] |
-| 17.066 | M410 | Lançamento na Conta da Parte B do e-Lalur e do e-Lacs sem Reflexo na Parte A | 264 | 266 | M | [ ] |
-| 17.067 | M415 | Identificação de Processos Judiciais e Administrativos Referentes ao Lançamento | 266 | 267 | M | [ ] |
-| 17.068 | M500 | Controle de Saldos das Contas da Parte B do e-Lalur e do e-Lacs | 267 | 269 | M | [ ] |
-| 17.069 | M510 | Controle de Saldos das Contas Padrão da Parte B do e-Lalur e do e-Lacs | 269 | 271 | M | [ ] |
-| 17.070 | M990 | Encerramento do Bloco M | 271 | 272 | M | [ ] |
+| 17.063 | M360 | Contas Contábeis Relacionadas ao Lançamento da Parte A do e-Lacs | 260 | 262 | M | [x] |
+| 17.064 | M362 | Números dos Lançamentos Relacionados à Conta Contábil | 262 | 263 | M | [x] |
+| 17.065 | M365 | Identificação de Processos Judiciais e Administrativos Referentes ao Lançamento | 263 | 264 | M | [x] |
+| 17.066 | M410 | Lançamento na Conta da Parte B do e-Lalur e do e-Lacs sem Reflexo na Parte A | 264 | 266 | M | [x] |
+| 17.067 | M415 | Identificação de Processos Judiciais e Administrativos Referentes ao Lançamento | 266 | 267 | M | [x] |
+| 17.068 | M500 | Controle de Saldos das Contas da Parte B do e-Lalur e do e-Lacs | 267 | 269 | M | [x] |
+| 17.069 | M510 | Controle de Saldos das Contas Padrão da Parte B do e-Lalur e do e-Lacs | 269 | 271 | M | [x] |
+| 17.070 | M990 | Encerramento do Bloco M | 271 | 272 | M | [x] |
 | 17.071 | N001 | Abertura do Bloco N | 272 | 273 | N | [ ] |
 | 17.072 | N030 | Identificação dos Períodos e Formas de Apuração do IRPJ e da CSLL das Empresas Tributadas pelo Lucro Real | 273 | 276 | N | [ ] |
 | 17.073 | N500 | Base de Cálculo do IRPJ Sobre o Lucro Real Após as Compensações de Prejuízos | 276 | 278 | N | [ ] |

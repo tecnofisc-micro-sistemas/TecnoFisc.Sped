@@ -428,7 +428,7 @@ def _parse_conditional_required_cells(
 def _field(number: int, name: str, description: str, values: list[str]) -> dict:
     return {
         "number": number,
-        "name": name,
+        "name": re.sub(r"\s+", "", name),
         "description": description,
         "type": values[0],
         "size": values[1],

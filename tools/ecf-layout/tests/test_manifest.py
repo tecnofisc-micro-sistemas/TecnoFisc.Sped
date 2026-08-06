@@ -425,7 +425,7 @@ def test_reconstructs_split_uppercase_field_name_suffix_without_record_exception
 
     record = manifest.record_from_fragment(fragment)
 
-    assert record["fields"][1]["name"] == "IND_ VL_LCTO_PARTEB"
+    assert record["fields"][1]["name"] == "IND_VL_LCTO_PARTEB"
     assert record["fields"][1]["description"] == "Indicador Somatorio dos Lancamentos da Parte B."
     assert "ambiguities" not in record
 

@@ -4863,7 +4863,7 @@
       },
       {
         "number": 5,
-        "name": "IND_ SD_INI_LAL",
+        "name": "IND_SD_INI_LAL",
         "description": "Indicador de Saldo Inicial: D – Para prejuízos ou valores que serão excluídos do lucro real ou da base de cálculo da contribuição social em períodos subsequentes. C – Para valores que serão adicionados ao lucro real ou à base de cálculo da contribuição social em períodos subsequentes.",
         "type": "C",
         "size": "1",
@@ -4893,7 +4893,7 @@
       },
       {
         "number": 8,
-        "name": "VL_LCTO_PARTE B",
+        "name": "VL_LCTO_PARTEB",
         "description": "Somatório dos Lançamentos da Parte B Sem Reflexo na Parte A no Período (entre contas daparte B).",
         "type": "N",
         "size": "19",
@@ -4903,7 +4903,7 @@
       },
       {
         "number": 9,
-        "name": "IND_ VL_LCTO_PARTEB",
+        "name": "IND_VL_LCTO_PARTEB",
         "description": "Indicador Somatório dos Lançamentos da Parte B Sem Reflexo na Parte A no Período (entre contas da parte B): C – Para prejuízos ou valores que serão excluídos do lucro real ou da base de cálculo da contribuição social em períodos subsequentes. D – Para valores que serão adicionados ao lucro real ou à base de cálculo da contribuição social em períodos subsequentes.",
         "type": "C",
         "size": "1",
@@ -4923,7 +4923,7 @@
       },
       {
         "number": 11,
-        "name": "IND_ SD_FIM_LAL",
+        "name": "IND_SD_FIM_LAL",
         "description": "Indicador de Saldo Final: D – Para prejuízos ou valores que serão excluídos do lucro real ou da base de cálculo da contribuição social em períodos subsequentes. C – Para valores que serão adicionados ao lucro real ou à base de cálculo da contribuição social em períodos subsequentes.",
         "type": "C",
         "size": "1",
@@ -5025,7 +5025,7 @@
       },
       {
         "number": 9,
-        "name": "VL_LCTO_PARTE B",
+        "name": "VL_LCTO_PARTEB",
         "description": "Somatório dos Lançamentos da Parte B Sem Reflexo na Parte A no Período (entre contas daparte B).",
         "type": "N",
         "size": "19",
@@ -5035,7 +5035,7 @@
       },
       {
         "number": 10,
-        "name": "IND_ VL_LCTO_PARTEB",
+        "name": "IND_VL_LCTO_PARTEB",
         "description": "Indicador Somatório dos Lançamentos da Parte B Sem Reflexo na Parte A no Período (entre contas da parte B): C – Para prejuízos ou valores que serão excluídos do lucro real ou da base de cálculo da contribuição social em períodos subsequentes. D – Para valores que serão adicionados ao lucro real ou à base de cálculo da contribuição social em períodos subsequentes.",
         "type": "C",
         "size": "1",
@@ -5055,7 +5055,7 @@
       },
       {
         "number": 12,
-        "name": "IND_ SD_FIM_LAL",
+        "name": "IND_SD_FIM_LAL",
         "description": "Indicador de Saldo Final: D – Para prejuízos ou valores que serão excluídos do lucro real ou da base de cálculo da contribuição social em períodos subsequentes. C – Para valores que serão adicionados ao lucro real ou à base de cálculo da contribuição social em períodos subsequentes.",
         "type": "C",
         "size": "1",

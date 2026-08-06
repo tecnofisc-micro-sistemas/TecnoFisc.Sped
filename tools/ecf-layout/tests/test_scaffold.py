@@ -323,6 +323,7 @@ def test_source_normalizes_manual_field_separators_and_diacritics(
         ("Sim", "[CampoSped(Ordem = 2, Tamanho = 12, Obrigatorio = true)]"),
         ("S", "[CampoSped(Ordem = 2, Tamanho = 12, Obrigatorio = true)]"),
         ("Sim”", "[CampoSped(Ordem = 2, Tamanho = 12, Obrigatorio = true)]"),
+        ("sim", "[CampoSped(Ordem = 2, Tamanho = 12, Obrigatorio = true)]"),
         ("Não", "[CampoSped(Ordem = 2, Tamanho = 12)]"),
         ("N", "[CampoSped(Ordem = 2, Tamanho = 12)]"),
         ("-", "[CampoSped(Ordem = 2, Tamanho = 12)]"),
@@ -347,6 +348,34 @@ def test_source_rejects_ambiguous_required_marker(tmp_path: Path) -> None:
 
     with pytest.raises(ScaffoldError, match="required"):
         scaffold(manifest, tmp_path, codes=["0001"], source=True)
+
+    assert _tree(tmp_path) == {}
+
+
+@pytest.mark.parametrize(
+    "impostor",
+    [
+        "???",
+        "123",
+        "--",
+        "\t",
+        "   ",
+        "",
+        "—",
+        "\u200b",
+        "nao",
+        "False",
+    ],
+)
+def test_required_marker_rejects_every_non_vocabulary_impostor_before_any_write(
+    tmp_path: Path, impostor: str
+) -> None:
+    records = deepcopy(MINIMAL_LAYOUT_12_MANIFEST)
+    records[1]["fields"][1]["required"] = impostor
+    manifest = _write_manifest(tmp_path, records)
+
+    with pytest.raises(ScaffoldError, match="required"):
+        scaffold(manifest, tmp_path, codes=["0001", "C001"], source=True)
 
     assert _tree(tmp_path) == {}
 

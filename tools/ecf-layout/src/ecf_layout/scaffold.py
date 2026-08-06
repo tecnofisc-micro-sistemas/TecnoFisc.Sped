@@ -37,6 +37,8 @@ _BLOCKS = frozenset(
     {"0", "C", "E", "J", "K", "L", "M", "N", "P", "Q", "T", "U", "V", "W", "X", "Y", "9"}
 )
 _FIELD_TYPES = frozenset({"C", "N", "NS", "D"})
+_REQUIRED_TRUE_MARKERS = frozenset({"Sim", "S", "Sim”", "sim"})
+_REQUIRED_FALSE_MARKERS = frozenset({"Não", "N", "-"})
 _BASE_AND_OBJECT_MEMBERS = frozenset(
     {
         "Codigo",
@@ -315,11 +317,9 @@ def _field_attribute(field: dict) -> str:
 
 
 def _required_value(value: str) -> bool:
-    ascii_value = unicodedata.normalize("NFKD", value).encode("ascii", "ignore").decode("ascii")
-    marker = "".join(re.findall(r"[A-Za-z]+", ascii_value)).lower()
-    if marker in {"s", "sim"}:
+    if value in _REQUIRED_TRUE_MARKERS:
         return True
-    if marker in {"", "n", "nao"}:
+    if value in _REQUIRED_FALSE_MARKERS:
         return False
     raise ScaffoldError(f"ambiguous required marker: {value}")
 

@@ -167,16 +167,16 @@
 | 17.164 | Y630 | Fundos/Clubes de Investimento | 557 | 559 | Y | [x] |
 | 17.165 | Y640 | Participações em Consórcios de Empresas | 559 | 561 | Y | [x] |
 | 17.166 | Y650 | Participantes do Consórcio | 561 | 562 | Y | [x] |
-| 17.167 | Y660 | Dados de Sucessoras | 562 | 564 | Y | [ ] |
-| 17.168 | Y672 | Outras Informações (Lucro Presumido ou Lucro Arbitrado) | 564 | 569 | Y | [ ] |
-| 17.169 | Y680 | Mês das Informações de Optantes pelo Refis (Lucro Real, Presumido e Arbitrado) | 569 | 570 | Y | [ ] |
-| 17.170 | Y681 | Informações de Optantes pelo Refis (Lucros Real, Presumido e Arbitrado) | 570 | 572 | Y | [ ] |
-| 17.171 | Y682 | Informações de Optantes pelo Refis – Imunes ou Isentas | 572 | 574 | Y | [ ] |
-| 17.172 | Y720 | Informações de Períodos Anteriores | 574 | 577 | Y | [ ] |
-| 17.173 | Y730 | Identificação de donatários/destinatários de deduções do IRPJ/CSLL | 577 | 581 | Y | [ ] |
-| 17.174 | Y750 | Informações da ECF Calculadas pelo PGE | 581 | 583 | Y | [ ] |
-| 17.175 | Y800 | Outras Informações | 583 | 586 | Y | [ ] |
-| 17.176 | Y990 | Encerramento do Bloco Y | 586 | 587 | Y | [ ] |
+| 17.167 | Y660 | Dados de Sucessoras | 562 | 564 | Y | [x] |
+| 17.168 | Y672 | Outras Informações (Lucro Presumido ou Lucro Arbitrado) | 564 | 569 | Y | [x] |
+| 17.169 | Y680 | Mês das Informações de Optantes pelo Refis (Lucro Real, Presumido e Arbitrado) | 569 | 570 | Y | [x] |
+| 17.170 | Y681 | Informações de Optantes pelo Refis (Lucros Real, Presumido e Arbitrado) | 570 | 572 | Y | [x] |
+| 17.171 | Y682 | Informações de Optantes pelo Refis – Imunes ou Isentas | 572 | 574 | Y | [x] |
+| 17.172 | Y720 | Informações de Períodos Anteriores | 574 | 577 | Y | [x] |
+| 17.173 | Y730 | Identificação de donatários/destinatários de deduções do IRPJ/CSLL | 577 | 581 | Y | [x] |
+| 17.174 | Y750 | Informações da ECF Calculadas pelo PGE | 581 | 583 | Y | [x] |
+| 17.175 | Y800 | Outras Informações | 583 | 586 | Y | [x] |
+| 17.176 | Y990 | Encerramento do Bloco Y | 586 | 587 | Y | [x] |
 | 17.177 | 9001 | Abertura do Bloco 9 | 587 | 588 | 9 | [ ] |
 | 17.178 | 9100 | Avisos da Escrituração | 588 | 590 | 9 | [ ] |
 | 17.179 | 9900 | Registros do Arquivo | 590 | 592 | 9 | [ ] |

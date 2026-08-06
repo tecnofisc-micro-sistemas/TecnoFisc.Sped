@@ -98,11 +98,10 @@ public sealed class ManifestoCatalogoTests
     }
 
     [Fact]
-    public void Catalogo_ContemCadaRegistroRevisadoDoPrimeiroLoteYExatamenteUmaVez()
+    public void Catalogo_ContemCadaRegistroRevisadoDoBlocoYExatamenteUmaVez()
     {
         string[] esperados = ManifestoEcf.Carregar().Registros
             .Where(registro => registro.Block == "Y" && registro.Reviewed)
-            .TakeWhile(registro => registro.Code != "Y660")
             .Select(registro => registro.Code)
             .ToArray();
         string[] atuais = new CatalogoSpedGerado().EnumerarRegistros()
@@ -117,10 +116,10 @@ public sealed class ManifestoCatalogoTests
     [Fact]
     public void CodesAreImplemented_ProximoCodigoConhecidoMasAusente_ApontaFaltaNoCatalogo()
     {
-        var act = () => AssertRegistroEcf.CodesAreImplemented("Y660");
+        var act = () => AssertRegistroEcf.CodesAreImplemented("9001");
 
         act.Should().Throw<Xunit.Sdk.XunitException>()
-            .WithMessage("*ausentes do catálogo*Y660*");
+            .WithMessage("*ausentes do catálogo*9001*");
     }
 
     [Fact]

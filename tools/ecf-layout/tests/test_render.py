@@ -49,6 +49,7 @@ def test_render_page_uses_one_based_pdftoppm_and_requires_output(tmp_path: Path,
     ]]
 
     monkeypatch.setattr(render.subprocess, "run", lambda *_args, **_kwargs: None)
-    output.unlink()
+    output.write_bytes(b"stale png")
     with pytest.raises(FileNotFoundError):
         render_page(pdf, 7, output)
+    assert not output.exists()

@@ -290,6 +290,59 @@ def test_rejects_invalid_exact_schemas_before_candidate_or_promotion_write(
     assert promoted.read_text(encoding="utf-8") == "previous reviewed manifest\n"
 
 
+@pytest.mark.parametrize(
+    "defect",
+    ["list_code", "integer_ambiguities", "object_field_type", "numeric_record_key", "numeric_field_key"],
+)
+def test_hostile_json_values_become_current_quarantine_evidence(
+    tmp_path: Path, defect: str
+) -> None:
+    records = _valid_records(reviewed=True)
+    if defect == "list_code":
+        records[0]["code"] = []
+    elif defect == "integer_ambiguities":
+        records[0]["ambiguities"] = 7
+    elif defect == "object_field_type":
+        records[0]["fields"][0]["type"] = {}
+    elif defect == "numeric_record_key":
+        records[0][7] = "hostile key"
+    else:
+        records[0]["fields"][0][7] = "hostile key"
+    (tmp_path / "quarantine.json").write_text(
+        json.dumps({"items": [{"code": "OLD", "reasons": ["stale failure"], "pages": [99]}]}),
+        encoding="utf-8",
+    )
+    candidate = tmp_path / "candidate" / "layout-12-manifest.json"
+    candidate.parent.mkdir(parents=True)
+    candidate.write_text("previous candidate\n", encoding="utf-8")
+    promoted = tmp_path / "reviewed" / "manifest.json"
+    promoted.parent.mkdir()
+    promoted.write_text("previous reviewed manifest\n", encoding="utf-8")
+
+    with pytest.raises(ManifestValidationError):
+        validate_and_promote(records, tmp_path, promote_to=promoted)
+
+    report = json.loads((tmp_path / "quarantine.json").read_text(encoding="utf-8"))
+    assert report["items"]
+    assert all("stale failure" not in reason for item in report["items"] for reason in item["reasons"])
+    assert candidate.read_text(encoding="utf-8") == "previous candidate\n"
+    assert promoted.read_text(encoding="utf-8") == "previous reviewed manifest\n"
+
+
+def test_rejects_non_array_manifest_root_with_current_quarantine(tmp_path: Path) -> None:
+    (tmp_path / "quarantine.json").write_text(
+        json.dumps({"items": [{"code": "OLD", "reasons": ["stale failure"], "pages": [99]}]}),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ManifestValidationError):
+        validate_and_promote(None, tmp_path)  # type: ignore[arg-type]
+
+    assert json.loads((tmp_path / "quarantine.json").read_text(encoding="utf-8")) == {
+        "items": [{"code": None, "reasons": ["manifest root must be an array"], "pages": []}]
+    }
+
+
 def test_reconstructs_split_uppercase_field_name_suffix_without_record_exception() -> None:
     fragment = RecordFragment(
         code="M500",

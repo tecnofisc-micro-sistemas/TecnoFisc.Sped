@@ -108,3 +108,21 @@ def test_validate_replaces_stale_quarantine_when_cache_loading_fails(tmp_path: P
             {"code": None, "reasons": ["current PDF provenance failure"], "pages": []}
         ]
     }
+
+
+def test_validate_converts_invalid_cache_encoding_to_current_quarantine(tmp_path: Path, monkeypatch) -> None:
+    stale = {"items": [{"code": "OLD", "reasons": ["stale failure"], "pages": [99]}]}
+    (tmp_path / "quarantine.json").write_text(json.dumps(stale), encoding="utf-8")
+
+    def fail(_work_dir: Path, _pdf: Path):
+        raise UnicodeDecodeError("utf-8", b"\xff", 0, 1, "invalid start byte")
+
+    monkeypatch.setattr(cli, "records_from_work_dir", fail)
+
+    exit_code = cli.main(["validate", "--work-dir", str(tmp_path)])
+
+    report = json.loads((tmp_path / "quarantine.json").read_text(encoding="utf-8"))
+    assert exit_code == 1
+    assert len(report["items"]) == 1
+    assert "invalid text encoding in cache input" in report["items"][0]["reasons"][0]
+    assert "stale failure" not in report["items"][0]["reasons"][0]

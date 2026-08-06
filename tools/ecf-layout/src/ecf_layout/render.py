@@ -12,6 +12,7 @@ RenderPage = Callable[[Path, int, Path], Path]
 
 def render_page(pdf: Path, page: int, output: Path) -> Path:
     output.parent.mkdir(parents=True, exist_ok=True)
+    output.unlink(missing_ok=True)
     prefix = output.with_suffix("")
     subprocess.run(
         [

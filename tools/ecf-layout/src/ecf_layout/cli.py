@@ -124,15 +124,16 @@ def main(argv: list[str] | None = None) -> int:
 def _validate(work_dir: Path, pdf: Path, *, render_suspicious: bool) -> int:
     try:
         records = records_from_work_dir(work_dir, pdf)
-    except ManifestValidationError as error:
-        report = {"items": [{"code": None, "reasons": [str(error)], "pages": []}]}
+    except (ValueError, OSError) as error:
+        reason = _input_failure_reason(error)
+        report = {"items": [{"code": None, "reasons": [reason], "pages": []}]}
         write_quarantine(work_dir, report["items"])
-        return _report_validation_failure(work_dir, pdf, report, error, render_suspicious)
+        return _report_validation_failure(work_dir, pdf, report, reason, render_suspicious)
     try:
         validate_and_promote(records, work_dir)
     except ManifestValidationError as error:
         report = json.loads((work_dir / "quarantine.json").read_text(encoding="utf-8"))
-        return _report_validation_failure(work_dir, pdf, report, error, render_suspicious)
+        return _report_validation_failure(work_dir, pdf, report, str(error), render_suspicious)
     print(f"validated: {len(records)} records")
     print("quarantined: 0")
     return 0
@@ -142,7 +143,7 @@ def _report_validation_failure(
     work_dir: Path,
     pdf: Path,
     report: dict,
-    error: ManifestValidationError,
+    error: str,
     render_suspicious: bool,
 ) -> int:
     if render_suspicious:
@@ -155,3 +156,11 @@ def _report_validation_failure(
     print(f"validation failed: {error}")
     print(f"quarantined: {len(report['items'])}")
     return 1
+
+
+def _input_failure_reason(error: ValueError | OSError) -> str:
+    if isinstance(error, ManifestValidationError):
+        return str(error)
+    if isinstance(error, UnicodeError):
+        return f"invalid text encoding in cache input: {error}"
+    return f"invalid cache input: {error}"

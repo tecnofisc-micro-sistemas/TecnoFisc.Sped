@@ -8,8 +8,6 @@ import re
 import tempfile
 from collections import Counter
 from pathlib import Path
-from typing import Iterable
-
 from ecf_layout.cache import sha256_file
 from ecf_layout.fragmenter import RecordFragment, fragment_pages_with_errors
 
@@ -69,10 +67,15 @@ def block_for_code(code: str) -> str:
 
 
 def validate_and_promote(
-    records: Iterable[dict], work_dir: Path, *, promote_to: Path | None = None
+    records: object, work_dir: Path, *, promote_to: Path | None = None
 ) -> Path:
     """Validate, write a candidate, and optionally atomically promote reviewed data."""
-    records = list(records)
+    if not isinstance(records, list):
+        write_quarantine(
+            work_dir,
+            [{"code": None, "reasons": ["manifest root must be an array"], "pages": []}],
+        )
+        raise ManifestValidationError("manifest root must be an array")
     items = _quarantine_items(records, require_reviewed=promote_to is not None)
     work_dir = Path(work_dir)
     quarantine_path = work_dir / "quarantine.json"
@@ -204,11 +207,11 @@ def _quarantine_items(records: list[dict], *, require_reviewed: bool) -> list[di
             continue
         actual_keys = set(record)
         missing_keys = sorted(record_keys - actual_keys)
-        unknown_keys = sorted(actual_keys - record_keys - {"ambiguities"})
+        unknown_keys = sorted(actual_keys - record_keys - {"ambiguities"}, key=str)
         if missing_keys:
             reasons.append(f"missing record keys: {', '.join(missing_keys)}")
         if unknown_keys:
-            reasons.append(f"unknown record keys: {', '.join(unknown_keys)}")
+            reasons.append(f"unknown record keys: {', '.join(map(str, unknown_keys))}")
         for key in ("code", "block", "title", "level", "occurrence"):
             if key in record and not isinstance(record[key], str):
                 reasons.append(f"record {key} must be a string")
@@ -233,11 +236,13 @@ def _quarantine_items(records: list[dict], *, require_reviewed: bool) -> list[di
                 continue
             actual_field_keys = set(field)
             missing_field_keys = sorted(field_keys - actual_field_keys)
-            unknown_field_keys = sorted(actual_field_keys - field_keys)
+            unknown_field_keys = sorted(actual_field_keys - field_keys, key=str)
             if missing_field_keys:
                 reasons.append(f"field {number} missing keys: {', '.join(missing_field_keys)}")
             if unknown_field_keys:
-                reasons.append(f"field {number} unknown keys: {', '.join(unknown_field_keys)}")
+                reasons.append(
+                    f"field {number} unknown keys: {', '.join(map(str, unknown_field_keys))}"
+                )
             if "number" in field and (
                 not isinstance(field["number"], int) or isinstance(field["number"], bool)
             ):
@@ -271,7 +276,7 @@ def _quarantine_items(records: list[dict], *, require_reviewed: bool) -> list[di
             items.append({"code": None, "reasons": reasons, "pages": []})
             continue
         code = record.get("code")
-        if code in _BLOCK_BY_CODE and record.get("block") != block_for_code(code):
+        if isinstance(code, str) and code in _BLOCK_BY_CODE and record.get("block") != block_for_code(code):
             reasons.append(f"expected canonical block {block_for_code(code)}")
         page_start = record.get("pageStart")
         page_end = record.get("pageEnd")
@@ -287,20 +292,29 @@ def _quarantine_items(records: list[dict], *, require_reviewed: bool) -> list[di
         numbers = [field.get("number") for field in fields if isinstance(field, dict)] if isinstance(fields, list) else []
         if not numbers or numbers != list(range(1, len(numbers) + 1)):
             reasons.append("field numbers must be present and contiguous from 1")
-        elif any(not field.get("name") for field in fields if isinstance(field, dict)):
+        elif any(
+            not isinstance(field.get("name"), str) or not field.get("name")
+            for field in fields
+            if isinstance(field, dict)
+        ):
             reasons.append("every field must have a name")
-        elif any(field.get("type") not in {"C", "N", "NS", "D"} for field in fields if isinstance(field, dict)):
+        elif any(
+            not isinstance(field.get("type"), str)
+            or field.get("type") not in {"C", "N", "NS", "D"}
+            for field in fields
+            if isinstance(field, dict)
+        ):
             reasons.append("every field must have a recognized type")
         ambiguities = record.get("ambiguities")
-        if ambiguities:
-            reasons.extend(f"ambiguous: {reason}" for reason in ambiguities)
+        if isinstance(ambiguities, list):
+            reasons.extend(f"ambiguous: {reason}" for reason in ambiguities if isinstance(reason, str))
         if require_reviewed and record.get("reviewed") is not True:
             reasons.append("record is not reviewed")
         if reasons:
             pages = []
             if isinstance(page_start, int) and isinstance(page_end, int) and page_end >= page_start:
                 pages = list(range(page_start, page_end + 1))
-            items.append({"code": code, "reasons": reasons, "pages": pages})
+            items.append({"code": code if isinstance(code, str) else None, "reasons": reasons, "pages": pages})
     return items
 
 

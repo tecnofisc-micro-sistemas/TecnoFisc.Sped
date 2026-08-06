@@ -31,8 +31,11 @@ class ArtifactPathError(ArtifactPromotionError):
 
 
 InterruptHook = Callable[[str], None]
+BeforePublishHook = Callable[[], None]
 _JOURNAL_NAME = ".artifact-transaction.json"
+_JOURNAL_BACKUP_NAME = ".artifact-transaction.backup.json"
 _TRANSACTION_DIR_NAME = ".artifact-transactions"
+_TRANSACTION_DESCRIPTOR_NAME = "descriptor.json"
 
 
 def sha256_bytes(data: bytes) -> str:
@@ -85,9 +88,8 @@ def build_artifacts(
     generation_path = work_dir / "candidate" / "generation.json"
     build_state_path = work_dir / "build-state.json"
     quarantine_path = work_dir / "quarantine.json"
-    journal_path = work_dir / _JOURNAL_NAME
+    journal_paths = _root_descriptor_paths(work_dir)
     try:
-        recover_artifact_transaction(work_dir)
         _ensure_distinct_paths(
             [
                 pdf,
@@ -96,9 +98,10 @@ def build_artifacts(
                 generation_path,
                 build_state_path,
                 quarantine_path,
-                journal_path,
+                *journal_paths,
             ]
         )
+        recover_artifact_transaction(work_dir)
         if not pdf.is_file():
             raise ManifestValidationError(f"normative PDF not found: {pdf}")
         items = _quarantine_items(records, require_reviewed=False)
@@ -139,6 +142,8 @@ def build_artifacts(
             ],
         )
         return manifest_out, tracker_out
+    except ArtifactPathError:
+        raise
     except (
         ArtifactPromotionError,
         ManifestValidationError,
@@ -155,8 +160,9 @@ def promote_artifacts(
     tracker_out: Path,
     *,
     schema_path: Path,
+    before_publish: BeforePublishHook | None = None,
 ) -> tuple[Path, Path]:
-    """Promote both candidates only after every pair invariant passes."""
+    """Promote the exact candidate byte snapshots that passed every invariant."""
     work_dir = Path(work_dir)
     recover_artifact_transaction(work_dir)
     manifest_out = Path(manifest_out)
@@ -167,7 +173,7 @@ def promote_artifacts(
     generation_path = work_dir / "candidate" / "generation.json"
     build_state_path = work_dir / "build-state.json"
     quarantine_path = work_dir / "quarantine.json"
-    journal_path = work_dir / _JOURNAL_NAME
+    journal_paths = _root_descriptor_paths(work_dir)
     _ensure_distinct_paths(
         [
             manifest_out,
@@ -178,28 +184,27 @@ def promote_artifacts(
             generation_path,
             build_state_path,
             quarantine_path,
-            journal_path,
+            *journal_paths,
         ]
     )
-    try:
-        generation = json.loads(generation_path.read_text(encoding="utf-8"))
-        build_state = json.loads(build_state_path.read_text(encoding="utf-8"))
-        quarantine = json.loads(quarantine_path.read_text(encoding="utf-8"))
-        records = json.loads(manifest_candidate.read_text(encoding="utf-8"))
-        tracker_text = tracker_candidate.read_text(encoding="utf-8")
-        schema = json.loads(schema_path.read_text(encoding="utf-8"))
-    except (OSError, UnicodeError, json.JSONDecodeError) as error:
-        reason = f"cannot load promotion inputs: {error}"
-        raise _record_promotion_failure(work_dir, reason) from error
 
+    # Generation metadata is snapshotted first so its normative PDF and evidence paths can
+    # participate in alias checks before any other input is read or any output is replaced.
     try:
-        evidence_paths = [Path(path) for path in generation.get("evidencePaths", [])]
-    except AttributeError as error:
-        raise _record_promotion_failure(
-            work_dir, "candidate generation metadata is malformed"
-        ) from error
+        generation_snapshot = generation_path.read_bytes()
+        generation = _load_json_snapshot(generation_snapshot)
+        _validate_generation_metadata(generation, required_state="reviewed")
+    except (OSError, UnicodeError, json.JSONDecodeError) as error:
+        reason = f"cannot load candidate generation metadata: {error}"
+        raise _record_promotion_failure(work_dir, reason) from error
+    except ArtifactPromotionError as error:
+        raise _record_promotion_failure(work_dir, str(error)) from error
+
+    evidence_paths = [Path(path) for path in generation["evidencePaths"]]
+    normative_pdf = Path(generation["pdfPath"])
     _ensure_distinct_paths(
         [
+            normative_pdf,
             manifest_out,
             tracker_out,
             schema_path,
@@ -208,16 +213,30 @@ def promote_artifacts(
             generation_path,
             build_state_path,
             quarantine_path,
-            journal_path,
+            *journal_paths,
             *evidence_paths,
         ]
     )
+
+    # Each mutable input is read exactly once. Validation and publication below use only these
+    # immutable in-memory snapshots, closing the validation-to-replacement race.
     try:
+        manifest_snapshot = manifest_candidate.read_bytes()
+        tracker_snapshot = tracker_candidate.read_bytes()
+        build_state_snapshot = build_state_path.read_bytes()
+        quarantine_snapshot = quarantine_path.read_bytes()
+        schema_snapshot = schema_path.read_bytes()
+        evidence_snapshots = [path.read_bytes() for path in evidence_paths]
+        records = _load_json_snapshot(manifest_snapshot)
+        tracker_text = tracker_snapshot.decode("utf-8")
+        build_state = _load_json_snapshot(build_state_snapshot)
+        quarantine = _load_json_snapshot(quarantine_snapshot)
+        schema = _load_json_snapshot(schema_snapshot)
         evidence_payloads = [
-            json.loads(path.read_text(encoding="utf-8")) for path in evidence_paths
+            _load_json_snapshot(snapshot) for snapshot in evidence_snapshots
         ]
     except (OSError, UnicodeError, json.JSONDecodeError) as error:
-        reason = f"cannot load bound review evidence: {error}"
+        reason = f"cannot load promotion input snapshot: {error}"
         raise _record_promotion_failure(work_dir, reason) from error
 
     try:
@@ -276,11 +295,13 @@ def promote_artifacts(
                 f"tracker/manifest mismatch at {row[0]} for record {record['code']}",
             )
 
+    if before_publish is not None:
+        before_publish()
     replace_artifacts_durably(
         work_dir,
         [
-            (manifest_out, manifest_candidate.read_bytes()),
-            (tracker_out, tracker_candidate.read_bytes()),
+            (manifest_out, manifest_snapshot),
+            (tracker_out, tracker_snapshot),
         ],
     )
     return manifest_out, tracker_out
@@ -314,7 +335,7 @@ def apply_review_evidence(work_dir: Path, evidence_paths: list[Path]) -> tuple[P
             generation_path,
             build_state_path,
             quarantine_path,
-            work_dir / _JOURNAL_NAME,
+            *_root_descriptor_paths(work_dir),
             *evidence_paths,
         ]
     )
@@ -372,15 +393,11 @@ def _record_promotion_failure(work_dir: Path, reason: str) -> ArtifactPromotionE
     return ArtifactPromotionError(reason)
 
 
-def _validate_generation_provenance(
-    records: object,
-    tracker_text: str,
-    generation: object,
-    build_state: object,
-    quarantine: object,
-    *,
-    required_state: str,
-) -> None:
+def _load_json_snapshot(data: bytes) -> object:
+    return json.loads(data.decode("utf-8"))
+
+
+def _validate_generation_metadata(generation: object, *, required_state: str) -> None:
     generation_keys = {
         "schemaVersion",
         "generationId",
@@ -412,6 +429,19 @@ def _validate_generation_provenance(
         or any(not isinstance(path, str) for path in generation["evidencePaths"])
     ):
         raise ArtifactPromotionError("candidate generation metadata has invalid values")
+
+
+def _validate_generation_provenance(
+    records: object,
+    tracker_text: str,
+    generation: object,
+    build_state: object,
+    quarantine: object,
+    *,
+    required_state: str,
+) -> None:
+    _validate_generation_metadata(generation, required_state=required_state)
+    assert isinstance(generation, dict)
     if build_state != {
         "state": "valid",
         "generationId": generation["generationId"],
@@ -518,20 +548,21 @@ def replace_artifacts_durably(
     *,
     interrupt: InterruptHook | None = None,
 ) -> None:
-    """Publish an artifact set with a durable roll-forward recovery journal.
+    """Publish artifacts with redundant, bounded roll-forward recovery material.
 
-    A crash may expose a mixed raw filesystem view until the next tooling read. Every tooling
-    reader calls recovery first; recovery then rolls the complete journaled set forward before
-    returning any bytes. This is recoverable durability, not impossible cross-file atomicity.
+    The filesystem cannot atomically replace unrelated files. Before replacing any target,
+    however, three independently flushed descriptors and two copies of every new payload exist.
+    One descriptor or payload copy may disappear and tooling recovery can still converge the set.
+    This is a bounded single-artifact-loss guarantee, not an arbitrary power-loss guarantee.
     """
     work_dir = Path(work_dir)
     recover_artifact_transaction(work_dir)
     if not replacements:
         raise ArtifactPathError("a durable transaction requires at least one target")
     targets = [Path(path) for path, _data in replacements]
-    journal_path = work_dir / _JOURNAL_NAME
     transaction_root = work_dir / _TRANSACTION_DIR_NAME
-    _ensure_distinct_paths([*targets, journal_path])
+    root_descriptors = _root_descriptor_paths(work_dir)
+    _ensure_distinct_paths([*targets, *root_descriptors])
     for target in targets:
         if _is_within(target, transaction_root):
             raise ArtifactPathError("artifact targets cannot be inside transaction storage")
@@ -540,87 +571,278 @@ def replace_artifacts_durably(
     transaction_dir = transaction_root / transaction_id
     transaction_dir.mkdir(parents=True, exist_ok=False)
     _sync_directory(transaction_dir.parent)
+    descriptor_paths = [
+        *root_descriptors,
+        transaction_dir / _TRANSACTION_DESCRIPTOR_NAME,
+    ]
     entries: list[dict] = []
     for index, (target, data) in enumerate(replacements):
-        payload_path = transaction_dir / f"new-{index}.bin"
-        _write_durable_file(payload_path, data)
+        target = Path(target)
+        payload_paths = [
+            transaction_dir / f"new-{index}.0.bin",
+            target.parent
+            / f".{target.name}.{transaction_id}.{index}.recovery.bin",
+        ]
         entries.append(
             {
-                "target": str(Path(target).resolve()),
-                "payload": str(payload_path.resolve()),
+                "target": str(target.resolve()),
+                "payloads": [str(path.resolve()) for path in payload_paths],
                 "sha256": sha256_bytes(data),
             }
         )
-    _interrupt(interrupt, "after_payloads")
+    all_payloads = [Path(path) for entry in entries for path in entry["payloads"]]
+    _ensure_distinct_paths([*targets, *descriptor_paths, *all_payloads])
 
-    journal = {
-        "schemaVersion": 1,
+    descriptor = {
+        "schemaVersion": 2,
         "transactionId": transaction_id,
-        "state": "prepared",
+        "state": "staging",
+        "descriptorPaths": [str(path.resolve()) for path in descriptor_paths],
         "entries": entries,
     }
-    _write_json_durably(journal_path, journal)
+    for index, path in enumerate(descriptor_paths):
+        _write_json_durably(path, descriptor)
+        _interrupt(interrupt, f"after_staging_descriptor_{index}")
+
+    for (_target, data), entry in zip(replacements, entries, strict=True):
+        for payload_path in entry["payloads"]:
+            _write_durable_file(Path(payload_path), data)
+    _interrupt(interrupt, "after_payloads")
+
+    descriptor["state"] = "prepared"
+    for index, path in enumerate(descriptor_paths):
+        _write_json_durably(path, descriptor)
+        _interrupt(interrupt, f"after_descriptor_{index}")
     _interrupt(interrupt, "after_journal")
     for index, entry in enumerate(entries):
         _replace_target_from_payload(entry)
         _interrupt(interrupt, f"after_replace_{index}")
-    journal["state"] = "committed"
-    _write_json_durably(journal_path, journal)
+
+    descriptor["state"] = "committed"
+    for index, path in enumerate(descriptor_paths):
+        _write_json_durably(path, descriptor)
+        _interrupt(interrupt, f"after_committed_descriptor_{index}")
     _interrupt(interrupt, "after_committed")
-    journal_path.unlink()
-    _sync_directory(journal_path.parent)
+
+    for index, path in enumerate(descriptor_paths[:2]):
+        _unlink_durably(path)
+        _interrupt(interrupt, f"after_removed_descriptor_{index}")
+    _remove_payload_copies(entries)
+    _unlink_durably(descriptor_paths[2])
+    _interrupt(interrupt, "after_removed_descriptor_2")
     _interrupt(interrupt, "after_journal_removed")
     _remove_transaction_dir(transaction_dir, transaction_root)
 
 
 def recover_artifact_transaction(work_dir: Path) -> None:
-    """Idempotently roll a journaled artifact set forward before any tooling read."""
+    """Recover one transaction without accepting a mixed or under-described set."""
     work_dir = Path(work_dir)
-    journal_path = work_dir / _JOURNAL_NAME
     transaction_root = work_dir / _TRANSACTION_DIR_NAME
-    if not journal_path.exists():
-        _remove_orphan_transactions(transaction_root)
+    descriptor_candidates = [
+        *_root_descriptor_paths(work_dir),
+        *_internal_descriptor_candidates(transaction_root),
+    ]
+    existing_descriptors = [path for path in descriptor_candidates if path.is_file()]
+    if not existing_descriptors:
+        _remove_empty_transaction_directories(transaction_root)
         return
-    try:
-        journal = json.loads(journal_path.read_text(encoding="utf-8"))
-    except (OSError, UnicodeError, json.JSONDecodeError) as error:
-        raise ArtifactPromotionError(f"cannot recover artifact transaction: {error}") from error
+
+    valid_descriptors: list[dict] = []
+    invalid_errors: list[Exception] = []
+    for path in existing_descriptors:
+        try:
+            descriptor = _load_json_snapshot(path.read_bytes())
+            _validate_transaction_descriptor(work_dir, descriptor)
+            assert isinstance(descriptor, dict)
+            valid_descriptors.append(descriptor)
+        except (
+            ArtifactPromotionError,
+            OSError,
+            UnicodeError,
+            json.JSONDecodeError,
+        ) as error:
+            invalid_errors.append(error)
+    if not valid_descriptors:
+        detail = invalid_errors[0] if invalid_errors else "no valid descriptor copy"
+        raise ArtifactPromotionError(
+            f"cannot recover artifact transaction: {detail}"
+        )
+
+    identities = {_transaction_identity(descriptor) for descriptor in valid_descriptors}
+    if len(identities) != 1:
+        raise ArtifactPromotionError("artifact transaction descriptor copies disagree")
+    descriptor = max(
+        valid_descriptors,
+        key=lambda value: {"staging": 0, "prepared": 1, "committed": 2}[value["state"]],
+    )
+    if all(copy["state"] == "staging" for copy in valid_descriptors):
+        _cleanup_transaction(descriptor)
+        _remove_empty_transaction_directories(transaction_root)
+        return
+
+    for entry in descriptor["entries"]:
+        data = _recoverable_payload(entry)
+        if data is None:
+            target = Path(entry["target"])
+            if target.is_file() and sha256_file(target) == entry["sha256"]:
+                continue
+            raise ArtifactPromotionError(
+                "artifact transaction lost every valid payload copy before recovery"
+            )
+        _write_bytes_durably_atomically(Path(entry["target"]), data)
+    for entry in descriptor["entries"]:
+        target = Path(entry["target"])
+        if not target.is_file() or sha256_file(target) != entry["sha256"]:
+            raise ArtifactPromotionError("artifact transaction recovery did not converge")
+    _cleanup_transaction(descriptor)
+    _remove_empty_transaction_directories(transaction_root)
+
+
+def _root_descriptor_paths(work_dir: Path) -> list[Path]:
+    return [
+        Path(work_dir) / _JOURNAL_NAME,
+        Path(work_dir) / _JOURNAL_BACKUP_NAME,
+    ]
+
+
+def _internal_descriptor_candidates(transaction_root: Path) -> list[Path]:
+    if not transaction_root.is_dir():
+        return []
+    return sorted(
+        child / _TRANSACTION_DESCRIPTOR_NAME
+        for child in transaction_root.iterdir()
+        if child.is_dir()
+    )
+
+
+def _validate_transaction_descriptor(work_dir: Path, descriptor: object) -> None:
     if (
-        not isinstance(journal, dict)
-        or journal.get("schemaVersion") != 1
-        or not isinstance(journal.get("transactionId"), str)
-        or journal.get("state") not in {"prepared", "committed"}
-        or not isinstance(journal.get("entries"), list)
-        or not journal["entries"]
+        not isinstance(descriptor, dict)
+        or set(descriptor)
+        != {"schemaVersion", "transactionId", "state", "descriptorPaths", "entries"}
+        or descriptor.get("schemaVersion") != 2
+        or not isinstance(descriptor.get("transactionId"), str)
+        or not _is_lower_hex(descriptor["transactionId"], length=32)
+        or descriptor.get("state") not in {"staging", "prepared", "committed"}
+        or not isinstance(descriptor.get("descriptorPaths"), list)
+        or len(descriptor["descriptorPaths"]) != 3
+        or any(not isinstance(path, str) for path in descriptor["descriptorPaths"])
+        or not isinstance(descriptor.get("entries"), list)
+        or not descriptor["entries"]
     ):
-        raise ArtifactPromotionError("artifact transaction journal is malformed")
-    transaction_dir = transaction_root / journal["transactionId"]
-    entries = journal["entries"]
+        raise ArtifactPromotionError("artifact transaction descriptor is malformed")
+
+    transaction_root = Path(work_dir) / _TRANSACTION_DIR_NAME
+    transaction_dir = transaction_root / descriptor["transactionId"]
+    expected_descriptors = [
+        *_root_descriptor_paths(Path(work_dir)),
+        transaction_dir / _TRANSACTION_DESCRIPTOR_NAME,
+    ]
+    descriptor_paths = [Path(path) for path in descriptor["descriptorPaths"]]
+    if [path.resolve() for path in descriptor_paths] != [
+        path.resolve() for path in expected_descriptors
+    ]:
+        raise ArtifactPromotionError("artifact transaction descriptor paths are invalid")
+
     targets: list[Path] = []
-    for index, entry in enumerate(entries):
-        if not isinstance(entry, dict):
+    payloads: list[Path] = []
+    for index, entry in enumerate(descriptor["entries"]):
+        if (
+            not isinstance(entry, dict)
+            or set(entry) != {"target", "payloads", "sha256"}
+            or not isinstance(entry.get("target"), str)
+            or not isinstance(entry.get("payloads"), list)
+            or len(entry["payloads"]) != 2
+            or any(not isinstance(path, str) for path in entry["payloads"])
+            or not _is_lower_hex(entry.get("sha256"), length=64)
+        ):
             raise ArtifactPromotionError("artifact transaction entry is malformed")
-        payload = Path(entry.get("payload", ""))
-        expected_payload = (transaction_dir / f"new-{index}.bin").resolve()
-        if payload.resolve() != expected_payload or not _is_within(payload, transaction_root):
-            raise ArtifactPromotionError("artifact transaction payload escaped reserved storage")
-        data = payload.read_bytes()
-        if sha256_bytes(data) != entry.get("sha256"):
-            raise ArtifactPromotionError("artifact transaction payload digest mismatch")
-        targets.append(Path(entry.get("target", "")))
-    _ensure_distinct_paths([*targets, journal_path])
+        target = Path(entry["target"])
+        entry_payloads = [Path(path) for path in entry["payloads"]]
+        expected_payloads = [
+            transaction_dir / f"new-{index}.0.bin",
+            target.parent
+            / f".{target.name}.{descriptor['transactionId']}.{index}.recovery.bin",
+        ]
+        if [path.resolve() for path in entry_payloads] != [
+            path.resolve() for path in expected_payloads
+        ]:
+            raise ArtifactPromotionError("artifact transaction payload paths are invalid")
+        targets.append(target)
+        payloads.extend(entry_payloads)
+    _ensure_distinct_paths([*targets, *descriptor_paths, *payloads])
+
+
+def _transaction_identity(descriptor: dict) -> str:
+    stable = {key: value for key, value in descriptor.items() if key != "state"}
+    return json.dumps(stable, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+
+
+def _is_lower_hex(value: object, *, length: int) -> bool:
+    return (
+        isinstance(value, str)
+        and len(value) == length
+        and all(character in "0123456789abcdef" for character in value)
+    )
+
+
+def _recoverable_payload(entry: dict) -> bytes | None:
+    for path_value in entry["payloads"]:
+        path = Path(path_value)
+        try:
+            data = path.read_bytes()
+        except OSError:
+            continue
+        if sha256_bytes(data) == entry["sha256"]:
+            return data
+    return None
+
+
+def _cleanup_transaction(descriptor: dict) -> None:
+    descriptor_paths = [Path(path) for path in descriptor["descriptorPaths"]]
+    for path in descriptor_paths[:2]:
+        _unlink_durably(path)
+    _remove_payload_copies(descriptor["entries"])
+    _unlink_durably(descriptor_paths[2])
+    transaction_root = descriptor_paths[2].parent.parent
+    _remove_transaction_dir(descriptor_paths[2].parent, transaction_root)
+
+
+def _remove_payload_copies(entries: list[dict]) -> None:
     for entry in entries:
-        _replace_target_from_payload(entry)
-    journal_path.unlink()
-    _sync_directory(journal_path.parent)
-    _remove_transaction_dir(transaction_dir, transaction_root)
-    _remove_orphan_transactions(transaction_root)
+        for path_value in entry["payloads"]:
+            _unlink_durably(Path(path_value))
+
+
+def _unlink_durably(path: Path) -> None:
+    if path.exists():
+        path.unlink()
+        _sync_directory(path.parent)
+
+
+def _remove_empty_transaction_directories(root: Path) -> None:
+    if not root.is_dir():
+        return
+    for child in root.iterdir():
+        if not child.is_dir() or not _is_within(child, root):
+            raise ArtifactPromotionError("unexpected artifact transaction storage entry")
+        if any(child.iterdir()):
+            raise ArtifactPromotionError(
+                "orphan artifact recovery material has no usable descriptor"
+            )
+        child.rmdir()
+    if not any(root.iterdir()):
+        root.rmdir()
 
 
 def read_artifact_pair(work_dir: Path, first: Path, second: Path) -> tuple[bytes, bytes]:
     recover_artifact_transaction(work_dir)
-    _ensure_distinct_paths([Path(first), Path(second)])
-    return Path(first).read_bytes(), Path(second).read_bytes()
+    first = Path(first)
+    second = Path(second)
+    _ensure_distinct_paths([first, second])
+    if first.exists() != second.exists():
+        raise ArtifactPromotionError("artifact pair is mixed after recovery")
+    return first.read_bytes(), second.read_bytes()
 
 
 def invalidate_generation(work_dir: Path, reason: str) -> None:
@@ -646,10 +868,9 @@ def invalidate_generation(work_dir: Path, reason: str) -> None:
 
 def _replace_target_from_payload(entry: dict) -> None:
     target = Path(entry["target"])
-    payload = Path(entry["payload"])
-    data = payload.read_bytes()
-    if sha256_bytes(data) != entry["sha256"]:
-        raise ArtifactPromotionError("artifact transaction payload digest mismatch")
+    data = _recoverable_payload(entry)
+    if data is None:
+        raise ArtifactPromotionError("artifact transaction has no valid payload copy")
     _write_bytes_durably_atomically(target, data)
 
 
@@ -724,18 +945,6 @@ def _remove_transaction_dir(path: Path, root: Path) -> None:
     if path.exists():
         shutil.rmtree(path)
     if root.exists() and not any(root.iterdir()):
-        root.rmdir()
-
-
-def _remove_orphan_transactions(root: Path) -> None:
-    if not root.exists():
-        return
-    for child in root.iterdir():
-        if child.is_dir() and _is_within(child, root):
-            shutil.rmtree(child)
-        elif child.is_file():
-            child.unlink()
-    if not any(root.iterdir()):
         root.rmdir()
 
 

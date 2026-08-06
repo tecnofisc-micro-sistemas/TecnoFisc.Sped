@@ -424,26 +424,44 @@ def test_review_evidence_rejects_content_or_pdf_mutation_without_code_page_chang
     assert all(record["reviewed"] is False for record in current)
 
 
-@pytest.mark.parametrize(
-    "boundary",
-    [
-        "after_payloads",
-        "after_journal",
-        "after_replace_0",
-        "after_replace_1",
-        "after_committed",
-        "after_journal_removed",
-    ],
-)
+TRANSACTION_BOUNDARIES = [
+    "after_staging_descriptor_0",
+    "after_staging_descriptor_1",
+    "after_staging_descriptor_2",
+    "after_payloads",
+    "after_descriptor_0",
+    "after_descriptor_1",
+    "after_descriptor_2",
+    "after_journal",
+    "after_replace_0",
+    "after_replace_1",
+    "after_committed_descriptor_0",
+    "after_committed_descriptor_1",
+    "after_committed_descriptor_2",
+    "after_committed",
+    "after_removed_descriptor_0",
+    "after_removed_descriptor_1",
+    "after_removed_descriptor_2",
+    "after_journal_removed",
+]
+
+
+def _pair_state(first: Path, second: Path) -> tuple[bytes | None, bytes | None]:
+    return tuple(path.read_bytes() if path.exists() else None for path in (first, second))
+
+
+@pytest.mark.parametrize("outputs_exist", [False, True], ids=["new", "existing"])
+@pytest.mark.parametrize("boundary", TRANSACTION_BOUNDARIES)
 def test_durable_transaction_recovers_old_or_new_coherent_pair_after_abrupt_stop(
-    tmp_path: Path, boundary: str
+    tmp_path: Path, boundary: str, outputs_exist: bool
 ) -> None:
     artifacts = importlib.import_module("ecf_layout.artifacts")
     first = tmp_path / "published" / "manifest.json"
     second = tmp_path / "published" / "tracker.md"
     first.parent.mkdir()
-    first.write_bytes(b"old manifest")
-    second.write_bytes(b"old tracker")
+    if outputs_exist:
+        first.write_bytes(b"old manifest")
+        second.write_bytes(b"old tracker")
 
     class AbruptStop(BaseException):
         pass
@@ -459,12 +477,131 @@ def test_durable_transaction_recovers_old_or_new_coherent_pair_after_abrupt_stop
             interrupt=interrupt,
         )
 
-    pair = artifacts.read_artifact_pair(tmp_path, first, second)
-    assert pair in {
+    artifacts.recover_artifact_transaction(tmp_path)
+    assert _pair_state(first, second) in {
+        (None, None),
         (b"old manifest", b"old tracker"),
         (b"new manifest", b"new tracker"),
     }
     assert not (tmp_path / ".artifact-transaction.json").exists()
+
+
+@pytest.mark.parametrize(
+    "descriptor_kind", ["primary", "backup", "transaction"],
+)
+def test_recovery_tolerates_loss_of_each_single_descriptor_after_first_replace(
+    tmp_path: Path, descriptor_kind: str
+) -> None:
+    artifacts = importlib.import_module("ecf_layout.artifacts")
+    first = tmp_path / "published" / "manifest.json"
+    second = tmp_path / "published" / "tracker.md"
+    first.parent.mkdir()
+    first.write_bytes(b"old manifest")
+    second.write_bytes(b"old tracker")
+
+    class AbruptStop(BaseException):
+        pass
+
+    def interrupt(boundary: str) -> None:
+        if boundary == "after_replace_0":
+            raise AbruptStop(boundary)
+
+    with pytest.raises(AbruptStop):
+        artifacts.replace_artifacts_durably(
+            tmp_path,
+            [(first, b"new manifest"), (second, b"new tracker")],
+            interrupt=interrupt,
+        )
+
+    transaction_dir = next((tmp_path / ".artifact-transactions").iterdir())
+    descriptors = {
+        "primary": tmp_path / ".artifact-transaction.json",
+        "backup": tmp_path / ".artifact-transaction.backup.json",
+        "transaction": transaction_dir / "descriptor.json",
+    }
+    descriptors[descriptor_kind].unlink()
+
+    assert artifacts.read_artifact_pair(tmp_path, first, second) == (
+        b"new manifest",
+        b"new tracker",
+    )
+
+
+@pytest.mark.parametrize("entry_index", [0, 1])
+@pytest.mark.parametrize("copy_index", [0, 1])
+def test_recovery_tolerates_loss_of_each_single_payload_copy_after_first_replace(
+    tmp_path: Path, entry_index: int, copy_index: int
+) -> None:
+    artifacts = importlib.import_module("ecf_layout.artifacts")
+    first = tmp_path / "published" / "manifest.json"
+    second = tmp_path / "published" / "tracker.md"
+    first.parent.mkdir()
+    first.write_bytes(b"old manifest")
+    second.write_bytes(b"old tracker")
+
+    class AbruptStop(BaseException):
+        pass
+
+    def interrupt(boundary: str) -> None:
+        if boundary == "after_replace_0":
+            raise AbruptStop(boundary)
+
+    with pytest.raises(AbruptStop):
+        artifacts.replace_artifacts_durably(
+            tmp_path,
+            [(first, b"new manifest"), (second, b"new tracker")],
+            interrupt=interrupt,
+        )
+
+    descriptor = json.loads(
+        (tmp_path / ".artifact-transaction.json").read_text(encoding="utf-8")
+    )
+    Path(descriptor["entries"][entry_index]["payloads"][copy_index]).unlink()
+
+    assert artifacts.read_artifact_pair(tmp_path, first, second) == (
+        b"new manifest",
+        b"new tracker",
+    )
+
+
+def test_recovery_preserves_unidentified_payloads_and_refuses_a_mixed_pair(
+    tmp_path: Path,
+) -> None:
+    artifacts = importlib.import_module("ecf_layout.artifacts")
+    first = tmp_path / "published" / "manifest.json"
+    second = tmp_path / "published" / "tracker.md"
+    first.parent.mkdir()
+    first.write_bytes(b"old manifest")
+    second.write_bytes(b"old tracker")
+
+    class AbruptStop(BaseException):
+        pass
+
+    def interrupt(boundary: str) -> None:
+        if boundary == "after_replace_0":
+            raise AbruptStop(boundary)
+
+    with pytest.raises(AbruptStop):
+        artifacts.replace_artifacts_durably(
+            tmp_path,
+            [(first, b"new manifest"), (second, b"new tracker")],
+            interrupt=interrupt,
+        )
+    transaction_dir = next((tmp_path / ".artifact-transactions").iterdir())
+    descriptors = [
+        tmp_path / ".artifact-transaction.json",
+        tmp_path / ".artifact-transaction.backup.json",
+        transaction_dir / "descriptor.json",
+    ]
+    for descriptor in descriptors:
+        descriptor.unlink()
+    retained_payload = transaction_dir / "new-1.0.bin"
+
+    with pytest.raises(artifacts.ArtifactPromotionError, match="orphan"):
+        artifacts.read_artifact_pair(tmp_path, first, second)
+
+    assert retained_payload.exists()
+    assert _pair_state(first, second) == (b"new manifest", b"old tracker")
 
 
 def test_build_rejects_identical_or_hardlinked_manifest_tracker_paths(tmp_path: Path) -> None:
@@ -554,6 +691,143 @@ def test_stale_or_mutated_reviewed_generation_cannot_promote(
         assert json.loads((work_dir / "quarantine.json").read_text(encoding="utf-8"))[
             "items"
         ]
+
+
+def test_promotion_publishes_only_the_candidate_snapshot_that_was_validated(
+    tmp_path: Path,
+) -> None:
+    artifacts, records, _pdf, work_dir, manifest, tracker, _evidence = (
+        _prepare_reviewed_generation(tmp_path)
+    )
+    validated_manifest = manifest.read_bytes()
+    validated_tracker = tracker.read_bytes()
+    schema = tmp_path / "published" / "layout-12-manifest.schema.json"
+    schema.parent.mkdir()
+    schema.write_text(json.dumps(_test_schema()), encoding="utf-8")
+    manifest_out = schema.parent / "layout-12-manifest.json"
+    tracker_out = schema.parent / "STAGE_17_ECF_BASELINE.md"
+
+    def swap_after_validation() -> None:
+        swapped = [{**record, "reviewed": True} for record in records]
+        swapped[0] = {**swapped[0], "title": "unvalidated post-check swap"}
+        manifest.write_text(json.dumps(swapped), encoding="utf-8")
+        tracker.write_text(
+            artifacts.render_tracker(swapped), encoding="utf-8"
+        )
+
+    artifacts.promote_artifacts(
+        work_dir,
+        manifest_out,
+        tracker_out,
+        schema_path=schema,
+        before_publish=swap_after_validation,
+    )
+
+    assert manifest_out.read_bytes() == validated_manifest
+    assert tracker_out.read_bytes() == validated_tracker
+    assert manifest_out.read_bytes() != manifest.read_bytes()
+
+
+@pytest.mark.parametrize(
+    "role",
+    [
+        "manifest-out",
+        "tracker-out",
+        "schema",
+        "candidate-manifest",
+        "candidate-tracker",
+        "quarantine",
+        "evidence",
+    ],
+)
+def test_promote_rejects_every_applicable_path_role_aliasing_normative_pdf(
+    tmp_path: Path, role: str
+) -> None:
+    artifacts, _records, pdf, work_dir, manifest, tracker, evidence = (
+        _prepare_reviewed_generation(tmp_path)
+    )
+    schema = tmp_path / "published" / "layout-12-manifest.schema.json"
+    schema.parent.mkdir()
+    schema.write_text(json.dumps(_test_schema()), encoding="utf-8")
+    manifest_out = schema.parent / "layout-12-manifest.json"
+    tracker_out = schema.parent / "STAGE_17_ECF_BASELINE.md"
+    role_paths = {
+        "manifest-out": manifest_out,
+        "tracker-out": tracker_out,
+        "schema": schema,
+        "candidate-manifest": manifest,
+        "candidate-tracker": tracker,
+        "quarantine": work_dir / "quarantine.json",
+        "evidence": evidence,
+    }
+    alias = role_paths[role]
+    alias.unlink(missing_ok=True)
+    try:
+        os.link(pdf, alias)
+    except OSError:
+        pytest.skip("hardlinks are not supported on this filesystem")
+
+    with pytest.raises(artifacts.ArtifactPathError):
+        artifacts.promote_artifacts(
+            work_dir,
+            manifest_out,
+            tracker_out,
+            schema_path=schema,
+        )
+
+
+@pytest.mark.parametrize(
+    "descriptor_name",
+    [".artifact-transaction.json", ".artifact-transaction.backup.json"],
+)
+def test_build_rejects_normative_pdf_at_transaction_descriptor_path(
+    tmp_path: Path, descriptor_name: str
+) -> None:
+    artifacts = importlib.import_module("ecf_layout.artifacts")
+    work_dir = tmp_path / "work"
+    work_dir.mkdir()
+    pdf = work_dir / descriptor_name
+    pdf.write_bytes(b"normative PDF")
+
+    with pytest.raises(artifacts.ArtifactPathError):
+        artifacts.build_artifacts(
+            _valid_records(reviewed=False),
+            work_dir,
+            work_dir / "candidate" / "layout-12-manifest.json",
+            work_dir / "candidate" / "STAGE_17_ECF_BASELINE.md",
+            pdf=pdf,
+        )
+
+
+@pytest.mark.parametrize("alias_kind", ["symlink", "case"])
+def test_promote_rejects_symlink_or_case_alias_to_normative_pdf(
+    tmp_path: Path, alias_kind: str
+) -> None:
+    artifacts, _records, pdf, work_dir, _manifest, _tracker, _evidence = (
+        _prepare_reviewed_generation(tmp_path)
+    )
+    schema = tmp_path / "published" / "layout-12-manifest.schema.json"
+    schema.parent.mkdir()
+    schema.write_text(json.dumps(_test_schema()), encoding="utf-8")
+    tracker_out = schema.parent / "STAGE_17_ECF_BASELINE.md"
+    if alias_kind == "symlink":
+        manifest_out = schema.parent / "layout-12-manifest.json"
+        try:
+            manifest_out.symlink_to(pdf)
+        except OSError:
+            pytest.skip("symlinks are not supported for this test user")
+    else:
+        if os.name != "nt":
+            pytest.skip("case aliases require a case-insensitive filesystem")
+        manifest_out = Path(str(pdf).swapcase())
+
+    with pytest.raises(artifacts.ArtifactPathError):
+        artifacts.promote_artifacts(
+            work_dir,
+            manifest_out,
+            tracker_out,
+            schema_path=schema,
+        )
 
 
 def test_apply_and_promote_reject_path_aliases_including_hardlinks(tmp_path: Path) -> None:

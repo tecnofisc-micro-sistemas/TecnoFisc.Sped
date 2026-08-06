@@ -15,6 +15,44 @@ from typing import Iterable
 
 _CODE_PATTERN = re.compile(r"[0-9A-Z]{4}\Z")
 _CSHARP_IDENTIFIER_PATTERN = re.compile(r"[A-Za-z_][A-Za-z0-9_]*\Z")
+_LEVEL_PATTERN = re.compile(r"[0-9]+\Z")
+_OCCURRENCE_PATTERN = re.compile(r"[01]:(?:[1-9][0-9]*|N)\Z")
+_RECORD_KEYS = frozenset(
+    {
+        "code",
+        "block",
+        "title",
+        "pageStart",
+        "pageEnd",
+        "level",
+        "occurrence",
+        "fields",
+        "reviewed",
+    }
+)
+_FIELD_KEYS = frozenset(
+    {"number", "name", "description", "type", "size", "decimals", "required", "validValues"}
+)
+_BLOCKS = frozenset(
+    {"0", "C", "E", "J", "K", "L", "M", "N", "P", "Q", "T", "U", "V", "W", "X", "Y", "9"}
+)
+_FIELD_TYPES = frozenset({"C", "N", "NS", "D"})
+_BASE_AND_OBJECT_MEMBERS = frozenset(
+    {
+        "Codigo",
+        "Equals",
+        "ErrosDeFormato",
+        "Filhos",
+        "Finalize",
+        "GetHashCode",
+        "GetType",
+        "MemberwiseClone",
+        "Pai",
+        "ReferenceEquals",
+        "ToString",
+        "VersaoLeiaute",
+    }
+)
 
 
 class ScaffoldError(ValueError):
@@ -93,23 +131,31 @@ def _load_manifest(path: Path) -> list[dict]:
 def _validate_record(value: object, index: int) -> dict:
     if not isinstance(value, dict):
         raise ScaffoldError(f"manifest record {index} must be an object")
+    _require_exact_keys(value, _RECORD_KEYS, f"manifest record {index}")
     code = value.get("code")
     block = value.get("block")
     if not isinstance(code, str) or _CODE_PATTERN.fullmatch(code) is None:
         raise ScaffoldError(f"manifest record {index} has an invalid code")
-    if not isinstance(block, str) or block != code[0]:
+    if not isinstance(block, str) or block not in _BLOCKS or block != code[0]:
         raise ScaffoldError(f"manifest record {code} has an invalid block")
-    if not isinstance(value.get("title"), str) or not value["title"].strip():
+    if not isinstance(value["title"], str) or not value["title"]:
         raise ScaffoldError(f"manifest record {code} has an invalid title")
-    try:
-        level = int(value.get("level"))
-    except (TypeError, ValueError) as error:
-        raise ScaffoldError(f"manifest record {code} has an invalid level") from error
-    if level < 0:
+    if not _is_json_integer(value["pageStart"]) or value["pageStart"] < 1:
+        raise ScaffoldError(f"manifest record {code} has an invalid pageStart")
+    if not _is_json_integer(value["pageEnd"]) or value["pageEnd"] < 1:
+        raise ScaffoldError(f"manifest record {code} has an invalid pageEnd")
+    if value["pageEnd"] < value["pageStart"]:
+        raise ScaffoldError(f"manifest record {code} has pageEnd before pageStart")
+    if not isinstance(value["level"], str) or _LEVEL_PATTERN.fullmatch(value["level"]) is None:
         raise ScaffoldError(f"manifest record {code} has an invalid level")
-    if not isinstance(value.get("reviewed"), bool):
+    if (
+        not isinstance(value["occurrence"], str)
+        or _OCCURRENCE_PATTERN.fullmatch(value["occurrence"]) is None
+    ):
+        raise ScaffoldError(f"manifest record {code} has an invalid occurrence")
+    if value["reviewed"] is not True:
         raise ScaffoldError(f"manifest record {code} has an invalid reviewed flag")
-    fields = value.get("fields")
+    fields = value["fields"]
     if not isinstance(fields, list) or not fields:
         raise ScaffoldError(f"manifest record {code} has no fields")
     normalized_fields = [_validate_field(field, code, position) for position, field in enumerate(fields, start=1)]
@@ -117,32 +163,33 @@ def _validate_record(value: object, index: int) -> dict:
         raise ScaffoldError(f"manifest record {code} has non-contiguous field numbers")
     if normalized_fields[0]["name"] != "REG":
         raise ScaffoldError(f"manifest record {code} must start with REG")
-    property_names = [_property_name(field["name"]) for field in normalized_fields[1:]]
+    property_names = _field_property_names(code, normalized_fields)
     if len(property_names) != len(set(property_names)):
         raise ScaffoldError(f"manifest record {code} has colliding normalized field names")
-    return {**value, "level": level, "fields": normalized_fields}
+    return {**value, "level": int(value["level"]), "fields": normalized_fields}
 
 
 def _validate_field(value: object, code: str, position: int) -> dict:
     if not isinstance(value, dict):
         raise ScaffoldError(f"manifest record {code} field {position} must be an object")
-    if value.get("number") != position:
+    _require_exact_keys(value, _FIELD_KEYS, f"manifest record {code} field {position}")
+    number = value["number"]
+    if not _is_json_integer(number) or number < 1 or number != position:
         raise ScaffoldError(f"manifest record {code} has non-contiguous field numbers")
-    name = value.get("name")
-    if not isinstance(name, str) or not name.strip():
+    name = value["name"]
+    if not isinstance(name, str) or not name:
         raise ScaffoldError(f"manifest record {code} field {position} has an invalid name")
     try:
         _property_name(name)
     except ScaffoldError as error:
         raise ScaffoldError(f"manifest record {code} field {position} has an invalid name") from error
-    description = value.get("description")
-    if not isinstance(description, str) or not description.strip():
+    description = value["description"]
+    if not isinstance(description, str):
         raise ScaffoldError(f"manifest record {code} field {position} has an invalid description")
-    for key in ("type", "size", "required"):
-        if not isinstance(value.get(key), str) or not value[key].strip():
-            raise ScaffoldError(f"manifest record {code} field {position} has an invalid {key}")
-    for key in ("decimals", "validValues"):
-        if not isinstance(value.get(key), str):
+    if not isinstance(value["type"], str) or value["type"] not in _FIELD_TYPES:
+        raise ScaffoldError(f"manifest record {code} field {position} has an invalid type")
+    for key in ("size", "decimals", "required", "validValues"):
+        if not isinstance(value[key], str):
             raise ScaffoldError(f"manifest record {code} field {position} has an invalid {key}")
     try:
         _required_value(value["required"])
@@ -151,6 +198,24 @@ def _validate_field(value: object, code: str, position: int) -> dict:
             f"manifest record {code} field {position} has an invalid required flag"
         ) from error
     return value
+
+
+def _require_exact_keys(value: dict, expected: frozenset[str], location: str) -> None:
+    actual = frozenset(value)
+    if actual == expected:
+        return
+    missing = sorted(expected - actual)
+    unknown = sorted(actual - expected)
+    details: list[str] = []
+    if missing:
+        details.append(f"missing keys: {', '.join(missing)}")
+    if unknown:
+        details.append(f"unknown keys: {', '.join(unknown)}")
+    raise ScaffoldError(f"{location} has an invalid shape ({'; '.join(details)})")
+
+
+def _is_json_integer(value: object) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool)
 
 
 def _requested_codes(codes: Iterable[str]) -> set[str]:
@@ -203,13 +268,14 @@ def _generate_source(record: dict, output_root: Path) -> GeneratedFile:
         "    /// <inheritdoc />",
         f'    public override string Codigo => "{code}";',
     ]
-    for field in record["fields"][1:]:
+    property_names = _field_property_names(code, record["fields"])
+    for field, property_name in zip(record["fields"][1:], property_names, strict=True):
         lines.extend(
             [
                 "",
                 f'    /// <summary>{_xml_text(field["description"])}</summary>',
                 f"    {_field_attribute(field)}",
-                f'    public string? {_property_name(field["name"])} {{ get; set; }}',
+                f"    public string? {property_name} {{ get; set; }}",
             ]
         )
     lines.extend(["}", ""])
@@ -224,6 +290,15 @@ def _property_name(name: str) -> str:
     if _CSHARP_IDENTIFIER_PATTERN.fullmatch(candidate) is None:
         raise ScaffoldError(f"field name cannot be normalized to a C# identifier: {name}")
     return candidate
+
+
+def _field_property_names(code: str, fields: list[dict]) -> list[str]:
+    reserved = _BASE_AND_OBJECT_MEMBERS | {f"Registro{code}"}
+    names: list[str] = []
+    for field in fields[1:]:
+        name = _property_name(field["name"])
+        names.append(f"Campo{name}" if name in reserved else name)
+    return names
 
 
 def _xml_text(value: str) -> str:

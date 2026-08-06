@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import subprocess
 from copy import deepcopy
 from pathlib import Path
 
@@ -165,6 +166,31 @@ public sealed partial class RegistroC001 : RegistroSped
 }
 
 
+EXPECTED_RESERVED_MEMBER_SOURCE = """using TecnoFisc.Sped.Txt.Engine.Abstracoes;
+using TecnoFisc.Sped.Txt.Engine.Atributos;
+
+namespace TecnoFisc.Sped.Ecf.Registros.Bloco0;
+
+/// <summary>
+/// Draft do Registro 0001 — Abertura do Bloco 0. Revise os tipos antes de integrar.
+/// </summary>
+[RegistroSped(Codigo = "0001", Nivel = 1, Bloco = "0")]
+public sealed partial class Registro0001 : RegistroSped
+{
+    /// <inheritdoc />
+    public override string Codigo => "0001";
+
+    /// <summary>Domínio fiscal externo &amp; sujeito a revisão.</summary>
+    [CampoSped(Ordem = 2, Tamanho = 12, Obrigatorio = true)]
+    public string? CampoCodigo { get; set; }
+
+    /// <summary>Código auxiliar preservado como texto.</summary>
+    [CampoSped(Ordem = 3, Tamanho = 3)]
+    public string? CodAux { get; set; }
+}
+"""
+
+
 def _write_manifest(tmp_path: Path, records: list[dict] | object = MINIMAL_LAYOUT_12_MANIFEST) -> Path:
     manifest = tmp_path / "layout-12-manifest.json"
     manifest.write_text(json.dumps(records, ensure_ascii=False), encoding="utf-8")
@@ -217,6 +243,54 @@ def test_source_keeps_unknown_domains_as_string_and_never_invents_enum(tmp_path:
     assert "public string? CampoFiscal" in source
     assert "enum" not in source.casefold()
     assert "Alfa" not in source and "Beta" not in source
+
+
+def test_source_disambiguates_codigo_from_generated_override_with_exact_name(tmp_path: Path) -> None:
+    records = deepcopy(MINIMAL_LAYOUT_12_MANIFEST[:1])
+    records[0]["fields"][1]["name"] = "CODIGO"
+    manifest = _write_manifest(tmp_path, records)
+
+    scaffold(manifest, tmp_path, codes=["0001"], source=True)
+
+    assert _tree(tmp_path) == {
+        "src/TecnoFisc.Sped.Ecf/Registros/Bloco0/Registro0001.cs": EXPECTED_RESERVED_MEMBER_SOURCE
+    }
+
+
+@pytest.mark.parametrize(
+    "manual_name, expected_name",
+    [
+        ("ERROS_DE_FORMATO", "CampoErrosDeFormato"),
+        ("VERSAO_LEIAUTE", "CampoVersaoLeiaute"),
+        ("PAI", "CampoPai"),
+        ("FILHOS", "CampoFilhos"),
+        ("TO_STRING", "CampoToString"),
+        ("REGISTRO0001", "CampoRegistro0001"),
+    ],
+)
+def test_source_disambiguates_base_and_enclosing_type_members(
+    tmp_path: Path, manual_name: str, expected_name: str
+) -> None:
+    records = deepcopy(MINIMAL_LAYOUT_12_MANIFEST[:1])
+    records[0]["fields"][1]["name"] = manual_name
+    manifest = _write_manifest(tmp_path, records)
+
+    scaffold(manifest, tmp_path, codes=["0001"], source=True)
+
+    source = next(iter(_tree(tmp_path).values()))
+    assert f"public string? {expected_name} {{ get; set; }}" in source
+
+
+def test_source_rejects_collision_created_by_reserved_member_disambiguation(tmp_path: Path) -> None:
+    records = deepcopy(MINIMAL_LAYOUT_12_MANIFEST[:1])
+    records[0]["fields"][1]["name"] = "CODIGO"
+    records[0]["fields"][2]["name"] = "CAMPO_CODIGO"
+    manifest = _write_manifest(tmp_path, records)
+
+    with pytest.raises(ScaffoldError, match="colliding"):
+        scaffold(manifest, tmp_path, codes=["0001"], source=True)
+
+    assert _tree(tmp_path) == {}
 
 
 @pytest.mark.parametrize(
@@ -406,3 +480,144 @@ def test_malformed_or_unreviewed_manifest_fails_closed_without_outputs(
         scaffold(manifest, tmp_path, codes=codes, source=True)
 
     assert _tree(tmp_path) == {}
+
+
+@pytest.mark.parametrize(
+    "case",
+    [
+        "missing-page-start",
+        "missing-occurrence",
+        "extra-record-key",
+        "extra-field-key",
+        "float-page-start",
+        "bool-page-end",
+        "float-field-number",
+        "integer-level",
+        "integer-reviewed",
+    ],
+)
+def test_manifest_requires_exact_keys_and_json_types_without_partial_output(
+    tmp_path: Path, case: str
+) -> None:
+    records = deepcopy(MINIMAL_LAYOUT_12_MANIFEST)
+    if case == "missing-page-start":
+        del records[0]["pageStart"]
+    elif case == "missing-occurrence":
+        del records[0]["occurrence"]
+    elif case == "extra-record-key":
+        records[0]["ambiguities"] = []
+    elif case == "extra-field-key":
+        records[0]["fields"][1]["domain"] = "invented"
+    elif case == "float-page-start":
+        records[0]["pageStart"] = 67.0
+    elif case == "bool-page-end":
+        records[0]["pageEnd"] = True
+    elif case == "float-field-number":
+        records[0]["fields"][1]["number"] = 2.0
+    elif case == "integer-level":
+        records[0]["level"] = 1
+    elif case == "integer-reviewed":
+        records[0]["reviewed"] = 1
+
+    manifest = _write_manifest(tmp_path, records)
+    with pytest.raises(ScaffoldError, match="manifest"):
+        scaffold(manifest, tmp_path, codes=["0001"], source=True)
+
+    assert _tree(tmp_path) == {}
+
+
+@pytest.mark.parametrize(
+    "case",
+    [
+        "page-end-before-start",
+        "invalid-occurrence",
+        "invalid-field-type",
+        "zero-field-number",
+        "invalid-block",
+    ],
+)
+def test_manifest_rejects_invalid_ranges_and_contract_values(tmp_path: Path, case: str) -> None:
+    records = deepcopy(MINIMAL_LAYOUT_12_MANIFEST[:1])
+    if case == "page-end-before-start":
+        records[0]["pageEnd"] = 66
+    elif case == "invalid-occurrence":
+        records[0]["occurrence"] = "many"
+    elif case == "invalid-field-type":
+        records[0]["fields"][1]["type"] = "ENUM"
+    elif case == "zero-field-number":
+        records[0]["fields"][0]["number"] = 0
+    elif case == "invalid-block":
+        records[0]["block"] = "Z"
+
+    manifest = _write_manifest(tmp_path, records)
+    with pytest.raises(ScaffoldError, match="manifest"):
+        scaffold(manifest, tmp_path, codes=["0001"], source=True)
+
+    assert _tree(tmp_path) == {}
+
+
+def test_all_real_manifest_sources_compile_against_base_contract_stubs(tmp_path: Path) -> None:
+    repository = Path(__file__).parents[3]
+    manifest = repository / "sped/ecf/layout-12-manifest.json"
+    records = json.loads(manifest.read_text(encoding="utf-8"))
+    codes = [record["code"] for record in records]
+    scaffold(manifest, tmp_path, codes=codes, source=True)
+    (tmp_path / "CompileAudit.csproj").write_text(
+        """<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnableNETAnalyzers>false</EnableNETAnalyzers>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+</Project>
+""",
+        encoding="utf-8",
+    )
+    (tmp_path / "Stubs.cs").write_text(
+        """namespace TecnoFisc.Sped.Txt.Engine.Atributos
+{
+    [AttributeUsage(AttributeTargets.Class)]
+    public sealed class RegistroSpedAttribute : Attribute
+    {
+        public string Codigo { get; set; } = string.Empty;
+        public int Nivel { get; set; }
+        public string Bloco { get; set; } = string.Empty;
+    }
+
+    [AttributeUsage(AttributeTargets.Property)]
+    public sealed class CampoSpedAttribute : Attribute
+    {
+        public int Ordem { get; set; }
+        public int Tamanho { get; set; }
+        public bool Obrigatorio { get; set; }
+    }
+}
+
+namespace TecnoFisc.Sped.Txt.Engine.Abstracoes
+{
+    public abstract class RegistroSped
+    {
+        public IReadOnlyList<object> ErrosDeFormato => Array.Empty<object>();
+        public abstract string Codigo { get; }
+        public virtual int VersaoLeiaute => 0;
+        public RegistroSped? Pai { get; internal set; }
+        public IReadOnlyList<RegistroSped> Filhos => Array.Empty<RegistroSped>();
+    }
+}
+""",
+        encoding="utf-8",
+    )
+
+    result = subprocess.run(
+        ["dotnet", "build", "CompileAudit.csproj", "--nologo", "-v:q"],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        timeout=120,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr

@@ -32,6 +32,88 @@ RECORD_KEYS = {
 }
 
 
+def test_m300_and_m350_preserve_official_dynamic_label_read_domain() -> None:
+    repository = Path(__file__).resolve().parents[3]
+    records = json.loads(
+        (repository / "sped/ecf/layout-12-manifest.json").read_text(encoding="utf-8")
+    )
+
+    for code in ("M300", "M350"):
+        record = next(item for item in records if item["code"] == code)
+        field = next(item for item in record["fields"] if item["name"] == "TIPO_LANCAMENTO")
+        assert field["validValues"] == "[A; E; P; R; L]"
+
+
+def test_0020_position_31_preserves_layout_10_positional_compatibility() -> None:
+    repository = Path(__file__).resolve().parents[3]
+    records = json.loads(
+        (repository / "sped/ecf/layout-12-manifest.json").read_text(encoding="utf-8")
+    )
+
+    record = next(item for item in records if item["code"] == "0020")
+    field = next(item for item in record["fields"] if item["number"] == 31)
+    # The V12 manifest names the current semantic. V10/V11 used the same
+    # position and shape as IND_PR_TRANSF; model code exposes both aliases.
+    assert field["name"] == "POSSUI_CEBRAS"
+    assert field["type"] == "C"
+    assert field["size"] == "1"
+    assert field["required"] == "Sim"
+    assert field["validValues"] == "[S;N]"
+    assert field["sinceVersion"] == 10
+
+
+def test_c050_preserves_the_official_ecd_i050_account_nature_domain() -> None:
+    repository = Path(__file__).resolve().parents[3]
+    records = json.loads(
+        (repository / "sped/ecf/layout-12-manifest.json").read_text(encoding="utf-8")
+    )
+
+    domains = {}
+    for code in ("C050", "J050"):
+        record = next(item for item in records if item["code"] == code)
+        field = next(item for item in record["fields"] if item["name"] == "COD_NAT")
+        domains[code] = field["validValues"]
+
+    assert domains == {
+        "C050": "[01; 02; 03; 04; 05; 09]",
+        "J050": "[01; 02; 03; 04; 05; 09]",
+    }
+
+
+def test_k356_preserves_the_official_debit_credit_domain() -> None:
+    repository = Path(__file__).resolve().parents[3]
+    records = json.loads(
+        (repository / "sped/ecf/layout-12-manifest.json").read_text(encoding="utf-8")
+    )
+
+    record = next(item for item in records if item["code"] == "K356")
+    field = next(item for item in record["fields"] if item["name"] == "IND_VL_SLD_FIN")
+    assert field["type"] == "C"
+    assert field["size"] == "1"
+    assert field["validValues"] == "[D; C]"
+
+
+def test_y620_and_y800_preserve_domains_documented_in_all_supported_layouts() -> None:
+    repository = Path(__file__).resolve().parents[3]
+    records = json.loads(
+        (repository / "sped/ecf/layout-12-manifest.json").read_text(encoding="utf-8")
+    )
+
+    expected_domains = {
+        ("Y620", "IND_RELAC"): "[1; 2; 3; 4; 5]",
+        ("Y800", "TIPO_DOC"): "[001; 002; 003]",
+    }
+
+    actual_domains = {}
+    for (code, field_name), expected_domain in expected_domains.items():
+        record = next(item for item in records if item["code"] == code)
+        field = next(item for item in record["fields"] if item["name"] == field_name)
+        actual_domains[(code, field_name)] = field["validValues"]
+        assert field["validValues"] == expected_domain
+
+    assert actual_domains == expected_domains
+
+
 def _valid_records(*, reviewed: bool = False) -> list[dict]:
     return [
         {

@@ -37,16 +37,19 @@ public sealed class CompatibilidadeLayoutEcfTests
             .ToDictionary(registro => registro.Codigo, registro => registro.IntroduzidoEm)
             .Should().BeEquivalentTo(IntroducoesEsperadas);
 
-        var camposVersionados = manifesto.Registros
+        manifesto.Registros
             .SelectMany(registro => registro.Fields.Select(campo =>
                 (Registro: registro.Code, Campo: campo.Name, campo.SinceVersion)))
             .Where(item => item.SinceVersion != 0)
-            .Should().ContainSingle().Which;
-        camposVersionados.Should().Be(("0020", "CEBAS", 12));
+            .Should().BeEquivalentTo([
+                ("0020", "POSSUI_CEBRAS", 10),
+                ("0020", "CEBAS", 12),
+            ]);
 
-        var campoCatalogo = catalogo.Single(registro => registro.Codigo == "0020")
-            .Campos.Single(campo => campo.Ordem == 32);
-        campoCatalogo.DesdeVersao.Should().Be(12);
+        var camposCatalogo = catalogo.Single(registro => registro.Codigo == "0020")
+            .Campos.Where(campo => campo.DesdeVersao != 0)
+            .Select(campo => (campo.Ordem, campo.DesdeVersao));
+        camposCatalogo.Should().BeEquivalentTo([(31, 10), (32, 12)]);
     }
 
     [Fact]
@@ -60,6 +63,8 @@ public sealed class CompatibilidadeLayoutEcfTests
                 .Should().BeTrue($"{codigo} passa a existir no leiaute declarado");
         }
 
+        EstaDisponivel(10, 9).Should().BeFalse();
+        EstaDisponivel(10, 10).Should().BeTrue();
         EstaDisponivel(12, 11).Should().BeFalse();
         EstaDisponivel(12, 12).Should().BeTrue();
     }

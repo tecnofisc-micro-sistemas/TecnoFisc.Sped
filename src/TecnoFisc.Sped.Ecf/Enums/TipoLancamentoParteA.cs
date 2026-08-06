@@ -17,6 +17,10 @@ public enum TipoLancamentoParteA
     [SpedValor("P")]
     CompensacaoPrejuizo = 2,
 
+    /// <summary>R - rótulo de linha das tabelas dinâmicas.</summary>
+    [SpedValor("R")]
+    Rotulo = 4,
+
     /// <summary>L - lucro.</summary>
     [SpedValor("L")]
     Lucro = 3,

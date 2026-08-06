@@ -653,7 +653,8 @@
         "size": "1",
         "decimals": "-",
         "required": "Sim",
-        "validValues": "[S;N]"
+        "validValues": "[S;N]",
+        "sinceVersion": 10
       },
       {
         "number": 32,
@@ -1380,7 +1381,7 @@
         "size": "2",
         "decimals": "-",
         "required": "Sim",
-        "validValues": "-"
+        "validValues": "[01; 02; 03; 04; 05; 09]"
       },
       {
         "number": 4,
@@ -3158,7 +3159,7 @@
         "size": "1",
         "decimals": "-",
         "required": "Sim",
-        "validValues": "-"
+        "validValues": "[D; C]"
       }
     ]
   },
@@ -4186,7 +4187,7 @@
         "size": "1",
         "decimals": "-",
         "required": "Não",
-        "validValues": "[A; E; P; L]"
+        "validValues": "[A; E; P; R; L]"
       },
       {
         "number": 5,
@@ -4456,7 +4457,7 @@
         "size": "1",
         "decimals": "-",
         "required": "Não",
-        "validValues": "[A; E; P; L]"
+        "validValues": "[A; E; P; R; L]"
       },
       {
         "number": 5,
@@ -11559,7 +11560,7 @@
         "size": "1",
         "decimals": "-",
         "required": "Sim",
-        "validValues": "-"
+        "validValues": "[1; 2; 3; 4; 5]"
       },
       {
         "number": 4,
@@ -12515,7 +12516,7 @@
         "size": "3",
         "decimals": "-",
         "required": "Sim",
-        "validValues": "-"
+        "validValues": "[001; 002; 003]"
       },
       {
         "number": 3,

@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Iterable
 
+from ecf_layout.anonymize import AnonymizationError, anonymize_file
 from ecf_layout.cache import CacheKey, converter_fingerprint, sha256_file
 from ecf_layout.artifacts import (
     ArtifactPromotionError,
@@ -130,6 +131,16 @@ def main(argv: list[str] | None = None) -> int:
     modes.add_argument("--tests-only", action="store_true")
     modes.add_argument("--source", action="store_true")
     scaffold_parser.add_argument("--force", action="store_true")
+    anonymize_parser = subcommands.add_parser("anonymize")
+    anonymize_parser.add_argument(
+        "--source",
+        type=Path,
+        required=True,
+        help="authorized private input; requires a sibling SOURCE.sha256 sidecar",
+    )
+    anonymize_parser.add_argument("--output", type=Path, required=True)
+    anonymize_parser.add_argument("--fixture-id", required=True)
+    anonymize_parser.add_argument("--denylist", type=Path, required=True)
     args = parser.parse_args(argv)
 
     if args.command == "validate":
@@ -189,6 +200,21 @@ def main(argv: list[str] | None = None) -> int:
             print(f"scaffold failed: {error}")
             return 1
         print(f"scaffolded: {len(generated)} files")
+        return 0
+    if args.command == "anonymize":
+        try:
+            result = anonymize_file(
+                args.source,
+                args.output,
+                fixture_id=args.fixture_id,
+                denylist_path=args.denylist,
+                manifest_path=Path("sped/ecf/layout-12-manifest.json"),
+                private_root=Path(".local/ecf-layout/private"),
+            )
+        except AnonymizationError as error:
+            print(f"anonymization failed: {error}")
+            return 1
+        print(result.log_line)
         return 0
 
     pages = args.pages

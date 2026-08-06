@@ -128,9 +128,34 @@ public sealed partial class Registro0020 : RegistroSped
     [CampoSped(Ordem = 30, Tamanho = 1, Obrigatorio = true)]
     public IndicadorSimNao IndDerex { get; set; }
 
-    /// <summary>Indicador de posse de certificado Cebas.</summary>
-    [CampoSped(Ordem = 31, Tamanho = 1, Obrigatorio = true)]
-    public IndicadorSimNao PossuiCebras { get; set; }
+    /// <summary>
+    /// Valor posicional do campo 31: <c>IND_PR_TRANSF</c> nos leiautes 10 e 11 e
+    /// <c>POSSUI_CEBRAS</c> no leiaute 12.
+    /// </summary>
+    [CampoSped(
+        Ordem = 31,
+        Nome = "POSSUI_CEBRAS",
+        Tamanho = 1,
+        Obrigatorio = true,
+        DesdeVersao = (int)LayoutEcf.V010)]
+    public IndicadorSimNao IndicadorPosicao31 { get; set; }
+
+    /// <summary>
+    /// Semântica do campo 31 nos leiautes 10 e 11: indicador de opção pelas novas regras de
+    /// preços de transferência.
+    /// </summary>
+    public IndicadorSimNao IndPrTransf
+    {
+        get => IndicadorPosicao31;
+        set => IndicadorPosicao31 = value;
+    }
+
+    /// <summary>Semântica do campo 31 no leiaute 12: indicador de posse de certificado Cebas.</summary>
+    public IndicadorSimNao PossuiCebras
+    {
+        get => IndicadorPosicao31;
+        set => IndicadorPosicao31 = value;
+    }
 
     /// <summary>Número do Cebas, condicionado ao indicador de posse.</summary>
     [CampoSped(Ordem = 32, Tamanho = 255, DesdeVersao = (int)LayoutEcf.V012)]

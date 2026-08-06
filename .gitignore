@@ -99,6 +99,10 @@ memory/
 
 # Local ECF layout conversion cache and source manual extracts
 .local/ecf-layout/
+# Defense in depth: private ECF sources, denylists and source-hash sidecars
+.local/ecf-layout/private/
+.local/ecf-layout/private/**/*.sha256
+.local/ecf-layout/private/**/*denylist*
 **/.artifact.lock
 **/.artifact-pairs/
 **/.artifact-targets/

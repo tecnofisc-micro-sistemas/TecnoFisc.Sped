@@ -27,6 +27,19 @@ public sealed class RegistroM300Tests
     }
 
     [Fact]
+    public void DominioDeLeitura_CoincideComRegrasETabelaDinamicaOficiais()
+    {
+        typeof(TipoLancamentoParteA)
+            .GetFields(BindingFlags.Public | BindingFlags.Static)
+            .Select(campo => campo.GetCustomAttribute<SpedValorAttribute>()!.Valor)
+            .Should().Equal("A", "E", "P", "R", "L");
+
+        ((int)TipoLancamentoParteA.Lucro).Should().Be(3,
+            "o novo token não deve alterar o valor CLR público preexistente");
+        ((int)TipoLancamentoParteA.Rotulo).Should().Be(4);
+    }
+
+    [Fact]
     public void Parser_LeCodigoDinamicoDominiosValorComSinalEOpcionais()
     {
         var resultado = new ParserEcf().ParseLinha(
@@ -56,9 +69,19 @@ public sealed class RegistroM300Tests
     }
 
     [Fact]
+    public void Parser_LeRotuloPrevistoPelasRegrasETabelaDinamicaOficiais()
+    {
+        var resultado = new ParserEcf().ParseLinha("|M300|0001|ROTULO|R||654,32||");
+
+        resultado.Sucesso.Should().BeTrue();
+        resultado.Valor.Should().BeOfType<RegistroM300>()
+            .Which.TipoLancamento.Should().Be(TipoLancamentoParteA.Rotulo);
+    }
+
+    [Fact]
     public void Parser_DominiosEValorInvalidos_RegistramErrosDeFormato()
     {
-        var resultado = new ParserEcf().ParseLinha("|M300|0001||R|9|INVALIDO||");
+        var resultado = new ParserEcf().ParseLinha("|M300|0001||X|9|INVALIDO||");
 
         resultado.Sucesso.Should().BeTrue();
         resultado.Valor.Should().BeOfType<RegistroM300>()

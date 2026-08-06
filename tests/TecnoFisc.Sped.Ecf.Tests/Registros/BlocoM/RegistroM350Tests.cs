@@ -40,4 +40,25 @@ public sealed class RegistroM350Tests
         registro.Valor.Should().Be(-2000.50m);
         registro.HistLanLal.Should().Be("HISTORICO LACS");
     }
+
+    [Fact]
+    public void Parser_LeRotuloPrevistoPelasRegrasETabelaDinamicaOficiais()
+    {
+        var resultado = new ParserEcf().ParseLinha("|M350|0001|ROTULO|R||654,32||");
+
+        resultado.Sucesso.Should().BeTrue();
+        resultado.Valor.Should().BeOfType<RegistroM350>()
+            .Which.TipoLancamento.Should().Be(TipoLancamentoParteA.Rotulo);
+    }
+
+    [Fact]
+    public void Parser_TokenDesconhecido_RegistraErroDeFormato()
+    {
+        var resultado = new ParserEcf().ParseLinha("|M350|0001||X||||");
+
+        resultado.Sucesso.Should().BeTrue();
+        resultado.Valor.Should().BeOfType<RegistroM350>()
+            .Which.ErrosDeFormato.Select(erro => erro.Campo)
+            .Should().Contain(nameof(RegistroM350.TipoLancamento));
+    }
 }

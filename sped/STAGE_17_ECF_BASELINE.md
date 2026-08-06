@@ -81,9 +81,9 @@
 | 17.078 | N620 | Apuração do IRPJ Mensal por Estimativa | 292 | 294 | N | [x] |
 | 17.079 | N630 | Apuração do IRPJ Com Base no Lucro Real | 294 | 297 | N | [x] |
 | 17.080 | N650 | Base de Cálculo da CSLL Após as Compensações da Base de Cálculo Negativa | 297 | 299 | N | [x] |
-| 17.081 | N660 | Apuração da CSLL Mensal por Estimativa | 299 | 303 | N | [ ] |
-| 17.082 | N670 | Apuração da CSLL Com Base no Lucro Real | 303 | 305 | N | [ ] |
-| 17.083 | N990 | Encerramento do Bloco N | 305 | 320 | N | [ ] |
+| 17.081 | N660 | Apuração da CSLL Mensal por Estimativa | 299 | 303 | N | [x] |
+| 17.082 | N670 | Apuração da CSLL Com Base no Lucro Real | 303 | 305 | N | [x] |
+| 17.083 | N990 | Encerramento do Bloco N | 305 | 320 | N | [x] |
 | 17.084 | P001 | Abertura do Bloco P | 320 | 321 | P | [ ] |
 | 17.085 | P030 | Identificação dos Períodos e Formas de Apuração do IRPJ e da CSLL das Empresas Tributadas pelo Lucro Presumido | 321 | 323 | P | [ ] |
 | 17.086 | P100 | Balanço Patrimonial | 323 | 327 | P | [ ] |

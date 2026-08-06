@@ -150,6 +150,84 @@ public sealed class CatalogoBuilderTests
     }
 
     [Fact]
+    public void ParseLinha_EnumNumericoNullableVazio_MantemNullSemErro()
+    {
+        var leitor = new LeitorSpedTxt(CatalogoBuilder.BuildFromAssembly(_assembly));
+
+        var resultado = leitor.ParseLinha("|E100|||".AsSpan());
+
+        resultado.Sucesso.Should().BeTrue();
+        var registro = resultado.Valor.Should().BeOfType<RegistroE100Sintetico>().Which;
+        registro.Situacao.Should().BeNull();
+        registro.Permissoes.Should().BeNull();
+        registro.ErrosDeFormato.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ParseLinha_EnumsNumericosDeTodosTiposIntegrais_RespeitaRepresentacoesELimites()
+    {
+        var leitor = new LeitorSpedTxt(CatalogoBuilder.BuildFromAssembly(_assembly));
+
+        var resultado = leitor.ParseLinha(
+            "|E200|255| -128 |+00001|65535|-2147483648|4294967295|" +
+            "-9223372036854775808|18446744073709551615|");
+
+        resultado.Sucesso.Should().BeTrue();
+        var registro = resultado.Valor.Should().BeOfType<RegistroE200Sintetico>().Which;
+        registro.ValorByte.Should().Be(EnumByteSintetico.Maximo);
+        registro.ValorSByte.Should().Be(EnumSByteSintetico.Minimo);
+        registro.ValorInt16.Should().Be(EnumInt16Sintetico.Um);
+        registro.ValorUInt16.Should().Be(EnumUInt16Sintetico.Maximo);
+        registro.ValorInt32.Should().Be(EnumInt32Sintetico.Minimo);
+        registro.ValorUInt32.Should().Be(EnumUInt32Sintetico.Maximo);
+        registro.ValorInt64.Should().Be(EnumInt64Sintetico.Minimo);
+        registro.ValorUInt64.Should().Be(EnumUInt64Sintetico.Maximo);
+        registro.ErrosDeFormato.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ParseLinha_EnumsNumericosDeTodosTiposIntegrais_OverflowMantemNullableVazio()
+    {
+        var leitor = new LeitorSpedTxt(CatalogoBuilder.BuildFromAssembly(_assembly));
+
+        var resultado = leitor.ParseLinha(
+            "|E200|256|-129|-32769|-1|2147483648|-1|" +
+            "9223372036854775808|-1|");
+
+        resultado.Sucesso.Should().BeTrue();
+        var registro = resultado.Valor.Should().BeOfType<RegistroE200Sintetico>().Which;
+        registro.ValorByte.Should().BeNull();
+        registro.ValorSByte.Should().BeNull();
+        registro.ValorInt16.Should().BeNull();
+        registro.ValorUInt16.Should().BeNull();
+        registro.ValorInt32.Should().BeNull();
+        registro.ValorUInt32.Should().BeNull();
+        registro.ValorInt64.Should().BeNull();
+        registro.ValorUInt64.Should().BeNull();
+        registro.ErrosDeFormato.Should().HaveCount(8);
+    }
+
+    [Theory]
+    [InlineData("S", IndicadorTextualSintetico.Sim, false)]
+    [InlineData("Sim", null, true)]
+    [InlineData("s", null, true)]
+    [InlineData("", null, false)]
+    public void ParseLinha_EnumComSpedValor_AceitaSomenteCodigoTextual(
+        string valorBruto,
+        IndicadorTextualSintetico? esperado,
+        bool esperaErro)
+    {
+        var leitor = new LeitorSpedTxt(CatalogoBuilder.BuildFromAssembly(_assembly));
+
+        var resultado = leitor.ParseLinha($"|E300|{valorBruto}|");
+
+        resultado.Sucesso.Should().BeTrue();
+        var registro = resultado.Valor.Should().BeOfType<RegistroE300Sintetico>().Which;
+        registro.Indicador.Should().Be(esperado);
+        registro.ErrosDeFormato.Should().HaveCount(esperaErro ? 1 : 0);
+    }
+
+    [Fact]
     public void Serializar_ProduzRepresentacaoSPEDPrimitivosEValueObjects()
     {
         var catalogo = CatalogoBuilder.BuildFromAssembly(_assembly);

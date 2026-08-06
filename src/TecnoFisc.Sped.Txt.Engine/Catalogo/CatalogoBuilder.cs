@@ -413,9 +413,11 @@ public static class CatalogoBuilder
         if (porValorSped.Count == 0)
         {
             bool ehFlags = alvo.IsDefined(typeof(FlagsAttribute), inherit: false);
+            Func<string, object> conversorSubjacente =
+                ConstruirConversorIntegral(Enum.GetUnderlyingType(alvo));
             return s =>
             {
-                object valor = Enum.Parse(alvo, s, ignoreCase: false);
+                object valor = Enum.ToObject(alvo, conversorSubjacente(s));
                 if (!ehFlags && !Enum.IsDefined(alvo, valor))
                     throw new FormatException($"Valor '{s}' não é válido para {alvo.Name}.");
                 return valor;
@@ -425,6 +427,28 @@ public static class CatalogoBuilder
         return s => porValorSped.TryGetValue(s, out var valor)
             ? valor
             : throw new FormatException($"Valor '{s}' não é válido para {alvo.Name}.");
+    }
+
+    private static Func<string, object> ConstruirConversorIntegral(Type tipo)
+    {
+        if (tipo == typeof(byte))
+            return static s => byte.Parse(s, NumberStyles.Integer, CultureInfo.InvariantCulture);
+        if (tipo == typeof(sbyte))
+            return static s => sbyte.Parse(s, NumberStyles.Integer, CultureInfo.InvariantCulture);
+        if (tipo == typeof(short))
+            return static s => short.Parse(s, NumberStyles.Integer, CultureInfo.InvariantCulture);
+        if (tipo == typeof(ushort))
+            return static s => ushort.Parse(s, NumberStyles.Integer, CultureInfo.InvariantCulture);
+        if (tipo == typeof(int))
+            return static s => int.Parse(s, NumberStyles.Integer, CultureInfo.InvariantCulture);
+        if (tipo == typeof(uint))
+            return static s => uint.Parse(s, NumberStyles.Integer, CultureInfo.InvariantCulture);
+        if (tipo == typeof(long))
+            return static s => long.Parse(s, NumberStyles.Integer, CultureInfo.InvariantCulture);
+        if (tipo == typeof(ulong))
+            return static s => ulong.Parse(s, NumberStyles.Integer, CultureInfo.InvariantCulture);
+
+        throw new NotSupportedException($"Tipo integral de enum não suportado: {tipo.FullName}.");
     }
 
     private static Func<object, string> ConstruirSerializadorEnum(Type alvo, CampoSpedAttribute atributo)

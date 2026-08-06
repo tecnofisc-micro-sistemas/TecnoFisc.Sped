@@ -101,6 +101,94 @@ public sealed class RegistroE100Sintetico : RegistroSped
     public PermissoesSinteticas? Permissoes { get; set; }
 }
 
+public enum EnumByteSintetico : byte
+{
+    Maximo = byte.MaxValue,
+}
+
+public enum EnumSByteSintetico : sbyte
+{
+    Minimo = sbyte.MinValue,
+}
+
+public enum EnumInt16Sintetico : short
+{
+    Um = 1,
+}
+
+public enum EnumUInt16Sintetico : ushort
+{
+    Maximo = ushort.MaxValue,
+}
+
+public enum EnumInt32Sintetico : int
+{
+    Minimo = int.MinValue,
+}
+
+public enum EnumUInt32Sintetico : uint
+{
+    Maximo = uint.MaxValue,
+}
+
+public enum EnumInt64Sintetico : long
+{
+    Minimo = long.MinValue,
+}
+
+public enum EnumUInt64Sintetico : ulong
+{
+    Maximo = ulong.MaxValue,
+}
+
+[RegistroSped(Codigo = "E200", Nivel = 1, Bloco = "E")]
+public sealed class RegistroE200Sintetico : RegistroSped
+{
+    public override string Codigo => "E200";
+
+    [CampoSped(Ordem = 2)]
+    public EnumByteSintetico? ValorByte { get; set; }
+
+    [CampoSped(Ordem = 3)]
+    public EnumSByteSintetico? ValorSByte { get; set; }
+
+    [CampoSped(Ordem = 4)]
+    public EnumInt16Sintetico? ValorInt16 { get; set; }
+
+    [CampoSped(Ordem = 5)]
+    public EnumUInt16Sintetico? ValorUInt16 { get; set; }
+
+    [CampoSped(Ordem = 6)]
+    public EnumInt32Sintetico? ValorInt32 { get; set; }
+
+    [CampoSped(Ordem = 7)]
+    public EnumUInt32Sintetico? ValorUInt32 { get; set; }
+
+    [CampoSped(Ordem = 8)]
+    public EnumInt64Sintetico? ValorInt64 { get; set; }
+
+    [CampoSped(Ordem = 9)]
+    public EnumUInt64Sintetico? ValorUInt64 { get; set; }
+}
+
+public enum IndicadorTextualSintetico
+{
+    [SpedValor("N")]
+    Nao,
+
+    [SpedValor("S")]
+    Sim,
+}
+
+[RegistroSped(Codigo = "E300", Nivel = 1, Bloco = "E")]
+public sealed class RegistroE300Sintetico : RegistroSped
+{
+    public override string Codigo => "E300";
+
+    [CampoSped(Ordem = 2)]
+    public IndicadorTextualSintetico? Indicador { get; set; }
+}
+
 /// <summary>
 /// Registro sintético com campo-arquivo embutido — espelha a forma de J800/J801 da ECD
 /// (TIPO_DOC, DESC_RTF, HASH_RTF, ARQ_RTF, IND_FIM_RTF). <c>ArqRtf</c> é o campo-arquivo

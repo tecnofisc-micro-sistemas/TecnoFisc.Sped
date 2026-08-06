@@ -177,8 +177,8 @@
 | 17.174 | Y750 | Informações da ECF Calculadas pelo PGE | 581 | 583 | Y | [x] |
 | 17.175 | Y800 | Outras Informações | 583 | 586 | Y | [x] |
 | 17.176 | Y990 | Encerramento do Bloco Y | 586 | 587 | Y | [x] |
-| 17.177 | 9001 | Abertura do Bloco 9 | 587 | 588 | 9 | [ ] |
-| 17.178 | 9100 | Avisos da Escrituração | 588 | 590 | 9 | [ ] |
-| 17.179 | 9900 | Registros do Arquivo | 590 | 592 | 9 | [ ] |
-| 17.180 | 9990 | Encerramento do Bloco 9 | 592 | 593 | 9 | [ ] |
-| 17.181 | 9999 | Encerramento do Arquivo Digital | 593 | 594 | 9 | [ ] |
+| 17.177 | 9001 | Abertura do Bloco 9 | 587 | 588 | 9 | [x] |
+| 17.178 | 9100 | Avisos da Escrituração | 588 | 590 | 9 | [x] |
+| 17.179 | 9900 | Registros do Arquivo | 590 | 592 | 9 | [x] |
+| 17.180 | 9990 | Encerramento do Bloco 9 | 592 | 593 | 9 | [x] |
+| 17.181 | 9999 | Encerramento do Arquivo Digital | 593 | 594 | 9 | [x] |

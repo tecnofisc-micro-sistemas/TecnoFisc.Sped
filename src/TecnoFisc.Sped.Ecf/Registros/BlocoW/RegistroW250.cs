@@ -38,7 +38,7 @@ public sealed partial class RegistroW250 : RegistroSped
     [CampoSped(Ordem = 9, Tamanho = 7, Obrigatorio = true)]
     public TipoEnderecoDpp TipEnd { get; set; }
 
-    [CampoSped(Ordem = 10, Tamanho = 150, Obrigatorio = true)]
+    [CampoSped(Ordem = 10, Nome = "ENDEREÇO", Tamanho = 150, Obrigatorio = true)]
     public string? Endereço { get; set; }
 
     [CampoSped(Ordem = 11, Tamanho = 15)]
@@ -89,6 +89,6 @@ public sealed partial class RegistroW250 : RegistroSped
     [CampoSped(Ordem = 26, Tamanho = 255)]
     public string? DescOutros { get; set; }
 
-    [CampoSped(Ordem = 27, Tamanho = 1000)]
+    [CampoSped(Ordem = 27, Nome = "OBSERVAÇÃO", Tamanho = 1000)]
     public string? Observação { get; set; }
 }

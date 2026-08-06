@@ -308,7 +308,8 @@ public static class CatalogoBuilder
     private static bool IsFieldNameStart(char character)
         => character == '_' ||
            (character >= 'A' && character <= 'Z') ||
-           (character >= 'a' && character <= 'z');
+           (character >= 'a' && character <= 'z') ||
+           (character >= '\u00C0' && character <= '\u00FF' && char.IsLetter(character));
 
     private static string EscapeFieldName(string name)
         => name

@@ -25,7 +25,7 @@ public sealed partial class RegistroJ050 : RegistroSped
     public IndicadorTipoConta IndCta { get; set; }
 
     /// <summary>Nível da conta analítica ou sintética.</summary>
-    [CampoSped(Ordem = 5, Tamanho = 0, Obrigatorio = true)]
+    [CampoSped(Ordem = 5, Nome = "NÍVEL", Tamanho = 0, Obrigatorio = true)]
     public int Nível { get; set; }
 
     /// <summary>Código da conta analítica ou sintética.</summary>

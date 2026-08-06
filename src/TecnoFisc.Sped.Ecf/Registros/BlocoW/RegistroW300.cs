@@ -44,7 +44,7 @@ public sealed partial class RegistroW300 : RegistroSped
     [CampoSped(Ordem = 12, Tamanho = 1)]
     public IndicadorSimNao? IndNumEmp { get; set; }
 
-    [CampoSped(Ordem = 13, Tamanho = 4000, Obrigatorio = true)]
+    [CampoSped(Ordem = 13, Nome = "OBSERVAÇÃO", Tamanho = 4000, Obrigatorio = true)]
     public string? Observação { get; set; }
 
     /// <summary>Marcador fixo W300FIM, obrigatório conforme o marcador normativo "sim".</summary>

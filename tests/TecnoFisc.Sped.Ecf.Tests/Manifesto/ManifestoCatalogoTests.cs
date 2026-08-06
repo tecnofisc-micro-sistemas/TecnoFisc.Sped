@@ -20,10 +20,51 @@ public sealed class ManifestoCatalogoTests
     }
 
     [Fact]
-    public void Catalogo_NaoContemCodigoOuCampoForaDoManifesto()
+    public void NomeCanonico_PreservaDiacriticoSemDependerDeDecomposicaoUnicode()
     {
+        AssertRegistroEcf.CanonicalFieldName("NOME_ESC").Should().Be("NOMEESC");
+        AssertRegistroEcf.CanonicalFieldName("NomeEsc").Should().Be("NOMEESC");
+        AssertRegistroEcf.CanonicalFieldName("CONTEÚDO").Should().Be("CONTEÚDO");
+        AssertRegistroEcf.CanonicalFieldName("Conteúdo").Should().Be("CONTEÚDO");
+        AssertRegistroEcf.CanonicalFieldName("CONTEUDO").Should().Be("CONTEUDO");
+        AssertRegistroEcf.CanonicalFieldName("CONTEÚDO").Should().Be("CONTEUDO");
+    }
+
+    [Theory]
+    [InlineData("C050", 5, "NÍVEL")]
+    [InlineData("J050", 5, "NÍVEL")]
+    [InlineData("W250", 10, "ENDEREÇO")]
+    [InlineData("W250", 27, "OBSERVAÇÃO")]
+    [InlineData("W300", 13, "OBSERVAÇÃO")]
+    [InlineData("9100", 6, "CONTEÚDO")]
+    public void CatalogosGeradoEReflexivo_EmitemNomeNormativoAcentuadoOrdinalExato(
+        string codigo,
+        int numeroCampo,
+        string nomeEsperado)
+    {
+        var catalogo = new CatalogoSpedGerado();
+        catalogo.TentarObter(codigo, out var registro).Should().BeTrue();
+        var reflexivo = CatalogoBuilder.BuildFromAssembly(typeof(Registro0000).Assembly);
+        reflexivo.TentarObter(codigo, out var registroReflexivo).Should().BeTrue();
+
+        registro!.Campos[numeroCampo - 2].Nome.Should().Be(nomeEsperado);
+        registroReflexivo!.Campos[numeroCampo - 2].Nome.Should().Be(nomeEsperado);
+    }
+
+    [Fact]
+    public void Catalogo_CorrespondeExatamenteAos180RegistrosE17BlocosDoManifesto()
+    {
+        var manifesto = ManifestoEcf.Carregar();
+        MetadadosRegistro[] catalogo = new CatalogoSpedGerado().EnumerarRegistros().ToArray();
+
+        manifesto.Registros.Should().HaveCount(180).And.OnlyContain(registro => registro.Reviewed);
+        catalogo.Should().HaveCount(180);
+        catalogo.Select(registro => registro.Codigo)
+            .Should().Equal(manifesto.Registros.Select(registro => registro.Code));
+        ExtrairBlocosEmOrdem(catalogo.Select(registro => registro.Bloco))
+            .Should().Equal("0", "C", "E", "J", "K", "L", "M", "N", "P", "Q", "T", "U", "V", "W", "X", "Y", "9");
+
         AssertRegistroEcf.CatalogMatchesManifest();
-        AssertRegistroEcf.CodesAreImplemented("0000");
     }
 
     [Fact]
@@ -82,44 +123,52 @@ public sealed class ManifestoCatalogoTests
     }
 
     [Fact]
-    public void Catalogo_ContemCadaRegistroRevisadoDoBlocoXExatamenteUmaVez()
+    public void CatalogoComRegistroAusente_ApontaCodigoEQuantidade()
     {
-        string[] esperados = ManifestoEcf.Carregar().Registros
-            .Where(registro => registro.Block == "X" && registro.Reviewed)
-            .Select(registro => registro.Code)
-            .ToArray();
-        string[] atuais = new CatalogoSpedGerado().EnumerarRegistros()
-            .Where(registro => registro.Bloco == "X")
-            .Select(registro => registro.Codigo)
+        MetadadosRegistro[] catalogo = CatalogoAtual()
+            .Where(registro => registro.Codigo != "9999")
             .ToArray();
 
-        atuais.Should().Equal(esperados);
-        atuais.Should().OnlyHaveUniqueItems();
-    }
-
-    [Fact]
-    public void Catalogo_ContemCadaRegistroRevisadoDoBlocoYExatamenteUmaVez()
-    {
-        string[] esperados = ManifestoEcf.Carregar().Registros
-            .Where(registro => registro.Block == "Y" && registro.Reviewed)
-            .Select(registro => registro.Code)
-            .ToArray();
-        string[] atuais = new CatalogoSpedGerado().EnumerarRegistros()
-            .Where(registro => registro.Bloco == "Y")
-            .Select(registro => registro.Codigo)
-            .ToArray();
-
-        atuais.Should().Equal(esperados);
-        atuais.Should().OnlyHaveUniqueItems();
-    }
-
-    [Fact]
-    public void CodesAreImplemented_ProximoCodigoConhecidoMasAusente_ApontaFaltaNoCatalogo()
-    {
-        var act = () => AssertRegistroEcf.CodesAreImplemented("9001");
+        var act = () => AssertRegistroEcf.CatalogMatchesManifest(catalogo);
 
         act.Should().Throw<Xunit.Sdk.XunitException>()
-            .WithMessage("*ausentes do catálogo*9001*");
+            .WithMessage("*quantidade*180*179*ausentes*9999*");
+    }
+
+    [Fact]
+    public void CatalogoComRegistroExtra_ApontaCodigoEQuantidade()
+    {
+        var catalogo = CatalogoAtual().ToList();
+        catalogo.Add(Copiar(catalogo[0], codigo: "ZZZZ"));
+
+        var act = () => AssertRegistroEcf.CatalogMatchesManifest(catalogo);
+
+        act.Should().Throw<Xunit.Sdk.XunitException>()
+            .WithMessage("*quantidade*180*181*extras*ZZZZ*");
+    }
+
+    [Fact]
+    public void CatalogoComCodigoDuplicado_ApontaCodigoEPosicoes()
+    {
+        var catalogo = CatalogoAtual();
+        catalogo[1] = Copiar(catalogo[0]);
+
+        var act = () => AssertRegistroEcf.CatalogMatchesManifest(catalogo);
+
+        act.Should().Throw<Xunit.Sdk.XunitException>()
+            .WithMessage("*duplicado*0000*posições 1, 2*");
+    }
+
+    [Fact]
+    public void CatalogoReordenado_ApontaPrimeiraDivergencia()
+    {
+        var catalogo = CatalogoAtual();
+        (catalogo[0], catalogo[1]) = (catalogo[1], catalogo[0]);
+
+        var act = () => AssertRegistroEcf.CatalogMatchesManifest(catalogo);
+
+        act.Should().Throw<Xunit.Sdk.XunitException>()
+            .WithMessage("*ordem canônica*posição 1*esperado '0000'*encontrado '0001'*");
     }
 
     [Fact]
@@ -169,6 +218,48 @@ public sealed class ManifestoCatalogoTests
     }
 
     [Fact]
+    public void CatalogoComNomeDeCampoDivergente_ApontaRegistroCampoEValores()
+    {
+        var catalogo = CatalogoAtual();
+        int indice = Array.FindIndex(catalogo, registro => registro.Codigo == "9100");
+        MetadadosRegistro original = catalogo[indice];
+        MetadadosCampo campoOriginal = original.Campos[4];
+        MetadadosCampo campoDivergente = Copiar(campoOriginal, nome: "CONTEUDO");
+        MetadadosCampo[] campos = original.Campos.ToArray();
+        campos[4] = campoDivergente;
+        catalogo[indice] = Copiar(original, campos: campos);
+
+        var act = () => AssertRegistroEcf.CatalogMatchesManifest(catalogo);
+
+        act.Should().Throw<Xunit.Sdk.XunitException>()
+            .WithMessage("*registro 9100, campo nº 6 CONTEÚDO*nome esperado 'CONTEÚDO', encontrado 'CONTEUDO'*");
+    }
+
+    [Fact]
+    public void CatalogoComNivelDivergente_ApontaRegistroEValores()
+    {
+        var catalogo = CatalogoAtual();
+        catalogo[0] = Copiar(catalogo[0], nivel: catalogo[0].Nivel + 1);
+
+        var act = () => AssertRegistroEcf.CatalogMatchesManifest(catalogo);
+
+        act.Should().Throw<Xunit.Sdk.XunitException>()
+            .WithMessage("*0000*nível esperado '0', encontrado '1'*");
+    }
+
+    [Fact]
+    public void CatalogoComBlocoDivergente_ApontaRegistroEValores()
+    {
+        var catalogo = CatalogoAtual();
+        catalogo[0] = Copiar(catalogo[0], bloco: "Z");
+
+        var act = () => AssertRegistroEcf.CatalogMatchesManifest(catalogo);
+
+        act.Should().Throw<Xunit.Sdk.XunitException>()
+            .WithMessage("*0000*bloco esperado '0', encontrado 'Z'*");
+    }
+
+    [Fact]
     public void ConformsToManifest_OcorrenciaDivergente_ApontaValorNormativo()
     {
         var act = () => AssertRegistroEcf.ConformsToManifest(
@@ -187,4 +278,51 @@ public sealed class ManifestoCatalogoTests
             File.ReadAllText(Path.Combine(diretorio, "layout-12-manifest.json")),
             File.ReadAllText(Path.Combine(diretorio, "layout-12-manifest.schema.json")));
     }
+
+    private static MetadadosRegistro[] CatalogoAtual()
+        => new CatalogoSpedGerado().EnumerarRegistros().ToArray();
+
+    private static List<string> ExtrairBlocosEmOrdem(IEnumerable<string> blocos)
+    {
+        var resultado = new List<string>();
+        foreach (string bloco in blocos)
+        {
+            if (resultado.Count == 0 || !string.Equals(resultado[^1], bloco, StringComparison.Ordinal))
+                resultado.Add(bloco);
+        }
+
+        return resultado;
+    }
+
+    private static MetadadosRegistro Copiar(
+        MetadadosRegistro original,
+        string? codigo = null,
+        int? nivel = null,
+        string? bloco = null,
+        IReadOnlyList<MetadadosCampo>? campos = null)
+        => new(
+            codigo ?? original.Codigo,
+            nivel ?? original.Nivel,
+            bloco ?? original.Bloco,
+            original.TipoCSharp,
+            original.Fabrica,
+            campos ?? original.Campos,
+            original.IntroduzidoEm,
+            original.DescontinuadoEm,
+            original.TokenFimArquivo);
+
+    private static MetadadosCampo Copiar(MetadadosCampo original, string nome)
+        => new(
+            nome,
+            original.Ordem,
+            original.Tipo,
+            original.Tamanho,
+            original.Decimais,
+            original.Obrigatorio,
+            original.Formato,
+            original.Definidor,
+            original.Serializar,
+            original.DesdeVersao,
+            original.CapturaTudo,
+            original.CampoArquivo);
 }

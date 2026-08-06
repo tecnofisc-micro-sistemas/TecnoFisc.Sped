@@ -15,6 +15,35 @@ namespace TecnoFisc.Sped.Txt.Engine.Tests.Catalogo;
 public sealed class RegistroSpedCatalogoGeneratorNomeCampoTests
 {
     [Fact]
+    public void CatalogoGerado_EnumeraBloco0LetrasBlocosNumericosEBloco9NaOrdemSped()
+    {
+        const string source = """
+            using TecnoFisc.Sped.Txt.Engine.Abstracoes;
+            using TecnoFisc.Sped.Txt.Engine.Atributos;
+
+            namespace OrdemGerada;
+
+            [RegistroSped(Codigo = "9001", Nivel = 1, Bloco = "9")]
+            public sealed class Registro9001 : RegistroSped { public override string Codigo => "9001"; }
+
+            [RegistroSped(Codigo = "1001", Nivel = 1, Bloco = "1")]
+            public sealed class Registro1001 : RegistroSped { public override string Codigo => "1001"; }
+
+            [RegistroSped(Codigo = "C001", Nivel = 1, Bloco = "C")]
+            public sealed class RegistroC001 : RegistroSped { public override string Codigo => "C001"; }
+
+            [RegistroSped(Codigo = "0000", Nivel = 0, Bloco = "0")]
+            public sealed class Registro0000 : RegistroSped { public override string Codigo => "0000"; }
+            """;
+
+        Assembly assembly = CompilarComGerador(source, out var diagnosticos);
+
+        diagnosticos.Should().NotContain(diagnostico => diagnostico.Severity == DiagnosticSeverity.Error);
+        CriarCatalogoGerado(assembly).EnumerarRegistros().Select(registro => registro.Codigo)
+            .Should().Equal("0000", "C001", "1001", "9001");
+    }
+
+    [Fact]
     public void AliasExplicito_CatalogosGeradoEReflexivoConcordamComMetadadoErroEWirePosicional()
     {
         const string source = """
@@ -56,6 +85,15 @@ public sealed class RegistroSpedCatalogoGeneratorNomeCampoTests
             .Which.Campo.Should().Be("CODIGO");
     }
 
+    [Fact]
+    public void AliasLatino1_CatalogosGeradoEReflexivoPreservamNomeNormativoExato()
+    {
+        string source = FonteComCampos(
+            "[CampoSped(Ordem = 2, Nome = \"CONTEÚDO\")] public string? Conteudo { get; set; }");
+
+        AssertCatalogosConcordam(source, ["CONTEÚDO"]);
+    }
+
     [Theory]
     [InlineData(" ")]
     [InlineData("\t")]
@@ -63,6 +101,8 @@ public sealed class RegistroSpedCatalogoGeneratorNomeCampoTests
     [InlineData("COD|IGO")]
     [InlineData("COD\nIGO")]
     [InlineData("1CODIGO")]
+    [InlineData("CONTEÚDO")]
+    [InlineData("ΔADO")]
     public void AliasExplicitoInvalido_ProduzDiagnosticoSemEmitirCatalogo(string alias)
     {
         string source = FonteComCampos($"[CampoSped(Ordem = 2, Nome = {Literal(alias)})] public string? Campo {{ get; set; }}");
@@ -88,6 +128,23 @@ public sealed class RegistroSpedCatalogoGeneratorNomeCampoTests
         var act = () => CatalogoBuilder.BuildFromAssembly(assembly);
         act.Should().Throw<InvalidOperationException>()
             .WithMessage("*Nome de campo duplicado*CODIGO*");
+    }
+
+    [Fact]
+    public void AliasLatino1Duplicado_ProduzDiagnosticoSemEmitirCatalogo()
+    {
+        string source = FonteComCampos("""
+            [CampoSped(Ordem = 2, Nome = "CONTEÚDO")] public string? Primeiro { get; set; }
+            [CampoSped(Ordem = 3, Nome = "CONTEÚDO")] public string? Segundo { get; set; }
+            """);
+
+        Assembly assembly = CompilarComGerador(source, out var diagnosticos, exigirCatalogoGerado: false);
+
+        diagnosticos.Should().ContainSingle(diagnostico =>
+            diagnostico.Id == "TFSPED002" && diagnostico.Severity == DiagnosticSeverity.Error);
+        var act = () => CatalogoBuilder.BuildFromAssembly(assembly);
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*Nome de campo duplicado*CONTEÚDO*");
     }
 
     [Fact]

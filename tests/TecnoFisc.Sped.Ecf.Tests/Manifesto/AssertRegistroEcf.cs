@@ -52,28 +52,94 @@ internal static partial class AssertRegistroEcf
     }
 
     public static void CatalogMatchesManifest()
+        => CatalogMatchesManifest(_catalogo.EnumerarRegistros());
+
+    internal static void CatalogMatchesManifest(IEnumerable<MetadadosRegistro> catalogo)
     {
+        ArgumentNullException.ThrowIfNull(catalogo);
+
         var manifesto = _manifesto.Value;
-        var codigosManifesto = manifesto.CodigosCanonicos.ToHashSet(StringComparer.Ordinal);
-        var metadadosCatalogo = _catalogo.EnumerarRegistros().ToArray();
+        MetadadosRegistro[] metadadosCatalogo = catalogo.ToArray();
+        string[] codigosManifesto = manifesto.Registros.Select(registro => registro.Code).ToArray();
+        string[] codigosCatalogo = metadadosCatalogo.Select(registro => registro.Codigo).ToArray();
+        var conjuntoManifesto = codigosManifesto.ToHashSet(StringComparer.Ordinal);
+        var conjuntoCatalogo = codigosCatalogo.ToHashSet(StringComparer.Ordinal);
         var divergencias = new List<string>();
 
-        var codigosDesconhecidos = metadadosCatalogo
-            .Select(registro => registro.Codigo)
-            .Where(codigo => !codigosManifesto.Contains(codigo))
-            .Order(StringComparer.Ordinal)
-            .ToArray();
-        AdicionarCodigos(divergencias, "códigos extras no catálogo", codigosDesconhecidos);
-
-        foreach (var metadados in metadadosCatalogo)
+        if (codigosCatalogo.Length != codigosManifesto.Length)
         {
-            if (!codigosManifesto.Contains(metadados.Codigo))
+            divergencias.Add(
+                $"quantidade de registros esperada {codigosManifesto.Length}, " +
+                $"encontrada {codigosCatalogo.Length}");
+        }
+
+        foreach (var grupo in codigosCatalogo
+                     .Select((codigo, indice) => (Codigo: codigo, Posicao: indice + 1))
+                     .GroupBy(item => item.Codigo, StringComparer.Ordinal)
+                     .Where(grupo => grupo.Count() > 1))
+        {
+            divergencias.Add(
+                $"código duplicado '{grupo.Key}' nas posições " +
+                string.Join(", ", grupo.Select(item => item.Posicao)));
+        }
+
+        AdicionarCodigos(
+            divergencias,
+            "códigos ausentes do catálogo",
+            codigosManifesto.Where(codigo => !conjuntoCatalogo.Contains(codigo)).ToArray());
+        AdicionarCodigos(
+            divergencias,
+            "códigos extras no catálogo",
+            codigosCatalogo.Where(codigo => !conjuntoManifesto.Contains(codigo))
+                .Distinct(StringComparer.Ordinal)
+                .ToArray());
+
+        int quantidadeComparavel = Math.Min(codigosManifesto.Length, codigosCatalogo.Length);
+        for (int indice = 0; indice < quantidadeComparavel; indice++)
+        {
+            if (string.Equals(codigosManifesto[indice], codigosCatalogo[indice], StringComparison.Ordinal))
+                continue;
+
+            divergencias.Add(
+                $"ordem canônica divergente na posição {indice + 1}: " +
+                $"esperado '{codigosManifesto[indice]}', encontrado '{codigosCatalogo[indice]}'");
+            break;
+        }
+
+        string[] blocosManifesto = ExtrairBlocosEmOrdem(
+            manifesto.Registros.Select(registro => registro.Block));
+        string[] blocosCatalogo = ExtrairBlocosEmOrdem(
+            metadadosCatalogo.Select(registro => registro.Bloco));
+        if (!blocosManifesto.SequenceEqual(blocosCatalogo, StringComparer.Ordinal))
+        {
+            divergencias.Add(
+                $"ordem/contiguidade dos blocos esperada [{FormatarCodigos(blocosManifesto)}], " +
+                $"encontrada [{FormatarCodigos(blocosCatalogo)}]");
+        }
+
+        foreach (var metadados in metadadosCatalogo
+                     .GroupBy(registro => registro.Codigo, StringComparer.Ordinal)
+                     .Select(grupo => grupo.First()))
+        {
+            if (!conjuntoManifesto.Contains(metadados.Codigo))
                 continue;
 
             CompararMetadados(manifesto.Obter(metadados.Codigo), metadados, divergencias);
         }
 
         FalharSeHouverDivergencias(divergencias);
+    }
+
+    private static string[] ExtrairBlocosEmOrdem(IEnumerable<string> blocos)
+    {
+        var resultado = new List<string>();
+        foreach (string bloco in blocos)
+        {
+            if (resultado.Count == 0 || !string.Equals(resultado[^1], bloco, StringComparison.Ordinal))
+                resultado.Add(bloco);
+        }
+
+        return resultado.ToArray();
     }
 
     internal static void MetadataMatchesManifest(MetadadosRegistro metadados)
@@ -245,8 +311,8 @@ internal static partial class AssertRegistroEcf
             divergencias,
             contexto,
             "nome",
-            NormalizarNome(esperado.Name),
-            NormalizarNome(atual.Nome));
+            CanonicalFieldName(esperado.Name),
+            CanonicalFieldName(atual.Nome));
         AdicionarDivergencia(
             divergencias,
             contexto,
@@ -279,12 +345,12 @@ internal static partial class AssertRegistroEcf
         ManifestoCampoEcf campo,
         Type tipo)
     {
-        string nomeCampo = NormalizarNome(campo.Name);
+        string nomeCampo = CanonicalFieldName(campo.Name);
         bool campoNif = string.Equals(nomeCampo, "NIF", StringComparison.Ordinal);
         bool campoCnpj = string.Equals(nomeCampo, "CNPJ", StringComparison.Ordinal);
         bool possuiParDocumento = registro.Fields.Any(item =>
         {
-            string nomeIrmao = NormalizarNome(item.Name);
+            string nomeIrmao = CanonicalFieldName(item.Name);
             return campoNif
                 ? string.Equals(nomeIrmao, "CNPJ", StringComparison.Ordinal)
                 : campoCnpj && string.Equals(nomeIrmao, "NIF", StringComparison.Ordinal);
@@ -420,20 +486,17 @@ internal static partial class AssertRegistroEcf
 
     private static bool NormalizarObrigatorio(string valor)
     {
-        string normalizado = NormalizarNome(valor);
+        string normalizado = CanonicalFieldName(valor);
         return normalizado is "SIM" or "S";
     }
 
-    private static string NormalizarNome(string valor)
+    internal static string CanonicalFieldName(string valor)
     {
         var resultado = new StringBuilder(valor.Length);
-        foreach (char caractere in valor.Normalize(NormalizationForm.FormD))
+        foreach (char caractere in valor)
         {
-            if (CharUnicodeInfo.GetUnicodeCategory(caractere) == UnicodeCategory.NonSpacingMark ||
-                !char.IsLetterOrDigit(caractere))
-            {
+            if (!char.IsLetterOrDigit(caractere))
                 continue;
-            }
 
             resultado.Append(char.ToUpperInvariant(caractere));
         }

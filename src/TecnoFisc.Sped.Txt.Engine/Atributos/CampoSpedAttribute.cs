@@ -14,8 +14,9 @@ public sealed class CampoSpedAttribute : Attribute
     /// membro do modelo, por exemplo <c>CampoCodigo</c> com <c>Nome = "CODIGO"</c>.
     /// </summary>
     /// <remarks>
-    /// Um alias não vazio deve ser um identificador ASCII sem espaços: letra ou sublinhado no
-    /// início, seguido apenas de letras, dígitos ou sublinhados. Whitespace é inválido.
+    /// Um alias não vazio deve ser um identificador Latino-1 sem espaços: letra ou sublinhado no
+    /// início, seguido apenas de letras Latino-1, dígitos ASCII ou sublinhados. Whitespace,
+    /// caracteres combinantes e caracteres fora do Latino-1 são inválidos.
     /// </remarks>
     public string? Nome { get; init; }
 

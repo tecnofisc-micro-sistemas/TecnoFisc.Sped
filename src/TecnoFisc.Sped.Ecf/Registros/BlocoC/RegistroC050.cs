@@ -21,7 +21,7 @@ public sealed partial class RegistroC050 : RegistroSped
     [CampoSped(Ordem = 4, Tamanho = 1, Obrigatorio = true)]
     public IndicadorTipoConta IndCta { get; set; }
 
-    [CampoSped(Ordem = 5, Tamanho = 0, Obrigatorio = true)]
+    [CampoSped(Ordem = 5, Nome = "NÍVEL", Tamanho = 0, Obrigatorio = true)]
     public int Nível { get; set; }
 
     [CampoSped(Ordem = 6, Tamanho = 0, Obrigatorio = true)]

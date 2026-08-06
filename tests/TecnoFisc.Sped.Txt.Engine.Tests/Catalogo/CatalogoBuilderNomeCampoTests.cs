@@ -29,6 +29,14 @@ public sealed class CatalogoBuilderNomeCampoTests
             .Which.Campo.Should().Be("CODIGO");
     }
 
+    [Fact]
+    public void AliasLatino1_PreservaNomeNormativoExatoNoCatalogoReflexivo()
+    {
+        var metadados = Construir(typeof(RegistroAliasLatino1Sintetico));
+
+        metadados.Campos.Should().ContainSingle().Which.Nome.Should().Be("CONTEÚDO");
+    }
+
     [Theory]
     [MemberData(nameof(AliasInvalidos))]
     public void AliasExplicitoInvalido_FalhaAntesDeConstruirMetadados(Type tipo, string alias)
@@ -82,6 +90,8 @@ public sealed class CatalogoBuilderNomeCampoTests
         { typeof(RegistroAliasPipeSintetico), "COD|IGO" },
         { typeof(RegistroAliasQuebraSintetico), "COD\nIGO" },
         { typeof(RegistroAliasDigitoInicialSintetico), "1CODIGO" },
+        { typeof(RegistroAliasCombinanteSintetico), "CONTEÚDO" },
+        { typeof(RegistroAliasForaLatino1Sintetico), "ΔADO" },
     };
 
     private static MetadadosRegistro Construir(Type tipo)
@@ -130,6 +140,24 @@ public sealed class CatalogoBuilderNomeCampoTests
     private sealed class RegistroAliasDigitoInicialSintetico : RegistroAliasBase
     {
         [CampoSped(Ordem = 2, Nome = "1CODIGO")]
+        public string? Campo { get; set; }
+    }
+
+    private sealed class RegistroAliasCombinanteSintetico : RegistroAliasBase
+    {
+        [CampoSped(Ordem = 2, Nome = "CONTEÚDO")]
+        public string? Campo { get; set; }
+    }
+
+    private sealed class RegistroAliasForaLatino1Sintetico : RegistroAliasBase
+    {
+        [CampoSped(Ordem = 2, Nome = "ΔADO")]
+        public string? Campo { get; set; }
+    }
+
+    private sealed class RegistroAliasLatino1Sintetico : RegistroAliasBase
+    {
+        [CampoSped(Ordem = 2, Nome = "CONTEÚDO")]
         public string? Campo { get; set; }
     }
 

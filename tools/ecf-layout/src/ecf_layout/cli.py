@@ -121,6 +121,14 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "build-artifacts":
         try:
             records = records_from_work_dir(args.work_dir, args.pdf)
+        except (ManifestValidationError, OSError, UnicodeError) as error:
+            try:
+                invalidate_generation(args.work_dir, str(error))
+            except ArtifactPromotionError:
+                pass
+            print(f"artifact build failed: {error}")
+            return 1
+        try:
             build_artifacts(
                 records,
                 args.work_dir,
@@ -134,7 +142,6 @@ def main(argv: list[str] | None = None) -> int:
             OSError,
             UnicodeError,
         ) as error:
-            invalidate_generation(args.work_dir, str(error))
             print(f"artifact build failed: {error}")
             return 1
         print(f"built: {len(records)} manifest entries and {len(records)} tracker rows")

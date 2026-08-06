@@ -6,10 +6,12 @@ import hashlib
 import json
 import os
 import shutil
-import tempfile
+import stat
+import time
 import uuid
+from contextlib import contextmanager
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Iterator
 
 from jsonschema import Draft202012Validator
 from jsonschema.exceptions import SchemaError, ValidationError
@@ -30,12 +32,20 @@ class ArtifactPathError(ArtifactPromotionError):
     """Raised when two artifact roles resolve to the same filesystem object."""
 
 
+class ArtifactLockTimeout(ArtifactPromotionError):
+    """Raised when another process retains the artifact lock past the deadline."""
+
+
 InterruptHook = Callable[[str], None]
 BeforePublishHook = Callable[[], None]
 _JOURNAL_NAME = ".artifact-transaction.json"
 _JOURNAL_BACKUP_NAME = ".artifact-transaction.backup.json"
 _TRANSACTION_DIR_NAME = ".artifact-transactions"
 _TRANSACTION_DESCRIPTOR_NAME = "descriptor.json"
+_PAIR_MARKER_DIR_NAME = ".artifact-pairs"
+_LOCK_NAME = ".artifact.lock"
+_LOCK_MAGIC = b"ecf-layout-artifact-lock-v1\n"
+_DEFAULT_LOCK_TIMEOUT = 10.0
 
 
 def sha256_bytes(data: bytes) -> str:
@@ -79,6 +89,7 @@ def build_artifacts(
     tracker_out: Path,
     *,
     pdf: Path,
+    lock_timeout: float = _DEFAULT_LOCK_TIMEOUT,
 ) -> tuple[Path, Path]:
     """Validate and durably publish a provenance-bound local candidate generation."""
     work_dir = Path(work_dir)
@@ -89,69 +100,72 @@ def build_artifacts(
     build_state_path = work_dir / "build-state.json"
     quarantine_path = work_dir / "quarantine.json"
     journal_paths = _root_descriptor_paths(work_dir)
-    try:
-        _ensure_distinct_paths(
-            [
-                pdf,
-                manifest_out,
-                tracker_out,
-                generation_path,
-                build_state_path,
-                quarantine_path,
-                *journal_paths,
-            ]
-        )
-        recover_artifact_transaction(work_dir)
-        if not pdf.is_file():
-            raise ManifestValidationError(f"normative PDF not found: {pdf}")
-        items = _quarantine_items(records, require_reviewed=False)
-        if items:
-            raise ManifestValidationError(
-                f"manifest validation quarantined {len(items)} item(s)"
-            )
-        sanitized = [_sanitize_record(record) for record in records]
-        manifest_data = _pretty_json_bytes(sanitized)
-        tracker_data = render_tracker(sanitized).encode("utf-8")
-        pdf_sha256 = sha256_file(pdf)
-        review_sha256 = canonical_candidate_sha256(sanitized)
-        identifier = generation_id(pdf_sha256, review_sha256)
-        metadata = {
-            "schemaVersion": 1,
-            "generationId": identifier,
-            "state": "candidate",
-            "pdfPath": str(pdf.resolve()),
-            "pdfSha256": pdf_sha256,
-            "reviewCandidateSha256": review_sha256,
-            "candidateSha256": review_sha256,
-            "trackerSha256": sha256_bytes(tracker_data),
-            "evidencePaths": [],
-        }
-        replace_artifacts_durably(
-            work_dir,
-            [
-                (manifest_out, manifest_data),
-                (tracker_out, tracker_data),
-                (generation_path, _pretty_json_bytes(metadata)),
-                (
-                    build_state_path,
-                    _pretty_json_bytes(
-                        {"state": "valid", "generationId": identifier}
+    protected_paths = [
+        pdf,
+        manifest_out,
+        tracker_out,
+        generation_path,
+        build_state_path,
+        quarantine_path,
+        *journal_paths,
+    ]
+    with _artifact_lock(
+        work_dir, timeout=lock_timeout, protected_paths=protected_paths
+    ):
+        try:
+            _ensure_distinct_paths(protected_paths)
+            _recover_artifact_transaction_locked(work_dir)
+            if not pdf.is_file():
+                raise ManifestValidationError(f"normative PDF not found: {pdf}")
+            items = _quarantine_items(records, require_reviewed=False)
+            if items:
+                raise ManifestValidationError(
+                    f"manifest validation quarantined {len(items)} item(s)"
+                )
+            sanitized = [_sanitize_record(record) for record in records]
+            manifest_data = _pretty_json_bytes(sanitized)
+            tracker_data = render_tracker(sanitized).encode("utf-8")
+            pdf_sha256 = sha256_file(pdf)
+            review_sha256 = canonical_candidate_sha256(sanitized)
+            identifier = generation_id(pdf_sha256, review_sha256)
+            metadata = {
+                "schemaVersion": 1,
+                "generationId": identifier,
+                "state": "candidate",
+                "pdfPath": str(pdf.resolve()),
+                "pdfSha256": pdf_sha256,
+                "reviewCandidateSha256": review_sha256,
+                "candidateSha256": review_sha256,
+                "trackerSha256": sha256_bytes(tracker_data),
+                "evidencePaths": [],
+            }
+            _replace_artifacts_durably_locked(
+                work_dir,
+                [
+                    (manifest_out, manifest_data),
+                    (tracker_out, tracker_data),
+                    (generation_path, _pretty_json_bytes(metadata)),
+                    (
+                        build_state_path,
+                        _pretty_json_bytes(
+                            {"state": "valid", "generationId": identifier}
+                        ),
                     ),
-                ),
-                (quarantine_path, _pretty_json_bytes({"items": []})),
-            ],
-        )
-        return manifest_out, tracker_out
-    except ArtifactPathError:
-        raise
-    except (
-        ArtifactPromotionError,
-        ManifestValidationError,
-        OSError,
-        UnicodeError,
-    ) as error:
-        invalidate_generation(work_dir, str(error))
-        raise
+                    (quarantine_path, _pretty_json_bytes({"items": []})),
+                ],
+                protected_paths=[pdf],
+            )
+            return manifest_out, tracker_out
+        except ArtifactPathError:
+            raise
+        except (
+            ArtifactPromotionError,
+            ManifestValidationError,
+            OSError,
+            UnicodeError,
+        ) as error:
+            _invalidate_generation_locked(work_dir, str(error), protected_paths=[pdf])
+            raise
 
 
 def promote_artifacts(
@@ -161,10 +175,43 @@ def promote_artifacts(
     *,
     schema_path: Path,
     before_publish: BeforePublishHook | None = None,
+    lock_timeout: float = _DEFAULT_LOCK_TIMEOUT,
+) -> tuple[Path, Path]:
+    work_dir = Path(work_dir)
+    initial_paths = [
+        Path(manifest_out),
+        Path(tracker_out),
+        Path(schema_path),
+        work_dir / "candidate" / "layout-12-manifest.json",
+        work_dir / "candidate" / "STAGE_17_ECF_BASELINE.md",
+        work_dir / "candidate" / "generation.json",
+        work_dir / "build-state.json",
+        work_dir / "quarantine.json",
+        *_root_descriptor_paths(work_dir),
+    ]
+    with _artifact_lock(
+        work_dir, timeout=lock_timeout, protected_paths=initial_paths
+    ):
+        return _promote_artifacts_locked(
+            work_dir,
+            Path(manifest_out),
+            Path(tracker_out),
+            schema_path=Path(schema_path),
+            before_publish=before_publish,
+        )
+
+
+def _promote_artifacts_locked(
+    work_dir: Path,
+    manifest_out: Path,
+    tracker_out: Path,
+    *,
+    schema_path: Path,
+    before_publish: BeforePublishHook | None,
 ) -> tuple[Path, Path]:
     """Promote the exact candidate byte snapshots that passed every invariant."""
     work_dir = Path(work_dir)
-    recover_artifact_transaction(work_dir)
+    _recover_artifact_transaction_locked(work_dir)
     manifest_out = Path(manifest_out)
     tracker_out = Path(tracker_out)
     schema_path = Path(schema_path)
@@ -202,21 +249,20 @@ def promote_artifacts(
 
     evidence_paths = [Path(path) for path in generation["evidencePaths"]]
     normative_pdf = Path(generation["pdfPath"])
-    _ensure_distinct_paths(
-        [
-            normative_pdf,
-            manifest_out,
-            tracker_out,
-            schema_path,
-            manifest_candidate,
-            tracker_candidate,
-            generation_path,
-            build_state_path,
-            quarantine_path,
-            *journal_paths,
-            *evidence_paths,
-        ]
-    )
+    protected_inputs = [
+        normative_pdf,
+        manifest_out,
+        tracker_out,
+        schema_path,
+        manifest_candidate,
+        tracker_candidate,
+        generation_path,
+        build_state_path,
+        quarantine_path,
+        *journal_paths,
+        *evidence_paths,
+    ]
+    _ensure_distinct_paths(protected_inputs)
 
     # Each mutable input is read exactly once. Validation and publication below use only these
     # immutable in-memory snapshots, closing the validation-to-replacement race.
@@ -297,20 +343,55 @@ def promote_artifacts(
 
     if before_publish is not None:
         before_publish()
-    replace_artifacts_durably(
+    _replace_artifacts_durably_locked(
         work_dir,
         [
             (manifest_out, manifest_snapshot),
             (tracker_out, tracker_snapshot),
         ],
+        protected_paths=[
+            normative_pdf,
+            schema_path,
+            manifest_candidate,
+            tracker_candidate,
+            generation_path,
+            build_state_path,
+            quarantine_path,
+            *evidence_paths,
+        ],
     )
     return manifest_out, tracker_out
 
 
-def apply_review_evidence(work_dir: Path, evidence_paths: list[Path]) -> tuple[Path, Path]:
+def apply_review_evidence(
+    work_dir: Path,
+    evidence_paths: list[Path],
+    *,
+    lock_timeout: float = _DEFAULT_LOCK_TIMEOUT,
+) -> tuple[Path, Path]:
+    work_dir = Path(work_dir)
+    evidence_paths = [Path(path) for path in evidence_paths]
+    initial_paths = [
+        work_dir / "candidate" / "layout-12-manifest.json",
+        work_dir / "candidate" / "STAGE_17_ECF_BASELINE.md",
+        work_dir / "candidate" / "generation.json",
+        work_dir / "build-state.json",
+        work_dir / "quarantine.json",
+        *_root_descriptor_paths(work_dir),
+        *evidence_paths,
+    ]
+    with _artifact_lock(
+        work_dir, timeout=lock_timeout, protected_paths=initial_paths
+    ):
+        return _apply_review_evidence_locked(work_dir, evidence_paths)
+
+
+def _apply_review_evidence_locked(
+    work_dir: Path, evidence_paths: list[Path]
+) -> tuple[Path, Path]:
     """Mark candidates reviewed only from complete, unambiguous visual attestations."""
     work_dir = Path(work_dir)
-    recover_artifact_transaction(work_dir)
+    _recover_artifact_transaction_locked(work_dir)
     manifest_path = work_dir / "candidate" / "layout-12-manifest.json"
     tracker_path = work_dir / "candidate" / "STAGE_17_ECF_BASELINE.md"
     generation_path = work_dir / "candidate" / "generation.json"
@@ -365,12 +446,18 @@ def apply_review_evidence(work_dir: Path, evidence_paths: list[Path]) -> tuple[P
         "trackerSha256": sha256_bytes(reviewed_tracker_data),
         "evidencePaths": [str(path.resolve()) for path in evidence_paths],
     }
-    replace_artifacts_durably(
+    _replace_artifacts_durably_locked(
         work_dir,
         [
             (manifest_path, reviewed_manifest_data),
             (tracker_path, reviewed_tracker_data),
             (generation_path, _pretty_json_bytes(reviewed_generation)),
+        ],
+        protected_paths=[
+            Path(generation["pdfPath"]),
+            build_state_path,
+            quarantine_path,
+            *evidence_paths,
         ],
     )
     return manifest_path, tracker_path
@@ -389,7 +476,7 @@ def _parse_tracker(text: str) -> list[tuple[str, str, str, str, str, str, str]]:
 
 
 def _record_promotion_failure(work_dir: Path, reason: str) -> ArtifactPromotionError:
-    invalidate_generation(work_dir, reason)
+    _invalidate_generation_locked(work_dir, reason)
     return ArtifactPromotionError(reason)
 
 
@@ -542,11 +629,136 @@ def _cell(value: object) -> str:
     return " ".join(str(value).split()).replace("|", "&#124;")
 
 
+@contextmanager
+def _artifact_lock(
+    work_dir: Path,
+    *,
+    timeout: float = _DEFAULT_LOCK_TIMEOUT,
+    protected_paths: list[Path] | None = None,
+) -> Iterator[None]:
+    """Serialize tooling readers/writers with an OS lock released on process death."""
+    if timeout < 0:
+        raise ValueError("artifact lock timeout must be non-negative")
+    work_dir = Path(work_dir)
+    work_dir.mkdir(parents=True, exist_ok=True)
+    lock_path = work_dir / _LOCK_NAME
+    protected_paths = [Path(path) for path in (protected_paths or [])]
+    _ensure_distinct_paths([lock_path, *protected_paths])
+    descriptor = _open_verified_lock_file(lock_path)
+    deadline = time.monotonic() + timeout
+    acquired = False
+    try:
+        while True:
+            try:
+                _try_os_lock(descriptor)
+                acquired = True
+                _verify_lock_identity(descriptor, lock_path)
+                break
+            except OSError as error:
+                if time.monotonic() >= deadline:
+                    raise ArtifactLockTimeout(
+                        f"timed out waiting for artifact lock: {lock_path}"
+                    ) from error
+                time.sleep(min(0.01, max(0.0, deadline - time.monotonic())))
+        yield
+    finally:
+        if acquired:
+            _release_os_lock(descriptor)
+        os.close(descriptor)
+
+
+def _open_verified_lock_file(path: Path) -> int:
+    flags = os.O_RDWR | getattr(os, "O_BINARY", 0)
+    try:
+        descriptor = os.open(path, flags | os.O_CREAT | os.O_EXCL, 0o600)
+    except FileExistsError:
+        if path.is_symlink():
+            raise ArtifactPathError(f"artifact lock path is a symlink: {path}")
+        descriptor = os.open(path, flags | getattr(os, "O_NOFOLLOW", 0))
+        metadata = os.fstat(descriptor)
+        if not stat.S_ISREG(metadata.st_mode) or metadata.st_nlink != 1:
+            os.close(descriptor)
+            raise ArtifactPathError(f"artifact lock path is not an owned regular file: {path}")
+        return descriptor
+    try:
+        remaining = memoryview(_LOCK_MAGIC)
+        while remaining:
+            written = os.write(descriptor, remaining)
+            if written == 0:
+                raise OSError("could not initialize artifact lock identity")
+            remaining = remaining[written:]
+        os.fsync(descriptor)
+        _sync_directory(path.parent)
+        return descriptor
+    except BaseException:
+        os.close(descriptor)
+        path.unlink(missing_ok=True)
+        raise
+
+
+def _verify_lock_identity(descriptor: int, path: Path) -> None:
+    metadata = os.fstat(descriptor)
+    if not stat.S_ISREG(metadata.st_mode) or metadata.st_nlink != 1:
+        raise ArtifactPathError(f"artifact lock path is not an owned regular file: {path}")
+    os.lseek(descriptor, 0, os.SEEK_SET)
+    if os.read(descriptor, len(_LOCK_MAGIC) + 1) != _LOCK_MAGIC:
+        raise ArtifactPathError(f"artifact lock identity is invalid: {path}")
+
+
+def _try_os_lock(descriptor: int) -> None:
+    os.lseek(descriptor, 0, os.SEEK_SET)
+    if os.name == "nt":
+        import msvcrt
+
+        msvcrt.locking(descriptor, msvcrt.LK_NBLCK, 1)
+    else:
+        import fcntl
+
+        fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+
+
+def _release_os_lock(descriptor: int) -> None:
+    os.lseek(descriptor, 0, os.SEEK_SET)
+    if os.name == "nt":
+        import msvcrt
+
+        msvcrt.locking(descriptor, msvcrt.LK_UNLCK, 1)
+    else:
+        import fcntl
+
+        fcntl.flock(descriptor, fcntl.LOCK_UN)
+
+
 def replace_artifacts_durably(
     work_dir: Path,
     replacements: list[tuple[Path, bytes]],
     *,
     interrupt: InterruptHook | None = None,
+    protected_paths: list[Path] | None = None,
+    lock_timeout: float = _DEFAULT_LOCK_TIMEOUT,
+) -> None:
+    work_dir = Path(work_dir)
+    protected_paths = [Path(path) for path in (protected_paths or [])]
+    targets = [Path(path) for path, _data in replacements]
+    with _artifact_lock(
+        work_dir,
+        timeout=lock_timeout,
+        protected_paths=[*targets, *protected_paths],
+    ):
+        _replace_artifacts_durably_locked(
+            work_dir,
+            replacements,
+            interrupt=interrupt,
+            protected_paths=protected_paths,
+        )
+
+
+def _replace_artifacts_durably_locked(
+    work_dir: Path,
+    replacements: list[tuple[Path, bytes]],
+    *,
+    interrupt: InterruptHook | None = None,
+    protected_paths: list[Path] | None = None,
 ) -> None:
     """Publish artifacts with redundant, bounded roll-forward recovery material.
 
@@ -556,20 +768,25 @@ def replace_artifacts_durably(
     This is a bounded single-artifact-loss guarantee, not an arbitrary power-loss guarantee.
     """
     work_dir = Path(work_dir)
-    recover_artifact_transaction(work_dir)
+    protected_paths = [Path(path) for path in (protected_paths or [])]
+    _recover_artifact_transaction_locked(work_dir)
     if not replacements:
         raise ArtifactPathError("a durable transaction requires at least one target")
     targets = [Path(path) for path, _data in replacements]
     transaction_root = work_dir / _TRANSACTION_DIR_NAME
     root_descriptors = _root_descriptor_paths(work_dir)
-    _ensure_distinct_paths([*targets, *root_descriptors])
+    _ensure_distinct_paths(
+        [*targets, *root_descriptors, transaction_root, *protected_paths]
+    )
     for target in targets:
         if _is_within(target, transaction_root):
             raise ArtifactPathError("artifact targets cannot be inside transaction storage")
 
     transaction_id = uuid.uuid4().hex
     transaction_dir = transaction_root / transaction_id
-    transaction_dir.mkdir(parents=True, exist_ok=False)
+    _ensure_private_directory(transaction_root, protected_paths=protected_paths)
+    _ensure_distinct_paths([transaction_dir, *targets, *protected_paths])
+    transaction_dir.mkdir(exist_ok=False)
     _sync_directory(transaction_dir.parent)
     descriptor_paths = [
         *root_descriptors,
@@ -591,7 +808,19 @@ def replace_artifacts_durably(
             }
         )
     all_payloads = [Path(path) for entry in entries for path in entry["payloads"]]
-    _ensure_distinct_paths([*targets, *descriptor_paths, *all_payloads])
+    marker_paths = _pair_marker_paths(work_dir, targets)
+    _ensure_distinct_paths(
+        [
+            *targets,
+            *descriptor_paths,
+            *all_payloads,
+            *marker_paths,
+            *protected_paths,
+        ]
+    )
+    _preflight_pair_markers(
+        work_dir, targets, protected_paths=protected_paths
+    )
 
     descriptor = {
         "schemaVersion": 2,
@@ -601,28 +830,39 @@ def replace_artifacts_durably(
         "entries": entries,
     }
     for index, path in enumerate(descriptor_paths):
-        _write_json_durably(path, descriptor)
+        _create_durable_file_exclusive(
+            path, _pretty_json_bytes(descriptor), protected_paths=protected_paths
+        )
         _interrupt(interrupt, f"after_staging_descriptor_{index}")
 
     for (_target, data), entry in zip(replacements, entries, strict=True):
         for payload_path in entry["payloads"]:
-            _write_durable_file(Path(payload_path), data)
+            _create_durable_file_exclusive(
+                Path(payload_path), data, protected_paths=protected_paths
+            )
     _interrupt(interrupt, "after_payloads")
 
     descriptor["state"] = "prepared"
     for index, path in enumerate(descriptor_paths):
-        _write_json_durably(path, descriptor)
+        _write_json_durably(path, descriptor, protected_paths=protected_paths)
         _interrupt(interrupt, f"after_descriptor_{index}")
     _interrupt(interrupt, "after_journal")
     for index, entry in enumerate(entries):
-        _replace_target_from_payload(entry)
+        _replace_target_from_payload(entry, protected_paths=protected_paths)
         _interrupt(interrupt, f"after_replace_{index}")
 
     descriptor["state"] = "committed"
     for index, path in enumerate(descriptor_paths):
-        _write_json_durably(path, descriptor)
+        _write_json_durably(path, descriptor, protected_paths=protected_paths)
         _interrupt(interrupt, f"after_committed_descriptor_{index}")
     _interrupt(interrupt, "after_committed")
+
+    _commit_pair_markers(
+        work_dir,
+        descriptor,
+        protected_paths=protected_paths,
+        interrupt=interrupt,
+    )
 
     for index, path in enumerate(descriptor_paths[:2]):
         _unlink_durably(path)
@@ -634,7 +874,15 @@ def replace_artifacts_durably(
     _remove_transaction_dir(transaction_dir, transaction_root)
 
 
-def recover_artifact_transaction(work_dir: Path) -> None:
+def recover_artifact_transaction(
+    work_dir: Path, *, lock_timeout: float = _DEFAULT_LOCK_TIMEOUT
+) -> None:
+    work_dir = Path(work_dir)
+    with _artifact_lock(work_dir, timeout=lock_timeout):
+        _recover_artifact_transaction_locked(work_dir)
+
+
+def _recover_artifact_transaction_locked(work_dir: Path) -> None:
     """Recover one transaction without accepting a mixed or under-described set."""
     work_dir = Path(work_dir)
     transaction_root = work_dir / _TRANSACTION_DIR_NAME
@@ -642,16 +890,17 @@ def recover_artifact_transaction(work_dir: Path) -> None:
         *_root_descriptor_paths(work_dir),
         *_internal_descriptor_candidates(transaction_root),
     ]
-    existing_descriptors = [path for path in descriptor_candidates if path.is_file()]
+    existing_descriptors = [
+        path for path in descriptor_candidates if path.exists() or path.is_symlink()
+    ]
     if not existing_descriptors:
-        _remove_empty_transaction_directories(transaction_root)
+        _recover_or_reject_orphan_transactions(work_dir, transaction_root)
         return
 
     valid_descriptors: list[dict] = []
-    invalid_errors: list[Exception] = []
     for path in existing_descriptors:
         try:
-            descriptor = _load_json_snapshot(path.read_bytes())
+            descriptor = _load_json_snapshot(_read_owned_regular_file(path))
             _validate_transaction_descriptor(work_dir, descriptor)
             assert isinstance(descriptor, dict)
             valid_descriptors.append(descriptor)
@@ -660,22 +909,15 @@ def recover_artifact_transaction(work_dir: Path) -> None:
             OSError,
             UnicodeError,
             json.JSONDecodeError,
-        ) as error:
-            invalid_errors.append(error)
-    if not valid_descriptors:
-        detail = invalid_errors[0] if invalid_errors else "no valid descriptor copy"
-        raise ArtifactPromotionError(
-            f"cannot recover artifact transaction: {detail}"
-        )
+        ):
+            continue
 
-    identities = {_transaction_identity(descriptor) for descriptor in valid_descriptors}
-    if len(identities) != 1:
-        raise ArtifactPromotionError("artifact transaction descriptor copies disagree")
-    descriptor = max(
-        valid_descriptors,
-        key=lambda value: {"staging": 0, "prepared": 1, "committed": 2}[value["state"]],
-    )
-    if all(copy["state"] == "staging" for copy in valid_descriptors):
+    descriptor, state = _select_descriptor_quorum(work_dir, valid_descriptors)
+    if descriptor is None:
+        _recover_or_reject_orphan_transactions(work_dir, transaction_root)
+        return
+    descriptor = {**descriptor, "state": state}
+    if state == "staging":
         _cleanup_transaction(descriptor)
         _remove_empty_transaction_directories(transaction_root)
         return
@@ -694,8 +936,114 @@ def recover_artifact_transaction(work_dir: Path) -> None:
         target = Path(entry["target"])
         if not target.is_file() or sha256_file(target) != entry["sha256"]:
             raise ArtifactPromotionError("artifact transaction recovery did not converge")
+    _preflight_pair_markers(
+        work_dir,
+        [Path(entry["target"]) for entry in descriptor["entries"]],
+        allow_incomplete=True,
+    )
+    _commit_pair_markers(work_dir, descriptor)
     _cleanup_transaction(descriptor)
     _remove_empty_transaction_directories(transaction_root)
+
+
+def _select_descriptor_quorum(
+    work_dir: Path, descriptors: list[dict]
+) -> tuple[dict | None, str]:
+    groups: dict[str, list[dict]] = {}
+    for descriptor in descriptors:
+        groups.setdefault(_transaction_identity(descriptor), []).append(descriptor)
+    identity_quorums = [group for group in groups.values() if len(group) >= 2]
+    if len(identity_quorums) > 1:
+        raise ArtifactPromotionError("multiple artifact descriptor identities reached quorum")
+    if identity_quorums:
+        selected = identity_quorums[0]
+    else:
+        transaction_root = Path(work_dir) / _TRANSACTION_DIR_NAME
+        transaction_markers = []
+        if transaction_root.is_dir():
+            for transaction_dir in transaction_root.iterdir():
+                if transaction_dir.is_dir() and not transaction_dir.is_symlink():
+                    marker = _find_pair_marker_by_transaction(
+                        work_dir, transaction_dir.name
+                    )
+                    if marker is not None:
+                        transaction_markers.append(marker)
+        if len(transaction_markers) == 1:
+            return _marker_to_descriptor(work_dir, transaction_markers[0]), "committed"
+        if len(transaction_markers) > 1:
+            raise ArtifactPromotionError(
+                "multiple committed transactions require recovery"
+            )
+
+    if not identity_quorums and len(groups) == 1 and descriptors:
+        selected = next(iter(groups.values()))
+        marker = _find_pair_marker_by_transaction(
+            work_dir, selected[0]["transactionId"]
+        )
+        if len(selected) == 1 and marker is not None:
+            marker_descriptor = _marker_to_descriptor(work_dir, marker)
+            if _transaction_identity(marker_descriptor) != _transaction_identity(selected[0]):
+                raise ArtifactPromotionError(
+                    "committed pair marker disagrees with surviving descriptor"
+                )
+            return marker_descriptor, "committed"
+        if len(selected) == 1 and selected[0]["state"] != "staging":
+            raise ArtifactPromotionError("artifact descriptor identity has no quorum")
+    elif not identity_quorums and not descriptors:
+        return None, "staging"
+    elif not identity_quorums:
+        corroborated: list[dict] = []
+        for group in groups.values():
+            marker = _find_pair_marker_by_transaction(
+                work_dir, group[0]["transactionId"]
+            )
+            if marker is None:
+                continue
+            marker_descriptor = _marker_to_descriptor(work_dir, marker)
+            if _transaction_identity(marker_descriptor) == _transaction_identity(group[0]):
+                corroborated.append(marker_descriptor)
+        if len(corroborated) == 1:
+            return corroborated[0], "committed"
+        raise ArtifactPromotionError("artifact descriptor identity has no two-of-three quorum")
+
+    state_counts: dict[str, int] = {}
+    for descriptor in selected:
+        state_counts[descriptor["state"]] = state_counts.get(descriptor["state"], 0) + 1
+    state_quorums = [state for state, count in state_counts.items() if count >= 2]
+    if len(state_quorums) == 1:
+        state = state_quorums[0]
+    else:
+        state = max(
+            state_counts,
+            key=lambda value: {"staging": 0, "prepared": 1, "committed": 2}[value],
+        )
+    return selected[0], state
+
+
+def _recover_or_reject_orphan_transactions(
+    work_dir: Path, transaction_root: Path
+) -> None:
+    if not transaction_root.is_dir():
+        return
+    recovered = False
+    for transaction_dir in list(transaction_root.iterdir()):
+        if not transaction_dir.is_dir() or transaction_dir.is_symlink():
+            raise ArtifactPromotionError("unexpected artifact transaction storage entry")
+        if not any(transaction_dir.iterdir()):
+            transaction_dir.rmdir()
+            continue
+        marker = _find_pair_marker_by_transaction(work_dir, transaction_dir.name)
+        if marker is None:
+            raise ArtifactPromotionError(
+                "orphan artifact recovery material has no usable descriptor or marker"
+            )
+        _verify_marker_targets(marker)
+        _cleanup_transaction(_marker_to_descriptor(work_dir, marker))
+        recovered = True
+    if transaction_root.exists() and not any(transaction_root.iterdir()):
+        transaction_root.rmdir()
+    if recovered:
+        return
 
 
 def _root_descriptor_paths(work_dir: Path) -> list[Path]:
@@ -703,6 +1051,233 @@ def _root_descriptor_paths(work_dir: Path) -> list[Path]:
         Path(work_dir) / _JOURNAL_NAME,
         Path(work_dir) / _JOURNAL_BACKUP_NAME,
     ]
+
+
+def _pair_set_id(targets: list[Path]) -> str:
+    identity = "\n".join(str(Path(target).resolve()) for target in targets) + "\n"
+    return sha256_bytes(identity.encode("utf-8"))
+
+
+def _pair_marker_paths(work_dir: Path, targets: list[Path]) -> list[Path]:
+    marker_dir = Path(work_dir) / _PAIR_MARKER_DIR_NAME / _pair_set_id(targets)
+    return [marker_dir / f"marker-{index}.json" for index in range(3)]
+
+
+def _preflight_pair_markers(
+    work_dir: Path,
+    targets: list[Path],
+    *,
+    protected_paths: list[Path] | None = None,
+    allow_incomplete: bool = False,
+) -> None:
+    protected_paths = [Path(path) for path in (protected_paths or [])]
+    marker_paths = _pair_marker_paths(work_dir, targets)
+    _ensure_distinct_paths([*marker_paths, *targets, *protected_paths])
+    marker_root = Path(work_dir) / _PAIR_MARKER_DIR_NAME
+    _ensure_private_directory(marker_root, protected_paths=protected_paths)
+    _ensure_private_directory(marker_paths[0].parent, protected_paths=protected_paths)
+    existing_count = 0
+    valid: list[dict] = []
+    for marker_path in marker_paths:
+        if not marker_path.exists() and not marker_path.is_symlink():
+            continue
+        existing_count += 1
+        data = _read_owned_regular_file(
+            marker_path, protected_paths=protected_paths
+        )
+        try:
+            payload = _load_json_snapshot(data)
+            _validate_pair_marker(work_dir, payload, expected_targets=targets)
+            assert isinstance(payload, dict)
+            valid.append(payload)
+        except (ArtifactPromotionError, UnicodeError, json.JSONDecodeError):
+            continue
+    if existing_count and not allow_incomplete:
+        groups: dict[str, list[dict]] = {}
+        for marker in valid:
+            groups.setdefault(_marker_identity(marker), []).append(marker)
+        if not any(len(group) >= 2 for group in groups.values()):
+            raise ArtifactPromotionError(
+                "existing committed pair markers have no recoverable quorum"
+            )
+
+
+def _commit_pair_markers(
+    work_dir: Path,
+    descriptor: dict,
+    *,
+    protected_paths: list[Path] | None = None,
+    interrupt: InterruptHook | None = None,
+) -> None:
+    protected_paths = [Path(path) for path in (protected_paths or [])]
+    targets = [Path(entry["target"]) for entry in descriptor["entries"]]
+    marker_paths = _pair_marker_paths(work_dir, targets)
+    marker = {
+        "schemaVersion": 1,
+        "setId": _pair_set_id(targets),
+        "transactionId": descriptor["transactionId"],
+        "markerPaths": [str(path.resolve()) for path in marker_paths],
+        "entries": [
+            {"target": entry["target"], "sha256": entry["sha256"]}
+            for entry in descriptor["entries"]
+        ],
+    }
+    data = _pretty_json_bytes(marker)
+    for index, path in enumerate(marker_paths):
+        if path.exists() or path.is_symlink():
+            _read_owned_regular_file(path, protected_paths=protected_paths)
+            _write_bytes_durably_atomically(
+                path, data, protected_paths=protected_paths
+            )
+        else:
+            _create_durable_file_exclusive(
+                path, data, protected_paths=protected_paths
+            )
+        _interrupt(interrupt, f"after_marker_{index}")
+
+
+def _validate_pair_marker(
+    work_dir: Path,
+    marker: object,
+    *,
+    expected_targets: list[Path] | None = None,
+) -> None:
+    if (
+        not isinstance(marker, dict)
+        or set(marker)
+        != {"schemaVersion", "setId", "transactionId", "markerPaths", "entries"}
+        or marker.get("schemaVersion") != 1
+        or not _is_lower_hex(marker.get("setId"), length=64)
+        or not _is_lower_hex(marker.get("transactionId"), length=32)
+        or not isinstance(marker.get("markerPaths"), list)
+        or len(marker["markerPaths"]) != 3
+        or any(not isinstance(path, str) for path in marker["markerPaths"])
+        or not isinstance(marker.get("entries"), list)
+        or not marker["entries"]
+    ):
+        raise ArtifactPromotionError("committed pair marker is malformed")
+    targets: list[Path] = []
+    for entry in marker["entries"]:
+        if (
+            not isinstance(entry, dict)
+            or set(entry) != {"target", "sha256"}
+            or not isinstance(entry.get("target"), str)
+            or not _is_lower_hex(entry.get("sha256"), length=64)
+        ):
+            raise ArtifactPromotionError("committed pair marker entry is malformed")
+        targets.append(Path(entry["target"]))
+    if marker["setId"] != _pair_set_id(targets):
+        raise ArtifactPromotionError("committed pair marker set identity is invalid")
+    expected_paths = _pair_marker_paths(Path(work_dir), targets)
+    if [Path(path).resolve() for path in marker["markerPaths"]] != [
+        path.resolve() for path in expected_paths
+    ]:
+        raise ArtifactPromotionError("committed pair marker paths are invalid")
+    if expected_targets is not None and [target.resolve() for target in targets] != [
+        Path(target).resolve() for target in expected_targets
+    ]:
+        raise ArtifactPromotionError("committed pair marker targets do not match")
+
+
+def _load_pair_marker_quorum(
+    work_dir: Path, targets: list[Path]
+) -> dict:
+    marker_paths = _pair_marker_paths(work_dir, targets)
+    valid: list[dict] = []
+    for path in marker_paths:
+        if not path.is_file() or path.is_symlink():
+            continue
+        try:
+            marker = _load_json_snapshot(_read_owned_regular_file(path))
+            _validate_pair_marker(work_dir, marker, expected_targets=targets)
+            assert isinstance(marker, dict)
+            valid.append(marker)
+        except (ArtifactPromotionError, OSError, UnicodeError, json.JSONDecodeError):
+            continue
+    groups: dict[str, list[dict]] = {}
+    for marker in valid:
+        groups.setdefault(_marker_identity(marker), []).append(marker)
+    quorum = [group for group in groups.values() if len(group) >= 2]
+    if len(quorum) != 1:
+        raise ArtifactPromotionError("committed pair identity has no two-of-three quorum")
+    return quorum[0][0]
+
+
+def _marker_identity(marker: dict) -> str:
+    return json.dumps(marker, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+
+
+def _find_pair_marker_by_transaction(work_dir: Path, transaction_id: str) -> dict | None:
+    marker_root = Path(work_dir) / _PAIR_MARKER_DIR_NAME
+    if not marker_root.is_dir() or marker_root.is_symlink():
+        return None
+    matches: list[dict] = []
+    for marker_dir in marker_root.iterdir():
+        if not marker_dir.is_dir() or marker_dir.is_symlink():
+            continue
+        paths = [marker_dir / f"marker-{index}.json" for index in range(3)]
+        valid: list[dict] = []
+        for path in paths:
+            if not path.is_file() or path.is_symlink():
+                continue
+            try:
+                marker = _load_json_snapshot(_read_owned_regular_file(path))
+                _validate_pair_marker(work_dir, marker)
+                assert isinstance(marker, dict)
+                if marker["transactionId"] == transaction_id:
+                    valid.append(marker)
+            except (ArtifactPromotionError, OSError, UnicodeError, json.JSONDecodeError):
+                continue
+        groups: dict[str, list[dict]] = {}
+        for marker in valid:
+            groups.setdefault(_marker_identity(marker), []).append(marker)
+        matches.extend(group[0] for group in groups.values() if len(group) >= 2)
+    if len(matches) > 1:
+        raise ArtifactPromotionError("multiple committed pair identities match transaction")
+    return matches[0] if matches else None
+
+
+def _marker_to_descriptor(work_dir: Path, marker: dict) -> dict:
+    transaction_id = marker["transactionId"]
+    transaction_dir = Path(work_dir) / _TRANSACTION_DIR_NAME / transaction_id
+    descriptor_paths = [
+        *_root_descriptor_paths(Path(work_dir)),
+        transaction_dir / _TRANSACTION_DESCRIPTOR_NAME,
+    ]
+    entries = []
+    for index, marker_entry in enumerate(marker["entries"]):
+        target = Path(marker_entry["target"])
+        entries.append(
+            {
+                "target": marker_entry["target"],
+                "payloads": [
+                    str((transaction_dir / f"new-{index}.0.bin").resolve()),
+                    str(
+                        (
+                            target.parent
+                            / f".{target.name}.{transaction_id}.{index}.recovery.bin"
+                        ).resolve()
+                    ),
+                ],
+                "sha256": marker_entry["sha256"],
+            }
+        )
+    return {
+        "schemaVersion": 2,
+        "transactionId": transaction_id,
+        "state": "committed",
+        "descriptorPaths": [str(path.resolve()) for path in descriptor_paths],
+        "entries": entries,
+    }
+
+
+def _verify_marker_targets(marker: dict) -> None:
+    for entry in marker["entries"]:
+        target = Path(entry["target"])
+        if not target.is_file() or sha256_file(target) != entry["sha256"]:
+            raise ArtifactPromotionError(
+                "committed pair identity does not match live target hashes"
+            )
 
 
 def _internal_descriptor_candidates(transaction_root: Path) -> list[Path]:
@@ -835,20 +1410,52 @@ def _remove_empty_transaction_directories(root: Path) -> None:
         root.rmdir()
 
 
-def read_artifact_pair(work_dir: Path, first: Path, second: Path) -> tuple[bytes, bytes]:
-    recover_artifact_transaction(work_dir)
+def read_artifact_pair(
+    work_dir: Path,
+    first: Path,
+    second: Path,
+    *,
+    lock_timeout: float = _DEFAULT_LOCK_TIMEOUT,
+) -> tuple[bytes, bytes]:
+    work_dir = Path(work_dir)
     first = Path(first)
     second = Path(second)
-    _ensure_distinct_paths([first, second])
-    if first.exists() != second.exists():
-        raise ArtifactPromotionError("artifact pair is mixed after recovery")
-    return first.read_bytes(), second.read_bytes()
+    with _artifact_lock(
+        work_dir, timeout=lock_timeout, protected_paths=[first, second]
+    ):
+        _recover_artifact_transaction_locked(work_dir)
+        _ensure_distinct_paths([first, second])
+        if first.exists() != second.exists():
+            raise ArtifactPromotionError("committed pair is mixed after recovery")
+        try:
+            snapshots = (first.read_bytes(), second.read_bytes())
+        except OSError as error:
+            raise ArtifactPromotionError("committed pair targets are missing") from error
+        marker = _load_pair_marker_quorum(work_dir, [first, second])
+        expected_hashes = [entry["sha256"] for entry in marker["entries"]]
+        if [sha256_bytes(snapshot) for snapshot in snapshots] != expected_hashes:
+            raise ArtifactPromotionError(
+                "committed pair identity does not match live target hashes"
+            )
+        return snapshots
 
 
-def invalidate_generation(work_dir: Path, reason: str) -> None:
+def invalidate_generation(
+    work_dir: Path,
+    reason: str,
+    *,
+    lock_timeout: float = _DEFAULT_LOCK_TIMEOUT,
+) -> None:
     """Durably make every prior candidate generation non-promotable."""
     work_dir = Path(work_dir)
-    recover_artifact_transaction(work_dir)
+    with _artifact_lock(work_dir, timeout=lock_timeout):
+        _recover_artifact_transaction_locked(work_dir)
+        _invalidate_generation_locked(work_dir, reason)
+
+
+def _invalidate_generation_locked(
+    work_dir: Path, reason: str, *, protected_paths: list[Path] | None = None
+) -> None:
     build_state = work_dir / "build-state.json"
     quarantine = work_dir / "quarantine.json"
     replacements = [
@@ -863,45 +1470,105 @@ def invalidate_generation(work_dir: Path, reason: str) -> None:
             ),
         ),
     ]
-    replace_artifacts_durably(work_dir, replacements)
+    _replace_artifacts_durably_locked(
+        work_dir, replacements, protected_paths=protected_paths
+    )
 
 
-def _replace_target_from_payload(entry: dict) -> None:
+def _replace_target_from_payload(
+    entry: dict, *, protected_paths: list[Path] | None = None
+) -> None:
     target = Path(entry["target"])
     data = _recoverable_payload(entry)
     if data is None:
         raise ArtifactPromotionError("artifact transaction has no valid payload copy")
-    _write_bytes_durably_atomically(target, data)
+    _write_bytes_durably_atomically(
+        target, data, protected_paths=protected_paths
+    )
 
 
 def _pretty_json_bytes(payload: object) -> bytes:
     return (json.dumps(payload, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
 
 
-def _write_json_durably(path: Path, payload: object) -> None:
-    _write_bytes_durably_atomically(path, _pretty_json_bytes(payload))
+def _write_json_durably(
+    path: Path, payload: object, *, protected_paths: list[Path] | None = None
+) -> None:
+    _read_owned_regular_file(path, protected_paths=protected_paths)
+    _write_bytes_durably_atomically(
+        path, _pretty_json_bytes(payload), protected_paths=protected_paths
+    )
 
 
-def _write_durable_file(path: Path, data: bytes) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("wb") as stream:
-        stream.write(data)
-        stream.flush()
-        os.fsync(stream.fileno())
+def _read_owned_regular_file(
+    path: Path, *, protected_paths: list[Path] | None = None
+) -> bytes:
+    path = Path(path)
+    protected_paths = [Path(value) for value in (protected_paths or [])]
+    _ensure_distinct_paths([path, *protected_paths])
+    if path.is_symlink():
+        raise ArtifactPathError(f"dynamic artifact path is a symlink: {path}")
+    metadata = path.stat()
+    if not stat.S_ISREG(metadata.st_mode) or metadata.st_nlink != 1:
+        raise ArtifactPathError(f"dynamic artifact path is not owned: {path}")
+    return path.read_bytes()
+
+
+def _ensure_private_directory(
+    path: Path, *, protected_paths: list[Path] | None = None
+) -> None:
+    path = Path(path)
+    protected_paths = [Path(value) for value in (protected_paths or [])]
+    _ensure_distinct_paths([path, *protected_paths])
+    if path.exists() or path.is_symlink():
+        if path.is_symlink() or not path.is_dir():
+            raise ArtifactPathError(f"dynamic artifact directory is not owned: {path}")
+        return
+    path.mkdir(parents=True, exist_ok=False)
     _sync_directory(path.parent)
 
 
-def _write_bytes_durably_atomically(path: Path, data: bytes) -> None:
+def _create_durable_file_exclusive(
+    path: Path, data: bytes, *, protected_paths: list[Path] | None = None
+) -> None:
+    path = Path(path)
+    protected_paths = [Path(value) for value in (protected_paths or [])]
+    _ensure_distinct_paths([path, *protected_paths])
     path.parent.mkdir(parents=True, exist_ok=True)
-    descriptor, name = tempfile.mkstemp(
-        prefix=f".{path.name}.", suffix=".tmp", dir=path.parent
-    )
-    temporary = Path(name)
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_BINARY", 0)
+    try:
+        descriptor = os.open(path, flags, 0o600)
+    except FileExistsError as error:
+        raise ArtifactPathError(f"dynamic artifact path already exists: {path}") from error
     try:
         with os.fdopen(descriptor, "wb") as stream:
             stream.write(data)
             stream.flush()
             os.fsync(stream.fileno())
+        _sync_directory(path.parent)
+    except BaseException:
+        path.unlink(missing_ok=True)
+        raise
+
+
+def _write_bytes_durably_atomically(
+    path: Path,
+    data: bytes,
+    *,
+    protected_paths: list[Path] | None = None,
+    temporary_path: Path | None = None,
+) -> None:
+    path = Path(path)
+    protected_paths = [Path(value) for value in (protected_paths or [])]
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = Path(temporary_path) if temporary_path else (
+        path.parent / f".{path.name}.{uuid.uuid4().hex}.tmp"
+    )
+    _ensure_distinct_paths([path, temporary, *protected_paths])
+    try:
+        _create_durable_file_exclusive(
+            temporary, data, protected_paths=[path, *protected_paths]
+        )
         os.replace(temporary, path)
         _sync_directory(path.parent)
     finally:

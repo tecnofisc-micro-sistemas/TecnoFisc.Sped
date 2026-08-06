@@ -1,6 +1,10 @@
 import json
 import importlib
+import multiprocessing
 import os
+import shutil
+import threading
+import time
 from pathlib import Path
 
 import pytest
@@ -13,6 +17,19 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 SCHEMA_PATH = REPO_ROOT / "sped" / "ecf" / "layout-12-manifest.schema.json"
 MANIFEST_PATH = REPO_ROOT / "sped" / "ecf" / "layout-12-manifest.json"
 TRACKER_PATH = REPO_ROOT / "sped" / "STAGE_17_ECF_BASELINE.md"
+
+
+def _hold_artifact_lock_in_process(
+    work_dir: str, ready_path: str, release_path: str
+) -> None:
+    artifacts = importlib.import_module("ecf_layout.artifacts")
+    with artifacts._artifact_lock(Path(work_dir), timeout=5.0):
+        Path(ready_path).write_text("ready", encoding="utf-8")
+        deadline = time.monotonic() + 10
+        while not Path(release_path).exists():
+            if time.monotonic() >= deadline:
+                raise TimeoutError("test process did not receive release signal")
+            time.sleep(0.01)
 
 
 def _valid_records(*, reviewed: bool) -> list[dict]:
@@ -439,6 +456,9 @@ TRANSACTION_BOUNDARIES = [
     "after_committed_descriptor_1",
     "after_committed_descriptor_2",
     "after_committed",
+    "after_marker_0",
+    "after_marker_1",
+    "after_marker_2",
     "after_removed_descriptor_0",
     "after_removed_descriptor_1",
     "after_removed_descriptor_2",
@@ -869,3 +889,508 @@ def test_apply_and_promote_reject_path_aliases_including_hardlinks(tmp_path: Pat
             tmp_path / "published-tracker",
             schema_path=schema,
         )
+
+
+def _crash_pair_transaction(
+    tmp_path: Path, boundary: str, *, outputs_exist: bool
+) -> tuple[object, Path, Path, Path]:
+    artifacts = importlib.import_module("ecf_layout.artifacts")
+    work_dir = tmp_path / "work"
+    first = tmp_path / "published" / "manifest.json"
+    second = tmp_path / "published" / "tracker.md"
+    if outputs_exist:
+        artifacts.replace_artifacts_durably(
+            work_dir,
+            [(first, b"old manifest"), (second, b"old tracker")],
+        )
+
+    class AbruptStop(BaseException):
+        pass
+
+    def interrupt(current: str) -> None:
+        if current == boundary:
+            raise AbruptStop(current)
+
+    with pytest.raises(AbruptStop):
+        artifacts.replace_artifacts_durably(
+            work_dir,
+            [(first, b"new manifest"), (second, b"new tracker")],
+            interrupt=interrupt,
+        )
+    return artifacts, work_dir, first, second
+
+
+@pytest.mark.parametrize("outputs_exist", [False, True], ids=["new", "existing"])
+@pytest.mark.parametrize("operation", ["delete", "corrupt"])
+@pytest.mark.parametrize("descriptor_index", [0, 1, 2])
+def test_committed_pair_recovers_after_late_loss_of_any_descriptor_replica(
+    tmp_path: Path,
+    outputs_exist: bool,
+    operation: str,
+    descriptor_index: int,
+) -> None:
+    artifacts, work_dir, first, second = _crash_pair_transaction(
+        tmp_path, "after_removed_descriptor_1", outputs_exist=outputs_exist
+    )
+    transaction_dir = next((work_dir / ".artifact-transactions").iterdir())
+    descriptors = [
+        work_dir / ".artifact-transaction.json",
+        work_dir / ".artifact-transaction.backup.json",
+        transaction_dir / "descriptor.json",
+    ]
+    selected = descriptors[descriptor_index]
+    if operation == "delete":
+        selected.unlink(missing_ok=True)
+    else:
+        selected.write_text('{"corrupt": true}', encoding="utf-8")
+
+    assert artifacts.read_artifact_pair(work_dir, first, second) == (
+        b"new manifest",
+        b"new tracker",
+    )
+
+
+def test_descriptor_identity_uses_two_of_three_quorum_when_one_valid_copy_is_stale(
+    tmp_path: Path,
+) -> None:
+    artifacts, work_dir, first, second = _crash_pair_transaction(
+        tmp_path, "after_journal", outputs_exist=True
+    )
+    primary = work_dir / ".artifact-transaction.json"
+    stale = json.loads(primary.read_text(encoding="utf-8"))
+    stale_id = "0" * 32
+    stale_dir = work_dir / ".artifact-transactions" / stale_id
+    stale["transactionId"] = stale_id
+    stale["descriptorPaths"] = [
+        str((work_dir / ".artifact-transaction.json").resolve()),
+        str((work_dir / ".artifact-transaction.backup.json").resolve()),
+        str((stale_dir / "descriptor.json").resolve()),
+    ]
+    for index, entry in enumerate(stale["entries"]):
+        target = Path(entry["target"])
+        entry["payloads"] = [
+            str((stale_dir / f"new-{index}.0.bin").resolve()),
+            str(
+                (
+                    target.parent
+                    / f".{target.name}.{stale_id}.{index}.recovery.bin"
+                ).resolve()
+            ),
+        ]
+    primary.write_text(json.dumps(stale), encoding="utf-8")
+
+    assert artifacts.read_artifact_pair(work_dir, first, second) == (
+        b"new manifest",
+        b"new tracker",
+    )
+
+
+def test_descriptor_state_uses_two_of_three_quorum(tmp_path: Path) -> None:
+    artifacts, work_dir, first, second = _crash_pair_transaction(
+        tmp_path, "after_payloads", outputs_exist=True
+    )
+    primary = work_dir / ".artifact-transaction.json"
+    minority = json.loads(primary.read_text(encoding="utf-8"))
+    minority["state"] = "prepared"
+    primary.write_text(json.dumps(minority), encoding="utf-8")
+
+    assert artifacts.read_artifact_pair(work_dir, first, second) == (
+        b"old manifest",
+        b"old tracker",
+    )
+
+
+@pytest.mark.parametrize("outputs_exist", [False, True], ids=["new", "existing"])
+@pytest.mark.parametrize(
+    "boundary",
+    [
+        "after_journal",
+        "after_replace_0",
+        "after_committed",
+        "after_removed_descriptor_0",
+        "after_removed_descriptor_1",
+    ],
+)
+@pytest.mark.parametrize("operation", ["delete", "corrupt"])
+@pytest.mark.parametrize("entry_index", [0, 1])
+@pytest.mark.parametrize("copy_index", [0, 1])
+def test_payload_loss_or_corruption_matrix_recovers_committed_pair(
+    tmp_path: Path,
+    outputs_exist: bool,
+    boundary: str,
+    operation: str,
+    entry_index: int,
+    copy_index: int,
+) -> None:
+    artifacts, work_dir, first, second = _crash_pair_transaction(
+        tmp_path, boundary, outputs_exist=outputs_exist
+    )
+    descriptors = [
+        work_dir / ".artifact-transaction.json",
+        work_dir / ".artifact-transaction.backup.json",
+        *(
+            (work_dir / ".artifact-transactions").glob("*/descriptor.json")
+        ),
+    ]
+    descriptor_path = next(path for path in descriptors if path.is_file())
+    descriptor = json.loads(descriptor_path.read_text(encoding="utf-8"))
+    payload = Path(descriptor["entries"][entry_index]["payloads"][copy_index])
+    if operation == "delete":
+        payload.unlink(missing_ok=True)
+    else:
+        payload.write_bytes(b"corrupt payload copy")
+
+    assert artifacts.read_artifact_pair(work_dir, first, second) == (
+        b"new manifest",
+        b"new tracker",
+    )
+
+
+@pytest.mark.parametrize("marker_failure", ["delete", "corrupt"])
+def test_clean_pair_requires_redundant_committed_identity_and_checks_live_hashes(
+    tmp_path: Path, marker_failure: str
+) -> None:
+    artifacts = importlib.import_module("ecf_layout.artifacts")
+    work_dir = tmp_path / "work"
+    first = tmp_path / "published" / "manifest.json"
+    second = tmp_path / "published" / "tracker.md"
+    artifacts.replace_artifacts_durably(
+        work_dir,
+        [(first, b"manifest"), (second, b"tracker")],
+    )
+
+    markers = artifacts._pair_marker_paths(work_dir, [first, second])
+    assert len(markers) == 3
+    assert all(path.is_file() for path in markers)
+    if marker_failure == "delete":
+        markers[0].unlink()
+    else:
+        markers[0].write_text('{"corrupt": true}', encoding="utf-8")
+    assert artifacts.read_artifact_pair(work_dir, first, second) == (
+        b"manifest",
+        b"tracker",
+    )
+
+    first.write_bytes(b"unmarked mutation")
+    with pytest.raises(artifacts.ArtifactPromotionError, match="committed pair"):
+        artifacts.read_artifact_pair(work_dir, first, second)
+
+
+def test_read_pair_rejects_arbitrary_existing_bytes_without_committed_identity(
+    tmp_path: Path,
+) -> None:
+    artifacts = importlib.import_module("ecf_layout.artifacts")
+    first = tmp_path / "manifest.json"
+    second = tmp_path / "tracker.md"
+    first.write_bytes(b"arbitrary manifest")
+    second.write_bytes(b"arbitrary tracker")
+
+    with pytest.raises(artifacts.ArtifactPromotionError, match="committed pair"):
+        artifacts.read_artifact_pair(tmp_path / "work", first, second)
+
+
+def test_clean_pair_marker_identity_uses_two_of_three_quorum(tmp_path: Path) -> None:
+    artifacts = importlib.import_module("ecf_layout.artifacts")
+    work_dir = tmp_path / "work"
+    first = tmp_path / "manifest.json"
+    second = tmp_path / "tracker.md"
+    artifacts.replace_artifacts_durably(
+        work_dir,
+        [(first, b"manifest"), (second, b"tracker")],
+    )
+    markers = artifacts._pair_marker_paths(work_dir, [first, second])
+    stale = json.loads(markers[0].read_text(encoding="utf-8"))
+    stale["transactionId"] = "f" * 32
+    markers[0].write_text(json.dumps(stale), encoding="utf-8")
+
+    assert artifacts.read_artifact_pair(work_dir, first, second) == (
+        b"manifest",
+        b"tracker",
+    )
+
+
+def test_reader_cannot_recover_an_in_flight_prepared_writer(tmp_path: Path) -> None:
+    artifacts = importlib.import_module("ecf_layout.artifacts")
+    work_dir = tmp_path / "work"
+    first = tmp_path / "published" / "manifest.json"
+    second = tmp_path / "published" / "tracker.md"
+    artifacts.replace_artifacts_durably(
+        work_dir,
+        [(first, b"old manifest"), (second, b"old tracker")],
+    )
+    prepared = threading.Event()
+    release = threading.Event()
+    writer_errors: list[BaseException] = []
+
+    def interrupt(boundary: str) -> None:
+        if boundary == "after_journal":
+            prepared.set()
+            if not release.wait(timeout=5):
+                raise TimeoutError("test writer was not released")
+
+    def writer() -> None:
+        try:
+            artifacts.replace_artifacts_durably(
+                work_dir,
+                [(first, b"new manifest"), (second, b"new tracker")],
+                interrupt=interrupt,
+            )
+        except BaseException as error:
+            writer_errors.append(error)
+
+    thread = threading.Thread(target=writer)
+    thread.start()
+    assert prepared.wait(timeout=5)
+    try:
+        with pytest.raises(artifacts.ArtifactLockTimeout):
+            artifacts.read_artifact_pair(
+                work_dir, first, second, lock_timeout=0.05
+            )
+        assert _pair_state(first, second) == (b"old manifest", b"old tracker")
+    finally:
+        release.set()
+        thread.join(timeout=5)
+
+    assert not thread.is_alive()
+    assert writer_errors == []
+    assert artifacts.read_artifact_pair(work_dir, first, second) == (
+        b"new manifest",
+        b"new tracker",
+    )
+
+
+def test_artifact_lock_is_os_backed_across_processes(tmp_path: Path) -> None:
+    artifacts = importlib.import_module("ecf_layout.artifacts")
+    work_dir = tmp_path / "work"
+    first = tmp_path / "published" / "manifest.json"
+    second = tmp_path / "published" / "tracker.md"
+    artifacts.replace_artifacts_durably(
+        work_dir,
+        [(first, b"manifest"), (second, b"tracker")],
+    )
+    ready = tmp_path / "process-ready"
+    release = tmp_path / "process-release"
+    process = multiprocessing.get_context("spawn").Process(
+        target=_hold_artifact_lock_in_process,
+        args=(str(work_dir), str(ready), str(release)),
+    )
+    process.start()
+    deadline = time.monotonic() + 5
+    while not ready.exists() and time.monotonic() < deadline:
+        time.sleep(0.01)
+    assert ready.exists()
+    try:
+        with pytest.raises(artifacts.ArtifactLockTimeout):
+            artifacts.read_artifact_pair(
+                work_dir, first, second, lock_timeout=0.05
+            )
+    finally:
+        release.write_text("release", encoding="utf-8")
+        process.join(timeout=5)
+        if process.is_alive():
+            process.terminate()
+            process.join(timeout=5)
+    assert process.exitcode == 0
+
+
+def test_concurrent_promotions_serialize_without_lost_success(tmp_path: Path) -> None:
+    (tmp_path / "first").mkdir()
+    artifacts, _records, _pdf, work_dir, manifest, tracker, _evidence = (
+        _prepare_reviewed_generation(tmp_path / "first")
+    )
+    second_root = tmp_path / "second"
+    second_root.mkdir()
+    second_records = _valid_records(reviewed=False)
+    second_records[0] = {**second_records[0], "title": "Second serialized generation"}
+    second_pdf = _manual(second_root)
+    second_work = second_root / "work"
+    second_manifest = second_work / "candidate" / "layout-12-manifest.json"
+    second_tracker = second_work / "candidate" / "STAGE_17_ECF_BASELINE.md"
+    artifacts.build_artifacts(
+        second_records,
+        second_work,
+        second_manifest,
+        second_tracker,
+        pdf=second_pdf,
+    )
+    second_evidence = second_root / "review.json"
+    second_evidence.write_text(
+        json.dumps(
+            _provenance_evidence(second_records, _provenance(second_work))
+        ),
+        encoding="utf-8",
+    )
+    artifacts.apply_review_evidence(second_work, [second_evidence])
+    expected_second_manifest = second_manifest.read_bytes()
+    expected_second_tracker = second_tracker.read_bytes()
+
+    schema = tmp_path / "published" / "layout-12-manifest.schema.json"
+    schema.parent.mkdir()
+    schema.write_text(json.dumps(_test_schema()), encoding="utf-8")
+    manifest_out = schema.parent / "layout-12-manifest.json"
+    tracker_out = schema.parent / "STAGE_17_ECF_BASELINE.md"
+    first_validated = threading.Event()
+    release_first = threading.Event()
+    results: list[str] = []
+    errors: list[BaseException] = []
+
+    def stage_second_generation() -> None:
+        for relative in (
+            "candidate/layout-12-manifest.json",
+            "candidate/STAGE_17_ECF_BASELINE.md",
+            "candidate/generation.json",
+            "build-state.json",
+            "quarantine.json",
+        ):
+            destination = work_dir / relative
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(second_work / relative, destination)
+        first_validated.set()
+        if not release_first.wait(timeout=5):
+            raise TimeoutError("first promotion was not released")
+
+    def promote(label: str, hook=None) -> None:
+        try:
+            artifacts.promote_artifacts(
+                work_dir,
+                manifest_out,
+                tracker_out,
+                schema_path=schema,
+                before_publish=hook,
+                lock_timeout=5,
+            )
+            results.append(label)
+        except BaseException as error:
+            errors.append(error)
+
+    first_thread = threading.Thread(
+        target=promote, args=("first", stage_second_generation)
+    )
+    second_thread = threading.Thread(target=promote, args=("second",))
+    first_thread.start()
+    assert first_validated.wait(timeout=5)
+    second_thread.start()
+    second_thread.join(timeout=0.1)
+    try:
+        assert second_thread.is_alive()
+    finally:
+        release_first.set()
+        first_thread.join(timeout=5)
+        second_thread.join(timeout=5)
+
+    assert not first_thread.is_alive()
+    assert not second_thread.is_alive()
+    assert errors == []
+    assert results == ["first", "second"]
+    assert manifest_out.read_bytes() == expected_second_manifest
+    assert tracker_out.read_bytes() == expected_second_tracker
+
+
+def _make_filesystem_alias(source: Path, alias: Path, alias_kind: str) -> None:
+    alias.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        if alias_kind == "hardlink":
+            os.link(source, alias)
+        else:
+            alias.symlink_to(source)
+    except OSError:
+        pytest.skip(f"{alias_kind} is not supported for this test user")
+
+
+@pytest.mark.parametrize("alias_kind", ["hardlink", "symlink"])
+def test_artifact_lock_alias_never_changes_normative_pdf(
+    tmp_path: Path, alias_kind: str
+) -> None:
+    artifacts = importlib.import_module("ecf_layout.artifacts")
+    pdf = _manual(tmp_path)
+    original_pdf = pdf.read_bytes()
+    work_dir = tmp_path / "work"
+    lock_path = work_dir / ".artifact.lock"
+    _make_filesystem_alias(pdf, lock_path, alias_kind)
+
+    with pytest.raises(artifacts.ArtifactPathError):
+        artifacts.build_artifacts(
+            _valid_records(reviewed=False),
+            work_dir,
+            work_dir / "candidate" / "layout-12-manifest.json",
+            work_dir / "candidate" / "STAGE_17_ECF_BASELINE.md",
+            pdf=pdf,
+        )
+
+    assert pdf.read_bytes() == original_pdf
+
+
+@pytest.mark.parametrize("alias_kind", ["hardlink", "symlink"])
+@pytest.mark.parametrize("dynamic_class", ["descriptor", "payload"])
+def test_dynamic_recovery_file_creation_is_exclusive_and_preserves_pdf(
+    tmp_path: Path, alias_kind: str, dynamic_class: str
+) -> None:
+    artifacts = importlib.import_module("ecf_layout.artifacts")
+    pdf = _manual(tmp_path)
+    original_pdf = pdf.read_bytes()
+    suffix = "descriptor.json" if dynamic_class == "descriptor" else "new-0.0.bin"
+    dynamic_path = tmp_path / "work" / ".artifact-transactions" / ("a" * 32) / suffix
+    _make_filesystem_alias(pdf, dynamic_path, alias_kind)
+
+    with pytest.raises(artifacts.ArtifactPathError):
+        artifacts._create_durable_file_exclusive(
+            dynamic_path,
+            b"transaction data",
+            protected_paths=[pdf],
+        )
+
+    assert pdf.read_bytes() == original_pdf
+
+
+@pytest.mark.parametrize("alias_kind", ["hardlink", "symlink"])
+def test_persistent_marker_alias_blocks_replacement_without_changing_pdf(
+    tmp_path: Path, alias_kind: str
+) -> None:
+    artifacts = importlib.import_module("ecf_layout.artifacts")
+    pdf = _manual(tmp_path)
+    original_pdf = pdf.read_bytes()
+    work_dir = tmp_path / "work"
+    first = tmp_path / "published" / "manifest.json"
+    second = tmp_path / "published" / "tracker.md"
+    artifacts.replace_artifacts_durably(
+        work_dir,
+        [(first, b"old manifest"), (second, b"old tracker")],
+        protected_paths=[pdf],
+    )
+    marker = artifacts._pair_marker_paths(work_dir, [first, second])[0]
+    marker.unlink()
+    _make_filesystem_alias(pdf, marker, alias_kind)
+
+    with pytest.raises(artifacts.ArtifactPathError):
+        artifacts.replace_artifacts_durably(
+            work_dir,
+            [(first, b"new manifest"), (second, b"new tracker")],
+            protected_paths=[pdf],
+        )
+
+    assert pdf.read_bytes() == original_pdf
+    assert _pair_state(first, second) == (b"old manifest", b"old tracker")
+
+
+@pytest.mark.parametrize("alias_kind", ["hardlink", "symlink"])
+def test_atomic_temporary_alias_fails_without_truncating_pdf_or_target(
+    tmp_path: Path, alias_kind: str
+) -> None:
+    artifacts = importlib.import_module("ecf_layout.artifacts")
+    pdf = _manual(tmp_path)
+    original_pdf = pdf.read_bytes()
+    target = tmp_path / "target.json"
+    target.write_bytes(b"old target")
+    temporary = tmp_path / ".target.fixed.tmp"
+    _make_filesystem_alias(pdf, temporary, alias_kind)
+
+    with pytest.raises(artifacts.ArtifactPathError):
+        artifacts._write_bytes_durably_atomically(
+            target,
+            b"new target",
+            protected_paths=[pdf],
+            temporary_path=temporary,
+        )
+
+    assert pdf.read_bytes() == original_pdf
+    assert target.read_bytes() == b"old target"

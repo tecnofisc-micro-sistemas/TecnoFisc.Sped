@@ -1,5 +1,7 @@
 # Stage 17 - ECF Layout 12 Baseline
 
+Status: concluída — 180/180 registros, 17/17 blocos e compatibilidade de leitura dos leiautes 8 a 12.
+
 | Substage | Record | Title | Start page | End page | Block | Status |
 | --- | --- | --- | ---: | ---: | --- | --- |
 | 17.002 | 0000 | Abertura do Arquivo Digital e Identificação da Pessoa Jurídica | 58 | 67 | 0 | [x] |

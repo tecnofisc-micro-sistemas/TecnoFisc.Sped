@@ -99,7 +99,7 @@ Nem todos os pacotes precisam de gerador. A decisão é por caso de uso real:
 | `TecnoFisc.Sped.EfdIcmsIpi` | ✅ | ❌ | Uso é ingestão para análise; não há emissão. |
 | `TecnoFisc.Sped.Ecd` | ✅ | ⏸️ | Parser implementado (0.6.0). Gerador depende de confirmação externa — entra em stage dedicada quando demanda confirmada. |
 | `TecnoFisc.Sped.NFeNFCe` / `CTe` | ✅ | ⏸️ | Caso de uso confirmado é ingestão dos XMLs já emitidos (validação de assinatura, leitura tipada). Geração/emissão para SEFAZ depende de confirmação externa não controlada só pelo usuário — entra em stage dedicada quando confirmada. |
-| `TecnoFisc.Sped.Ecf` | ✅ | ⏸️ | Mesma regra do ECD. Último leiaute textual planejado (depois dos pacotes XML). |
+| `TecnoFisc.Sped.Ecf` | ✅ | ⏸️ | Stage 17 concluída para leitura dos leiautes 8–12. Gerador depende de confirmação externa. |
 
 **Implicações dos pacotes read-only:**
 
@@ -137,7 +137,7 @@ Além desses, pacotes transversais completam a família, organizados em camadas 
 
 **Guarda-chuvas (bundles, só `<PackageReference>`, zero código):**
 
-- `TecnoFisc.Sped.Txt` — agrega os leiautes textuais disponíveis agora (`EfdContribuicoes`, `EfdIcmsIpi`, `Ecd`); `Ecf` entra na Stage 17.
+- `TecnoFisc.Sped.Txt` — agrega os leiautes textuais disponíveis (`EfdContribuicoes`, `EfdIcmsIpi`, `Ecd`, `Ecf`).
 - `TecnoFisc.Sped.Xml` — planejado após CT-e; agregará os leiautes XML (`NFeNFCe`, `CTe`).
 - `TecnoFisc.Sped` — agrega `Txt` agora; agregará `Txt` + `Xml` quando o guarda-chuva XML existir. Ver Stage 13.
 
@@ -280,7 +280,7 @@ A implementação desta reorganização é a Stage 18 (§12), sequenciada de bai
 TecnoFisc.Sped/
 ├── src/
 │   ├── TecnoFisc.Sped/                               # Guarda-chuva geral (Txt agora; Xml após CT-e)
-│   ├── TecnoFisc.Sped.Txt/                           # Guarda-chuva textual (EFD Contribuições, EFD ICMS-IPI, ECD)
+│   ├── TecnoFisc.Sped.Txt/                           # Guarda-chuva textual (EFD Contribuições, EFD ICMS-IPI, ECD, ECF)
 │   ├── TecnoFisc.Sped.Xml/                           # Planejado após CT-e — guarda-chuva XML (NFeNFCe/CTe)
 │   ├── TecnoFisc.Sped.Core/                          # Camada 1 — primitivos fiscais universais
 │   ├── TecnoFisc.Sped.Txt.Engine/                    # Camada 2 — motor .txt + sniffer da 1ª linha
@@ -328,7 +328,7 @@ TecnoFisc.Sped.NFeNFCe                   ← Core, Xml.Engine  (+ Xml.Engine.Sou
 TecnoFisc.Sped.CTe                       ← Core, Xml.Engine  (+ Xml.Engine.SourceGenerators quando existir)
 
 # Camada 4 — guarda-chuvas (só PackageReference, zero código)
-TecnoFisc.Sped.Txt                       ← EfdContribuicoes, EfdIcmsIpi, Ecd (Ecf na Stage 17)
+TecnoFisc.Sped.Txt                       ← EfdContribuicoes, EfdIcmsIpi, Ecd, Ecf
 TecnoFisc.Sped.Xml                       ← planejado após CT-e: NFeNFCe, CTe
 TecnoFisc.Sped                           ← Txt agora; Txt + Xml após CT-e
 ```
@@ -741,7 +741,7 @@ Tests por mundo cobrem todos os leiautes/tipos suportados + documento malformado
 
 Pacotes agregadores que referenciam leiautes em uma única dependência NuGet. Úteis para consumidores que querem suporte abrangente sem listar cada pacote no `csproj`. Originalmente um único metapacote `TecnoFisc.Sped`; com a reorganização em camadas (§4.9) passam a ser três guarda-chuvas:
 
-- `TecnoFisc.Sped.Txt` → `EfdContribuicoes`, `EfdIcmsIpi`, `Ecd` agora; `Ecf` entra na Stage 17.
+- `TecnoFisc.Sped.Txt` → `EfdContribuicoes`, `EfdIcmsIpi`, `Ecd`, `Ecf`.
 - `TecnoFisc.Sped.Xml` → `NFeNFCe`, `CTe` depois da Stage 16 (adiado enquanto só existe `NFeNFCe`).
 - `TecnoFisc.Sped` → `Txt` agora; `Txt` + `Xml` quando o guarda-chuva XML existir.
 
@@ -750,7 +750,7 @@ Pacotes agregadores que referenciam leiautes em uma única dependência NuGet. �
 - README orienta o consumidor a usar os guarda-chuvas disponiveis agora (`TecnoFisc.Sped.Txt` para TXT; `TecnoFisc.Sped` para bundles disponiveis) e documenta `TecnoFisc.Sped.Xml` como futuro apos CT-e.
 - **Sequenciamento:** o `TecnoFisc.Sped.Xml` só passa a fazer sentido quando houver ≥2 pacotes XML (i.e., após o CT-e — Stage 16); antes disso ele embrulharia só o `NFeNFCe`. Os guarda-chuvas `Txt` e `Sped` valem assim que há ≥2 leiautes textuais.
 
-Publica agora porque ja ha tres leiautes textuais em uso (EFD Contribuições + EFD ICMS-IPI + ECD). `Ecf` sera adicionado ao `TecnoFisc.Sped.Txt` na Stage 17; `TecnoFisc.Sped.Xml` e a perna XML do pacote geral entram depois do CT-e.
+O guarda-chuva textual inclui EFD Contribuições, EFD ICMS-IPI, ECD e ECF. `TecnoFisc.Sped.Xml` e a perna XML do pacote geral entram depois do CT-e.
 
 ### Stage 14 — TecnoFisc.Sped.NFeNFCe (XML, **read-only**)
 
@@ -773,9 +773,9 @@ O antigo Stage 15 (NFC-e como pacote separado) foi **absorvido pelo Stage 14** (
 
 Estrutura idêntica a Stage 14, schema CT-e (Conhecimento de Transporte Eletrônico, modelo 57). Validação de assinatura digital igual a NFe/NFCe. Específico do transporte: modais, carga, valores prestados. Modo read-only (§2.5) — sem `GeradorCTe`. É aqui que a repetição de parsing XML entre NF-e e CT-e pode justificar criar o `Xml.Engine.SourceGenerators` (§7.7) — avaliar ao iniciar a stage.
 
-### Stage 17 — TecnoFisc.Sped.Ecf (baseline + incrementos, read-only inicial)
+### Stage 17 — TecnoFisc.Sped.Ecf (✅ concluída, read-only)
 
-Pacote para ECF (Escrituração Contábil Fiscal). Padrão `.txt` igual EFD/ECD. Read-only inicialmente (§2.5) — gerador depende de confirmação externa. Baseline = leiaute vigente quando a stage começar; incrementos seguem o mesmo modelo read-only de Stage 9 (constantes no enum `LayoutEcf`, tracking files por leiaute, minor bumps por versão).
+Pacote para ECF (Escrituração Contábil Fiscal), concluído com modelo tipado único do leiaute 12 e compatibilidade de leitura dos leiautes 8 a 12. O catálogo reconhece os 180 registros dos 17 blocos, conferidos pelo manifesto e por fixtures sintéticas e anonimizadas. Padrão `.txt` Latin1/Windows-1252 igual EFD/ECD. A política permanece read-only (§2.5): não há `GeradorEcf`, e eventual geração depende de confirmação externa e de uma stage dedicada.
 
 ### Stage 18 — Reorganização em camadas (Core universal + engines Txt/Xml)
 

@@ -6,6 +6,18 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ## [Não publicado]
 
+### TecnoFisc.Sped.Ecf
+
+#### Adicionado
+
+- Novo pacote **read-only** para a Escrituração Contábil Fiscal, com modelo tipado único do leiaute 12 e leitura compatível dos leiautes 8 a 12. O catálogo cobre os 180 registros dos 17 blocos, com parser buffered/streaming, deltas oficiais de versão, fixtures sintéticas por bloco e fixtures anonimizadas de aceitação.
+
+### TecnoFisc.Sped.Txt / TecnoFisc.Sped
+
+#### Alterado
+
+- Os metapacotes textuais passam a incluir `TecnoFisc.Sped.Ecf`. A versão continua sendo definida automaticamente pelo fluxo de release; não houve alteração manual de versão.
+
 ## [0.9.0] — 2026-06-24
 
 Release de **parsing tolerante opt-in**: o leitor TXT passa a oferecer modos lenientes em que uma falha de campo ou um registro desconhecido não aborta mais a linha/arquivo, deixando o consumidor materializar apontamentos em vez de só receber uma exceção. Tudo **opt-in e backward-compatible** — o comportamento padrão (lançar no primeiro erro) é preservado. (#525)

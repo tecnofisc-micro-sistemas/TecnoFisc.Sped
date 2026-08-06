@@ -118,12 +118,12 @@
 | 17.115 | V030 | DEREX – Período - Mês | 398 | 399 | V | [x] |
 | 17.116 | V100 | Demonstrativo dos Recursos em Moeda Estrangeira Decorrentes do Recebimento de Exportações | 399 | 401 | V | [x] |
 | 17.117 | V990 | Encerramento do Bloco V | 401 | 406 | V | [x] |
-| 17.118 | W001 | Abertura do Bloco W | 406 | 407 | W | [ ] |
-| 17.119 | W100 | Informações sobre o Grupo Multinacional e a Entidade Declarante – Declaração País-a-País | 407 | 419 | W | [ ] |
-| 17.120 | W200 | Declaração País-a-País | 419 | 430 | W | [ ] |
-| 17.121 | W250 | Declaração País-a-País – Entidades Integrantes | 430 | 436 | W | [ ] |
-| 17.122 | W300 | Observações Adicionais – Declaração País-a-País | 436 | 439 | W | [ ] |
-| 17.123 | W990 | Encerramento do Bloco W | 439 | 440 | W | [ ] |
+| 17.118 | W001 | Abertura do Bloco W | 406 | 407 | W | [x] |
+| 17.119 | W100 | Informações sobre o Grupo Multinacional e a Entidade Declarante – Declaração País-a-País | 407 | 419 | W | [x] |
+| 17.120 | W200 | Declaração País-a-País | 419 | 430 | W | [x] |
+| 17.121 | W250 | Declaração País-a-País – Entidades Integrantes | 430 | 436 | W | [x] |
+| 17.122 | W300 | Observações Adicionais – Declaração País-a-País | 436 | 439 | W | [x] |
+| 17.123 | W990 | Encerramento do Bloco W | 439 | 440 | W | [x] |
 | 17.124 | X001 | Abertura do Bloco X | 440 | 441 | X | [ ] |
 | 17.125 | X280 | Atividades Incentivadas – PJ em Geral | 441 | 452 | X | [ ] |
 | 17.126 | X292 | Operações com o Exterior – Pessoa Não Vinculada/Não Interposta/País sem Tributação Favorecida | 452 | 454 | X | [ ] |

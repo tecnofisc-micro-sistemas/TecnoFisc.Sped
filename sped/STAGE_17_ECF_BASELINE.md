@@ -84,17 +84,17 @@
 | 17.081 | N660 | Apuração da CSLL Mensal por Estimativa | 299 | 303 | N | [x] |
 | 17.082 | N670 | Apuração da CSLL Com Base no Lucro Real | 303 | 305 | N | [x] |
 | 17.083 | N990 | Encerramento do Bloco N | 305 | 320 | N | [x] |
-| 17.084 | P001 | Abertura do Bloco P | 320 | 321 | P | [ ] |
-| 17.085 | P030 | Identificação dos Períodos e Formas de Apuração do IRPJ e da CSLL das Empresas Tributadas pelo Lucro Presumido | 321 | 323 | P | [ ] |
-| 17.086 | P100 | Balanço Patrimonial | 323 | 327 | P | [ ] |
-| 17.087 | P130 | Demonstração das Receitas Incentivadas do Lucro Presumido | 327 | 330 | P | [ ] |
-| 17.088 | P150 | Demonstrativo do Resultado Líquido no Período Fiscal | 330 | 333 | P | [ ] |
-| 17.089 | P200 | Apuração da Base de Cálculo do IRPJ com Base no Lucro Presumido | 333 | 335 | P | [ ] |
-| 17.090 | P230 | Cálculo da Isenção e Redução do Lucro Presumido | 335 | 337 | P | [ ] |
-| 17.091 | P300 | Cálculo do IRPJ com Base no Lucro Presumido | 337 | 339 | P | [ ] |
-| 17.092 | P400 | Apuração da Base de Cálculo da CSLL com Base no Lucro Presumido | 339 | 341 | P | [ ] |
-| 17.093 | P500 | Cálculo da CSLL com Base no Lucro Presumido | 341 | 343 | P | [ ] |
-| 17.094 | P990 | Encerramento do Bloco P | 343 | 344 | P | [ ] |
+| 17.084 | P001 | Abertura do Bloco P | 320 | 321 | P | [x] |
+| 17.085 | P030 | Identificação dos Períodos e Formas de Apuração do IRPJ e da CSLL das Empresas Tributadas pelo Lucro Presumido | 321 | 323 | P | [x] |
+| 17.086 | P100 | Balanço Patrimonial | 323 | 327 | P | [x] |
+| 17.087 | P130 | Demonstração das Receitas Incentivadas do Lucro Presumido | 327 | 330 | P | [x] |
+| 17.088 | P150 | Demonstrativo do Resultado Líquido no Período Fiscal | 330 | 333 | P | [x] |
+| 17.089 | P200 | Apuração da Base de Cálculo do IRPJ com Base no Lucro Presumido | 333 | 335 | P | [x] |
+| 17.090 | P230 | Cálculo da Isenção e Redução do Lucro Presumido | 335 | 337 | P | [x] |
+| 17.091 | P300 | Cálculo do IRPJ com Base no Lucro Presumido | 337 | 339 | P | [x] |
+| 17.092 | P400 | Apuração da Base de Cálculo da CSLL com Base no Lucro Presumido | 339 | 341 | P | [x] |
+| 17.093 | P500 | Cálculo da CSLL com Base no Lucro Presumido | 341 | 343 | P | [x] |
+| 17.094 | P990 | Encerramento do Bloco P | 343 | 344 | P | [x] |
 | 17.095 | Q001 | Abertura do Bloco Q | 344 | 345 | Q | [ ] |
 | 17.096 | Q100 | Demonstrativo do Livro Caixa | 345 | 347 | Q | [ ] |
 | 17.097 | Q990 | Encerramento do Bloco Q | 347 | 359 | Q | [ ] |

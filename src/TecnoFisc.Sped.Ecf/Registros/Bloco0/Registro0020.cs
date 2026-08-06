@@ -1,6 +1,7 @@
 using TecnoFisc.Sped.Txt.Engine.Abstracoes;
 using TecnoFisc.Sped.Txt.Engine.Atributos;
 using TecnoFisc.Sped.Txt.Engine.Enums;
+using TecnoFisc.Sped.Ecf.Versionamento;
 
 namespace TecnoFisc.Sped.Ecf.Registros.Bloco0;
 
@@ -132,6 +133,6 @@ public sealed partial class Registro0020 : RegistroSped
     public IndicadorSimNao PossuiCebras { get; set; }
 
     /// <summary>Número do Cebas, condicionado ao indicador de posse.</summary>
-    [CampoSped(Ordem = 32, Tamanho = 255)]
+    [CampoSped(Ordem = 32, Tamanho = 255, DesdeVersao = (int)LayoutEcf.V012)]
     public string? Cebas { get; set; }
 }

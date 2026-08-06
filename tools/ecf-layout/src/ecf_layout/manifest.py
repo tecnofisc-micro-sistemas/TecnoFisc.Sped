@@ -35,7 +35,7 @@ CANONICAL_BLOCKS = tuple(CANONICAL_CODES_BY_BLOCK)
 EXPECTED_CODES = tuple(code for codes in CANONICAL_CODES_BY_BLOCK.values() for code in codes)
 _BLOCK_BY_CODE = {code: block for block, codes in CANONICAL_CODES_BY_BLOCK.items() for code in codes}
 _OCCURRENCE = re.compile(r"^[01]:(?:[1-9][0-9]*|N)$")
-_RECORD_KEYS = (
+_REQUIRED_RECORD_KEYS = (
     "code",
     "block",
     "title",
@@ -46,7 +46,9 @@ _RECORD_KEYS = (
     "fields",
     "reviewed",
 )
-_FIELD_KEYS = (
+_OPTIONAL_RECORD_KEYS = ("introducedIn",)
+_RECORD_KEYS = _REQUIRED_RECORD_KEYS + _OPTIONAL_RECORD_KEYS
+_REQUIRED_FIELD_KEYS = (
     "number",
     "name",
     "description",
@@ -56,6 +58,8 @@ _FIELD_KEYS = (
     "required",
     "validValues",
 )
+_OPTIONAL_FIELD_KEYS = ("sinceVersion",)
+_FIELD_KEYS = _REQUIRED_FIELD_KEYS + _OPTIONAL_FIELD_KEYS
 _REQUIRED_MARKERS = ("Sim", "sim", "S", "Não", "N", "-", "OC")
 _REQUIRED_MARKER_SET = frozenset(_REQUIRED_MARKERS)
 
@@ -230,7 +234,7 @@ def _quarantine_items(records: list[dict], *, require_reviewed: bool) -> list[di
             reasons.append("record must be an object")
             continue
         actual_keys = set(record)
-        missing_keys = sorted(record_keys - actual_keys)
+        missing_keys = sorted(set(_REQUIRED_RECORD_KEYS) - actual_keys)
         unknown_keys = sorted(actual_keys - record_keys - {"ambiguities"}, key=str)
         if missing_keys:
             reasons.append(f"missing record keys: {', '.join(missing_keys)}")
@@ -246,6 +250,8 @@ def _quarantine_items(records: list[dict], *, require_reviewed: bool) -> list[di
                 reasons.append(f"record {key} must be an integer")
         if "reviewed" in record and not isinstance(record["reviewed"], bool):
             reasons.append("record reviewed must be a boolean")
+        if "introducedIn" in record and not _is_supported_layout_version(record["introducedIn"]):
+            reasons.append("record introducedIn must be an integer from 8 through 12")
         ambiguities = record.get("ambiguities", [])
         if not isinstance(ambiguities, list) or any(not isinstance(reason, str) for reason in ambiguities):
             reasons.append("record ambiguities must be a list of strings")
@@ -259,7 +265,7 @@ def _quarantine_items(records: list[dict], *, require_reviewed: bool) -> list[di
                 reasons.append(f"field {number} must be an object")
                 continue
             actual_field_keys = set(field)
-            missing_field_keys = sorted(field_keys - actual_field_keys)
+            missing_field_keys = sorted(set(_REQUIRED_FIELD_KEYS) - actual_field_keys)
             unknown_field_keys = sorted(actual_field_keys - field_keys, key=str)
             if missing_field_keys:
                 reasons.append(f"field {number} missing keys: {', '.join(missing_field_keys)}")
@@ -271,9 +277,11 @@ def _quarantine_items(records: list[dict], *, require_reviewed: bool) -> list[di
                 not isinstance(field["number"], int) or isinstance(field["number"], bool)
             ):
                 reasons.append(f"field {number} number must be an integer")
-            for key in _FIELD_KEYS[1:]:
+            for key in _REQUIRED_FIELD_KEYS[1:]:
                 if key in field and not isinstance(field[key], str):
                     reasons.append(f"field {number} {key} must be a string")
+            if "sinceVersion" in field and not _is_supported_layout_version(field["sinceVersion"]):
+                reasons.append(f"field {number} sinceVersion must be an integer from 8 through 12")
             required = field.get("required")
             if isinstance(required, str) and required not in _REQUIRED_MARKER_SET:
                 reasons.append(
@@ -348,12 +356,22 @@ def _quarantine_items(records: list[dict], *, require_reviewed: bool) -> list[di
 
 
 def _sanitize_record(record: dict) -> dict:
-    sanitized = {key: record[key] for key in _RECORD_KEYS if key != "fields"}
+    sanitized = {key: record[key] for key in _REQUIRED_RECORD_KEYS if key != "fields"}
+    for key in _OPTIONAL_RECORD_KEYS:
+        if key in record:
+            sanitized[key] = record[key]
     sanitized["fields"] = [
-        {key: field.get(key, "") for key in _FIELD_KEYS}
+        {
+            **{key: field[key] for key in _REQUIRED_FIELD_KEYS},
+            **{key: field[key] for key in _OPTIONAL_FIELD_KEYS if key in field},
+        }
         for field in record["fields"]
     ]
     return sanitized
+
+
+def _is_supported_layout_version(value: object) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool) and 8 <= value <= 12
 
 
 def _parse_field_cells(

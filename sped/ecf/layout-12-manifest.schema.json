@@ -78,6 +78,11 @@
         },
         "reviewed": {
           "const": true
+        },
+        "introducedIn": {
+          "type": "integer",
+          "minimum": 8,
+          "maximum": 12
         }
       }
     },
@@ -135,6 +140,11 @@
         },
         "validValues": {
           "type": "string"
+        },
+        "sinceVersion": {
+          "type": "integer",
+          "minimum": 8,
+          "maximum": 12
         }
       }
     }

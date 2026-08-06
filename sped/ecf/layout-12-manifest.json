@@ -663,7 +663,8 @@
         "size": "255",
         "decimals": "-",
         "required": "OC",
-        "validValues": ""
+        "validValues": "",
+        "sinceVersion": 12
       }
     ]
   },
@@ -5294,6 +5295,7 @@
     "level": "3",
     "occurrence": "0:N",
     "reviewed": true,
+    "introducedIn": 10,
     "fields": [
       {
         "number": 1,
@@ -9606,6 +9608,7 @@
     "level": "2",
     "occurrence": "0:N",
     "reviewed": true,
+    "introducedIn": 10,
     "fields": [
       {
         "number": 1,
@@ -9658,6 +9661,7 @@
     "level": "2",
     "occurrence": "0:N",
     "reviewed": true,
+    "introducedIn": 10,
     "fields": [
       {
         "number": 1,
@@ -9700,6 +9704,7 @@
     "level": "3",
     "occurrence": "0:N",
     "reviewed": true,
+    "introducedIn": 10,
     "fields": [
       {
         "number": 1,
@@ -9752,6 +9757,7 @@
     "level": "2",
     "occurrence": "0:N",
     "reviewed": true,
+    "introducedIn": 10,
     "fields": [
       {
         "number": 1,
@@ -9964,6 +9970,7 @@
     "level": "3",
     "occurrence": "0:N",
     "reviewed": true,
+    "introducedIn": 10,
     "fields": [
       {
         "number": 1,
@@ -10026,6 +10033,7 @@
     "level": "3",
     "occurrence": "0:N",
     "reviewed": true,
+    "introducedIn": 10,
     "fields": [
       {
         "number": 1,
@@ -10470,6 +10478,7 @@
     "level": "3",
     "occurrence": "0:N",
     "reviewed": true,
+    "introducedIn": 11,
     "fields": [
       {
         "number": 1,
@@ -10678,6 +10687,7 @@
     "level": "2",
     "occurrence": "0:N",
     "reviewed": true,
+    "introducedIn": 10,
     "fields": [
       {
         "number": 1,
@@ -12340,6 +12350,7 @@
     "level": "2",
     "occurrence": "0:N",
     "reviewed": true,
+    "introducedIn": 12,
     "fields": [
       {
         "number": 1,
@@ -12432,6 +12443,7 @@
     "level": "2",
     "occurrence": "0:N",
     "reviewed": true,
+    "introducedIn": 9,
     "fields": [
       {
         "number": 1,

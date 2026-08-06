@@ -276,6 +276,12 @@ internal static partial class AssertRegistroEcf
             "nível",
             int.Parse(esperado.Level, CultureInfo.InvariantCulture),
             atual.Nivel);
+        AdicionarDivergencia(
+            divergencias,
+            esperado.Code,
+            "versão de introdução",
+            esperado.IntroducedIn,
+            atual.IntroduzidoEm);
 
         string codigoDaInstancia = atual.Fabrica().Codigo;
         AdicionarDivergencia(
@@ -331,6 +337,12 @@ internal static partial class AssertRegistroEcf
             "obrigatório",
             NormalizarObrigatorio(esperado.Required),
             atual.Obrigatorio);
+        AdicionarDivergencia(
+            divergencias,
+            contexto,
+            "versão de introdução",
+            esperado.SinceVersion,
+            atual.DesdeVersao);
 
         if (!TipoCompativel(registro, esperado, atual.Tipo))
         {

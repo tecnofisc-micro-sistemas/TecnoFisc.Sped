@@ -1,10 +1,11 @@
 using TecnoFisc.Sped.Txt.Engine.Abstracoes;
 using TecnoFisc.Sped.Txt.Engine.Atributos;
+using TecnoFisc.Sped.Ecf.Versionamento;
 
 namespace TecnoFisc.Sped.Ecf.Registros.BlocoX;
 
 /// <summary>Registro X451 - demais informações dinâmicas de pagamentos e remessas.</summary>
-[RegistroSped(Codigo = "X451", Nivel = 3, Bloco = "X")]
+[RegistroSped(Codigo = "X451", Nivel = 3, Bloco = "X", IntroduzidoEm = (int)LayoutEcf.V011)]
 public sealed partial class RegistroX451 : RegistroSped
 {
     public override string Codigo => "X451";

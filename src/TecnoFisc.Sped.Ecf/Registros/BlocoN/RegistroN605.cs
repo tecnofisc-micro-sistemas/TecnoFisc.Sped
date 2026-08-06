@@ -1,11 +1,12 @@
 using TecnoFisc.Sped.Ecf.Enums;
 using TecnoFisc.Sped.Txt.Engine.Abstracoes;
 using TecnoFisc.Sped.Txt.Engine.Atributos;
+using TecnoFisc.Sped.Ecf.Versionamento;
 
 namespace TecnoFisc.Sped.Ecf.Registros.BlocoN;
 
 /// <summary>Registro N605 - contas contábeis usadas na apuração do lucro da exploração.</summary>
-[RegistroSped(Codigo = "N605", Nivel = 3, Bloco = "N")]
+[RegistroSped(Codigo = "N605", Nivel = 3, Bloco = "N", IntroduzidoEm = (int)LayoutEcf.V010)]
 public sealed partial class RegistroN605 : RegistroSped
 {
     /// <inheritdoc />

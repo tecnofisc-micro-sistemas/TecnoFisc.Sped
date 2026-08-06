@@ -1,11 +1,12 @@
 using TecnoFisc.Sped.Ecf.Enums;
 using TecnoFisc.Sped.Txt.Engine.Abstracoes;
 using TecnoFisc.Sped.Txt.Engine.Atributos;
+using TecnoFisc.Sped.Ecf.Versionamento;
 
 namespace TecnoFisc.Sped.Ecf.Registros.BlocoY;
 
 /// <summary>Registro Y730 - identificação de donatários e destinatários de deduções.</summary>
-[RegistroSped(Codigo = "Y730", Nivel = 2, Bloco = "Y")]
+[RegistroSped(Codigo = "Y730", Nivel = 2, Bloco = "Y", IntroduzidoEm = (int)LayoutEcf.V012)]
 public sealed partial class RegistroY730 : RegistroSped
 {
     /// <inheritdoc />

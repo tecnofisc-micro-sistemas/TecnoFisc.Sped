@@ -375,6 +375,7 @@ internal sealed partial class ManifestoEcf
             throw new InvalidDataException($"Registro {registro.Code} tem ocorrência inválida '{registro.Occurrence}'.");
         if (!registro.Reviewed)
             throw new InvalidDataException($"Registro {registro.Code} ainda não foi revisado.");
+        ValidarVersao(registro.IntroducedIn, $"Registro {registro.Code}: introducedIn");
         if (registro.PageStart < 1 || registro.PageEnd < registro.PageStart)
             throw new InvalidDataException($"Registro {registro.Code} tem intervalo de páginas inválido.");
         if (registro.Fields.Count == 0)
@@ -394,6 +395,10 @@ internal sealed partial class ManifestoEcf
             if (campoIndice == 0 && !string.Equals(campo.Name, "REG", StringComparison.Ordinal))
                 throw new InvalidDataException($"Registro {registro.Code}: o campo nº 1 deve ser REG.");
 
+            ValidarVersao(
+                campo.SinceVersion,
+                $"Registro {registro.Code}, campo nº {campo.Number} {campo.Name}: sinceVersion");
+
             if (campo.Required is not ("Sim" or "sim" or "S" or "Não" or "N" or "-" or "OC"))
             {
                 throw new InvalidDataException(
@@ -401,6 +406,12 @@ internal sealed partial class ManifestoEcf
                     $"não reconhece o marcador '{campo.Required}'.");
             }
         }
+    }
+
+    private static void ValidarVersao(int versao, string contexto)
+    {
+        if (versao != 0 && versao is not (>= 8 and <= 12))
+            throw new InvalidDataException($"{contexto} deve estar entre 8 e 12.");
     }
 
     [GeneratedRegex("^[01]:(?:[1-9][0-9]*|N)$", RegexOptions.CultureInvariant)]
@@ -435,6 +446,9 @@ internal sealed record ManifestoRegistroEcf
     [JsonPropertyName("reviewed")]
     public required bool Reviewed { get; init; }
 
+    [JsonPropertyName("introducedIn")]
+    public int IntroducedIn { get; init; }
+
     [JsonPropertyName("fields")]
     public required IReadOnlyList<ManifestoCampoEcf> Fields { get; init; }
 }
@@ -464,4 +478,7 @@ internal sealed record ManifestoCampoEcf
 
     [JsonPropertyName("validValues")]
     public required string ValidValues { get; init; }
+
+    [JsonPropertyName("sinceVersion")]
+    public int SinceVersion { get; init; }
 }

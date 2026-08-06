@@ -245,6 +245,40 @@ def test_source_keeps_unknown_domains_as_string_and_never_invents_enum(tmp_path:
     assert "Alfa" not in source and "Beta" not in source
 
 
+def test_source_preserves_optional_layout_version_metadata(tmp_path: Path) -> None:
+    records = deepcopy(MINIMAL_LAYOUT_12_MANIFEST)
+    records[0]["introducedIn"] = 9
+    records[0]["fields"][1]["sinceVersion"] = 12
+    manifest = _write_manifest(tmp_path, records)
+
+    scaffold(manifest, tmp_path, codes=["0001"], source=True)
+
+    source = next(iter(_tree(tmp_path).values()))
+    assert "using TecnoFisc.Sped.Ecf.Versionamento;" in source
+    assert 'Bloco = "0", IntroduzidoEm = (int)LayoutEcf.V009)' in source
+    assert "Obrigatorio = true, DesdeVersao = (int)LayoutEcf.V012" in source
+
+
+@pytest.mark.parametrize(
+    ("location", "value"),
+    [("record", 7), ("record", 13), ("field", 7), ("field", 13), ("record", True), ("field", "10")],
+)
+def test_source_rejects_invalid_layout_version_metadata(
+    tmp_path: Path, location: str, value: object
+) -> None:
+    records = deepcopy(MINIMAL_LAYOUT_12_MANIFEST)
+    if location == "record":
+        records[0]["introducedIn"] = value
+    else:
+        records[0]["fields"][1]["sinceVersion"] = value
+    manifest = _write_manifest(tmp_path, records)
+
+    with pytest.raises(ScaffoldError, match="invalid (introducedIn|sinceVersion)"):
+        scaffold(manifest, tmp_path, codes=["0001"], source=True)
+
+    assert not (tmp_path / "src").exists()
+
+
 def test_source_disambiguates_codigo_from_generated_override_with_exact_name(tmp_path: Path) -> None:
     records = deepcopy(MINIMAL_LAYOUT_12_MANIFEST[:1])
     records[0]["fields"][1]["name"] = "CODIGO"
@@ -632,6 +666,7 @@ def test_all_real_manifest_sources_compile_against_base_contract_stubs(tmp_path:
         public string Codigo { get; set; } = string.Empty;
         public int Nivel { get; set; }
         public string Bloco { get; set; } = string.Empty;
+        public int IntroduzidoEm { get; set; }
     }
 
     [AttributeUsage(AttributeTargets.Property)]
@@ -641,6 +676,19 @@ def test_all_real_manifest_sources_compile_against_base_contract_stubs(tmp_path:
         public int Tamanho { get; set; }
         public bool Obrigatorio { get; set; }
         public string? Nome { get; set; }
+        public int DesdeVersao { get; set; }
+    }
+}
+
+namespace TecnoFisc.Sped.Ecf.Versionamento
+{
+    public enum LayoutEcf
+    {
+        V008 = 8,
+        V009 = 9,
+        V010 = 10,
+        V011 = 11,
+        V012 = 12,
     }
 }
 

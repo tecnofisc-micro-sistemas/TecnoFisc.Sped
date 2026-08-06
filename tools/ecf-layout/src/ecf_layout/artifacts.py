@@ -70,18 +70,24 @@ def generation_id(pdf_sha256: str, candidate_sha256: str) -> str:
     )
 
 
-def render_tracker(records: list[dict]) -> str:
+def render_tracker(
+    records: list[dict], *, statuses: list[str] | None = None
+) -> str:
     """Render the bounded one-row-per-record Stage 17 tracker."""
+    if statuses is None:
+        statuses = ["[ ]"] * len(records)
+    if len(statuses) != len(records) or any(status not in {"[ ]", "[x]"} for status in statuses):
+        raise ArtifactPromotionError("tracker statuses must be [ ] or [x]")
     lines = [
         "# Stage 17 - ECF Layout 12 Baseline",
         "",
         "| Substage | Record | Title | Start page | End page | Block | Status |",
         "| --- | --- | --- | ---: | ---: | --- | --- |",
     ]
-    for position, record in enumerate(records, start=2):
+    for position, (record, status) in enumerate(zip(records, statuses, strict=True), start=2):
         lines.append(
             f"| 17.{position:03d} | {_cell(record['code'])} | {_cell(record['title'])} | "
-            f"{record['pageStart']} | {record['pageEnd']} | {_cell(record['block'])} | [ ] |"
+            f"{record['pageStart']} | {record['pageEnd']} | {_cell(record['block'])} | {status} |"
         )
     return "\n".join(lines) + "\n"
 
@@ -93,6 +99,7 @@ def build_artifacts(
     tracker_out: Path,
     *,
     pdf: Path,
+    tracker_text: str | None = None,
     lock_timeout: float = _DEFAULT_LOCK_TIMEOUT,
 ) -> tuple[Path, Path]:
     """Validate and durably publish a provenance-bound local candidate generation."""
@@ -140,7 +147,11 @@ def build_artifacts(
                 )
             sanitized = [_sanitize_record(record) for record in records]
             manifest_data = _pretty_json_bytes(sanitized)
-            tracker_data = render_tracker(sanitized).encode("utf-8")
+            if tracker_text is None:
+                tracker_text = render_tracker(sanitized)
+            else:
+                _validate_tracker_text(sanitized, tracker_text)
+            tracker_data = tracker_text.encode("utf-8")
             pdf_sha256 = sha256_file(pdf)
             review_sha256 = canonical_candidate_sha256(sanitized)
             identifier = generation_id(pdf_sha256, review_sha256)
@@ -331,38 +342,10 @@ def _promote_artifacts_locked(
         reason = f"candidate does not match manifest schema: {error}"
         raise _record_promotion_failure(work_dir, reason) from error
 
-    if tracker_text != render_tracker(records):
-        raise _record_promotion_failure(
-            work_dir, "candidate tracker is not the bounded rendering of the manifest"
-        )
     try:
-        rows = _parse_tracker(tracker_text)
+        _validate_tracker_text(records, tracker_text)
     except ArtifactPromotionError as error:
         raise _record_promotion_failure(work_dir, str(error)) from error
-    if len(rows) != len(records):
-        raise _record_promotion_failure(
-            work_dir, "tracker must contain exactly one row per manifest record"
-        )
-    expected_substages = [f"17.{number:03d}" for number in range(2, 182)]
-    if [row[0] for row in rows] != expected_substages:
-        raise _record_promotion_failure(
-            work_dir, "tracker substages are not contiguous from 17.002 to 17.181"
-        )
-    for row, record in zip(rows, records, strict=True):
-        expected = (
-            row[0],
-            str(record["code"]),
-            _cell(record["title"]),
-            str(record["pageStart"]),
-            str(record["pageEnd"]),
-            str(record["block"]),
-            "[ ]",
-        )
-        if row != expected:
-            raise _record_promotion_failure(
-                work_dir,
-                f"tracker/manifest mismatch at {row[0]} for record {record['code']}",
-            )
 
     if before_publish is not None:
         before_publish()
@@ -457,15 +440,14 @@ def _apply_review_evidence_locked(
     )
     if not isinstance(records, list) or _quarantine_items(records, require_reviewed=False):
         raise ArtifactPromotionError("candidate manifest is not structurally valid")
-    if tracker_text != render_tracker(records):
-        raise ArtifactPromotionError("candidate tracker does not match candidate manifest")
+    _validate_tracker_text(records, tracker_text)
 
     _validate_review_evidence(records, generation, evidence_payloads)
     reviewed = [{**record, "reviewed": True} for record in records]
     if _quarantine_items(reviewed, require_reviewed=True):
         raise ArtifactPromotionError("reviewed candidate failed final manifest validation")
     reviewed_manifest_data = _pretty_json_bytes(reviewed)
-    reviewed_tracker_data = render_tracker(reviewed).encode("utf-8")
+    reviewed_tracker_data = tracker_text.encode("utf-8")
     reviewed_generation = {
         **generation,
         "state": "reviewed",
@@ -500,6 +482,40 @@ def _parse_tracker(text: str) -> list[tuple[str, str, str, str, str, str, str]]:
             raise ArtifactPromotionError("tracker rows must contain exactly seven cells")
         rows.append(cells)
     return rows
+
+
+def _validate_tracker_text(records: list[dict], tracker_text: str) -> None:
+    rows = _parse_tracker(tracker_text)
+    if len(rows) != len(records):
+        raise ArtifactPromotionError(
+            "tracker must contain exactly one row per manifest record"
+        )
+    expected_substages = [f"17.{number:03d}" for number in range(2, 182)]
+    if [row[0] for row in rows] != expected_substages:
+        raise ArtifactPromotionError(
+            "tracker substages are not contiguous from 17.002 to 17.181"
+        )
+    statuses = [row[6] for row in rows]
+    for row, record, status in zip(rows, records, statuses, strict=True):
+        if status not in {"[ ]", "[x]"}:
+            raise ArtifactPromotionError("tracker statuses must be [ ] or [x]")
+        expected = (
+            row[0],
+            str(record["code"]),
+            _cell(record["title"]),
+            str(record["pageStart"]),
+            str(record["pageEnd"]),
+            str(record["block"]),
+            status,
+        )
+        if row != expected:
+            raise ArtifactPromotionError(
+                f"tracker/manifest mismatch at {row[0]} for record {record['code']}"
+            )
+    if tracker_text != render_tracker(records, statuses=statuses):
+        raise ArtifactPromotionError(
+            "candidate tracker is not the bounded rendering of the manifest"
+        )
 
 
 def _record_promotion_failure(work_dir: Path, reason: str) -> ArtifactPromotionError:

@@ -1,10 +1,11 @@
 using TecnoFisc.Sped.Txt.Engine.Abstracoes;
 using TecnoFisc.Sped.Txt.Engine.Atributos;
+using TecnoFisc.Sped.Ecf.Versionamento;
 
 namespace TecnoFisc.Sped.Ecf.Registros.BlocoX;
 
 /// <summary>Registro X365 - contrapartes nas transações controladas.</summary>
-[RegistroSped(Codigo = "X365", Nivel = 2, Bloco = "X")]
+[RegistroSped(Codigo = "X365", Nivel = 2, Bloco = "X", IntroduzidoEm = (int)LayoutEcf.V010)]
 public sealed partial class RegistroX365 : RegistroSped
 {
     public override string Codigo => "X365";

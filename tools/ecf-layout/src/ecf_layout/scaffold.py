@@ -31,9 +31,11 @@ _RECORD_KEYS = frozenset(
         "reviewed",
     }
 )
+_OPTIONAL_RECORD_KEYS = frozenset({"introducedIn"})
 _FIELD_KEYS = frozenset(
     {"number", "name", "description", "type", "size", "decimals", "required", "validValues"}
 )
+_OPTIONAL_FIELD_KEYS = frozenset({"sinceVersion"})
 _BLOCKS = frozenset(
     {"0", "C", "E", "J", "K", "L", "M", "N", "P", "Q", "T", "U", "V", "W", "X", "Y", "9"}
 )
@@ -134,7 +136,9 @@ def _load_manifest(path: Path) -> list[dict]:
 def _validate_record(value: object, index: int) -> dict:
     if not isinstance(value, dict):
         raise ScaffoldError(f"manifest record {index} must be an object")
-    _require_exact_keys(value, _RECORD_KEYS, f"manifest record {index}")
+    _require_exact_keys(
+        value, _RECORD_KEYS, f"manifest record {index}", optional=_OPTIONAL_RECORD_KEYS
+    )
     code = value.get("code")
     block = value.get("block")
     if not isinstance(code, str) or _CODE_PATTERN.fullmatch(code) is None:
@@ -158,6 +162,8 @@ def _validate_record(value: object, index: int) -> dict:
         raise ScaffoldError(f"manifest record {code} has an invalid occurrence")
     if value["reviewed"] is not True:
         raise ScaffoldError(f"manifest record {code} has an invalid reviewed flag")
+    if "introducedIn" in value and not _is_supported_layout_version(value["introducedIn"]):
+        raise ScaffoldError(f"manifest record {code} has an invalid introducedIn")
     fields = value["fields"]
     if not isinstance(fields, list) or not fields:
         raise ScaffoldError(f"manifest record {code} has no fields")
@@ -175,7 +181,12 @@ def _validate_record(value: object, index: int) -> dict:
 def _validate_field(value: object, code: str, position: int) -> dict:
     if not isinstance(value, dict):
         raise ScaffoldError(f"manifest record {code} field {position} must be an object")
-    _require_exact_keys(value, _FIELD_KEYS, f"manifest record {code} field {position}")
+    _require_exact_keys(
+        value,
+        _FIELD_KEYS,
+        f"manifest record {code} field {position}",
+        optional=_OPTIONAL_FIELD_KEYS,
+    )
     number = value["number"]
     if not _is_json_integer(number) or number < 1 or number != position:
         raise ScaffoldError(f"manifest record {code} has non-contiguous field numbers")
@@ -194,6 +205,10 @@ def _validate_field(value: object, code: str, position: int) -> dict:
     for key in ("size", "decimals", "required", "validValues"):
         if not isinstance(value[key], str):
             raise ScaffoldError(f"manifest record {code} field {position} has an invalid {key}")
+    if "sinceVersion" in value and not _is_supported_layout_version(value["sinceVersion"]):
+        raise ScaffoldError(
+            f"manifest record {code} field {position} has an invalid sinceVersion"
+        )
     try:
         _required_value(value["required"])
     except ScaffoldError as error:
@@ -203,12 +218,18 @@ def _validate_field(value: object, code: str, position: int) -> dict:
     return value
 
 
-def _require_exact_keys(value: dict, expected: frozenset[str], location: str) -> None:
+def _require_exact_keys(
+    value: dict,
+    expected: frozenset[str],
+    location: str,
+    *,
+    optional: frozenset[str] = frozenset(),
+) -> None:
     actual = frozenset(value)
-    if actual == expected:
-        return
     missing = sorted(expected - actual)
-    unknown = sorted(actual - expected)
+    unknown = sorted(actual - expected - optional)
+    if not missing and not unknown:
+        return
     details: list[str] = []
     if missing:
         details.append(f"missing keys: {', '.join(missing)}")
@@ -219,6 +240,10 @@ def _require_exact_keys(value: dict, expected: frozenset[str], location: str) ->
 
 def _is_json_integer(value: object) -> bool:
     return isinstance(value, int) and not isinstance(value, bool)
+
+
+def _is_supported_layout_version(value: object) -> bool:
+    return _is_json_integer(value) and 8 <= value <= 12
 
 
 def _requested_codes(codes: Iterable[str]) -> set[str]:
@@ -257,6 +282,12 @@ def _generate_source(record: dict, output_root: Path) -> GeneratedFile:
     block = record["block"]
     title = _xml_text(record["title"])
     lines = [
+        *(
+            ["using TecnoFisc.Sped.Ecf.Versionamento;"]
+            if "introducedIn" in record
+            or any("sinceVersion" in field for field in record["fields"])
+            else []
+        ),
         "using TecnoFisc.Sped.Txt.Engine.Abstracoes;",
         "using TecnoFisc.Sped.Txt.Engine.Atributos;",
         "",
@@ -265,7 +296,7 @@ def _generate_source(record: dict, output_root: Path) -> GeneratedFile:
         "/// <summary>",
         f"/// Draft do Registro {code} — {title}. Revise os tipos antes de integrar.",
         "/// </summary>",
-        f'[RegistroSped(Codigo = "{code}", Nivel = {record["level"]}, Bloco = "{block}")]',
+        _record_attribute(record),
         f"public sealed partial class Registro{code} : RegistroSped",
         "{",
         "    /// <inheritdoc />",
@@ -314,6 +345,10 @@ def _field_attribute(field: dict, property_name: str) -> str:
         arguments.append(f'Tamanho = {int(field["size"])}')
     if _required_value(field["required"]):
         arguments.append("Obrigatorio = true")
+    if "sinceVersion" in field:
+        arguments.append(
+            f'DesdeVersao = (int)LayoutEcf.V{field["sinceVersion"]:03d}'
+        )
     if property_name != _property_name(field["name"]):
         alias = field["name"]
         if _FIELD_ALIAS_PATTERN.fullmatch(alias) is None:
@@ -323,6 +358,19 @@ def _field_attribute(field: dict, property_name: str) -> str:
         escaped = alias.replace("\\", "\\\\").replace('"', '\\"')
         arguments.append(f'Nome = "{escaped}"')
     return f"[CampoSped({', '.join(arguments)})]"
+
+
+def _record_attribute(record: dict) -> str:
+    arguments = [
+        f'Codigo = "{record["code"]}"',
+        f'Nivel = {record["level"]}',
+        f'Bloco = "{record["block"]}"',
+    ]
+    if "introducedIn" in record:
+        arguments.append(
+            f'IntroduzidoEm = (int)LayoutEcf.V{record["introducedIn"]:03d}'
+        )
+    return f"[RegistroSped({', '.join(arguments)})]"
 
 
 def _required_value(value: str) -> bool:

@@ -223,6 +223,41 @@ def test_build_artifacts_writes_unreviewed_candidate_pair_only_to_requested_path
     }
 
 
+def test_publication_preserves_a_valid_all_checked_tracker(tmp_path: Path) -> None:
+    artifacts = importlib.import_module("ecf_layout.artifacts")
+    records = _valid_records(reviewed=False)
+    checked_tracker = _candidate_tracker(records, status="[x]")
+    pdf = _manual(tmp_path)
+    manifest = tmp_path / "candidate" / "layout-12-manifest.json"
+    tracker = tmp_path / "candidate" / "STAGE_17_ECF_BASELINE.md"
+
+    artifacts.build_artifacts(
+        records,
+        tmp_path,
+        manifest,
+        tracker,
+        pdf=pdf,
+        tracker_text=checked_tracker,
+    )
+    generation = json.loads((tmp_path / "candidate" / "generation.json").read_text(encoding="utf-8"))
+    evidence = tmp_path / "review.json"
+    evidence.write_text(
+        json.dumps(_provenance_evidence(records, generation)), encoding="utf-8"
+    )
+    artifacts.apply_review_evidence(tmp_path, [evidence])
+
+    manifest_out = tmp_path / "published" / "layout-12-manifest.json"
+    tracker_out = tmp_path / "published" / "STAGE_17_ECF_BASELINE.md"
+    schema = tmp_path / "schema.json"
+    schema.write_text(json.dumps(_test_schema()), encoding="utf-8")
+    artifacts.promote_artifacts(
+        tmp_path, manifest_out, tracker_out, schema_path=schema
+    )
+
+    assert tracker.read_text(encoding="utf-8") == checked_tracker
+    assert tracker_out.read_text(encoding="utf-8") == checked_tracker
+
+
 @pytest.mark.parametrize(
     "gate", ["unreviewed", "quarantine", "tracker-order", "tracker-extra", "schema"]
 )

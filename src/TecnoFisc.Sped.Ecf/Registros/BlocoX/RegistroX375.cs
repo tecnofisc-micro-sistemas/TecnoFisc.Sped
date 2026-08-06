@@ -1,10 +1,11 @@
 using TecnoFisc.Sped.Txt.Engine.Abstracoes;
 using TecnoFisc.Sped.Txt.Engine.Atributos;
+using TecnoFisc.Sped.Ecf.Versionamento;
 
 namespace TecnoFisc.Sped.Ecf.Registros.BlocoX;
 
 /// <summary>Registro X375 - informações relacionadas aos métodos.</summary>
-[RegistroSped(Codigo = "X375", Nivel = 3, Bloco = "X")]
+[RegistroSped(Codigo = "X375", Nivel = 3, Bloco = "X", IntroduzidoEm = (int)LayoutEcf.V010)]
 public sealed partial class RegistroX375 : RegistroSped
 {
     public override string Codigo => "X375";

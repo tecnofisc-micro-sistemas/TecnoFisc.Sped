@@ -2,11 +2,12 @@ using TecnoFisc.Sped.Core.ValueObjects;
 using TecnoFisc.Sped.Ecf.Enums;
 using TecnoFisc.Sped.Txt.Engine.Abstracoes;
 using TecnoFisc.Sped.Txt.Engine.Atributos;
+using TecnoFisc.Sped.Ecf.Versionamento;
 
 namespace TecnoFisc.Sped.Ecf.Registros.BlocoX;
 
 /// <summary>Registro X485 - benefícios fiscais, parte II.</summary>
-[RegistroSped(Codigo = "X485", Nivel = 2, Bloco = "X")]
+[RegistroSped(Codigo = "X485", Nivel = 2, Bloco = "X", IntroduzidoEm = (int)LayoutEcf.V010)]
 public sealed partial class RegistroX485 : RegistroSped
 {
     public override string Codigo => "X485";

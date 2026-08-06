@@ -91,6 +91,40 @@ def test_requires_180_records_and_17_blocks_in_canonical_order(tmp_path: Path) -
     assert json.loads((tmp_path / "quarantine.json").read_text(encoding="utf-8"))["items"]
 
 
+def test_preserves_supported_layout_version_metadata_and_omits_defaults(tmp_path: Path) -> None:
+    records = _valid_records(reviewed=True)
+    records[0]["introducedIn"] = 9
+    records[0]["fields"][0]["sinceVersion"] = 10
+
+    candidate = validate_and_promote(records, tmp_path)
+    payload = json.loads(candidate.read_text(encoding="utf-8"))
+
+    assert payload[0]["introducedIn"] == 9
+    assert payload[0]["fields"][0]["sinceVersion"] == 10
+    assert "introducedIn" not in payload[1]
+    assert "sinceVersion" not in payload[1]["fields"][0]
+
+
+@pytest.mark.parametrize(
+    ("location", "value"),
+    [("record", 7), ("record", 13), ("field", 7), ("field", 13), ("record", True), ("field", "10")],
+)
+def test_rejects_unsupported_layout_version_metadata(
+    tmp_path: Path, location: str, value: object
+) -> None:
+    records = _valid_records(reviewed=True)
+    if location == "record":
+        records[0]["introducedIn"] = value
+    else:
+        records[0]["fields"][0]["sinceVersion"] = value
+
+    with pytest.raises(ManifestValidationError):
+        validate_and_promote(records, tmp_path)
+
+    report = json.loads((tmp_path / "quarantine.json").read_text(encoding="utf-8"))
+    assert report["items"]
+
+
 @pytest.mark.parametrize("numbers", [[2], [1, 3]])
 def test_rejects_missing_or_non_contiguous_field_numbers(tmp_path: Path, numbers: list[int]) -> None:
     records = _valid_records()

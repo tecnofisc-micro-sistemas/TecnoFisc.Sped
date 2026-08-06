@@ -1,11 +1,12 @@
 using TecnoFisc.Sped.Txt.Engine.Abstracoes;
 using TecnoFisc.Sped.Txt.Engine.Atributos;
+using TecnoFisc.Sped.Ecf.Versionamento;
 using TecnoFisc.Sped.Txt.Engine.Enums;
 
 namespace TecnoFisc.Sped.Ecf.Registros.BlocoX;
 
 /// <summary>Registro X370 - informações sobre as transações controladas.</summary>
-[RegistroSped(Codigo = "X370", Nivel = 2, Bloco = "X")]
+[RegistroSped(Codigo = "X370", Nivel = 2, Bloco = "X", IntroduzidoEm = (int)LayoutEcf.V010)]
 public sealed partial class RegistroX370 : RegistroSped
 {
     public override string Codigo => "X370";

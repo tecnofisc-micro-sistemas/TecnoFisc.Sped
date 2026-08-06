@@ -1,5 +1,6 @@
 using TecnoFisc.Sped.Core.ValueObjects;
 using TecnoFisc.Sped.Txt.Engine.Catalogo;
+using TecnoFisc.Sped.Txt.Engine.Parser;
 using TecnoFisc.Sped.Txt.Engine.Tests._Sintetico;
 
 namespace TecnoFisc.Sped.Txt.Engine.Tests.Catalogo;
@@ -111,6 +112,41 @@ public sealed class CatalogoBuilderTests
 
         registro.CodPart.Should().Be(0);
         registro.VlDoc.Should().Be(0m);
+    }
+
+    [Fact]
+    public void ParseLinha_EnumNumericoFechadoIndefinido_RegistraErroSemAtribuirValor()
+    {
+        var catalogo = CatalogoBuilder.BuildFromAssembly(_assembly);
+        var leitor = new LeitorSpedTxt(catalogo);
+
+        var resultado = leitor.ParseLinha("|E100|06|03|".AsSpan());
+
+        resultado.Sucesso.Should().BeTrue();
+        var registro = resultado.Valor.Should().BeOfType<RegistroE100Sintetico>().Which;
+        registro.Situacao.Should().BeNull();
+        registro.Permissoes.Should().Be(PermissoesSinteticas.Leitura | PermissoesSinteticas.Escrita);
+        registro.ErrosDeFormato.Should().ContainSingle()
+            .Which.Campo.Should().Be(nameof(RegistroE100Sintetico.Situacao));
+    }
+
+    [Theory]
+    [InlineData("01", SituacaoSintetica.Ativa)]
+    [InlineData("2", SituacaoSintetica.Inativa)]
+    public void ParseLinha_EnumNumericoFechadoDefinido_AtribuiValor(
+        string valorSped,
+        SituacaoSintetica esperado)
+    {
+        var catalogo = CatalogoBuilder.BuildFromAssembly(_assembly);
+        var leitor = new LeitorSpedTxt(catalogo);
+
+        var resultado = leitor.ParseLinha($"|E100|{valorSped}||".AsSpan());
+
+        resultado.Sucesso.Should().BeTrue();
+        var registro = resultado.Valor.Should().BeOfType<RegistroE100Sintetico>().Which;
+        registro.Situacao.Should().Be(esperado);
+        registro.Permissoes.Should().BeNull();
+        registro.ErrosDeFormato.Should().BeEmpty();
     }
 
     [Fact]

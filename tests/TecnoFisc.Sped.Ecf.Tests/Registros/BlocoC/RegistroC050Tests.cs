@@ -29,4 +29,17 @@ public sealed class RegistroC050Tests
         registro.CodCta.Should().Be("001.01");
         registro.CodCtaSup.Should().Be("001");
     }
+
+    [Fact]
+    public void Parser_CodigoNaturezaIndefinido_RegistraErroSemAtribuirValor()
+    {
+        var resultado = new ParserEcf().ParseLinha(
+            "|C050|01012025|06|A|4|001.01|001|CAIXA|");
+
+        resultado.Sucesso.Should().BeTrue();
+        var registro = resultado.Valor.Should().BeOfType<RegistroC050>().Which;
+        registro.CodNat.Should().Be(default);
+        registro.ErrosDeFormato.Should().ContainSingle()
+            .Which.Campo.Should().Be(nameof(RegistroC050.CodNat));
+    }
 }

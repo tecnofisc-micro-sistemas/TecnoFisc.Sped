@@ -411,7 +411,16 @@ public static class CatalogoBuilder
             .ToDictionary(item => item.Valor!, item => item.Enum, StringComparer.Ordinal);
 
         if (porValorSped.Count == 0)
-            return s => Enum.Parse(alvo, s, ignoreCase: false);
+        {
+            bool ehFlags = alvo.IsDefined(typeof(FlagsAttribute), inherit: false);
+            return s =>
+            {
+                object valor = Enum.Parse(alvo, s, ignoreCase: false);
+                if (!ehFlags && !Enum.IsDefined(alvo, valor))
+                    throw new FormatException($"Valor '{s}' não é válido para {alvo.Name}.");
+                return valor;
+            };
+        }
 
         return s => porValorSped.TryGetValue(s, out var valor)
             ? valor

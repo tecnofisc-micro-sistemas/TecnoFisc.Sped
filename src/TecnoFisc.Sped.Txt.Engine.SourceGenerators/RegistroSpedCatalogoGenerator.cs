@@ -24,6 +24,7 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
     private const string AttributeRegistro = "TecnoFisc.Sped.Txt.Engine.Atributos.RegistroSpedAttribute";
     private const string AttributeCampo = "TecnoFisc.Sped.Txt.Engine.Atributos.CampoSpedAttribute";
     private const string AttributeSpedValor = "TecnoFisc.Sped.Txt.Engine.Atributos.SpedValorAttribute";
+    private const string AttributeFlags = "System.FlagsAttribute";
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -233,6 +234,9 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
                     && tipoPropriedade is INamedTypeSymbol enumTipo
                     ? ColetarMapeamentoSpedValor(enumTipo)
                     : ImmutableArray<string>.Empty;
+                bool enumFlags = categoria == CategoriaCampo.Enum
+                    && tipoPropriedade.GetAttributes()
+                        .Any(a => a.AttributeClass?.ToDisplayString() == AttributeFlags);
 
                 lista.Add(new InfoCampo(
                     propriedade.Name,
@@ -249,7 +253,8 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
                     desdeVersao,
                     capturaTudo,
                     campoArquivo,
-                    enumValoresSped));
+                    enumValoresSped,
+                    enumFlags));
             }
         }
 
@@ -602,9 +607,6 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
         if (c.Nullable)
         {
             sb.Append("        if (valor.IsEmpty) { alvo.").Append(c.Nome).AppendLine(" = null; return; }");
-            sb.Append("        ").Append(under).Append(" bruto = ").Append(under)
-                .AppendLine(".Parse(valor, NumberStyles.Integer, CultureInfo.InvariantCulture);");
-            sb.Append("        alvo.").Append(c.Nome).Append(" = (").Append(c.TipoFq).AppendLine(")bruto;");
         }
         else
         {
@@ -613,10 +615,17 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
             sb.Append("            alvo.").Append(c.Nome).AppendLine(" = default;");
             sb.AppendLine("            return;");
             sb.AppendLine("        }");
-            sb.Append("        ").Append(under).Append(" bruto = ").Append(under)
-                .AppendLine(".Parse(valor, NumberStyles.Integer, CultureInfo.InvariantCulture);");
-            sb.Append("        alvo.").Append(c.Nome).Append(" = (").Append(c.TipoFq).AppendLine(")bruto;");
         }
+        sb.Append("        ").Append(under).Append(" bruto = ").Append(under)
+            .AppendLine(".Parse(valor, NumberStyles.Integer, CultureInfo.InvariantCulture);");
+        sb.Append("        ").Append(c.TipoFq).Append(" convertido = (").Append(c.TipoFq).AppendLine(")bruto;");
+        if (!c.EnumFlags)
+        {
+            sb.AppendLine("        if (!Enum.IsDefined(convertido))");
+            sb.Append("            throw new FormatException(\"Valor '\" + valor.ToString() + \"' não é válido para ")
+                .Append(c.TipoFq).AppendLine(".\");");
+        }
+        sb.Append("        alvo.").Append(c.Nome).AppendLine(" = convertido;");
     }
 
     /// <summary>
@@ -903,7 +912,8 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
         int DesdeVersao,
         bool CapturaTudo,
         bool CampoArquivo,
-        ImmutableArray<string> EnumValoresSped);
+        ImmutableArray<string> EnumValoresSped,
+        bool EnumFlags);
 
     private readonly record struct InfoRegistro(
         string TipoFullyQualified,

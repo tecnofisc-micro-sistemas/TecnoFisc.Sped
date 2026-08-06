@@ -76,6 +76,31 @@ public sealed class RegistroC170Sintetico : RegistroSped
     public decimal VlItem { get; set; }
 }
 
+public enum SituacaoSintetica
+{
+    Ativa = 1,
+    Inativa = 2,
+}
+
+[Flags]
+public enum PermissoesSinteticas
+{
+    Leitura = 1,
+    Escrita = 2,
+}
+
+[RegistroSped(Codigo = "E100", Nivel = 1, Bloco = "E")]
+public sealed class RegistroE100Sintetico : RegistroSped
+{
+    public override string Codigo => "E100";
+
+    [CampoSped(Ordem = 2, Tamanho = 2)]
+    public SituacaoSintetica? Situacao { get; set; }
+
+    [CampoSped(Ordem = 3, Tamanho = 2)]
+    public PermissoesSinteticas? Permissoes { get; set; }
+}
+
 /// <summary>
 /// Registro sintético com campo-arquivo embutido — espelha a forma de J800/J801 da ECD
 /// (TIPO_DOC, DESC_RTF, HASH_RTF, ARQ_RTF, IND_FIM_RTF). <c>ArqRtf</c> é o campo-arquivo

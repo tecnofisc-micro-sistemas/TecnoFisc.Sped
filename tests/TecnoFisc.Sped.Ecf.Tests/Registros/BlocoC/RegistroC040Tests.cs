@@ -10,7 +10,7 @@ public sealed class RegistroC040Tests
 {
     private const string LinhaCompleta =
         "|C040|0123456789ABCDEF0123456789ABCDEF01234567|01012025|31122025|1|" +
-        "11222333000181|7|00123456789|LIVRO DIARIO|9.00|G|S|N|0|1|01|";
+        "11222333000181|7|00123456789|LIVRO DIARIO|9.00|G|S|N|0|1|1|";
 
     [Fact]
     public void Registro_ConformeManifesto()
@@ -34,7 +34,7 @@ public sealed class RegistroC040Tests
         registro.IndEscCons.Should().Be(IndicadorSimNao.Nao);
         registro.IndCentralizada.Should().Be("0");
         registro.IndMudancPc.Should().Be("1");
-        registro.CodPlanRef.Should().Be("01");
+        registro.CodPlanRef.Should().Be("1");
     }
 
     [Fact]

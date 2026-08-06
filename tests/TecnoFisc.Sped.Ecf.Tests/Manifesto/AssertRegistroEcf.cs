@@ -126,7 +126,7 @@ internal static partial class AssertRegistroEcf
             "obrigatório",
             NormalizarObrigatorio(campo.Required),
             obrigatorio);
-        if (!TipoCompativel(campo, tipo))
+        if (!TipoCompativel(registro, campo, tipo))
         {
             divergencias.Add(
                 $"{contexto}: tipo do manifesto '{campo.Type}' incompatível com CLR '{tipo.FullName}'");
@@ -229,15 +229,16 @@ internal static partial class AssertRegistroEcf
 
         int quantidadeComparavel = Math.Min(camposEsperados.Length, atual.Campos.Count);
         for (int indice = 0; indice < quantidadeComparavel; indice++)
-            CompararCampo(esperado.Code, camposEsperados[indice], atual.Campos[indice], divergencias);
+            CompararCampo(esperado, camposEsperados[indice], atual.Campos[indice], divergencias);
     }
 
     private static void CompararCampo(
-        string codigo,
+        ManifestoRegistroEcf registro,
         ManifestoCampoEcf esperado,
         MetadadosCampo atual,
         List<string> divergencias)
     {
+        string codigo = registro.Code;
         string contexto = $"registro {codigo}, campo nº {esperado.Number} {esperado.Name}";
         AdicionarDivergencia(divergencias, contexto, "ordem", esperado.Number, atual.Ordem);
         AdicionarDivergencia(
@@ -265,12 +266,29 @@ internal static partial class AssertRegistroEcf
             NormalizarObrigatorio(esperado.Required),
             atual.Obrigatorio);
 
-        if (!TipoCompativel(esperado, atual.Tipo))
+        if (!TipoCompativel(registro, esperado, atual.Tipo))
         {
             divergencias.Add(
                 $"{contexto}: tipo do manifesto '{esperado.Type}' incompatível com CLR " +
                 $"'{atual.Tipo.FullName}'");
         }
+    }
+
+    private static bool TipoCompativel(
+        ManifestoRegistroEcf registro,
+        ManifestoCampoEcf campo,
+        Type tipo)
+    {
+        bool campoCnpj = CnpjTokenPattern().IsMatch(campo.Name);
+        bool possuiNifSeparado = registro.Fields.Any(item =>
+            NifTokenPattern().IsMatch(item.Name));
+        if (campoCnpj && possuiNifSeparado)
+        {
+            Type alvo = Nullable.GetUnderlyingType(tipo) ?? tipo;
+            return alvo == typeof(string);
+        }
+
+        return TipoCompativel(campo, tipo);
     }
 
     internal static bool TipoCompativel(ManifestoCampoEcf campo, Type tipo)

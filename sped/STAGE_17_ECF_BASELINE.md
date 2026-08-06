@@ -124,16 +124,16 @@
 | 17.121 | W250 | Declaração País-a-País – Entidades Integrantes | 430 | 436 | W | [x] |
 | 17.122 | W300 | Observações Adicionais – Declaração País-a-País | 436 | 439 | W | [x] |
 | 17.123 | W990 | Encerramento do Bloco W | 439 | 440 | W | [x] |
-| 17.124 | X001 | Abertura do Bloco X | 440 | 441 | X | [ ] |
-| 17.125 | X280 | Atividades Incentivadas – PJ em Geral | 441 | 452 | X | [ ] |
-| 17.126 | X292 | Operações com o Exterior – Pessoa Não Vinculada/Não Interposta/País sem Tributação Favorecida | 452 | 454 | X | [ ] |
-| 17.127 | X340 | Identificação da Participação no Exterior | 454 | 458 | X | [ ] |
-| 17.128 | X350 | Participações no Exterior – Resultado do Período de Apuração | 458 | 462 | X | [ ] |
-| 17.129 | X351 | Demonstrativo de Resultados e de Imposto Pago no Exterior | 462 | 466 | X | [ ] |
-| 17.130 | X352 | Demonstrativo de Resultados no Exterior Auferidos por Intermédio de Coligadas | 466 | 467 | X | [ ] |
-| 17.131 | X353 | Demonstrativo de Consolidação | 467 | 469 | X | [ ] |
-| 17.132 | X354 | Demonstrativo de Prejuízos Acumulados | 469 | 471 | X | [ ] |
-| 17.133 | X355 | Demonstrativo de Rendas Ativas e Passivas | 471 | 473 | X | [ ] |
+| 17.124 | X001 | Abertura do Bloco X | 440 | 441 | X | [x] |
+| 17.125 | X280 | Atividades Incentivadas – PJ em Geral | 441 | 452 | X | [x] |
+| 17.126 | X292 | Operações com o Exterior – Pessoa Não Vinculada/Não Interposta/País sem Tributação Favorecida | 452 | 454 | X | [x] |
+| 17.127 | X340 | Identificação da Participação no Exterior | 454 | 458 | X | [x] |
+| 17.128 | X350 | Participações no Exterior – Resultado do Período de Apuração | 458 | 462 | X | [x] |
+| 17.129 | X351 | Demonstrativo de Resultados e de Imposto Pago no Exterior | 462 | 466 | X | [x] |
+| 17.130 | X352 | Demonstrativo de Resultados no Exterior Auferidos por Intermédio de Coligadas | 466 | 467 | X | [x] |
+| 17.131 | X353 | Demonstrativo de Consolidação | 467 | 469 | X | [x] |
+| 17.132 | X354 | Demonstrativo de Prejuízos Acumulados | 469 | 471 | X | [x] |
+| 17.133 | X355 | Demonstrativo de Rendas Ativas e Passivas | 471 | 473 | X | [x] |
 | 17.134 | X356 | Demonstrativo de Estrutura Societária | 473 | 474 | X | [ ] |
 | 17.135 | X357 | Investidoras Diretas | 474 | 476 | X | [ ] |
 | 17.136 | X360 | Informações Gerais Sobre Preços de Transferência | 476 | 478 | X | [ ] |

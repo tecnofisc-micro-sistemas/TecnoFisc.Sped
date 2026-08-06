@@ -263,6 +263,28 @@ public sealed class AssertRegistroEcfCompatibilityTests
             .WithMessage("*Y600*CPF_CNPJ*tipo*incompatível*Cnpj*");
     }
 
+    [Fact]
+    public void ChaveComNifECnpjEmCamposSeparados_PreservaAmbosComoString()
+    {
+        var nif = () => AssertRegistroEcf.FieldMetadataMatchesManifest(
+            "X340",
+            "NIF",
+            typeof(string),
+            tamanho: 0,
+            decimais: 0,
+            obrigatorio: true);
+        var cnpj = () => AssertRegistroEcf.FieldMetadataMatchesManifest(
+            "X340",
+            "CNPJ",
+            typeof(string),
+            tamanho: 14,
+            decimais: 0,
+            obrigatorio: false);
+
+        nif.Should().NotThrow();
+        cnpj.Should().NotThrow();
+    }
+
     private static ManifestoCampoEcf CriarCampo(
         string nome,
         string descricao,

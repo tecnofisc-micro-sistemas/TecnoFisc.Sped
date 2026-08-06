@@ -26,7 +26,7 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
     private const string AttributeSpedValor = "TecnoFisc.Sped.Txt.Engine.Atributos.SpedValorAttribute";
     private const string AttributeFlags = "System.FlagsAttribute";
 
-    private static readonly DiagnosticDescriptor NomeCampoInvalido = new(
+    private static readonly DiagnosticDescriptor InvalidFieldNameDiagnostic = new(
         id: "TFSPED001",
         title: "Nome de campo SPED inválido",
         messageFormat: "O alias Nome '{1}' em '{0}' deve ser um identificador ASCII sem espaços",
@@ -34,7 +34,7 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
-    private static readonly DiagnosticDescriptor NomeCampoDuplicado = new(
+    private static readonly DiagnosticDescriptor DuplicateFieldNameDiagnostic = new(
         id: "TFSPED002",
         title: "Nome de campo SPED duplicado",
         messageFormat: "O nome de campo SPED '{1}' está duplicado em '{0}'",
@@ -64,24 +64,24 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
             if (lista.IsDefaultOrEmpty)
                 return;
 
-            bool temErro = false;
-            foreach (InfoRegistro registro in lista)
+            bool hasErrors = false;
+            foreach (InfoRegistro recordInfo in lista)
             {
-                foreach (ErroCampo erro in registro.Erros)
+                foreach (FieldError error in recordInfo.Errors)
                 {
-                    DiagnosticDescriptor descriptor = erro.Tipo == TipoErroCampo.NomeInvalido
-                        ? NomeCampoInvalido
-                        : NomeCampoDuplicado;
+                    DiagnosticDescriptor descriptor = error.Kind == FieldErrorKind.InvalidName
+                        ? InvalidFieldNameDiagnostic
+                        : DuplicateFieldNameDiagnostic;
                     spc.ReportDiagnostic(Diagnostic.Create(
                         descriptor,
-                        erro.Localizacao,
-                        erro.Propriedade,
-                        erro.Nome));
-                    temErro = true;
+                        error.Location,
+                        error.Property,
+                        error.Name));
+                    hasErrors = true;
                 }
             }
 
-            if (temErro)
+            if (hasErrors)
                 return;
 
             string fonte = GerarCatalogo(lista, asmName);
@@ -210,7 +210,7 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
         if (string.IsNullOrEmpty(codigo) || string.IsNullOrEmpty(bloco))
             return null;
 
-        ResultadoCampos resultadoCampos = ColetarCampos(tipo);
+        FieldCollectionResult fieldsResult = ColetarCampos(tipo);
 
         string tipoFq = tipo.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
         return new InfoRegistro(
@@ -218,17 +218,17 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
             codigo!,
             nivel,
             bloco!,
-            resultadoCampos.Campos,
+            fieldsResult.Fields,
             introduzidoEm,
             tokenFimArquivo,
-            resultadoCampos.Erros);
+            fieldsResult.Errors);
     }
 
-    private static ResultadoCampos ColetarCampos(INamedTypeSymbol tipoRegistro)
+    private static FieldCollectionResult ColetarCampos(INamedTypeSymbol tipoRegistro)
     {
         var lista = new List<InfoCampo>();
-        var nomes = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
-        ImmutableArray<ErroCampo>.Builder erros = ImmutableArray.CreateBuilder<ErroCampo>();
+        var fieldNames = new HashSet<string>(System.StringComparer.Ordinal);
+        ImmutableArray<FieldError>.Builder errors = ImmutableArray.CreateBuilder<FieldError>();
 
         // Atravessa toda a hierarquia (heranças entre registros existem em alguns layouts).
         for (INamedTypeSymbol? atual = tipoRegistro; atual is not null; atual = atual.BaseType)
@@ -248,7 +248,7 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
                 bool capturaTudo = false;
                 bool campoArquivo = false;
                 string? formato = null;
-                string? nomeExplicito = null;
+                string? explicitName = null;
                 foreach (KeyValuePair<string, TypedConstant> arg in campoAttr.NamedArguments)
                 {
                     switch (arg.Key)
@@ -258,31 +258,31 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
                         case "Decimais": decimais = arg.Value.Value is int d ? d : 0; break;
                         case "Obrigatorio": obrigatorio = arg.Value.Value is bool b && b; break;
                         case "Formato": formato = arg.Value.Value as string; break;
-                        case "Nome": nomeExplicito = arg.Value.Value as string; break;
+                        case "Nome": explicitName = arg.Value.Value as string; break;
                         case "DesdeVersao": desdeVersao = arg.Value.Value is int dv ? dv : 0; break;
                         case "CapturaTudo": capturaTudo = arg.Value.Value is bool ct && ct; break;
                         case "CampoArquivo": campoArquivo = arg.Value.Value is bool ca && ca; break;
                     }
                 }
 
-                string nomeCampo = nomeExplicito ?? propriedade.Name;
-                Location? localizacao = propriedade.Locations.FirstOrDefault();
-                string propriedadeFq = propriedade.ContainingType.ToDisplayString() + "." + propriedade.Name;
-                if (nomeExplicito is not null && !NomeCampoValido(nomeExplicito))
+                string fieldName = string.IsNullOrEmpty(explicitName) ? propriedade.Name : explicitName!;
+                Location? location = propriedade.Locations.FirstOrDefault();
+                string fullyQualifiedProperty = propriedade.ContainingType.ToDisplayString() + "." + propriedade.Name;
+                if (!string.IsNullOrEmpty(explicitName) && !IsFieldNameValid(explicitName!))
                 {
-                    erros.Add(new ErroCampo(
-                        TipoErroCampo.NomeInvalido,
-                        localizacao,
-                        propriedadeFq,
-                        EscaparNomeCampo(nomeExplicito)));
+                    errors.Add(new FieldError(
+                        FieldErrorKind.InvalidName,
+                        location,
+                        fullyQualifiedProperty,
+                        EscapeFieldName(explicitName!)));
                 }
-                else if (!nomes.Add(nomeCampo))
+                else if (!fieldNames.Add(fieldName))
                 {
-                    erros.Add(new ErroCampo(
-                        TipoErroCampo.NomeDuplicado,
-                        localizacao,
-                        propriedadeFq,
-                        nomeCampo));
+                    errors.Add(new FieldError(
+                        FieldErrorKind.DuplicateName,
+                        location,
+                        fullyQualifiedProperty,
+                        fieldName));
                 }
 
                 ITypeSymbol tipoPropriedade = propriedade.Type;
@@ -309,7 +309,7 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
 
                 lista.Add(new InfoCampo(
                     propriedade.Name,
-                    nomeCampo,
+                    fieldName,
                     ordem,
                     tipoFq,
                     tipoNome,
@@ -329,36 +329,36 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
             }
         }
 
-        ImmutableArray<InfoCampo> campos = lista
+        ImmutableArray<InfoCampo> fields = lista
             .GroupBy(c => c.Ordem)
             .Select(g => g.First())
             .OrderBy(c => c.Ordem)
             .ToImmutableArray();
-        return new ResultadoCampos(campos, erros.ToImmutable());
+        return new FieldCollectionResult(fields, errors.ToImmutable());
     }
 
-    private static bool NomeCampoValido(string nome)
+    private static bool IsFieldNameValid(string name)
     {
-        if (nome.Length == 0 || nome.Length > 128 || !EhInicioNomeCampo(nome[0]))
+        if (name.Length == 0 || !IsFieldNameStart(name[0]))
             return false;
 
-        for (int i = 1; i < nome.Length; i++)
+        for (int i = 1; i < name.Length; i++)
         {
-            char caractere = nome[i];
-            if (!EhInicioNomeCampo(caractere) && (caractere < '0' || caractere > '9'))
+            char character = name[i];
+            if (!IsFieldNameStart(character) && (character < '0' || character > '9'))
                 return false;
         }
 
         return true;
     }
 
-    private static bool EhInicioNomeCampo(char caractere)
-        => caractere == '_' ||
-           (caractere >= 'A' && caractere <= 'Z') ||
-           (caractere >= 'a' && caractere <= 'z');
+    private static bool IsFieldNameStart(char character)
+        => character == '_' ||
+           (character >= 'A' && character <= 'Z') ||
+           (character >= 'a' && character <= 'z');
 
-    private static string EscaparNomeCampo(string nome)
-        => nome
+    private static string EscapeFieldName(string name)
+        => name
             .Replace("\\", "\\\\")
             .Replace("\t", "\\t")
             .Replace("\r", "\\r")
@@ -543,7 +543,7 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
     private static void EmitirCampo(StringBuilder sb, InfoRegistro reg, InfoCampo campo, bool ultimo)
     {
         sb.Append("                new MetadadosCampo(");
-        sb.Append('"').Append(EscaparLiteral(campo.NomeCampo)).Append("\", ");
+        sb.Append('"').Append(EscaparLiteral(campo.FieldName)).Append("\", ");
         sb.Append(campo.Ordem.ToString(CultureInfo.InvariantCulture)).Append(", ");
         sb.Append("typeof(").Append(campo.TipoDeclaradoFq).Append("), ");
         sb.Append(campo.Tamanho.ToString(CultureInfo.InvariantCulture)).Append(", ");
@@ -998,7 +998,7 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
 
     private readonly record struct InfoCampo(
         string Nome,
-        string NomeCampo,
+        string FieldName,
         int Ordem,
         string TipoFq,
         string TipoNome,
@@ -1024,21 +1024,21 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
         ImmutableArray<InfoCampo> Campos,
         int IntroduzidoEm,
         string? TokenFimArquivo,
-        ImmutableArray<ErroCampo> Erros);
+        ImmutableArray<FieldError> Errors);
 
-    private readonly record struct ResultadoCampos(
-        ImmutableArray<InfoCampo> Campos,
-        ImmutableArray<ErroCampo> Erros);
+    private readonly record struct FieldCollectionResult(
+        ImmutableArray<InfoCampo> Fields,
+        ImmutableArray<FieldError> Errors);
 
-    private readonly record struct ErroCampo(
-        TipoErroCampo Tipo,
-        Location? Localizacao,
-        string Propriedade,
-        string Nome);
+    private readonly record struct FieldError(
+        FieldErrorKind Kind,
+        Location? Location,
+        string Property,
+        string Name);
 
-    private enum TipoErroCampo
+    private enum FieldErrorKind
     {
-        NomeInvalido,
-        NomeDuplicado,
+        InvalidName,
+        DuplicateName,
     }
 }

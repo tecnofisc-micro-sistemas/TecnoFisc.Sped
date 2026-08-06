@@ -49,17 +49,33 @@ public sealed class CatalogoBuilderNomeCampoTests
     }
 
     [Fact]
-    public void NomeNuloExplicito_UsaNomeDaPropriedadeComoAntes()
+    public void NomeVazioOuNulo_UsaNomeDaPropriedadeComoAntes()
     {
-        var metadados = Construir(typeof(RegistroAliasNuloSintetico));
+        var metadados = Construir(typeof(RegistroAliasVazioOuNuloSintetico));
 
-        metadados.Campos.Should().ContainSingle()
-            .Which.Nome.Should().Be(nameof(RegistroAliasNuloSintetico.CampoOriginal));
+        metadados.Campos.Select(campo => campo.Nome).Should().Equal(
+            nameof(RegistroAliasVazioOuNuloSintetico.CampoVazio),
+            nameof(RegistroAliasVazioOuNuloSintetico.CampoNulo));
+    }
+
+    [Fact]
+    public void NomesSemAlias_DiferenciadosSomentePorCaixa_ContinuamValidos()
+    {
+        var metadados = Construir(typeof(RegistroNomesSemAliasPorCaixaSintetico));
+
+        metadados.Campos.Select(campo => campo.Nome).Should().Equal("Valor", "VALOR");
+    }
+
+    [Fact]
+    public void AliasesDiferenciadosSomentePorCaixa_ContinuamValidos()
+    {
+        var metadados = Construir(typeof(RegistroAliasesPorCaixaSintetico));
+
+        metadados.Campos.Select(campo => campo.Nome).Should().Equal("Valor", "VALOR");
     }
 
     public static TheoryData<Type, string> AliasInvalidos => new()
     {
-        { typeof(RegistroAliasVazioSintetico), "" },
         { typeof(RegistroAliasEspacoSintetico), " " },
         { typeof(RegistroAliasTabSintetico), "\t" },
         { typeof(RegistroAliasMargemSintetico), " CODIGO " },
@@ -79,12 +95,6 @@ public sealed class CatalogoBuilderNomeCampoTests
     private abstract class RegistroAliasBase : RegistroSped
     {
         public override string Codigo => "A999";
-    }
-
-    private sealed class RegistroAliasVazioSintetico : RegistroAliasBase
-    {
-        [CampoSped(Ordem = 2, Nome = "")]
-        public string? Campo { get; set; }
     }
 
     private sealed class RegistroAliasEspacoSintetico : RegistroAliasBase
@@ -132,9 +142,30 @@ public sealed class CatalogoBuilderNomeCampoTests
         public string? Segundo { get; set; }
     }
 
-    private sealed class RegistroAliasNuloSintetico : RegistroAliasBase
+    private sealed class RegistroAliasVazioOuNuloSintetico : RegistroAliasBase
     {
-        [CampoSped(Ordem = 2, Nome = null)]
-        public string? CampoOriginal { get; set; }
+        [CampoSped(Ordem = 2, Nome = "")]
+        public string? CampoVazio { get; set; }
+
+        [CampoSped(Ordem = 3, Nome = null)]
+        public string? CampoNulo { get; set; }
+    }
+
+    private sealed class RegistroNomesSemAliasPorCaixaSintetico : RegistroAliasBase
+    {
+        [CampoSped(Ordem = 2)]
+        public string? Valor { get; set; }
+
+        [CampoSped(Ordem = 3)]
+        public string? VALOR { get; set; }
+    }
+
+    private sealed class RegistroAliasesPorCaixaSintetico : RegistroAliasBase
+    {
+        [CampoSped(Ordem = 2, Nome = "Valor")]
+        public string? Primeiro { get; set; }
+
+        [CampoSped(Ordem = 3, Nome = "VALOR")]
+        public string? Segundo { get; set; }
     }
 }

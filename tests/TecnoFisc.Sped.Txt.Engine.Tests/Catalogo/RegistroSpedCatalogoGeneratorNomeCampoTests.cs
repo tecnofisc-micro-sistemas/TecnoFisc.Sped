@@ -1,5 +1,5 @@
-using System.Reflection;
 using System.Collections.Immutable;
+using System.Reflection;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -57,7 +57,6 @@ public sealed class RegistroSpedCatalogoGeneratorNomeCampoTests
     }
 
     [Theory]
-    [InlineData("")]
     [InlineData(" ")]
     [InlineData("\t")]
     [InlineData(" CODIGO ")]
@@ -68,7 +67,7 @@ public sealed class RegistroSpedCatalogoGeneratorNomeCampoTests
     {
         string source = FonteComCampos($"[CampoSped(Ordem = 2, Nome = {Literal(alias)})] public string? Campo {{ get; set; }}");
 
-        _ = CompilarComGerador(source, out var diagnosticos, exigirEmissao: false);
+        _ = CompilarComGerador(source, out var diagnosticos, exigirCatalogoGerado: false);
 
         diagnosticos.Should().ContainSingle(diagnostico =>
             diagnostico.Id == "TFSPED001" && diagnostico.Severity == DiagnosticSeverity.Error);
@@ -82,26 +81,72 @@ public sealed class RegistroSpedCatalogoGeneratorNomeCampoTests
             [CampoSped(Ordem = 3, Nome = "CODIGO")] public string? Segundo { get; set; }
             """);
 
-        _ = CompilarComGerador(source, out var diagnosticos, exigirEmissao: false);
+        Assembly assembly = CompilarComGerador(source, out var diagnosticos, exigirCatalogoGerado: false);
 
         diagnosticos.Should().ContainSingle(diagnostico =>
             diagnostico.Id == "TFSPED002" && diagnostico.Severity == DiagnosticSeverity.Error);
+        var act = () => CatalogoBuilder.BuildFromAssembly(assembly);
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*Nome de campo duplicado*CODIGO*");
     }
 
     [Fact]
-    public void NomeNuloOuOmitido_PreservaNomeDaPropriedade()
+    public void NomeVazioNuloOuOmitido_PreservaNomeDaPropriedadeNosDoisCatalogos()
     {
         string source = FonteComCampos("""
-            [CampoSped(Ordem = 2, Nome = null)] public string? CampoNulo { get; set; }
-            [CampoSped(Ordem = 3)] public string? CampoOmitido { get; set; }
+            [CampoSped(Ordem = 2, Nome = "")] public string? CampoVazio { get; set; }
+            [CampoSped(Ordem = 3, Nome = null)] public string? CampoNulo { get; set; }
+            [CampoSped(Ordem = 4)] public string? CampoOmitido { get; set; }
             """);
 
+        AssertCatalogosConcordam(
+            source,
+            ["CampoVazio", "CampoNulo", "CampoOmitido"]);
+    }
+
+    [Fact]
+    public void NomesSemAlias_DiferenciadosSomentePorCaixa_SaoValidosNosDoisCatalogos()
+    {
+        string source = FonteComCampos("""
+            [CampoSped(Ordem = 2)] public string? Valor { get; set; }
+            [CampoSped(Ordem = 3)] public string? VALOR { get; set; }
+            """);
+
+        AssertCatalogosConcordam(source, ["Valor", "VALOR"]);
+    }
+
+    [Fact]
+    public void AliasesDiferenciadosSomentePorCaixa_SaoValidosNosDoisCatalogos()
+    {
+        string source = FonteComCampos("""
+            [CampoSped(Ordem = 2, Nome = "Valor")] public string? Primeiro { get; set; }
+            [CampoSped(Ordem = 3, Nome = "VALOR")] public string? Segundo { get; set; }
+            """);
+
+        AssertCatalogosConcordam(source, ["Valor", "VALOR"]);
+    }
+
+    [Fact]
+    public void AliasLongoComGramaticaValida_EAceitoNosDoisCatalogos()
+    {
+        string alias = "CAMPO_" + new string('A', 512);
+        string source = FonteComCampos(
+            $"[CampoSped(Ordem = 2, Nome = {Literal(alias)})] public string? CampoLongo {{ get; set; }}");
+
+        AssertCatalogosConcordam(source, [alias]);
+    }
+
+    private static void AssertCatalogosConcordam(string source, string[] nomesEsperados)
+    {
         Assembly assembly = CompilarComGerador(source, out var diagnosticos);
         diagnosticos.Should().NotContain(diagnostico => diagnostico.Severity == DiagnosticSeverity.Error);
 
         var gerado = CriarCatalogoGerado(assembly);
+        var reflexivo = CatalogoBuilder.BuildFromAssembly(assembly);
         gerado.TentarObter("A100", out var metadados).Should().BeTrue();
-        metadados!.Campos.Select(campo => campo.Nome).Should().Equal("CampoNulo", "CampoOmitido");
+        reflexivo.TentarObter("A100", out var metadadosReflexivos).Should().BeTrue();
+        metadados!.Campos.Select(campo => campo.Nome).Should().Equal(nomesEsperados);
+        metadadosReflexivos!.Campos.Select(campo => campo.Nome).Should().Equal(nomesEsperados);
     }
 
     private static string FonteComCampos(string campos)
@@ -130,7 +175,7 @@ public sealed class RegistroSpedCatalogoGeneratorNomeCampoTests
     private static Assembly CompilarComGerador(
         string source,
         out ImmutableArray<Diagnostic> diagnosticos,
-        bool exigirEmissao = true)
+        bool exigirCatalogoGerado = true)
     {
         string nomeAssembly = "AliasGerado" + Guid.NewGuid().ToString("N");
         var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);
@@ -149,7 +194,8 @@ public sealed class RegistroSpedCatalogoGeneratorNomeCampoTests
         driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var output, out var generatorDiagnostics);
         diagnosticos = generatorDiagnostics;
 
-        if (!exigirEmissao || diagnosticos.Any(diagnostico => diagnostico.Severity == DiagnosticSeverity.Error))
+        bool hasErrors = diagnosticos.Any(diagnostico => diagnostico.Severity == DiagnosticSeverity.Error);
+        if (exigirCatalogoGerado && hasErrors)
             return typeof(RegistroSpedCatalogoGeneratorNomeCampoTests).Assembly;
 
         using var stream = new MemoryStream();

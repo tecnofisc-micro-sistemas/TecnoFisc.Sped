@@ -182,7 +182,7 @@ public static class CatalogoBuilder
     {
         var lista = new List<(int Ordem, MetadadosCampo Campo)>();
         var ordensVistas = new HashSet<int>();
-        var nomesVistos = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var fieldNames = new HashSet<string>(StringComparer.Ordinal);
 
         foreach (var propriedade in tipo.GetProperties(BindingFlags.Public | BindingFlags.Instance))
         {
@@ -194,10 +194,10 @@ public static class CatalogoBuilder
                 throw new InvalidOperationException(
                     $"Ordem duplicada {atributo.Ordem} em {tipo.FullName}.{propriedade.Name}.");
 
-            string nomeCampo = ResolverNomeCampo(tipo, propriedade, atributo);
-            if (!nomesVistos.Add(nomeCampo))
+            string fieldName = ResolveFieldName(tipo, propriedade, atributo);
+            if (!fieldNames.Add(fieldName))
                 throw new InvalidOperationException(
-                    $"Nome de campo duplicado '{nomeCampo}' em {tipo.FullName}.{propriedade.Name}.");
+                    $"Nome de campo duplicado '{fieldName}' em {tipo.FullName}.{propriedade.Name}.");
 
             if (propriedade.SetMethod is null)
                 throw new InvalidOperationException(
@@ -225,7 +225,7 @@ public static class CatalogoBuilder
             };
 
             lista.Add((atributo.Ordem, new MetadadosCampo(
-                nomeCampo,
+                fieldName,
                 atributo.Ordem,
                 propriedade.PropertyType,
                 atributo.Tamanho,
@@ -271,47 +271,47 @@ public static class CatalogoBuilder
             : lista.ConvertAll(static x => x.Campo);
     }
 
-    private static string ResolverNomeCampo(
-        Type tipo,
-        PropertyInfo propriedade,
-        CampoSpedAttribute atributo)
+    private static string ResolveFieldName(
+        Type type,
+        PropertyInfo property,
+        CampoSpedAttribute attribute)
     {
-        string? alias = atributo.Nome;
-        if (alias is null)
-            return propriedade.Name;
+        string? alias = attribute.Nome;
+        if (string.IsNullOrEmpty(alias))
+            return property.Name;
 
-        if (!NomeCampoValido(alias))
+        if (!IsFieldNameValid(alias))
         {
             throw new InvalidOperationException(
-                $"Nome de campo SPED inválido '{EscaparNomeCampo(alias)}' em " +
-                $"{tipo.FullName}.{propriedade.Name}.");
+                $"Nome de campo SPED inválido '{EscapeFieldName(alias)}' em " +
+                $"{type.FullName}.{property.Name}.");
         }
 
         return alias;
     }
 
-    private static bool NomeCampoValido(string nome)
+    private static bool IsFieldNameValid(string name)
     {
-        if (nome.Length == 0 || nome.Length > 128 || !EhInicioNomeCampo(nome[0]))
+        if (name.Length == 0 || !IsFieldNameStart(name[0]))
             return false;
 
-        for (int i = 1; i < nome.Length; i++)
+        for (int i = 1; i < name.Length; i++)
         {
-            char caractere = nome[i];
-            if (!EhInicioNomeCampo(caractere) && (caractere < '0' || caractere > '9'))
+            char character = name[i];
+            if (!IsFieldNameStart(character) && (character < '0' || character > '9'))
                 return false;
         }
 
         return true;
     }
 
-    private static bool EhInicioNomeCampo(char caractere)
-        => caractere == '_' ||
-           (caractere >= 'A' && caractere <= 'Z') ||
-           (caractere >= 'a' && caractere <= 'z');
+    private static bool IsFieldNameStart(char character)
+        => character == '_' ||
+           (character >= 'A' && character <= 'Z') ||
+           (character >= 'a' && character <= 'z');
 
-    private static string EscaparNomeCampo(string nome)
-        => nome
+    private static string EscapeFieldName(string name)
+        => name
             .Replace("\\", "\\\\", StringComparison.Ordinal)
             .Replace("\t", "\\t", StringComparison.Ordinal)
             .Replace("\r", "\\r", StringComparison.Ordinal)

@@ -71,16 +71,16 @@
 | 17.068 | M500 | Controle de Saldos das Contas da Parte B do e-Lalur e do e-Lacs | 267 | 269 | M | [x] |
 | 17.069 | M510 | Controle de Saldos das Contas Padrão da Parte B do e-Lalur e do e-Lacs | 269 | 271 | M | [x] |
 | 17.070 | M990 | Encerramento do Bloco M | 271 | 272 | M | [x] |
-| 17.071 | N001 | Abertura do Bloco N | 272 | 273 | N | [ ] |
-| 17.072 | N030 | Identificação dos Períodos e Formas de Apuração do IRPJ e da CSLL das Empresas Tributadas pelo Lucro Real | 273 | 276 | N | [ ] |
-| 17.073 | N500 | Base de Cálculo do IRPJ Sobre o Lucro Real Após as Compensações de Prejuízos | 276 | 278 | N | [ ] |
-| 17.074 | N600 | Demonstração do Lucro da Exploração | 278 | 281 | N | [ ] |
-| 17.075 | N605 | Contas Contábeis Utilizadas na Apuração do Lucro da Exploração | 281 | 283 | N | [ ] |
-| 17.076 | N610 | Cálculo da Isenção e Redução do Imposto Sobre o Lucro Real | 283 | 287 | N | [ ] |
-| 17.077 | N615 | Informações da Base de Cálculo dos Incentivos Fiscais | 287 | 292 | N | [ ] |
-| 17.078 | N620 | Apuração do IRPJ Mensal por Estimativa | 292 | 294 | N | [ ] |
-| 17.079 | N630 | Apuração do IRPJ Com Base no Lucro Real | 294 | 297 | N | [ ] |
-| 17.080 | N650 | Base de Cálculo da CSLL Após as Compensações da Base de Cálculo Negativa | 297 | 299 | N | [ ] |
+| 17.071 | N001 | Abertura do Bloco N | 272 | 273 | N | [x] |
+| 17.072 | N030 | Identificação dos Períodos e Formas de Apuração do IRPJ e da CSLL das Empresas Tributadas pelo Lucro Real | 273 | 276 | N | [x] |
+| 17.073 | N500 | Base de Cálculo do IRPJ Sobre o Lucro Real Após as Compensações de Prejuízos | 276 | 278 | N | [x] |
+| 17.074 | N600 | Demonstração do Lucro da Exploração | 278 | 281 | N | [x] |
+| 17.075 | N605 | Contas Contábeis Utilizadas na Apuração do Lucro da Exploração | 281 | 283 | N | [x] |
+| 17.076 | N610 | Cálculo da Isenção e Redução do Imposto Sobre o Lucro Real | 283 | 287 | N | [x] |
+| 17.077 | N615 | Informações da Base de Cálculo dos Incentivos Fiscais | 287 | 292 | N | [x] |
+| 17.078 | N620 | Apuração do IRPJ Mensal por Estimativa | 292 | 294 | N | [x] |
+| 17.079 | N630 | Apuração do IRPJ Com Base no Lucro Real | 294 | 297 | N | [x] |
+| 17.080 | N650 | Base de Cálculo da CSLL Após as Compensações da Base de Cálculo Negativa | 297 | 299 | N | [x] |
 | 17.081 | N660 | Apuração da CSLL Mensal por Estimativa | 299 | 303 | N | [ ] |
 | 17.082 | N670 | Apuração da CSLL Com Base no Lucro Real | 303 | 305 | N | [ ] |
 | 17.083 | N990 | Encerramento do Bloco N | 305 | 320 | N | [ ] |

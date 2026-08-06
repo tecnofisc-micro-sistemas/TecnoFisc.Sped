@@ -370,6 +370,7 @@ internal static partial class AssertRegistroEcf
         {
             if (string.Equals(segmento, "DATA", StringComparison.Ordinal) ||
                 string.Equals(segmento, "DT", StringComparison.Ordinal) ||
+                string.Equals(segmento, "DAT", StringComparison.Ordinal) ||
                 string.Equals(segmento, "VIG", StringComparison.Ordinal))
             {
                 return true;

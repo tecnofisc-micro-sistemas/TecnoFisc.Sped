@@ -60,6 +60,9 @@ public sealed class AssertRegistroEcfCompatibilityTests
     [InlineData("PREFIXO_DATA_SUFIXO", "D")]
     [InlineData("REFERENCIA_DATA", "C")]
     [InlineData("VIG_INI", "N")]
+    [InlineData("DAT_ABERT", "N")]
+    [InlineData("DAT_ENCER", "C")]
+    [InlineData("PREFIXO_DAT_SUFIXO", "N")]
     public void SegmentoDataDelimitadoPorUnderscore_ClassificaDateOnly(
         string nome,
         string tipoManifesto)
@@ -82,6 +85,10 @@ public sealed class AssertRegistroEcfCompatibilityTests
     [InlineData("DT REFERENCIA")]
     [InlineData("X DATA Y")]
     [InlineData("DATA.REFERENCIA")]
+    [InlineData("DAT-ABERT")]
+    [InlineData("X/DAT/Y")]
+    [InlineData("DAT ABERT")]
+    [InlineData("DÁT_ABERT")]
     public void TokenDataSemDelimitadorUnderscore_PermaneceGenerico(string nome)
     {
         ManifestoCampoEcf campo = CriarCampo(

@@ -157,16 +157,16 @@
 | 17.154 | X500 | Zonas de Processamento de Exportação (ZPE) | 530 | 532 | X | [x] |
 | 17.155 | X510 | Áreas de Livre Comércio (ALC) | 532 | 534 | X | [x] |
 | 17.156 | X990 | Encerramento do Bloco X | 534 | 535 | X | [x] |
-| 17.157 | Y001 | Abertura do Bloco Y | 535 | 536 | Y | [ ] |
-| 17.158 | Y520 | Pagamentos/Recebimentos do Exterior ou de Não Residentes | 536 | 539 | Y | [ ] |
-| 17.159 | Y570 | Demonstrativo do Imposto de Renda e CSLL Retidos na Fonte | 539 | 543 | Y | [ ] |
-| 17.160 | Y590 | Ativos no Exterior | 543 | 545 | Y | [ ] |
-| 17.161 | Y600 | Identificação e Remuneração de Sócios, Titulares, Dirigentes e Conselheiros | 545 | 551 | Y | [ ] |
-| 17.162 | Y612 | Identificação e Rendimentos de Dirigentes e Conselheiros – Imunes ou Isentas | 551 | 553 | Y | [ ] |
-| 17.163 | Y620 | Participações Avaliadas Pelo Método de Equivalência Patrimonial | 553 | 557 | Y | [ ] |
-| 17.164 | Y630 | Fundos/Clubes de Investimento | 557 | 559 | Y | [ ] |
-| 17.165 | Y640 | Participações em Consórcios de Empresas | 559 | 561 | Y | [ ] |
-| 17.166 | Y650 | Participantes do Consórcio | 561 | 562 | Y | [ ] |
+| 17.157 | Y001 | Abertura do Bloco Y | 535 | 536 | Y | [x] |
+| 17.158 | Y520 | Pagamentos/Recebimentos do Exterior ou de Não Residentes | 536 | 539 | Y | [x] |
+| 17.159 | Y570 | Demonstrativo do Imposto de Renda e CSLL Retidos na Fonte | 539 | 543 | Y | [x] |
+| 17.160 | Y590 | Ativos no Exterior | 543 | 545 | Y | [x] |
+| 17.161 | Y600 | Identificação e Remuneração de Sócios, Titulares, Dirigentes e Conselheiros | 545 | 551 | Y | [x] |
+| 17.162 | Y612 | Identificação e Rendimentos de Dirigentes e Conselheiros – Imunes ou Isentas | 551 | 553 | Y | [x] |
+| 17.163 | Y620 | Participações Avaliadas Pelo Método de Equivalência Patrimonial | 553 | 557 | Y | [x] |
+| 17.164 | Y630 | Fundos/Clubes de Investimento | 557 | 559 | Y | [x] |
+| 17.165 | Y640 | Participações em Consórcios de Empresas | 559 | 561 | Y | [x] |
+| 17.166 | Y650 | Participantes do Consórcio | 561 | 562 | Y | [x] |
 | 17.167 | Y660 | Dados de Sucessoras | 562 | 564 | Y | [ ] |
 | 17.168 | Y672 | Outras Informações (Lucro Presumido ou Lucro Arbitrado) | 564 | 569 | Y | [ ] |
 | 17.169 | Y680 | Mês das Informações de Optantes pelo Refis (Lucro Real, Presumido e Arbitrado) | 569 | 570 | Y | [ ] |

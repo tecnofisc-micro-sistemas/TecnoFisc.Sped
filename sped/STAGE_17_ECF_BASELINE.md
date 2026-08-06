@@ -112,12 +112,12 @@
 | 17.109 | U180 | Cálculo do IRPJ das Empresas Imunes e Isentas | 388 | 390 | U | [x] |
 | 17.110 | U182 | Cálculo da Contribuição Social sobre o Lucro Líquido (CSLL) das Empresas Imunes e Isentas | 390 | 392 | U | [x] |
 | 17.111 | U990 | Encerramento do Bloco U | 392 | 395 | U | [x] |
-| 17.112 | V001 | Abertura do Bloco V | 395 | 396 | V | [ ] |
-| 17.113 | V010 | DEREX - Instituição | 396 | 397 | V | [ ] |
-| 17.114 | V020 | Responsável pela Movimentação | 397 | 398 | V | [ ] |
-| 17.115 | V030 | DEREX – Período - Mês | 398 | 399 | V | [ ] |
-| 17.116 | V100 | Demonstrativo dos Recursos em Moeda Estrangeira Decorrentes do Recebimento de Exportações | 399 | 401 | V | [ ] |
-| 17.117 | V990 | Encerramento do Bloco V | 401 | 406 | V | [ ] |
+| 17.112 | V001 | Abertura do Bloco V | 395 | 396 | V | [x] |
+| 17.113 | V010 | DEREX - Instituição | 396 | 397 | V | [x] |
+| 17.114 | V020 | Responsável pela Movimentação | 397 | 398 | V | [x] |
+| 17.115 | V030 | DEREX – Período - Mês | 398 | 399 | V | [x] |
+| 17.116 | V100 | Demonstrativo dos Recursos em Moeda Estrangeira Decorrentes do Recebimento de Exportações | 399 | 401 | V | [x] |
+| 17.117 | V990 | Encerramento do Bloco V | 401 | 406 | V | [x] |
 | 17.118 | W001 | Abertura do Bloco W | 406 | 407 | W | [ ] |
 | 17.119 | W100 | Informações sobre o Grupo Multinacional e a Entidade Declarante – Declaração País-a-País | 407 | 419 | W | [ ] |
 | 17.120 | W200 | Declaração País-a-País | 419 | 430 | W | [ ] |

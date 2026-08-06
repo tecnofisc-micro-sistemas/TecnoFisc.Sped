@@ -37,15 +37,15 @@
 | 17.034 | J053 | Subcontas Correlatas | 133 | 136 | J | [x] |
 | 17.035 | J100 | Centro de Custos | 136 | 137 | J | [x] |
 | 17.036 | J990 | Encerramento do Bloco J | 137 | 138 | J | [x] |
-| 17.037 | K001 | Abertura do Bloco K | 138 | 139 | K | [ ] |
-| 17.038 | K030 | Identificação dos Períodos e Formas de Apuração do IRPJ e da CSLL no Ano-Calendário | 139 | 142 | K | [ ] |
-| 17.039 | K155 | Detalhes dos Saldos Contábeis (Depois do Encerramento do Resultado do Período) | 142 | 145 | K | [ ] |
-| 17.040 | K156 | Mapeamento Referencial do Saldo | 145 | 147 | K | [ ] |
-| 17.041 | K355 | Saldos Finais das Contas Contábeis de Resultado Antes do Encerramento | 147 | 149 | K | [ ] |
-| 17.042 | K356 | Mapeamento Referencial dos Saldos Finais das Contas Contábeis de Resultado Antes do Encerramento | 149 | 151 | K | [ ] |
-| 17.043 | K915 | Justificativa para Divergência de Saldos Contábeis das Contas Patrimoniais Recuperados da ECD | 151 | 155 | K | [ ] |
-| 17.044 | K935 | Justificativa para Divergência de Saldos Contábeis das Contas de Resultado Recuperados da ECD | 155 | 158 | K | [ ] |
-| 17.045 | K990 | Encerramento do Bloco K | 158 | 216 | K | [ ] |
+| 17.037 | K001 | Abertura do Bloco K | 138 | 139 | K | [x] |
+| 17.038 | K030 | Identificação dos Períodos e Formas de Apuração do IRPJ e da CSLL no Ano-Calendário | 139 | 142 | K | [x] |
+| 17.039 | K155 | Detalhes dos Saldos Contábeis (Depois do Encerramento do Resultado do Período) | 142 | 145 | K | [x] |
+| 17.040 | K156 | Mapeamento Referencial do Saldo | 145 | 147 | K | [x] |
+| 17.041 | K355 | Saldos Finais das Contas Contábeis de Resultado Antes do Encerramento | 147 | 149 | K | [x] |
+| 17.042 | K356 | Mapeamento Referencial dos Saldos Finais das Contas Contábeis de Resultado Antes do Encerramento | 149 | 151 | K | [x] |
+| 17.043 | K915 | Justificativa para Divergência de Saldos Contábeis das Contas Patrimoniais Recuperados da ECD | 151 | 155 | K | [x] |
+| 17.044 | K935 | Justificativa para Divergência de Saldos Contábeis das Contas de Resultado Recuperados da ECD | 155 | 158 | K | [x] |
+| 17.045 | K990 | Encerramento do Bloco K | 158 | 216 | K | [x] |
 | 17.046 | L001 | Abertura do Bloco L | 216 | 217 | L | [ ] |
 | 17.047 | L030 | Identificação dos Períodos e Formas de Apuração do IRPJ e da CSLL no Ano-Calendário | 217 | 220 | L | [ ] |
 | 17.048 | L100 | Balanço Patrimonial | 220 | 225 | L | [ ] |

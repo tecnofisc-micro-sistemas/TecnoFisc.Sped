@@ -95,9 +95,9 @@
 | 17.092 | P400 | Apuração da Base de Cálculo da CSLL com Base no Lucro Presumido | 339 | 341 | P | [x] |
 | 17.093 | P500 | Cálculo da CSLL com Base no Lucro Presumido | 341 | 343 | P | [x] |
 | 17.094 | P990 | Encerramento do Bloco P | 343 | 344 | P | [x] |
-| 17.095 | Q001 | Abertura do Bloco Q | 344 | 345 | Q | [ ] |
-| 17.096 | Q100 | Demonstrativo do Livro Caixa | 345 | 347 | Q | [ ] |
-| 17.097 | Q990 | Encerramento do Bloco Q | 347 | 359 | Q | [ ] |
+| 17.095 | Q001 | Abertura do Bloco Q | 344 | 345 | Q | [x] |
+| 17.096 | Q100 | Demonstrativo do Livro Caixa | 345 | 347 | Q | [x] |
+| 17.097 | Q990 | Encerramento do Bloco Q | 347 | 359 | Q | [x] |
 | 17.098 | T001 | Abertura do Bloco T | 359 | 360 | T | [ ] |
 | 17.099 | T030 | Identificação dos Períodos e Formas de Apuração do IRPJ e da CSLL das Empresas Tributadas pelo Lucro Arbitrado | 360 | 362 | T | [ ] |
 | 17.100 | T120 | Apuração da Base de Cálculo do IRPJ com Base no Lucro Arbitrado | 362 | 364 | T | [ ] |

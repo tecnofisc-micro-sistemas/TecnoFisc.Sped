@@ -31,12 +31,12 @@
 | 17.028 | E155 | Detalhes dos Saldos Contábeis Calculados com Base nas ECD | 124 | 125 | E | [x] |
 | 17.029 | E355 | Detalhes dos Saldos das Contas de Resultado Antes do Encerramento | 125 | 126 | E | [x] |
 | 17.030 | E990 | Encerramento do Bloco E | 126 | 127 | E | [x] |
-| 17.031 | J001 | Abertura do Bloco J | 127 | 128 | J | [ ] |
-| 17.032 | J050 | Plano de Contas do Contribuinte | 128 | 131 | J | [ ] |
-| 17.033 | J051 | Plano de Contas Referencial | 131 | 133 | J | [ ] |
-| 17.034 | J053 | Subcontas Correlatas | 133 | 136 | J | [ ] |
-| 17.035 | J100 | Centro de Custos | 136 | 137 | J | [ ] |
-| 17.036 | J990 | Encerramento do Bloco J | 137 | 138 | J | [ ] |
+| 17.031 | J001 | Abertura do Bloco J | 127 | 128 | J | [x] |
+| 17.032 | J050 | Plano de Contas do Contribuinte | 128 | 131 | J | [x] |
+| 17.033 | J051 | Plano de Contas Referencial | 131 | 133 | J | [x] |
+| 17.034 | J053 | Subcontas Correlatas | 133 | 136 | J | [x] |
+| 17.035 | J100 | Centro de Custos | 136 | 137 | J | [x] |
+| 17.036 | J990 | Encerramento do Bloco J | 137 | 138 | J | [x] |
 | 17.037 | K001 | Abertura do Bloco K | 138 | 139 | K | [ ] |
 | 17.038 | K030 | Identificação dos Períodos e Formas de Apuração do IRPJ e da CSLL no Ano-Calendário | 139 | 142 | K | [ ] |
 | 17.039 | K155 | Detalhes dos Saldos Contábeis (Depois do Encerramento do Resultado do Período) | 142 | 145 | K | [ ] |

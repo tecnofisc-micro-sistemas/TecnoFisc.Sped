@@ -84,10 +84,10 @@ public sealed class ManifestoCatalogoTests
     [Fact]
     public void CodesAreImplemented_CodigoConhecidoMasAusente_ApontaFaltaNoCatalogo()
     {
-        var act = () => AssertRegistroEcf.CodesAreImplemented("J001");
+        var act = () => AssertRegistroEcf.CodesAreImplemented("K001");
 
         act.Should().Throw<Xunit.Sdk.XunitException>()
-            .WithMessage("*ausentes do catálogo*J001*");
+            .WithMessage("*ausentes do catálogo*K001*");
     }
 
     [Fact]

@@ -37,8 +37,8 @@ _BLOCKS = frozenset(
     {"0", "C", "E", "J", "K", "L", "M", "N", "P", "Q", "T", "U", "V", "W", "X", "Y", "9"}
 )
 _FIELD_TYPES = frozenset({"C", "N", "NS", "D"})
-_REQUIRED_TRUE_MARKERS = frozenset({"Sim", "S", "Sim”", "sim"})
-_REQUIRED_FALSE_MARKERS = frozenset({"Não", "N", "-"})
+_REQUIRED_TRUE_MARKERS = frozenset({"Sim", "sim", "S"})
+_REQUIRED_FALSE_MARKERS = frozenset({"Não", "N", "-", "OC"})
 _BASE_AND_OBJECT_MEMBERS = frozenset(
     {
         "Codigo",

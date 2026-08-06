@@ -658,12 +658,12 @@
       {
         "number": 32,
         "name": "CEBAS",
-        "description": "Número CEBAS que a entidade possui.",
+        "description": "Número CEBAS que a entidade possui. Deve ser preenchido caso o campo POSSUI_CEBAS for igual a “S – Sim”",
         "type": "C",
         "size": "255",
         "decimals": "-",
-        "required": "Sim”",
-        "validValues": "OC Deve ser preenchido caso o campo POSSUI_CEBAS for igual a “S –"
+        "required": "OC",
+        "validValues": ""
       }
     ]
   },

@@ -394,7 +394,7 @@ internal sealed partial class ManifestoEcf
             if (campoIndice == 0 && !string.Equals(campo.Name, "REG", StringComparison.Ordinal))
                 throw new InvalidDataException($"Registro {registro.Code}: o campo nº 1 deve ser REG.");
 
-            if (campo.Required is not ("Sim" or "Não" or "S" or "N" or "-" or "Sim”" or "sim"))
+            if (campo.Required is not ("Sim" or "sim" or "S" or "Não" or "N" or "-" or "OC"))
             {
                 throw new InvalidDataException(
                     $"O schema semântico do registro {registro.Code}, fields/{campoIndice}/required " +

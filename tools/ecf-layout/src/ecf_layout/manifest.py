@@ -56,6 +56,8 @@ _FIELD_KEYS = (
     "required",
     "validValues",
 )
+_REQUIRED_MARKERS = ("Sim", "sim", "S", "Não", "N", "-", "OC")
+_REQUIRED_MARKER_SET = frozenset(_REQUIRED_MARKERS)
 
 
 class ManifestValidationError(ValueError):
@@ -254,6 +256,11 @@ def _quarantine_items(records: list[dict], *, require_reviewed: bool) -> list[di
             for key in _FIELD_KEYS[1:]:
                 if key in field and not isinstance(field[key], str):
                     reasons.append(f"field {number} {key} must be a string")
+            required = field.get("required")
+            if isinstance(required, str) and required not in _REQUIRED_MARKER_SET:
+                reasons.append(
+                    f"field {number} required must be one of: {', '.join(_REQUIRED_MARKERS)}"
+                )
 
     codes = [record.get("code") for record in records if isinstance(record, dict) and isinstance(record.get("code"), str)]
     counts = Counter(codes)
@@ -343,6 +350,10 @@ def _parse_field_cells(
         values.extend([""] * (5 - len(values)))
         return _field(number, expected_name, description, values), True
 
+    conditional = _parse_conditional_required_cells(number, expected_name, cells)
+    if conditional is not None:
+        return conditional
+
     tokens = [part for cell in cells for part in (_parts(cell) or [""])]
     name_index = 1
     parsed_name = tokens[name_index] if len(tokens) > name_index else expected_name
@@ -381,6 +392,35 @@ def _parse_field_cells(
         decimals,
         valid_values,
         tokens[required_index],
+    ]
+    return _field(number, parsed_name, description, values), name_matches
+
+
+def _parse_conditional_required_cells(
+    number: int, expected_name: str, cells: list[str]
+) -> tuple[dict, bool] | None:
+    if len(cells) != 8:
+        return None
+    required_parts = _parts(cells[7])
+    type_parts = _parts(cells[3])
+    if not required_parts or required_parts[0] != "OC":
+        return None
+    if not type_parts or type_parts[0] not in {"C", "N", "NS", "D"}:
+        return None
+
+    name = "".join(_parts(cells[1]))
+    name_matches = _identifier_key(name) == _identifier_key(expected_name)
+    parsed_name = expected_name if name_matches else name
+    description = _plain(cells[2])
+    condition = " ".join(required_parts[1:])
+    if condition:
+        description = " ".join(part for part in (description, condition) if part)
+    values = [
+        type_parts[0],
+        _plain(cells[4]),
+        _plain(cells[5]),
+        _plain(cells[6]),
+        required_parts[0],
     ]
     return _field(number, parsed_name, description, values), name_matches
 

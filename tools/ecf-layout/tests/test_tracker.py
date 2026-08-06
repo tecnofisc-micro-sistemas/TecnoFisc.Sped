@@ -164,6 +164,20 @@ def test_schema_documents_relational_invariants_enforced_by_tooling() -> None:
     assert "semantic validation" in comment
 
 
+def test_schema_limits_required_markers_to_the_normative_vocabulary() -> None:
+    schema, _records, _rows = _load_artifacts()
+
+    assert schema["$defs"]["field"]["properties"]["required"]["enum"] == [
+        "Sim",
+        "sim",
+        "S",
+        "Não",
+        "N",
+        "-",
+        "OC",
+    ]
+
+
 def test_tracker_has_one_row_per_manifest_record_in_same_order() -> None:
     _schema, records, rows = _load_artifacts()
 
@@ -173,7 +187,7 @@ def test_tracker_has_one_row_per_manifest_record_in_same_order() -> None:
     assert [int(row["pageStart"]) for row in rows] == [record["pageStart"] for record in records]
     assert [int(row["pageEnd"]) for row in rows] == [record["pageEnd"] for record in records]
     assert [row["block"] for row in rows] == [record["block"] for record in records]
-    assert {row["status"] for row in rows} == {"[ ]"}
+    assert {row["status"] for row in rows} <= {"[ ]", "[x]"}
 
 
 def test_tracker_substages_are_contiguous_from_17_002_to_17_181() -> None:

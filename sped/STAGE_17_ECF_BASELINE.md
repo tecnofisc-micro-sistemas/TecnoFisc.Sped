@@ -3,14 +3,14 @@
 | Substage | Record | Title | Start page | End page | Block | Status |
 | --- | --- | --- | ---: | ---: | --- | --- |
 | 17.002 | 0000 | Abertura do Arquivo Digital e Identificação da Pessoa Jurídica | 58 | 67 | 0 | [x] |
-| 17.003 | 0001 | Abertura do Bloco 0 | 67 | 68 | 0 | [ ] |
-| 17.004 | 0010 | Parâmetros de Tributação | 68 | 77 | 0 | [ ] |
-| 17.005 | 0020 | Parâmetros Complementares | 77 | 91 | 0 | [ ] |
-| 17.006 | 0021 | Parâmetros de Identificação dos Tipos de Programa | 91 | 96 | 0 | [ ] |
-| 17.007 | 0030 | Dados Cadastrais | 96 | 98 | 0 | [ ] |
-| 17.008 | 0035 | Identificação das SCP | 98 | 99 | 0 | [ ] |
-| 17.009 | 0930 | Identificação dos Signatários da ECF | 99 | 103 | 0 | [ ] |
-| 17.010 | 0990 | Encerramento do Bloco 0 | 103 | 104 | 0 | [ ] |
+| 17.003 | 0001 | Abertura do Bloco 0 | 67 | 68 | 0 | [x] |
+| 17.004 | 0010 | Parâmetros de Tributação | 68 | 77 | 0 | [x] |
+| 17.005 | 0020 | Parâmetros Complementares | 77 | 91 | 0 | [x] |
+| 17.006 | 0021 | Parâmetros de Identificação dos Tipos de Programa | 91 | 96 | 0 | [x] |
+| 17.007 | 0030 | Dados Cadastrais | 96 | 98 | 0 | [x] |
+| 17.008 | 0035 | Identificação das SCP | 98 | 99 | 0 | [x] |
+| 17.009 | 0930 | Identificação dos Signatários da ECF | 99 | 103 | 0 | [x] |
+| 17.010 | 0990 | Encerramento do Bloco 0 | 103 | 104 | 0 | [x] |
 | 17.011 | C001 | Abertura do Bloco C | 104 | 105 | C | [ ] |
 | 17.012 | C040 | Identificador da ECD | 105 | 107 | C | [ ] |
 | 17.013 | C050 | Plano de Contas da ECD | 107 | 108 | C | [ ] |

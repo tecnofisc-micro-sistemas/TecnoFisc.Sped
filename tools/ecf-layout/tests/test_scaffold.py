@@ -321,12 +321,12 @@ def test_source_normalizes_manual_field_separators_and_diacritics(
     "manual_required, expected_attribute",
     [
         ("Sim", "[CampoSped(Ordem = 2, Tamanho = 12, Obrigatorio = true)]"),
-        ("S", "[CampoSped(Ordem = 2, Tamanho = 12, Obrigatorio = true)]"),
-        ("Sim”", "[CampoSped(Ordem = 2, Tamanho = 12, Obrigatorio = true)]"),
         ("sim", "[CampoSped(Ordem = 2, Tamanho = 12, Obrigatorio = true)]"),
+        ("S", "[CampoSped(Ordem = 2, Tamanho = 12, Obrigatorio = true)]"),
         ("Não", "[CampoSped(Ordem = 2, Tamanho = 12)]"),
         ("N", "[CampoSped(Ordem = 2, Tamanho = 12)]"),
         ("-", "[CampoSped(Ordem = 2, Tamanho = 12)]"),
+        ("OC", "[CampoSped(Ordem = 2, Tamanho = 12)]"),
     ],
 )
 def test_source_normalizes_unambiguous_required_markers(
@@ -364,6 +364,7 @@ def test_source_rejects_ambiguous_required_marker(tmp_path: Path) -> None:
         "—",
         "\u200b",
         "nao",
+        "Sim”",
         "False",
     ],
 )
@@ -378,6 +379,22 @@ def test_required_marker_rejects_every_non_vocabulary_impostor_before_any_write(
         scaffold(manifest, tmp_path, codes=["0001", "C001"], source=True)
 
     assert _tree(tmp_path) == {}
+
+
+def test_source_preserves_conditional_requirement_as_documentation_only(tmp_path: Path) -> None:
+    records = deepcopy(MINIMAL_LAYOUT_12_MANIFEST[:1])
+    records[0]["fields"][1]["description"] = (
+        "Numero do certificado. Deve ser preenchido caso o indicador seja igual a S."
+    )
+    records[0]["fields"][1]["required"] = "OC"
+    manifest = _write_manifest(tmp_path, records)
+
+    scaffold(manifest, tmp_path, codes=["0001"], source=True)
+
+    source = next(iter(_tree(tmp_path).values()))
+    assert "Deve ser preenchido caso o indicador seja igual a S." in source
+    assert "[CampoSped(Ordem = 2, Tamanho = 12)]" in source
+    assert "Obrigatorio = true" not in source
 
 
 def test_source_accepts_blank_non_inferred_decimal_and_domain_metadata(tmp_path: Path) -> None:

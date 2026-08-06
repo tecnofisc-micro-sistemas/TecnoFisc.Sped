@@ -122,7 +122,16 @@
           "type": "string"
         },
         "required": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "Sim",
+            "sim",
+            "S",
+            "Não",
+            "N",
+            "-",
+            "OC"
+          ]
         },
         "validValues": {
           "type": "string"

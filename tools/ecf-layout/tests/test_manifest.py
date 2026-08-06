@@ -199,6 +199,71 @@ def test_builds_only_structural_manifest_data_from_fragment() -> None:
     assert "REGRA_PROIBIDA" not in json.dumps(record, ensure_ascii=False)
 
 
+def test_keeps_conditional_required_marker_in_its_column() -> None:
+    fragment = RecordFragment(
+        code="0001",
+        block="0",
+        page_start=67,
+        page_end=67,
+        level="1",
+        occurrence="1:1",
+        fields=["REG", "DETALHE"],
+        markdown="""# **Registro 0001: Abertura**
+|**1**|REG|Identificacao.|C|4|-|[0001]|Sim|
+|**2**|DETALHE|Numero do certificado.|C|255|-||OC<br>Deve ser preenchido caso o indicador seja igual a “S –<br>Sim”|
+""",
+    )
+
+    record = manifest.record_from_fragment(fragment)
+
+    assert record["fields"][1] == {
+        "number": 2,
+        "name": "DETALHE",
+        "description": (
+            "Numero do certificado. Deve ser preenchido caso o indicador seja igual a “S – Sim”"
+        ),
+        "type": "C",
+        "size": "255",
+        "decimals": "-",
+        "required": "OC",
+        "validValues": "",
+    }
+
+
+def test_preserves_normative_lowercase_required_marker_for_w300() -> None:
+    fragment = RecordFragment(
+        code="W300",
+        block="W",
+        page_start=436,
+        page_end=439,
+        level="2",
+        occurrence="0:N",
+        fields=["REG", "FIM_OBSERVACAO"],
+        markdown="""# **Registro W300: Observacoes**
+|**1**|REG|Identificacao.|C|4|-|[W300]|Sim|
+|**2**|FIM_OBSERVACAO|Indicador de fim.|C|7|-|[W300FIM]|sim|
+""",
+    )
+
+    record = manifest.record_from_fragment(fragment)
+
+    assert record["fields"][1]["required"] == "sim"
+
+
+def test_quarantines_unknown_required_marker_before_promotion(tmp_path: Path) -> None:
+    records = _valid_records(reviewed=True)
+    records[0]["fields"][0]["required"] = "Sim”"
+
+    with pytest.raises(ManifestValidationError):
+        validate_and_promote(records, tmp_path, promote_to=tmp_path / "reviewed.json")
+
+    report = json.loads((tmp_path / "quarantine.json").read_text(encoding="utf-8"))
+    assert report["items"][0]["code"] == "0000"
+    assert report["items"][0]["reasons"] == [
+        "field 1 required must be one of: Sim, sim, S, Não, N, -, OC"
+    ]
+
+
 def test_keeps_field_row_when_rules_table_is_fused_into_that_row() -> None:
     fragment = RecordFragment(
         code="Y620",

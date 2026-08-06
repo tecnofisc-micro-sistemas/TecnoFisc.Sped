@@ -26,6 +26,7 @@ from ecf_layout.manifest import (
     write_quarantine,
 )
 from ecf_layout.render import render_suspicious_pages
+from ecf_layout.scaffold import ScaffoldError, scaffold
 
 
 Converter = Callable[[Path, int], str]
@@ -86,6 +87,13 @@ def _parse_pages(value: str) -> range:
     return range(start, end + 1)
 
 
+def _parse_codes(value: str) -> tuple[str, ...]:
+    codes = tuple(value.split(","))
+    if not codes or any(not code for code in codes):
+        raise argparse.ArgumentTypeError("codes must be a non-empty comma-separated list")
+    return codes
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="ecf-layout")
     subcommands = parser.add_subparsers(dest="command", required=True)
@@ -114,6 +122,14 @@ def main(argv: list[str] | None = None) -> int:
     promote.add_argument("--work-dir", type=Path, required=True)
     promote.add_argument("--manifest-out", type=Path, required=True)
     promote.add_argument("--tracker-out", type=Path, required=True)
+    scaffold_parser = subcommands.add_parser("scaffold")
+    scaffold_parser.add_argument("--manifest", type=Path, required=True)
+    scaffold_parser.add_argument("--output-root", type=Path, default=Path("."))
+    scaffold_parser.add_argument("--codes", type=_parse_codes, required=True)
+    modes = scaffold_parser.add_mutually_exclusive_group(required=True)
+    modes.add_argument("--tests-only", action="store_true")
+    modes.add_argument("--source", action="store_true")
+    scaffold_parser.add_argument("--force", action="store_true")
     args = parser.parse_args(argv)
 
     if args.command == "validate":
@@ -158,6 +174,21 @@ def main(argv: list[str] | None = None) -> int:
             print(f"promotion failed: {error}")
             return 1
         print("promoted: 180 reviewed manifest entries and 180 tracker rows")
+        return 0
+    if args.command == "scaffold":
+        try:
+            generated = scaffold(
+                args.manifest,
+                args.output_root,
+                codes=args.codes,
+                tests_only=args.tests_only,
+                source=args.source,
+                force=args.force,
+            )
+        except (ScaffoldError, OSError, UnicodeError) as error:
+            print(f"scaffold failed: {error}")
+            return 1
+        print(f"scaffolded: {len(generated)} files")
         return 0
 
     pages = args.pages

@@ -82,12 +82,12 @@ public sealed class ManifestoCatalogoTests
     }
 
     [Fact]
-    public void CodesAreImplemented_CodigoConhecidoMasAusente_ApontaFaltaNoCatalogo()
+    public void CodesAreImplemented_ProximoCodigoConhecidoMasAusente_ApontaFaltaNoCatalogo()
     {
-        var act = () => AssertRegistroEcf.CodesAreImplemented("X410");
+        var act = () => AssertRegistroEcf.CodesAreImplemented("X500");
 
         act.Should().Throw<Xunit.Sdk.XunitException>()
-            .WithMessage("*ausentes do catálogo*X410*");
+            .WithMessage("*ausentes do catálogo*X500*");
     }
 
     [Fact]

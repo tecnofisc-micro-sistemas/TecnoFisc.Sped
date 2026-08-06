@@ -10765,9 +10765,9 @@
         "description": "Data da Publicação da Portaria que concedeu o CEBAS Atual no DOU Data em que a Portaria que concedeu/renovou o Certificado de Entidade Beneficente de Assistência Social (CEBAS) atual, emitido pela autoridade executiva federal responsável pela área de saúde, educação ou assistência social, conforme a área de atuação preponderante da entidade, foi publicada no Diário Oficial da União (DOU) (Lei Complementar nº 187, de 2021, art. 35). Somente preencher quando X485.TIPO_BENEF for igual a “12 – ENTIDADE BENEFICENTE DE ASSISTÊNCIA SOCIAL IMUNE DE CONTRIBUIÇÕES SOCIAIS”.",
         "type": "N",
         "size": "008",
-        "decimals": "DDMMAAAA",
+        "decimals": "",
         "required": "Não",
-        "validValues": ""
+        "validValues": "DDMMAAAA"
       },
       {
         "number": 10,
@@ -10775,9 +10775,9 @@
         "description": "Data de Início de Vigência da Portaria que concedeu o CEBAS Atual Data de início de vigência da Portaria, publicada no Diário Oficial da União (DOU) que concedeu/renovou o Certificado de Entidade Beneficente de Assistência Social (CEBAS) atual, emitido pela autoridade executiva federal responsável pela área de saúde, educação ou assistência social, conforme a área de atuação preponderante da entidade (Lei Complementar nº 187, de 2021, arts. 35 a 37). O campo deve ser preenchido no seguinte formato: DD/MM/AAAA. Somente preencher quando X485.TIPO_BENEF for igual a “12 – ENTIDADE BENEFICENTE DE ASSISTÊNCIA SOCIAL IMUNE DE CONTRIBUIÇÕES SOCIAIS”.",
         "type": "N",
         "size": "008",
-        "decimals": "DDMMAAAA",
+        "decimals": "",
         "required": "Não",
-        "validValues": ""
+        "validValues": "DDMMAAAA"
       },
       {
         "number": 11,
@@ -10785,9 +10785,9 @@
         "description": "Data de Fim de Vigência da Portaria que concedeu o CEBAS Atual Data de fim de vigência da Portaria, publicada no Diário Oficial da União (DOU) que concedeu/renovou o Certificado de Entidade Beneficente de Assistência Social (CEBAS) atual, emitido pela autoridade executiva federal responsável pela área de saúde, educação ou assistência social, conforme a área de atuação preponderante da entidade (Lei Complementar nº 187, de 2021, arts. 35 a 37). O campo deve ser preenchido no seguinte formato: DD/MM/AAAA. Somente preencher quando X485.TIPO_BENEF for igual a “12 – ENTIDADE BENEFICENTE DE ASSISTÊNCIA SOCIAL IMUNE DE CONTRIBUIÇÕES SOCIAIS”.",
         "type": "N",
         "size": "008",
-        "decimals": "DDMMAAAA",
+        "decimals": "",
         "required": "Não",
-        "validValues": ""
+        "validValues": "DDMMAAAA"
       }
     ]
   },

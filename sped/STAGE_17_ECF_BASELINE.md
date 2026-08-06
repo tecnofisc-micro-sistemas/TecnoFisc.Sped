@@ -144,16 +144,16 @@
 | 17.141 | X375 | Informações Relacionadas aos Métodos | 488 | 491 | X | [x] |
 | 17.142 | X390 | Origem e Aplicação de Recursos – Imunes e Isentas | 491 | 493 | X | [x] |
 | 17.143 | X400 | Comércio Eletrônico e Tecnologia da Informação – Informações das Vendas | 493 | 496 | X | [x] |
-| 17.144 | X410 | Comércio Eletrônico – Informação de _Homepage_ /Servidor | 496 | 498 | X | [ ] |
-| 17.145 | X420 | _Royalties_ Recebidos ou Pagos a Beneficiários do Brasil e do Exterior | 498 | 504 | X | [ ] |
-| 17.146 | X430 | Rendimentos Relativos a Serviços, Juros e Dividendos Recebidos do Brasil e do Exterior | 504 | 511 | X | [ ] |
-| 17.147 | X450 | Pagamentos ou Remessas a Título de Serviços, Juros e Dividendos a Beneficiários do Brasil e do Exterior | 511 | 512 | X | [ ] |
-| 17.148 | X451 | Pagamentos ou Remessas a Título de Serviços, Juros e Dividendos a Beneficiários do Brasil e do Exterior – Demais Informações | 512 | 516 | X | [ ] |
-| 17.149 | X460 | Inovação Tecnológica e Desenvolvimento Tecnológico | 516 | 518 | X | [ ] |
-| 17.150 | X470 | Capacitação de Informática e Inclusão Digital | 518 | 520 | X | [ ] |
-| 17.151 | X480 | Benefícios Fiscais – Parte I | 520 | 523 | X | [ ] |
-| 17.152 | X485 | Benefícios Fiscais – Parte II | 523 | 528 | X | [ ] |
-| 17.153 | X490 | Polo Industrial de Manaus e Amazônia Ocidental | 528 | 530 | X | [ ] |
+| 17.144 | X410 | Comércio Eletrônico – Informação de _Homepage_ /Servidor | 496 | 498 | X | [x] |
+| 17.145 | X420 | _Royalties_ Recebidos ou Pagos a Beneficiários do Brasil e do Exterior | 498 | 504 | X | [x] |
+| 17.146 | X430 | Rendimentos Relativos a Serviços, Juros e Dividendos Recebidos do Brasil e do Exterior | 504 | 511 | X | [x] |
+| 17.147 | X450 | Pagamentos ou Remessas a Título de Serviços, Juros e Dividendos a Beneficiários do Brasil e do Exterior | 511 | 512 | X | [x] |
+| 17.148 | X451 | Pagamentos ou Remessas a Título de Serviços, Juros e Dividendos a Beneficiários do Brasil e do Exterior – Demais Informações | 512 | 516 | X | [x] |
+| 17.149 | X460 | Inovação Tecnológica e Desenvolvimento Tecnológico | 516 | 518 | X | [x] |
+| 17.150 | X470 | Capacitação de Informática e Inclusão Digital | 518 | 520 | X | [x] |
+| 17.151 | X480 | Benefícios Fiscais – Parte I | 520 | 523 | X | [x] |
+| 17.152 | X485 | Benefícios Fiscais – Parte II | 523 | 528 | X | [x] |
+| 17.153 | X490 | Polo Industrial de Manaus e Amazônia Ocidental | 528 | 530 | X | [x] |
 | 17.154 | X500 | Zonas de Processamento de Exportação (ZPE) | 530 | 532 | X | [ ] |
 | 17.155 | X510 | Áreas de Livre Comércio (ALC) | 532 | 534 | X | [ ] |
 | 17.156 | X990 | Encerramento do Bloco X | 534 | 535 | X | [ ] |

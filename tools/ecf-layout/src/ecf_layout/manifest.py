@@ -64,6 +64,10 @@ class ManifestValidationError(ValueError):
     """Raised after quarantine is recorded for any invalid candidate."""
 
 
+class _AmbiguousFieldMetadata(ValueError):
+    """Raised when a collapsed field row cannot be mapped without guessing."""
+
+
 def block_for_code(code: str) -> str:
     return _BLOCK_BY_CODE[code]
 
@@ -147,9 +151,12 @@ def record_from_fragment(fragment: RecordFragment) -> dict:
     parsed_fields: dict[int, dict] = {}
     ambiguities: list[str] = []
     current_number: int | None = None
+    saw_field_row = False
     for line in fragment.markdown.splitlines():
         if not line.startswith("|"):
-            if current_number is not None and re.search(r"Regras? de Validação", _plain(line), re.IGNORECASE):
+            if saw_field_row and re.search(
+                r"Regras? de Validação", _plain(line), re.IGNORECASE
+            ):
                 break
             continue
         cells = line.rstrip().strip("|").split("|")
@@ -157,11 +164,19 @@ def record_from_fragment(fragment: RecordFragment) -> dict:
         expected_number = len(parsed_fields) + 1
         row = _field_row(f"|{line.rstrip().strip('|')}|\n", expected_number)
         if row is not None:
+            saw_field_row = True
             number, _field_name = row
             if not 1 <= number <= len(fragment.fields) or number in parsed_fields:
                 continue
             expected_name = fragment.fields[number - 1]
-            field, name_matches = _parse_field_cells(number, expected_name, cells, first_parts)
+            try:
+                field, name_matches = _parse_field_cells(
+                    number, expected_name, cells, first_parts
+                )
+            except _AmbiguousFieldMetadata as error:
+                ambiguities.append(f"field {number} {error}")
+                current_number = None
+                continue
             parsed_fields[number] = field
             if not name_matches:
                 ambiguities.append(
@@ -169,7 +184,9 @@ def record_from_fragment(fragment: RecordFragment) -> dict:
                 )
             current_number = number
             continue
-        if current_number is not None and re.search(r"Regras? de Validação", _plain(line), re.IGNORECASE):
+        if saw_field_row and re.search(
+            r"Regras? de Validação", _plain(line), re.IGNORECASE
+        ):
             break
         if current_number is not None and len(cells) >= 3 and not _plain(cells[0]) and not _plain(cells[1]):
             continuation = _plain(cells[2])
@@ -355,11 +372,11 @@ def _parse_field_cells(
     if conditional is not None:
         return conditional
 
-    omitted_valid_values = _parse_omitted_valid_values_cells(
+    omitted_metadata = _parse_omitted_metadata_cells(
         number, expected_name, cells
     )
-    if omitted_valid_values is not None:
-        return omitted_valid_values
+    if omitted_metadata is not None:
+        return omitted_metadata
 
     tokens = [part for cell in cells for part in (_parts(cell) or [""])]
     name_index = 1
@@ -439,7 +456,7 @@ def _parse_conditional_required_cells(
     return _field(number, parsed_name, description, values), name_matches
 
 
-def _parse_omitted_valid_values_cells(
+def _parse_omitted_metadata_cells(
     number: int, expected_name: str, cells: list[str]
 ) -> tuple[dict, bool] | None:
     if len(cells) != 7:
@@ -461,11 +478,20 @@ def _parse_omitted_valid_values_cells(
     name = "".join(_parts(cells[1]))
     name_matches = _identifier_key(name) == _identifier_key(expected_name)
     parsed_name = expected_name if name_matches else name
+    metadata = decimal_parts[0]
+    if metadata == "-" or metadata.isdigit():
+        decimals, valid_values = metadata, ""
+    elif metadata == "DDMMAAAA":
+        decimals, valid_values = "", metadata
+    else:
+        raise _AmbiguousFieldMetadata(
+            f"has ambiguous seven-cell metadata {metadata!r}"
+        )
     values = [
         type_parts[0],
         size_parts[0],
-        decimal_parts[0],
-        "",
+        decimals,
+        valid_values,
         required_parts[0],
     ]
     return _field(number, parsed_name, _plain(cells[2]), values), name_matches

@@ -259,6 +259,112 @@ def test_parses_field_when_empty_valid_values_column_is_omitted() -> None:
     assert "ambiguities" not in record
 
 
+def test_parses_field_when_empty_decimal_column_is_omitted() -> None:
+    fragment = RecordFragment(
+        code="0001",
+        block="0",
+        page_start=525,
+        page_end=525,
+        level="1",
+        occurrence="1:1",
+        fields=["REG", "DT_VIGENCIA"],
+        markdown="""# **Registro 0001: Abertura**
+|**1**|REG|Identificacao.|C|4|-|[0001]|Sim|
+|**2**|DT_VIGENCIA|Data no formato DD/MM/AAAA.|N|008|DDMMAAAA|Não|
+""",
+    )
+
+    record = manifest.record_from_fragment(fragment)
+
+    assert record["fields"][1] == {
+        "number": 2,
+        "name": "DT_VIGENCIA",
+        "description": "Data no formato DD/MM/AAAA.",
+        "type": "N",
+        "size": "008",
+        "decimals": "",
+        "required": "Não",
+        "validValues": "DDMMAAAA",
+    }
+    assert "ambiguities" not in record
+
+
+def test_parses_numeric_decimal_when_empty_valid_values_column_is_omitted() -> None:
+    fragment = RecordFragment(
+        code="0001",
+        block="0",
+        page_start=525,
+        page_end=525,
+        level="1",
+        occurrence="1:1",
+        fields=["REG", "VALOR"],
+        markdown="""# **Registro 0001: Abertura**
+|**1**|REG|Identificacao.|C|4|-|[0001]|Sim|
+|**2**|VALOR|Valor monetario.|N|019|2|Não|
+""",
+    )
+
+    record = manifest.record_from_fragment(fragment)
+
+    assert record["fields"][1]["decimals"] == "2"
+    assert record["fields"][1]["validValues"] == ""
+    assert "ambiguities" not in record
+
+
+@pytest.mark.parametrize("metadata", ["2A", "DMAA", "DMMAAA", "DDMAA"])
+def test_flags_ambiguous_seven_cell_metadata_instead_of_guessing_column(
+    metadata: str,
+) -> None:
+    fragment = RecordFragment(
+        code="0001",
+        block="0",
+        page_start=525,
+        page_end=525,
+        level="1",
+        occurrence="1:1",
+        fields=["REG", "VALOR"],
+        markdown=f"""# **Registro 0001: Abertura**
+|**1**|REG|Identificacao.|C|4|-|[0001]|Sim|
+|**2**|VALOR|Metadado sem coluna identificavel.|N|019|{metadata}|Não|
+""",
+    )
+
+    record = manifest.record_from_fragment(fragment)
+
+    assert [field["name"] for field in record["fields"]] == ["REG"]
+    assert record["ambiguities"] == [
+        f"field 2 has ambiguous seven-cell metadata {metadata!r}",
+        "expected 2 structured fields, parsed 1",
+    ]
+
+
+def test_ambiguous_field_with_continuation_and_rules_stays_quarantined() -> None:
+    fragment = RecordFragment(
+        code="0001",
+        block="0",
+        page_start=525,
+        page_end=526,
+        level="1",
+        occurrence="1:1",
+        fields=["REG", "VALOR"],
+        markdown="""# **Registro 0001: Abertura**
+|**1**|REG|Identificacao.|C|4|-|[0001]|Sim|
+|**2**|VALOR|Metadado sem coluna identificavel.|N|019|2A|Não|
+| | |Continuação que não pode ser anexada a um campo descartado.| | | | |
+**Regras de Validação**
+|**2**|VALOR|Linha estrutural de uma regra posterior.|N|019|2|Não|
+""",
+    )
+
+    record = manifest.record_from_fragment(fragment)
+
+    assert [field["name"] for field in record["fields"]] == ["REG"]
+    assert record["ambiguities"] == [
+        "field 2 has ambiguous seven-cell metadata '2A'",
+        "expected 2 structured fields, parsed 1",
+    ]
+
+
 def test_does_not_treat_packed_size_and_decimal_cells_as_omitted_column() -> None:
     fragment = RecordFragment(
         code="0001",

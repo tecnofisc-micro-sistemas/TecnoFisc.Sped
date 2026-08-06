@@ -182,6 +182,7 @@ public static class CatalogoBuilder
     {
         var lista = new List<(int Ordem, MetadadosCampo Campo)>();
         var ordensVistas = new HashSet<int>();
+        var nomesVistos = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var propriedade in tipo.GetProperties(BindingFlags.Public | BindingFlags.Instance))
         {
@@ -192,6 +193,11 @@ public static class CatalogoBuilder
             if (!ordensVistas.Add(atributo.Ordem))
                 throw new InvalidOperationException(
                     $"Ordem duplicada {atributo.Ordem} em {tipo.FullName}.{propriedade.Name}.");
+
+            string nomeCampo = ResolverNomeCampo(tipo, propriedade, atributo);
+            if (!nomesVistos.Add(nomeCampo))
+                throw new InvalidOperationException(
+                    $"Nome de campo duplicado '{nomeCampo}' em {tipo.FullName}.{propriedade.Name}.");
 
             if (propriedade.SetMethod is null)
                 throw new InvalidOperationException(
@@ -219,7 +225,7 @@ public static class CatalogoBuilder
             };
 
             lista.Add((atributo.Ordem, new MetadadosCampo(
-                propriedade.Name,
+                nomeCampo,
                 atributo.Ordem,
                 propriedade.PropertyType,
                 atributo.Tamanho,
@@ -264,6 +270,52 @@ public static class CatalogoBuilder
             ? Array.Empty<MetadadosCampo>()
             : lista.ConvertAll(static x => x.Campo);
     }
+
+    private static string ResolverNomeCampo(
+        Type tipo,
+        PropertyInfo propriedade,
+        CampoSpedAttribute atributo)
+    {
+        string? alias = atributo.Nome;
+        if (alias is null)
+            return propriedade.Name;
+
+        if (!NomeCampoValido(alias))
+        {
+            throw new InvalidOperationException(
+                $"Nome de campo SPED inválido '{EscaparNomeCampo(alias)}' em " +
+                $"{tipo.FullName}.{propriedade.Name}.");
+        }
+
+        return alias;
+    }
+
+    private static bool NomeCampoValido(string nome)
+    {
+        if (nome.Length == 0 || nome.Length > 128 || !EhInicioNomeCampo(nome[0]))
+            return false;
+
+        for (int i = 1; i < nome.Length; i++)
+        {
+            char caractere = nome[i];
+            if (!EhInicioNomeCampo(caractere) && (caractere < '0' || caractere > '9'))
+                return false;
+        }
+
+        return true;
+    }
+
+    private static bool EhInicioNomeCampo(char caractere)
+        => caractere == '_' ||
+           (caractere >= 'A' && caractere <= 'Z') ||
+           (caractere >= 'a' && caractere <= 'z');
+
+    private static string EscaparNomeCampo(string nome)
+        => nome
+            .Replace("\\", "\\\\", StringComparison.Ordinal)
+            .Replace("\t", "\\t", StringComparison.Ordinal)
+            .Replace("\r", "\\r", StringComparison.Ordinal)
+            .Replace("\n", "\\n", StringComparison.Ordinal);
 
     private static Action<RegistroSped, object?> ConstruirSetter(PropertyInfo propriedade)
     {

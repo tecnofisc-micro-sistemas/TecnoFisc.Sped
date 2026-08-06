@@ -26,6 +26,22 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
     private const string AttributeSpedValor = "TecnoFisc.Sped.Txt.Engine.Atributos.SpedValorAttribute";
     private const string AttributeFlags = "System.FlagsAttribute";
 
+    private static readonly DiagnosticDescriptor NomeCampoInvalido = new(
+        id: "TFSPED001",
+        title: "Nome de campo SPED inválido",
+        messageFormat: "O alias Nome '{1}' em '{0}' deve ser um identificador ASCII sem espaços",
+        category: "TecnoFisc.Sped.Txt.Engine",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    private static readonly DiagnosticDescriptor NomeCampoDuplicado = new(
+        id: "TFSPED002",
+        title: "Nome de campo SPED duplicado",
+        messageFormat: "O nome de campo SPED '{1}' está duplicado em '{0}'",
+        category: "TecnoFisc.Sped.Txt.Engine",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         IncrementalValuesProvider<InfoRegistro> registros = context.SyntaxProvider
@@ -46,6 +62,26 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
         {
             var (lista, asmName) = dados;
             if (lista.IsDefaultOrEmpty)
+                return;
+
+            bool temErro = false;
+            foreach (InfoRegistro registro in lista)
+            {
+                foreach (ErroCampo erro in registro.Erros)
+                {
+                    DiagnosticDescriptor descriptor = erro.Tipo == TipoErroCampo.NomeInvalido
+                        ? NomeCampoInvalido
+                        : NomeCampoDuplicado;
+                    spc.ReportDiagnostic(Diagnostic.Create(
+                        descriptor,
+                        erro.Localizacao,
+                        erro.Propriedade,
+                        erro.Nome));
+                    temErro = true;
+                }
+            }
+
+            if (temErro)
                 return;
 
             string fonte = GerarCatalogo(lista, asmName);
@@ -174,15 +210,25 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
         if (string.IsNullOrEmpty(codigo) || string.IsNullOrEmpty(bloco))
             return null;
 
-        ImmutableArray<InfoCampo> campos = ColetarCampos(tipo);
+        ResultadoCampos resultadoCampos = ColetarCampos(tipo);
 
         string tipoFq = tipo.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-        return new InfoRegistro(tipoFq, codigo!, nivel, bloco!, campos, introduzidoEm, tokenFimArquivo);
+        return new InfoRegistro(
+            tipoFq,
+            codigo!,
+            nivel,
+            bloco!,
+            resultadoCampos.Campos,
+            introduzidoEm,
+            tokenFimArquivo,
+            resultadoCampos.Erros);
     }
 
-    private static ImmutableArray<InfoCampo> ColetarCampos(INamedTypeSymbol tipoRegistro)
+    private static ResultadoCampos ColetarCampos(INamedTypeSymbol tipoRegistro)
     {
         var lista = new List<InfoCampo>();
+        var nomes = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
+        ImmutableArray<ErroCampo>.Builder erros = ImmutableArray.CreateBuilder<ErroCampo>();
 
         // Atravessa toda a hierarquia (heranças entre registros existem em alguns layouts).
         for (INamedTypeSymbol? atual = tipoRegistro; atual is not null; atual = atual.BaseType)
@@ -202,6 +248,7 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
                 bool capturaTudo = false;
                 bool campoArquivo = false;
                 string? formato = null;
+                string? nomeExplicito = null;
                 foreach (KeyValuePair<string, TypedConstant> arg in campoAttr.NamedArguments)
                 {
                     switch (arg.Key)
@@ -211,10 +258,31 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
                         case "Decimais": decimais = arg.Value.Value is int d ? d : 0; break;
                         case "Obrigatorio": obrigatorio = arg.Value.Value is bool b && b; break;
                         case "Formato": formato = arg.Value.Value as string; break;
+                        case "Nome": nomeExplicito = arg.Value.Value as string; break;
                         case "DesdeVersao": desdeVersao = arg.Value.Value is int dv ? dv : 0; break;
                         case "CapturaTudo": capturaTudo = arg.Value.Value is bool ct && ct; break;
                         case "CampoArquivo": campoArquivo = arg.Value.Value is bool ca && ca; break;
                     }
+                }
+
+                string nomeCampo = nomeExplicito ?? propriedade.Name;
+                Location? localizacao = propriedade.Locations.FirstOrDefault();
+                string propriedadeFq = propriedade.ContainingType.ToDisplayString() + "." + propriedade.Name;
+                if (nomeExplicito is not null && !NomeCampoValido(nomeExplicito))
+                {
+                    erros.Add(new ErroCampo(
+                        TipoErroCampo.NomeInvalido,
+                        localizacao,
+                        propriedadeFq,
+                        EscaparNomeCampo(nomeExplicito)));
+                }
+                else if (!nomes.Add(nomeCampo))
+                {
+                    erros.Add(new ErroCampo(
+                        TipoErroCampo.NomeDuplicado,
+                        localizacao,
+                        propriedadeFq,
+                        nomeCampo));
                 }
 
                 ITypeSymbol tipoPropriedade = propriedade.Type;
@@ -241,6 +309,7 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
 
                 lista.Add(new InfoCampo(
                     propriedade.Name,
+                    nomeCampo,
                     ordem,
                     tipoFq,
                     tipoNome,
@@ -260,12 +329,40 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
             }
         }
 
-        return lista
+        ImmutableArray<InfoCampo> campos = lista
             .GroupBy(c => c.Ordem)
             .Select(g => g.First())
             .OrderBy(c => c.Ordem)
             .ToImmutableArray();
+        return new ResultadoCampos(campos, erros.ToImmutable());
     }
+
+    private static bool NomeCampoValido(string nome)
+    {
+        if (nome.Length == 0 || nome.Length > 128 || !EhInicioNomeCampo(nome[0]))
+            return false;
+
+        for (int i = 1; i < nome.Length; i++)
+        {
+            char caractere = nome[i];
+            if (!EhInicioNomeCampo(caractere) && (caractere < '0' || caractere > '9'))
+                return false;
+        }
+
+        return true;
+    }
+
+    private static bool EhInicioNomeCampo(char caractere)
+        => caractere == '_' ||
+           (caractere >= 'A' && caractere <= 'Z') ||
+           (caractere >= 'a' && caractere <= 'z');
+
+    private static string EscaparNomeCampo(string nome)
+        => nome
+            .Replace("\\", "\\\\")
+            .Replace("\t", "\\t")
+            .Replace("\r", "\\r")
+            .Replace("\n", "\\n");
 
     /// <summary>
     /// Coleta membros do enum decorados com <c>[SpedValor("X")]</c> no formato
@@ -446,7 +543,7 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
     private static void EmitirCampo(StringBuilder sb, InfoRegistro reg, InfoCampo campo, bool ultimo)
     {
         sb.Append("                new MetadadosCampo(");
-        sb.Append('"').Append(campo.Nome).Append("\", ");
+        sb.Append('"').Append(EscaparLiteral(campo.NomeCampo)).Append("\", ");
         sb.Append(campo.Ordem.ToString(CultureInfo.InvariantCulture)).Append(", ");
         sb.Append("typeof(").Append(campo.TipoDeclaradoFq).Append("), ");
         sb.Append(campo.Tamanho.ToString(CultureInfo.InvariantCulture)).Append(", ");
@@ -901,6 +998,7 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
 
     private readonly record struct InfoCampo(
         string Nome,
+        string NomeCampo,
         int Ordem,
         string TipoFq,
         string TipoNome,
@@ -925,5 +1023,22 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
         string Bloco,
         ImmutableArray<InfoCampo> Campos,
         int IntroduzidoEm,
-        string? TokenFimArquivo);
+        string? TokenFimArquivo,
+        ImmutableArray<ErroCampo> Erros);
+
+    private readonly record struct ResultadoCampos(
+        ImmutableArray<InfoCampo> Campos,
+        ImmutableArray<ErroCampo> Erros);
+
+    private readonly record struct ErroCampo(
+        TipoErroCampo Tipo,
+        Location? Localizacao,
+        string Propriedade,
+        string Nome);
+
+    private enum TipoErroCampo
+    {
+        NomeInvalido,
+        NomeDuplicado,
+    }
 }

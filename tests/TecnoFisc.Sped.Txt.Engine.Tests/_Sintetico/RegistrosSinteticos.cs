@@ -244,6 +244,16 @@ public sealed class Registro9999Sintetico : RegistroSped
     public int QtdLin { get; set; }
 }
 
+/// <summary>Registro que prova alias normativo distinto do membro CLR.</summary>
+[RegistroSped(Codigo = "A100", Nivel = 1, Bloco = "A")]
+public sealed class RegistroA100AliasSintetico : RegistroSped
+{
+    public override string Codigo => "A100";
+
+    [CampoSped(Ordem = 2, Nome = "CODIGO")]
+    public int CampoCodigo { get; set; }
+}
+
 /// <summary>
 /// Registro sintético versionado: introduzido na versão 310 do leiaute, com campo que só
 /// passa a existir a partir da versão 312. Exercita <c>IntroduzidoEm</c> no atributo do

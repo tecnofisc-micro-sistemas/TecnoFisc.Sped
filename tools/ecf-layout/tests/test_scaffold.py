@@ -181,7 +181,7 @@ public sealed partial class Registro0001 : RegistroSped
     public override string Codigo => "0001";
 
     /// <summary>Domínio fiscal externo &amp; sujeito a revisão.</summary>
-    [CampoSped(Ordem = 2, Tamanho = 12, Obrigatorio = true)]
+    [CampoSped(Ordem = 2, Tamanho = 12, Obrigatorio = true, Nome = "CODIGO")]
     public string? CampoCodigo { get; set; }
 
     /// <summary>Código auxiliar preservado como texto.</summary>
@@ -279,6 +279,7 @@ def test_source_disambiguates_base_and_enclosing_type_members(
 
     source = next(iter(_tree(tmp_path).values()))
     assert f"public string? {expected_name} {{ get; set; }}" in source
+    assert f'Nome = "{manual_name}"' in source
 
 
 def test_source_rejects_collision_created_by_reserved_member_disambiguation(tmp_path: Path) -> None:
@@ -639,6 +640,7 @@ def test_all_real_manifest_sources_compile_against_base_contract_stubs(tmp_path:
         public int Ordem { get; set; }
         public int Tamanho { get; set; }
         public bool Obrigatorio { get; set; }
+        public string? Nome { get; set; }
     }
 }
 

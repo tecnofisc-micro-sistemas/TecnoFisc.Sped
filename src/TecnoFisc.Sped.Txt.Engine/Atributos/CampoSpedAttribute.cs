@@ -9,6 +9,17 @@ namespace TecnoFisc.Sped.Txt.Engine.Atributos;
 public sealed class CampoSpedAttribute : Attribute
 {
     /// <summary>
+    /// Nome normativo opcional do campo no leiaute. Quando nulo, o catálogo mantém o nome da
+    /// propriedade CLR. Use o alias somente quando o nome normativo colidir com um membro do
+    /// modelo, por exemplo <c>CampoCodigo</c> com <c>Nome = "CODIGO"</c>.
+    /// </summary>
+    /// <remarks>
+    /// Um alias explícito deve ser um identificador ASCII sem espaços: letra ou sublinhado no
+    /// início, seguido apenas de letras, dígitos ou sublinhados. Vazio e whitespace são inválidos.
+    /// </remarks>
+    public string? Nome { get; init; }
+
+    /// <summary>
     /// Posição do campo no layout, idêntica à coluna "Nº" do Guia Prático. REG ocupa a
     /// posição 1 (implícita); o primeiro campo declarado em código começa em 2.
     /// </summary>

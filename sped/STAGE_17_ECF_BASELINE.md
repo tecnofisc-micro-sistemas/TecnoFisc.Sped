@@ -46,13 +46,13 @@
 | 17.043 | K915 | Justificativa para Divergência de Saldos Contábeis das Contas Patrimoniais Recuperados da ECD | 151 | 155 | K | [x] |
 | 17.044 | K935 | Justificativa para Divergência de Saldos Contábeis das Contas de Resultado Recuperados da ECD | 155 | 158 | K | [x] |
 | 17.045 | K990 | Encerramento do Bloco K | 158 | 216 | K | [x] |
-| 17.046 | L001 | Abertura do Bloco L | 216 | 217 | L | [ ] |
-| 17.047 | L030 | Identificação dos Períodos e Formas de Apuração do IRPJ e da CSLL no Ano-Calendário | 217 | 220 | L | [ ] |
-| 17.048 | L100 | Balanço Patrimonial | 220 | 225 | L | [ ] |
-| 17.049 | L200 | Método de Avaliação do Estoque Final | 225 | 226 | L | [ ] |
-| 17.050 | L210 | Informativo da Composição de Custos | 226 | 228 | L | [ ] |
-| 17.051 | L300 | Demonstração do Resultado Líquido no Período Fiscal | 228 | 231 | L | [ ] |
-| 17.052 | L990 | Encerramento do Bloco L | 231 | 232 | L | [ ] |
+| 17.046 | L001 | Abertura do Bloco L | 216 | 217 | L | [x] |
+| 17.047 | L030 | Identificação dos Períodos e Formas de Apuração do IRPJ e da CSLL no Ano-Calendário | 217 | 220 | L | [x] |
+| 17.048 | L100 | Balanço Patrimonial | 220 | 225 | L | [x] |
+| 17.049 | L200 | Método de Avaliação do Estoque Final | 225 | 226 | L | [x] |
+| 17.050 | L210 | Informativo da Composição de Custos | 226 | 228 | L | [x] |
+| 17.051 | L300 | Demonstração do Resultado Líquido no Período Fiscal | 228 | 231 | L | [x] |
+| 17.052 | L990 | Encerramento do Bloco L | 231 | 232 | L | [x] |
 | 17.053 | M001 | Abertura do Bloco M | 232 | 233 | M | [ ] |
 | 17.054 | M010 | Identificação da Conta na Parte B do e-Lalur e do e-Lacs | 233 | 237 | M | [ ] |
 | 17.055 | M030 | Identificação dos Períodos e Formas de Apuração do IRPJ e da CSLL das Empresas Tributadas pelo Lucro Real | 237 | 240 | M | [ ] |

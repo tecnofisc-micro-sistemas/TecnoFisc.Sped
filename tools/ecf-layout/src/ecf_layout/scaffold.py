@@ -15,6 +15,7 @@ from typing import Iterable
 
 _CODE_PATTERN = re.compile(r"[0-9A-Z]{4}\Z")
 _CSHARP_IDENTIFIER_PATTERN = re.compile(r"[A-Za-z_][A-Za-z0-9_]*\Z")
+_FIELD_ALIAS_PATTERN = re.compile(r"[A-Za-z_][A-Za-z0-9_]*\Z")
 _LEVEL_PATTERN = re.compile(r"[0-9]+\Z")
 _OCCURRENCE_PATTERN = re.compile(r"[01]:(?:[1-9][0-9]*|N)\Z")
 _RECORD_KEYS = frozenset(
@@ -276,7 +277,7 @@ def _generate_source(record: dict, output_root: Path) -> GeneratedFile:
             [
                 "",
                 f'    /// <summary>{_xml_text(field["description"])}</summary>',
-                f"    {_field_attribute(field)}",
+                f"    {_field_attribute(field, property_name)}",
                 f"    public string? {property_name} {{ get; set; }}",
             ]
         )
@@ -307,12 +308,20 @@ def _xml_text(value: str) -> str:
     return html.escape(" ".join(value.split()), quote=False)
 
 
-def _field_attribute(field: dict) -> str:
+def _field_attribute(field: dict, property_name: str) -> str:
     arguments = [f'Ordem = {field["number"]}']
     if field["size"].isdigit():
         arguments.append(f'Tamanho = {int(field["size"])}')
     if _required_value(field["required"]):
         arguments.append("Obrigatorio = true")
+    if property_name != _property_name(field["name"]):
+        alias = field["name"]
+        if _FIELD_ALIAS_PATTERN.fullmatch(alias) is None:
+            raise ScaffoldError(
+                f'field alias cannot be represented by CampoSped.Nome: {alias!r}'
+            )
+        escaped = alias.replace("\\", "\\\\").replace('"', '\\"')
+        arguments.append(f'Nome = "{escaped}"')
     return f"[CampoSped({', '.join(arguments)})]"
 
 

@@ -55,6 +55,46 @@ public sealed class AssertRegistroEcfCompatibilityTests
     }
 
     [Theory]
+    [InlineData("DATA", "C")]
+    [InlineData("DT_REFERENCIA", "N")]
+    [InlineData("PREFIXO_DATA_SUFIXO", "D")]
+    [InlineData("REFERENCIA_DATA", "C")]
+    [InlineData("VIG_INI", "N")]
+    public void SegmentoDataDelimitadoPorUnderscore_ClassificaDateOnly(
+        string nome,
+        string tipoManifesto)
+    {
+        ManifestoCampoEcf campo = CriarCampo(
+            nome,
+            descricao: "Campo normativo.",
+            tipoManifesto,
+            tamanho: "8");
+
+        AssertRegistroEcf.TipoCompativel(campo, typeof(DateOnly)).Should().BeTrue();
+        AssertRegistroEcf.TipoCompativel(campo, typeof(string)).Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData("VIGÊNCIA")]
+    [InlineData("VIG.ENCIA")]
+    [InlineData("DATA-REFERENCIA")]
+    [InlineData("X/VIG/Y")]
+    [InlineData("DT REFERENCIA")]
+    [InlineData("X DATA Y")]
+    [InlineData("DATA.REFERENCIA")]
+    public void TokenDataSemDelimitadorUnderscore_PermaneceGenerico(string nome)
+    {
+        ManifestoCampoEcf campo = CriarCampo(
+            nome,
+            descricao: "Identificador genérico.",
+            tipoManifesto: "C",
+            tamanho: "8");
+
+        AssertRegistroEcf.TipoCompativel(campo, typeof(string)).Should().BeTrue();
+        AssertRegistroEcf.TipoCompativel(campo, typeof(DateOnly)).Should().BeFalse();
+    }
+
+    [Theory]
     [InlineData("IDENTIFICADOR", "Data informada pelo contribuinte.", "C", "8")]
     [InlineData("DATA_AQUIS", "Identificador genérico.", "C", "7")]
     [InlineData("DT_REFERENCIA", "Identificador genérico.", "N", "9")]

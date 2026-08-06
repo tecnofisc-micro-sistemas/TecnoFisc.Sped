@@ -335,8 +335,23 @@ internal static partial class AssertRegistroEcf
         if (declaraCnpj && tamanho == 14)
             return CampoSemantica.Cnpj;
 
-        bool declaraData = tamanho == 8 && DataTokenPattern().IsMatch(campo.Name);
+        bool declaraData = tamanho == 8 && PossuiSegmentoData(campo.Name);
         return declaraData ? CampoSemantica.Data : CampoSemantica.Generico;
+    }
+
+    private static bool PossuiSegmentoData(string nomeCampo)
+    {
+        foreach (string segmento in nomeCampo.Split('_'))
+        {
+            if (string.Equals(segmento, "DATA", StringComparison.Ordinal) ||
+                string.Equals(segmento, "DT", StringComparison.Ordinal) ||
+                string.Equals(segmento, "VIG", StringComparison.Ordinal))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static int NormalizarTamanho(ManifestoCampoEcf campo)
@@ -408,9 +423,6 @@ internal static partial class AssertRegistroEcf
 
     [GeneratedRegex("(?<![A-Z0-9])NIF(?![A-Z0-9])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex NifTokenPattern();
-
-    [GeneratedRegex("(?<![A-Z0-9])(?:DATA|DT|VIG)(?![A-Z0-9])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
-    private static partial Regex DataTokenPattern();
 
     [GeneratedRegex("[0-9]+", RegexOptions.CultureInvariant)]
     private static partial Regex IntegerPattern();

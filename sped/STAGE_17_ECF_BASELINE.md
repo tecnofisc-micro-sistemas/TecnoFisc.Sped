@@ -154,9 +154,9 @@
 | 17.151 | X480 | Benefícios Fiscais – Parte I | 520 | 523 | X | [x] |
 | 17.152 | X485 | Benefícios Fiscais – Parte II | 523 | 528 | X | [x] |
 | 17.153 | X490 | Polo Industrial de Manaus e Amazônia Ocidental | 528 | 530 | X | [x] |
-| 17.154 | X500 | Zonas de Processamento de Exportação (ZPE) | 530 | 532 | X | [ ] |
-| 17.155 | X510 | Áreas de Livre Comércio (ALC) | 532 | 534 | X | [ ] |
-| 17.156 | X990 | Encerramento do Bloco X | 534 | 535 | X | [ ] |
+| 17.154 | X500 | Zonas de Processamento de Exportação (ZPE) | 530 | 532 | X | [x] |
+| 17.155 | X510 | Áreas de Livre Comércio (ALC) | 532 | 534 | X | [x] |
+| 17.156 | X990 | Encerramento do Bloco X | 534 | 535 | X | [x] |
 | 17.157 | Y001 | Abertura do Bloco Y | 535 | 536 | Y | [ ] |
 | 17.158 | Y520 | Pagamentos/Recebimentos do Exterior ou de Não Residentes | 536 | 539 | Y | [ ] |
 | 17.159 | Y570 | Demonstrativo do Imposto de Renda e CSLL Retidos na Fonte | 539 | 543 | Y | [ ] |

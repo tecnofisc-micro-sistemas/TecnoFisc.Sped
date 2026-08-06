@@ -82,12 +82,28 @@ public sealed class ManifestoCatalogoTests
     }
 
     [Fact]
+    public void Catalogo_ContemCadaRegistroRevisadoDoBlocoXExatamenteUmaVez()
+    {
+        string[] esperados = ManifestoEcf.Carregar().Registros
+            .Where(registro => registro.Block == "X" && registro.Reviewed)
+            .Select(registro => registro.Code)
+            .ToArray();
+        string[] atuais = new CatalogoSpedGerado().EnumerarRegistros()
+            .Where(registro => registro.Bloco == "X")
+            .Select(registro => registro.Codigo)
+            .ToArray();
+
+        atuais.Should().Equal(esperados);
+        atuais.Should().OnlyHaveUniqueItems();
+    }
+
+    [Fact]
     public void CodesAreImplemented_ProximoCodigoConhecidoMasAusente_ApontaFaltaNoCatalogo()
     {
-        var act = () => AssertRegistroEcf.CodesAreImplemented("X500");
+        var act = () => AssertRegistroEcf.CodesAreImplemented("Y001");
 
         act.Should().Throw<Xunit.Sdk.XunitException>()
-            .WithMessage("*ausentes do catálogo*X500*");
+            .WithMessage("*ausentes do catálogo*Y001*");
     }
 
     [Fact]

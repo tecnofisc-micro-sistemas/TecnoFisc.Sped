@@ -228,6 +228,7 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
 
                 CategoriaCampo categoria = ClassificarTipo(tipoPropriedade, out string? underlyingPrimitivo);
                 string tipoFq = tipoPropriedade.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                string tipoNome = tipoPropriedade.Name;
                 string tipoFqDeclarado = propriedade.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
                 ImmutableArray<string> enumValoresSped = categoria == CategoriaCampo.Enum
@@ -242,6 +243,7 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
                     propriedade.Name,
                     ordem,
                     tipoFq,
+                    tipoNome,
                     tipoFqDeclarado,
                     categoria,
                     nullable,
@@ -623,7 +625,7 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
         {
             sb.AppendLine("        if (!Enum.IsDefined(convertido))");
             sb.Append("            throw new FormatException(\"Valor '\" + valor.ToString() + \"' não é válido para ")
-                .Append(c.TipoFq).AppendLine(".\");");
+                .Append(EscaparLiteral(c.TipoNome)).AppendLine(".\");");
         }
         sb.Append("        alvo.").Append(c.Nome).AppendLine(" = convertido;");
     }
@@ -656,8 +658,8 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
             sb.AppendLine("        }");
         }
 
-        sb.Append("        throw new FormatException(\"Valor '\" + valor.ToString() + \"' não mapeado para ")
-            .Append(c.TipoFq).AppendLine(".\");");
+        sb.Append("        throw new FormatException(\"Valor '\" + valor.ToString() + \"' não é válido para ")
+            .Append(EscaparLiteral(c.TipoNome)).AppendLine(".\");");
     }
 
     private static string EscaparLiteral(string valor) =>
@@ -901,6 +903,7 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
         string Nome,
         int Ordem,
         string TipoFq,
+        string TipoNome,
         string TipoDeclaradoFq,
         CategoriaCampo Categoria,
         bool Nullable,

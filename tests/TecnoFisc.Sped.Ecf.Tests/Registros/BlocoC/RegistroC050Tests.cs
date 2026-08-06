@@ -47,7 +47,14 @@ public sealed class RegistroC050Tests
         var registro = resultado.Valor.Should().BeOfType<RegistroC050>().Which;
         registro.CodNat.Should().Be(default);
         registro.ErrosDeFormato.Should().ContainSingle()
-            .Which.Campo.Should().Be(nameof(RegistroC050.CodNat));
+            .Which.Should().BeEquivalentTo(new
+            {
+                Linha = 0L,
+                CodigoRegistro = "C050",
+                Campo = nameof(RegistroC050.CodNat),
+                ValorBruto = "06",
+                Mensagem = "Valor '06' não é válido para CodigoNaturezaContaContabil.",
+            });
     }
 
     [Theory]
@@ -71,15 +78,35 @@ public sealed class RegistroC050Tests
         ((int)gerado.CodNat).Should().Be(valorEsperado);
         gerado.ErrosDeFormato.Should().HaveCount(esperaErro ? 1 : 0);
         ((int)reflexivo.CodNat).Should().Be(valorEsperado);
-        reflexivo.ErrosDeFormato
-            .Select(erro => (erro.Campo, erro.ValorBruto))
-            .Should().Equal(gerado.ErrosDeFormato.Select(erro => (erro.Campo, erro.ValorBruto)));
+        reflexivo.ErrosDeFormato.Should().Equal(gerado.ErrosDeFormato);
     }
 
-    private static RegistroC050 ParsearCom(IRegistroSpedCatalogo catalogo, string valorBruto)
+    [Theory]
+    [InlineData("X", "Valor 'X' não é válido para IndicadorTipoConta.")]
+    [InlineData(nameof(IndicadorTipoConta.Analitica),
+        "Valor 'Analitica' não é válido para IndicadorTipoConta.")]
+    public void Parser_CatalogosGeradoEReflexivo_MantemErroCompletoParaSpedValor(
+        string valorBruto,
+        string mensagemEsperada)
+    {
+        var gerado = ParsearCom(_catalogoGerado, "01", valorBruto);
+        var reflexivo = ParsearCom(_catalogoReflexivo, "01", valorBruto);
+
+        gerado.IndCta.Should().Be(default);
+        gerado.ErrosDeFormato.Should().ContainSingle()
+            .Which.Mensagem.Should().Be(mensagemEsperada);
+        reflexivo.IndCta.Should().Be(gerado.IndCta);
+        reflexivo.ErrosDeFormato.Should().Equal(gerado.ErrosDeFormato);
+    }
+
+    private static RegistroC050 ParsearCom(
+        IRegistroSpedCatalogo catalogo,
+        string valorNatureza,
+        string indicadorTipoConta = "A")
     {
         var resultado = new ParserEcf(catalogo).ParseLinha(
-            $"|C050|01012025|{valorBruto}|A|4|001.01|001|CAIXA|");
+            $"|C050|01012025|{valorNatureza}|{indicadorTipoConta}|4|001.01|001|CAIXA|",
+            numeroLinha: 37);
 
         resultado.Sucesso.Should().BeTrue();
         return resultado.Valor.Should().BeOfType<RegistroC050>().Which;

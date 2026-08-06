@@ -11,18 +11,18 @@
 | 17.008 | 0035 | Identificação das SCP | 98 | 99 | 0 | [x] |
 | 17.009 | 0930 | Identificação dos Signatários da ECF | 99 | 103 | 0 | [x] |
 | 17.010 | 0990 | Encerramento do Bloco 0 | 103 | 104 | 0 | [x] |
-| 17.011 | C001 | Abertura do Bloco C | 104 | 105 | C | [ ] |
-| 17.012 | C040 | Identificador da ECD | 105 | 107 | C | [ ] |
-| 17.013 | C050 | Plano de Contas da ECD | 107 | 108 | C | [ ] |
-| 17.014 | C051 | Plano de Contas Referencial | 108 | 109 | C | [ ] |
-| 17.015 | C053 | Subcontas Correlatas | 109 | 110 | C | [ ] |
-| 17.016 | C100 | Centro de Custos | 110 | 111 | C | [ ] |
-| 17.017 | C150 | Identificação do Período dos Saldos Periódicos das Contas | 111 | 112 | C | [ ] |
-| 17.018 | C155 | Detalhes dos Saldos Contábeis das Contas | 112 | 113 | C | [ ] |
-| 17.019 | C157 | Transferência de Saldos do Plano de Contas Anterior | 113 | 114 | C | [ ] |
-| 17.020 | C350 | Identificação da Data dos Saldos das Contas de Resultado Antes do Encerramento | 114 | 115 | C | [ ] |
-| 17.021 | C355 | Detalhes dos Saldos das Contas de Resultado Antes do Encerramento | 115 | 116 | C | [ ] |
-| 17.022 | C990 | Encerramento do Bloco C | 116 | 117 | C | [ ] |
+| 17.011 | C001 | Abertura do Bloco C | 104 | 105 | C | [x] |
+| 17.012 | C040 | Identificador da ECD | 105 | 107 | C | [x] |
+| 17.013 | C050 | Plano de Contas da ECD | 107 | 108 | C | [x] |
+| 17.014 | C051 | Plano de Contas Referencial | 108 | 109 | C | [x] |
+| 17.015 | C053 | Subcontas Correlatas | 109 | 110 | C | [x] |
+| 17.016 | C100 | Centro de Custos | 110 | 111 | C | [x] |
+| 17.017 | C150 | Identificação do Período dos Saldos Periódicos das Contas | 111 | 112 | C | [x] |
+| 17.018 | C155 | Detalhes dos Saldos Contábeis das Contas | 112 | 113 | C | [x] |
+| 17.019 | C157 | Transferência de Saldos do Plano de Contas Anterior | 113 | 114 | C | [x] |
+| 17.020 | C350 | Identificação da Data dos Saldos das Contas de Resultado Antes do Encerramento | 114 | 115 | C | [x] |
+| 17.021 | C355 | Detalhes dos Saldos das Contas de Resultado Antes do Encerramento | 115 | 116 | C | [x] |
+| 17.022 | C990 | Encerramento do Bloco C | 116 | 117 | C | [x] |
 | 17.023 | E001 | Abertura do Bloco E | 117 | 118 | E | [ ] |
 | 17.024 | E010 | Saldos Finais Recuperados da ECF Anterior | 118 | 119 | E | [ ] |
 | 17.025 | E015 | Contas Contábeis Mapeadas | 119 | 121 | E | [ ] |

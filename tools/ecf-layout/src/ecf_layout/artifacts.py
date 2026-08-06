@@ -9,7 +9,7 @@ import shutil
 import stat
 import time
 import uuid
-from contextlib import contextmanager
+from contextlib import ExitStack, contextmanager
 from pathlib import Path
 from typing import Callable, Iterator
 
@@ -42,10 +42,13 @@ _JOURNAL_NAME = ".artifact-transaction.json"
 _JOURNAL_BACKUP_NAME = ".artifact-transaction.backup.json"
 _TRANSACTION_DIR_NAME = ".artifact-transactions"
 _TRANSACTION_DESCRIPTOR_NAME = "descriptor.json"
+_TRANSACTION_INTENT_NAME = "intent.json"
+_RECOVERY_QUARANTINE_NAME = "recovery-quarantine.json"
 _PAIR_MARKER_DIR_NAME = ".artifact-pairs"
 _LOCK_NAME = ".artifact.lock"
 _LOCK_MAGIC = b"ecf-layout-artifact-lock-v1\n"
 _DEFAULT_LOCK_TIMEOUT = 10.0
+_IS_WINDOWS = os.name == "nt"
 
 
 def sha256_bytes(data: bytes) -> str:
@@ -110,7 +113,16 @@ def build_artifacts(
         *journal_paths,
     ]
     with _artifact_lock(
-        work_dir, timeout=lock_timeout, protected_paths=protected_paths
+        work_dir,
+        targets=[
+            manifest_out,
+            tracker_out,
+            generation_path,
+            build_state_path,
+            quarantine_path,
+        ],
+        timeout=lock_timeout,
+        protected_paths=protected_paths,
     ):
         try:
             _ensure_distinct_paths(protected_paths)
@@ -175,6 +187,7 @@ def promote_artifacts(
     *,
     schema_path: Path,
     before_publish: BeforePublishHook | None = None,
+    interrupt: InterruptHook | None = None,
     lock_timeout: float = _DEFAULT_LOCK_TIMEOUT,
 ) -> tuple[Path, Path]:
     work_dir = Path(work_dir)
@@ -190,7 +203,10 @@ def promote_artifacts(
         *_root_descriptor_paths(work_dir),
     ]
     with _artifact_lock(
-        work_dir, timeout=lock_timeout, protected_paths=initial_paths
+        work_dir,
+        targets=[Path(manifest_out), Path(tracker_out)],
+        timeout=lock_timeout,
+        protected_paths=initial_paths,
     ):
         return _promote_artifacts_locked(
             work_dir,
@@ -198,6 +214,7 @@ def promote_artifacts(
             Path(tracker_out),
             schema_path=Path(schema_path),
             before_publish=before_publish,
+            interrupt=interrupt,
         )
 
 
@@ -208,6 +225,7 @@ def _promote_artifacts_locked(
     *,
     schema_path: Path,
     before_publish: BeforePublishHook | None,
+    interrupt: InterruptHook | None,
 ) -> tuple[Path, Path]:
     """Promote the exact candidate byte snapshots that passed every invariant."""
     work_dir = Path(work_dir)
@@ -359,6 +377,7 @@ def _promote_artifacts_locked(
             quarantine_path,
             *evidence_paths,
         ],
+        interrupt=interrupt,
     )
     return manifest_out, tracker_out
 
@@ -381,7 +400,10 @@ def apply_review_evidence(
         *evidence_paths,
     ]
     with _artifact_lock(
-        work_dir, timeout=lock_timeout, protected_paths=initial_paths
+        work_dir,
+        targets=initial_paths[:5],
+        timeout=lock_timeout,
+        protected_paths=initial_paths,
     ):
         return _apply_review_evidence_locked(work_dir, evidence_paths)
 
@@ -633,38 +655,170 @@ def _cell(value: object) -> str:
 def _artifact_lock(
     work_dir: Path,
     *,
+    targets: list[Path] | None = None,
     timeout: float = _DEFAULT_LOCK_TIMEOUT,
     protected_paths: list[Path] | None = None,
 ) -> Iterator[None]:
-    """Serialize tooling readers/writers with an OS lock released on process death."""
+    """Serialize local recovery plus every shared destination directory."""
     if timeout < 0:
         raise ValueError("artifact lock timeout must be non-negative")
     work_dir = Path(work_dir)
     work_dir.mkdir(parents=True, exist_ok=True)
-    lock_path = work_dir / _LOCK_NAME
+    targets = [Path(path) for path in (targets or [])]
     protected_paths = [Path(path) for path in (protected_paths or [])]
+    deadline = time.monotonic() + timeout
+    while True:
+        hinted_targets = _recovery_target_hints(work_dir)
+        lock_directories = _artifact_lock_directories(
+            work_dir, [*targets, *hinted_targets]
+        )
+        with ExitStack() as stack:
+            for directory in lock_directories:
+                stack.enter_context(
+                    _directory_lock(
+                        directory,
+                        deadline=deadline,
+                        protected_paths=protected_paths,
+                    )
+                )
+            current_targets = _recovery_target_hints(work_dir)
+            required_directories = _artifact_lock_directories(
+                work_dir, [*targets, *current_targets]
+            )
+            locked = {
+                os.path.normcase(str(directory.resolve()))
+                for directory in lock_directories
+            }
+            required = {
+                os.path.normcase(str(directory.resolve()))
+                for directory in required_directories
+            }
+            if not required.issubset(locked):
+                if time.monotonic() >= deadline:
+                    raise ArtifactLockTimeout(
+                        "timed out while artifact recovery destinations changed"
+                    )
+                continue
+            yield
+            return
+
+
+def _artifact_lock_directories(work_dir: Path, targets: list[Path]) -> list[Path]:
+    directories = [Path(work_dir)]
+    for target in targets:
+        parent = Path(target).parent
+        parent.mkdir(parents=True, exist_ok=True)
+        directories.append(parent)
+    unique = {
+        os.path.normcase(str(directory.resolve())): directory.resolve()
+        for directory in directories
+    }
+    return [unique[key] for key in sorted(unique)]
+
+
+def _recovery_target_hints(work_dir: Path) -> list[Path]:
+    transaction_root = Path(work_dir) / _TRANSACTION_DIR_NAME
+    if not transaction_root.is_dir() or transaction_root.is_symlink():
+        return []
+    targets: list[Path] = []
+    try:
+        transaction_dirs = list(transaction_root.iterdir())
+    except OSError:
+        return []
+    for transaction_dir in transaction_dirs:
+        if not transaction_dir.is_dir() or transaction_dir.is_symlink():
+            continue
+        try:
+            intent = _load_transaction_intent(work_dir, transaction_dir)
+        except (ArtifactPromotionError, OSError):
+            continue
+        targets.extend(Path(path) for path in intent["targets"])
+    return targets
+
+
+@contextmanager
+def _directory_lock(
+    directory: Path,
+    *,
+    deadline: float,
+    protected_paths: list[Path],
+) -> Iterator[None]:
+    if _IS_WINDOWS:
+        with _windows_directory_lock(
+            directory, deadline=deadline, protected_paths=protected_paths
+        ):
+            yield
+        return
+    with _posix_directory_lock(directory, deadline=deadline):
+        yield
+
+
+@contextmanager
+def _windows_directory_lock(
+    directory: Path,
+    *,
+    deadline: float,
+    protected_paths: list[Path],
+) -> Iterator[None]:
+    lock_path = Path(directory) / _LOCK_NAME
     _ensure_distinct_paths([lock_path, *protected_paths])
     descriptor = _open_verified_lock_file(lock_path)
-    deadline = time.monotonic() + timeout
     acquired = False
     try:
         while True:
             try:
-                _try_os_lock(descriptor)
+                _try_windows_lock(descriptor)
                 acquired = True
                 _verify_lock_identity(descriptor, lock_path)
                 break
             except OSError as error:
-                if time.monotonic() >= deadline:
-                    raise ArtifactLockTimeout(
-                        f"timed out waiting for artifact lock: {lock_path}"
-                    ) from error
-                time.sleep(min(0.01, max(0.0, deadline - time.monotonic())))
+                _raise_lock_timeout_or_wait(deadline, lock_path, error)
         yield
     finally:
         if acquired:
-            _release_os_lock(descriptor)
+            _release_windows_lock(descriptor)
         os.close(descriptor)
+
+
+@contextmanager
+def _posix_directory_lock(directory: Path, *, deadline: float) -> Iterator[None]:
+    flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0)
+    descriptor = os.open(directory, flags)
+    acquired = False
+    try:
+        metadata = os.fstat(descriptor)
+        if not stat.S_ISDIR(metadata.st_mode):
+            raise ArtifactPathError(f"artifact lock identity is not a directory: {directory}")
+        while True:
+            try:
+                _try_posix_lock(descriptor)
+                acquired = True
+                current = os.stat(directory)
+                if (metadata.st_dev, metadata.st_ino) != (
+                    current.st_dev,
+                    current.st_ino,
+                ):
+                    raise ArtifactPathError(
+                        f"artifact lock directory identity changed: {directory}"
+                    )
+                break
+            except OSError as error:
+                _raise_lock_timeout_or_wait(deadline, directory, error)
+        yield
+    finally:
+        if acquired:
+            _release_posix_lock(descriptor)
+        os.close(descriptor)
+
+
+def _raise_lock_timeout_or_wait(
+    deadline: float, identity: Path, error: OSError
+) -> None:
+    if time.monotonic() >= deadline:
+        raise ArtifactLockTimeout(
+            f"timed out waiting for artifact lock: {identity}"
+        ) from error
+    time.sleep(min(0.01, max(0.0, deadline - time.monotonic())))
 
 
 def _open_verified_lock_file(path: Path) -> int:
@@ -705,28 +859,30 @@ def _verify_lock_identity(descriptor: int, path: Path) -> None:
         raise ArtifactPathError(f"artifact lock identity is invalid: {path}")
 
 
-def _try_os_lock(descriptor: int) -> None:
+def _try_windows_lock(descriptor: int) -> None:
     os.lseek(descriptor, 0, os.SEEK_SET)
-    if os.name == "nt":
-        import msvcrt
+    import msvcrt
 
-        msvcrt.locking(descriptor, msvcrt.LK_NBLCK, 1)
-    else:
-        import fcntl
-
-        fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    msvcrt.locking(descriptor, msvcrt.LK_NBLCK, 1)
 
 
-def _release_os_lock(descriptor: int) -> None:
+def _release_windows_lock(descriptor: int) -> None:
     os.lseek(descriptor, 0, os.SEEK_SET)
-    if os.name == "nt":
-        import msvcrt
+    import msvcrt
 
-        msvcrt.locking(descriptor, msvcrt.LK_UNLCK, 1)
-    else:
-        import fcntl
+    msvcrt.locking(descriptor, msvcrt.LK_UNLCK, 1)
 
-        fcntl.flock(descriptor, fcntl.LOCK_UN)
+
+def _try_posix_lock(descriptor: int) -> None:
+    import fcntl
+
+    fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+
+
+def _release_posix_lock(descriptor: int) -> None:
+    import fcntl
+
+    fcntl.flock(descriptor, fcntl.LOCK_UN)
 
 
 def replace_artifacts_durably(
@@ -742,6 +898,7 @@ def replace_artifacts_durably(
     targets = [Path(path) for path, _data in replacements]
     with _artifact_lock(
         work_dir,
+        targets=targets,
         timeout=lock_timeout,
         protected_paths=[*targets, *protected_paths],
     ):
@@ -792,6 +949,7 @@ def _replace_artifacts_durably_locked(
         *root_descriptors,
         transaction_dir / _TRANSACTION_DESCRIPTOR_NAME,
     ]
+    intent_path = transaction_dir / _TRANSACTION_INTENT_NAME
     entries: list[dict] = []
     for index, (target, data) in enumerate(replacements):
         target = Path(target)
@@ -813,6 +971,7 @@ def _replace_artifacts_durably_locked(
         [
             *targets,
             *descriptor_paths,
+            intent_path,
             *all_payloads,
             *marker_paths,
             *protected_paths,
@@ -820,6 +979,21 @@ def _replace_artifacts_durably_locked(
     )
     _preflight_pair_markers(
         work_dir, targets, protected_paths=protected_paths
+    )
+    try:
+        base_marker = _load_pair_marker_quorum(work_dir, targets)
+        base_transaction_id = base_marker["transactionId"]
+    except ArtifactPromotionError:
+        base_transaction_id = None
+
+    intent = {
+        "schemaVersion": 1,
+        "transactionId": transaction_id,
+        "baseTransactionId": base_transaction_id,
+        "targets": [str(path.resolve()) for path in targets],
+    }
+    _create_durable_file_exclusive(
+        intent_path, _pretty_json_bytes(intent), protected_paths=protected_paths
     )
 
     descriptor = {
@@ -894,7 +1068,9 @@ def _recover_artifact_transaction_locked(work_dir: Path) -> None:
         path for path in descriptor_candidates if path.exists() or path.is_symlink()
     ]
     if not existing_descriptors:
-        _recover_or_reject_orphan_transactions(work_dir, transaction_root)
+        _recover_or_reject_orphan_transactions(
+            work_dir, transaction_root, invalid_descriptors=[]
+        )
         return
 
     valid_descriptors: list[dict] = []
@@ -914,11 +1090,18 @@ def _recover_artifact_transaction_locked(work_dir: Path) -> None:
 
     descriptor, state = _select_descriptor_quorum(work_dir, valid_descriptors)
     if descriptor is None:
-        _recover_or_reject_orphan_transactions(work_dir, transaction_root)
+        _recover_or_reject_orphan_transactions(
+            work_dir,
+            transaction_root,
+            invalid_descriptors=existing_descriptors,
+        )
         return
     descriptor = {**descriptor, "state": state}
     if state == "staging":
         _cleanup_transaction(descriptor)
+        _remove_empty_transaction_directories(transaction_root)
+        return
+    if _discard_superseded_transaction(work_dir, descriptor):
         _remove_empty_transaction_directories(transaction_root)
         return
 
@@ -957,28 +1140,12 @@ def _select_descriptor_quorum(
         raise ArtifactPromotionError("multiple artifact descriptor identities reached quorum")
     if identity_quorums:
         selected = identity_quorums[0]
-    else:
-        transaction_root = Path(work_dir) / _TRANSACTION_DIR_NAME
-        transaction_markers = []
-        if transaction_root.is_dir():
-            for transaction_dir in transaction_root.iterdir():
-                if transaction_dir.is_dir() and not transaction_dir.is_symlink():
-                    marker = _find_pair_marker_by_transaction(
-                        work_dir, transaction_dir.name
-                    )
-                    if marker is not None:
-                        transaction_markers.append(marker)
-        if len(transaction_markers) == 1:
-            return _marker_to_descriptor(work_dir, transaction_markers[0]), "committed"
-        if len(transaction_markers) > 1:
-            raise ArtifactPromotionError(
-                "multiple committed transactions require recovery"
-            )
-
     if not identity_quorums and len(groups) == 1 and descriptors:
         selected = next(iter(groups.values()))
         marker = _find_pair_marker_by_transaction(
-            work_dir, selected[0]["transactionId"]
+            work_dir,
+            selected[0]["transactionId"],
+            [Path(entry["target"]) for entry in selected[0]["entries"]],
         )
         if len(selected) == 1 and marker is not None:
             marker_descriptor = _marker_to_descriptor(work_dir, marker)
@@ -995,7 +1162,9 @@ def _select_descriptor_quorum(
         corroborated: list[dict] = []
         for group in groups.values():
             marker = _find_pair_marker_by_transaction(
-                work_dir, group[0]["transactionId"]
+                work_dir,
+                group[0]["transactionId"],
+                [Path(entry["target"]) for entry in group[0]["entries"]],
             )
             if marker is None:
                 continue
@@ -1021,7 +1190,10 @@ def _select_descriptor_quorum(
 
 
 def _recover_or_reject_orphan_transactions(
-    work_dir: Path, transaction_root: Path
+    work_dir: Path,
+    transaction_root: Path,
+    *,
+    invalid_descriptors: list[Path],
 ) -> None:
     if not transaction_root.is_dir():
         return
@@ -1029,21 +1201,153 @@ def _recover_or_reject_orphan_transactions(
     for transaction_dir in list(transaction_root.iterdir()):
         if not transaction_dir.is_dir() or transaction_dir.is_symlink():
             raise ArtifactPromotionError("unexpected artifact transaction storage entry")
-        if not any(transaction_dir.iterdir()):
-            transaction_dir.rmdir()
-            continue
-        marker = _find_pair_marker_by_transaction(work_dir, transaction_dir.name)
-        if marker is None:
-            raise ArtifactPromotionError(
-                "orphan artifact recovery material has no usable descriptor or marker"
+        intent = _load_transaction_intent(work_dir, transaction_dir)
+        targets = [Path(path) for path in intent["targets"]]
+        marker = _find_pair_marker_by_transaction(
+            work_dir, transaction_dir.name, targets
+        )
+        if marker is not None:
+            _verify_marker_targets(marker)
+            _cleanup_invalid_transaction(
+                work_dir,
+                transaction_dir,
+                targets,
+                invalid_descriptors=invalid_descriptors,
             )
-        _verify_marker_targets(marker)
-        _cleanup_transaction(_marker_to_descriptor(work_dir, marker))
+            recovered = True
+            continue
+        try:
+            prior_marker = _load_pair_marker_quorum(work_dir, targets)
+            _verify_marker_targets(prior_marker)
+        except ArtifactPromotionError as error:
+            _quarantine_unproven_transaction(transaction_dir, intent, str(error))
+            raise ArtifactPromotionError(
+                "orphan artifact recovery quarantined an unproven transaction; "
+                "restore a committed target pair or inspect and remove its recovery material"
+            ) from error
+        _cleanup_invalid_transaction(
+            work_dir,
+            transaction_dir,
+            targets,
+            invalid_descriptors=invalid_descriptors,
+        )
         recovered = True
     if transaction_root.exists() and not any(transaction_root.iterdir()):
         transaction_root.rmdir()
     if recovered:
         return
+
+
+def _load_transaction_intent(work_dir: Path, transaction_dir: Path) -> dict:
+    intent_path = transaction_dir / _TRANSACTION_INTENT_NAME
+    try:
+        intent = _load_json_snapshot(_read_owned_regular_file(intent_path))
+    except (OSError, UnicodeError, json.JSONDecodeError) as error:
+        raise ArtifactPromotionError(
+            "orphan artifact recovery material has no usable transaction intent"
+        ) from error
+    if (
+        not isinstance(intent, dict)
+        or set(intent)
+        != {"schemaVersion", "transactionId", "baseTransactionId", "targets"}
+        or intent.get("schemaVersion") != 1
+        or intent.get("transactionId") != transaction_dir.name
+        or not _is_lower_hex(intent.get("transactionId"), length=32)
+        or (
+            intent.get("baseTransactionId") is not None
+            and not _is_lower_hex(intent.get("baseTransactionId"), length=32)
+        )
+        or not isinstance(intent.get("targets"), list)
+        or not intent["targets"]
+        or any(not isinstance(path, str) for path in intent["targets"])
+    ):
+        raise ArtifactPromotionError("artifact transaction intent is malformed")
+    targets = [Path(path) for path in intent["targets"]]
+    transaction_root = Path(work_dir) / _TRANSACTION_DIR_NAME
+    _ensure_distinct_paths(
+        [
+            *targets,
+            *_root_descriptor_paths(work_dir),
+            transaction_root,
+            transaction_dir,
+            intent_path,
+        ]
+    )
+    if any(_is_within(target, transaction_root) for target in targets):
+        raise ArtifactPromotionError("artifact transaction intent target is reserved")
+    return intent
+
+
+def _discard_superseded_transaction(work_dir: Path, descriptor: dict) -> bool:
+    transaction_id = descriptor["transactionId"]
+    transaction_dir = (
+        Path(work_dir) / _TRANSACTION_DIR_NAME / transaction_id
+    )
+    intent = _load_transaction_intent(work_dir, transaction_dir)
+    descriptor_targets = [Path(entry["target"]) for entry in descriptor["entries"]]
+    intent_targets = [Path(path) for path in intent["targets"]]
+    if {
+        os.path.normcase(str(path.resolve())) for path in descriptor_targets
+    } != {
+        os.path.normcase(str(path.resolve())) for path in intent_targets
+    }:
+        raise ArtifactPromotionError(
+            "artifact transaction intent disagrees with descriptor targets"
+        )
+    try:
+        marker = _load_pair_marker_quorum(work_dir, descriptor_targets)
+        _verify_marker_targets(marker)
+    except ArtifactPromotionError:
+        return False
+    marker_transaction_id = marker["transactionId"]
+    if marker_transaction_id == intent["baseTransactionId"]:
+        return False
+    _cleanup_invalid_transaction(
+        work_dir,
+        transaction_dir,
+        intent_targets,
+        invalid_descriptors=[Path(path) for path in descriptor["descriptorPaths"]],
+    )
+    return True
+
+
+def _cleanup_invalid_transaction(
+    work_dir: Path,
+    transaction_dir: Path,
+    targets: list[Path],
+    *,
+    invalid_descriptors: list[Path],
+) -> None:
+    transaction_id = transaction_dir.name
+    cleanup_paths = [*invalid_descriptors]
+    for index, target in enumerate(targets):
+        cleanup_paths.append(
+            target.parent
+            / f".{target.name}.{transaction_id}.{index}.recovery.bin"
+        )
+    for path in cleanup_paths:
+        if not path.exists() and not path.is_symlink():
+            continue
+        _read_owned_regular_file(path, protected_paths=targets)
+        _unlink_durably(path)
+    transaction_root = Path(work_dir) / _TRANSACTION_DIR_NAME
+    _remove_transaction_dir(transaction_dir, transaction_root)
+
+
+def _quarantine_unproven_transaction(
+    transaction_dir: Path, intent: dict, detail: str
+) -> None:
+    quarantine_path = transaction_dir / _RECOVERY_QUARANTINE_NAME
+    if quarantine_path.exists() or quarantine_path.is_symlink():
+        _read_owned_regular_file(quarantine_path)
+        return
+    payload = {
+        "state": "blocked",
+        "transactionId": intent["transactionId"],
+        "targets": intent["targets"],
+        "reason": detail,
+    }
+    _create_durable_file_exclusive(quarantine_path, _pretty_json_bytes(payload))
 
 
 def _root_descriptor_paths(work_dir: Path) -> list[Path]:
@@ -1054,12 +1358,25 @@ def _root_descriptor_paths(work_dir: Path) -> list[Path]:
 
 
 def _pair_set_id(targets: list[Path]) -> str:
-    identity = "\n".join(str(Path(target).resolve()) for target in targets) + "\n"
+    identity = "\n".join(
+        sorted(os.path.normcase(str(Path(target).resolve())) for target in targets)
+    ) + "\n"
     return sha256_bytes(identity.encode("utf-8"))
 
 
 def _pair_marker_paths(work_dir: Path, targets: list[Path]) -> list[Path]:
-    marker_dir = Path(work_dir) / _PAIR_MARKER_DIR_NAME / _pair_set_id(targets)
+    del work_dir
+    canonical_targets = sorted(
+        (Path(target).resolve() for target in targets),
+        key=lambda path: os.path.normcase(str(path)),
+    )
+    if not canonical_targets:
+        raise ArtifactPathError("committed pair identity requires at least one target")
+    marker_dir = (
+        canonical_targets[0].parent
+        / _PAIR_MARKER_DIR_NAME
+        / _pair_set_id(canonical_targets)
+    )
     return [marker_dir / f"marker-{index}.json" for index in range(3)]
 
 
@@ -1073,7 +1390,7 @@ def _preflight_pair_markers(
     protected_paths = [Path(path) for path in (protected_paths or [])]
     marker_paths = _pair_marker_paths(work_dir, targets)
     _ensure_distinct_paths([*marker_paths, *targets, *protected_paths])
-    marker_root = Path(work_dir) / _PAIR_MARKER_DIR_NAME
+    marker_root = marker_paths[0].parent.parent
     _ensure_private_directory(marker_root, protected_paths=protected_paths)
     _ensure_private_directory(marker_paths[0].parent, protected_paths=protected_paths)
     existing_count = 0
@@ -1173,9 +1490,11 @@ def _validate_pair_marker(
         path.resolve() for path in expected_paths
     ]:
         raise ArtifactPromotionError("committed pair marker paths are invalid")
-    if expected_targets is not None and [target.resolve() for target in targets] != [
-        Path(target).resolve() for target in expected_targets
-    ]:
+    if expected_targets is not None and {
+        os.path.normcase(str(target.resolve())) for target in targets
+    } != {
+        os.path.normcase(str(Path(target).resolve())) for target in expected_targets
+    }:
         raise ArtifactPromotionError("committed pair marker targets do not match")
 
 
@@ -1207,34 +1526,14 @@ def _marker_identity(marker: dict) -> str:
     return json.dumps(marker, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
 
 
-def _find_pair_marker_by_transaction(work_dir: Path, transaction_id: str) -> dict | None:
-    marker_root = Path(work_dir) / _PAIR_MARKER_DIR_NAME
-    if not marker_root.is_dir() or marker_root.is_symlink():
+def _find_pair_marker_by_transaction(
+    work_dir: Path, transaction_id: str, targets: list[Path]
+) -> dict | None:
+    try:
+        marker = _load_pair_marker_quorum(work_dir, targets)
+    except ArtifactPromotionError:
         return None
-    matches: list[dict] = []
-    for marker_dir in marker_root.iterdir():
-        if not marker_dir.is_dir() or marker_dir.is_symlink():
-            continue
-        paths = [marker_dir / f"marker-{index}.json" for index in range(3)]
-        valid: list[dict] = []
-        for path in paths:
-            if not path.is_file() or path.is_symlink():
-                continue
-            try:
-                marker = _load_json_snapshot(_read_owned_regular_file(path))
-                _validate_pair_marker(work_dir, marker)
-                assert isinstance(marker, dict)
-                if marker["transactionId"] == transaction_id:
-                    valid.append(marker)
-            except (ArtifactPromotionError, OSError, UnicodeError, json.JSONDecodeError):
-                continue
-        groups: dict[str, list[dict]] = {}
-        for marker in valid:
-            groups.setdefault(_marker_identity(marker), []).append(marker)
-        matches.extend(group[0] for group in groups.values() if len(group) >= 2)
-    if len(matches) > 1:
-        raise ArtifactPromotionError("multiple committed pair identities match transaction")
-    return matches[0] if matches else None
+    return marker if marker["transactionId"] == transaction_id else None
 
 
 def _marker_to_descriptor(work_dir: Path, marker: dict) -> dict:
@@ -1421,7 +1720,10 @@ def read_artifact_pair(
     first = Path(first)
     second = Path(second)
     with _artifact_lock(
-        work_dir, timeout=lock_timeout, protected_paths=[first, second]
+        work_dir,
+        targets=[first, second],
+        timeout=lock_timeout,
+        protected_paths=[first, second],
     ):
         _recover_artifact_transaction_locked(work_dir)
         _ensure_distinct_paths([first, second])
@@ -1432,8 +1734,15 @@ def read_artifact_pair(
         except OSError as error:
             raise ArtifactPromotionError("committed pair targets are missing") from error
         marker = _load_pair_marker_quorum(work_dir, [first, second])
-        expected_hashes = [entry["sha256"] for entry in marker["entries"]]
-        if [sha256_bytes(snapshot) for snapshot in snapshots] != expected_hashes:
+        expected_hashes = {
+            os.path.normcase(str(Path(entry["target"]).resolve())): entry["sha256"]
+            for entry in marker["entries"]
+        }
+        live_hashes = {
+            os.path.normcase(str(path.resolve())): sha256_bytes(snapshot)
+            for path, snapshot in zip((first, second), snapshots, strict=True)
+        }
+        if live_hashes != expected_hashes:
             raise ArtifactPromotionError(
                 "committed pair identity does not match live target hashes"
             )
@@ -1448,7 +1757,8 @@ def invalidate_generation(
 ) -> None:
     """Durably make every prior candidate generation non-promotable."""
     work_dir = Path(work_dir)
-    with _artifact_lock(work_dir, timeout=lock_timeout):
+    targets = [work_dir / "build-state.json", work_dir / "quarantine.json"]
+    with _artifact_lock(work_dir, targets=targets, timeout=lock_timeout):
         _recover_artifact_transaction_locked(work_dir)
         _invalidate_generation_locked(work_dir, reason)
 

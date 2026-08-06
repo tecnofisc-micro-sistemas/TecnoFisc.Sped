@@ -99,6 +99,8 @@ memory/
 
 # Local ECF layout conversion cache and source manual extracts
 .local/ecf-layout/
+**/.artifact.lock
+**/.artifact-pairs/
 
 # Isolated Python tooling environments and bytecode
 tools/ecf-layout/.venv/

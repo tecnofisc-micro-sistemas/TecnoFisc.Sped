@@ -5,6 +5,7 @@ import os
 import shutil
 import threading
 import time
+from contextlib import contextmanager
 from pathlib import Path
 
 import pytest
@@ -20,10 +21,17 @@ TRACKER_PATH = REPO_ROOT / "sped" / "STAGE_17_ECF_BASELINE.md"
 
 
 def _hold_artifact_lock_in_process(
-    work_dir: str, ready_path: str, release_path: str
+    work_dir: str,
+    ready_path: str,
+    release_path: str,
+    *target_paths: str,
 ) -> None:
     artifacts = importlib.import_module("ecf_layout.artifacts")
-    with artifacts._artifact_lock(Path(work_dir), timeout=5.0):
+    with artifacts._artifact_lock(
+        Path(work_dir),
+        targets=[Path(path) for path in target_paths],
+        timeout=5.0,
+    ):
         Path(ready_path).write_text("ready", encoding="utf-8")
         deadline = time.monotonic() + 10
         while not Path(release_path).exists():
@@ -1109,6 +1117,151 @@ def test_clean_pair_marker_identity_uses_two_of_three_quorum(tmp_path: Path) -> 
     )
 
 
+def test_committed_pair_identity_is_shared_across_work_directories(
+    tmp_path: Path,
+) -> None:
+    artifacts = importlib.import_module("ecf_layout.artifacts")
+    first = tmp_path / "published" / "manifest.json"
+    second = tmp_path / "published" / "tracker.md"
+    work_a = tmp_path / "work-a"
+    work_b = tmp_path / "work-b"
+
+    artifacts.replace_artifacts_durably(
+        work_a,
+        [(first, b"manifest"), (second, b"tracker")],
+    )
+
+    assert artifacts._pair_marker_paths(work_a, [first, second]) == (
+        artifacts._pair_marker_paths(work_b, [second, first])
+    )
+    assert artifacts.read_artifact_pair(work_b, first, second) == (
+        b"manifest",
+        b"tracker",
+    )
+    assert artifacts.read_artifact_pair(work_b, second, first) == (
+        b"tracker",
+        b"manifest",
+    )
+
+
+def test_different_work_directories_serialize_the_same_destination_set(
+    tmp_path: Path,
+) -> None:
+    artifacts = importlib.import_module("ecf_layout.artifacts")
+    first = tmp_path / "published" / "manifest.json"
+    second = tmp_path / "published" / "tracker.md"
+    paused_after_first_target = threading.Event()
+    release_first_writer = threading.Event()
+    results: list[str] = []
+    errors: list[BaseException] = []
+
+    def first_interrupt(boundary: str) -> None:
+        if boundary == "after_replace_0":
+            paused_after_first_target.set()
+            if not release_first_writer.wait(timeout=5):
+                raise TimeoutError("first destination-set writer was not released")
+
+    def publish(label: str, work_dir: Path, payload: bytes, interrupt=None) -> None:
+        try:
+            artifacts.replace_artifacts_durably(
+                work_dir,
+                [(first, payload + b" manifest"), (second, payload + b" tracker")],
+                interrupt=interrupt,
+                lock_timeout=5,
+            )
+            results.append(label)
+        except BaseException as error:
+            errors.append(error)
+
+    first_thread = threading.Thread(
+        target=publish,
+        args=("A", tmp_path / "work-a", b"A", first_interrupt),
+    )
+    second_thread = threading.Thread(
+        target=publish,
+        args=("B", tmp_path / "work-b", b"B"),
+    )
+    first_thread.start()
+    assert paused_after_first_target.wait(timeout=5)
+    second_thread.start()
+    second_thread.join(timeout=0.1)
+    try:
+        assert second_thread.is_alive()
+    finally:
+        release_first_writer.set()
+        first_thread.join(timeout=5)
+        second_thread.join(timeout=5)
+
+    assert not first_thread.is_alive()
+    assert not second_thread.is_alive()
+    assert errors == []
+    assert results == ["A", "B"]
+    assert artifacts.read_artifact_pair(
+        tmp_path / "reader-work", first, second
+    ) == (b"B manifest", b"B tracker")
+
+
+def test_overlapping_destination_sets_serialize_on_the_shared_target(
+    tmp_path: Path,
+) -> None:
+    artifacts = importlib.import_module("ecf_layout.artifacts")
+    first = tmp_path / "published-a" / "first.json"
+    shared = tmp_path / "shared" / "shared.json"
+    third = tmp_path / "published-b" / "third.json"
+    paused_after_first_target = threading.Event()
+    release_first_writer = threading.Event()
+    second_finished = threading.Event()
+    errors: list[BaseException] = []
+
+    def interrupt(boundary: str) -> None:
+        if boundary == "after_replace_0":
+            paused_after_first_target.set()
+            if not release_first_writer.wait(timeout=5):
+                raise TimeoutError("overlapping writer was not released")
+
+    def first_writer() -> None:
+        try:
+            artifacts.replace_artifacts_durably(
+                tmp_path / "work-a",
+                [(first, b"A first"), (shared, b"A shared")],
+                interrupt=interrupt,
+                lock_timeout=5,
+            )
+        except BaseException as error:
+            errors.append(error)
+
+    def second_writer() -> None:
+        try:
+            artifacts.replace_artifacts_durably(
+                tmp_path / "work-b",
+                [(shared, b"B shared"), (third, b"B third")],
+                lock_timeout=5,
+            )
+            second_finished.set()
+        except BaseException as error:
+            errors.append(error)
+
+    first_thread = threading.Thread(target=first_writer)
+    second_thread = threading.Thread(target=second_writer)
+    first_thread.start()
+    assert paused_after_first_target.wait(timeout=5)
+    second_thread.start()
+    second_thread.join(timeout=0.1)
+    try:
+        assert not second_finished.is_set()
+        assert second_thread.is_alive()
+    finally:
+        release_first_writer.set()
+        first_thread.join(timeout=5)
+        second_thread.join(timeout=5)
+
+    assert errors == []
+    assert first.read_bytes() == b"A first"
+    assert artifacts.read_artifact_pair(
+        tmp_path / "reader-work", shared, third
+    ) == (b"B shared", b"B third")
+
+
 def test_reader_cannot_recover_an_in_flight_prepared_writer(tmp_path: Path) -> None:
     artifacts = importlib.import_module("ecf_layout.artifacts")
     work_dir = tmp_path / "work"
@@ -1159,20 +1312,135 @@ def test_reader_cannot_recover_an_in_flight_prepared_writer(tmp_path: Path) -> N
     )
 
 
-def test_artifact_lock_is_os_backed_across_processes(tmp_path: Path) -> None:
+def test_recovery_locks_destinations_discovered_from_transaction_intent(
+    tmp_path: Path,
+) -> None:
     artifacts = importlib.import_module("ecf_layout.artifacts")
-    work_dir = tmp_path / "work"
+    recovery_work = tmp_path / "recovery-work"
+    other_work = tmp_path / "other-work"
     first = tmp_path / "published" / "manifest.json"
     second = tmp_path / "published" / "tracker.md"
     artifacts.replace_artifacts_durably(
-        work_dir,
+        recovery_work,
+        [(first, b"old manifest"), (second, b"old tracker")],
+    )
+
+    class AbruptStop(BaseException):
+        pass
+
+    def crash_prepared(boundary: str) -> None:
+        if boundary == "after_journal":
+            raise AbruptStop(boundary)
+
+    with pytest.raises(AbruptStop):
+        artifacts.replace_artifacts_durably(
+            recovery_work,
+            [(first, b"A manifest"), (second, b"A tracker")],
+            interrupt=crash_prepared,
+        )
+
+    paused_after_first_target = threading.Event()
+    release_other = threading.Event()
+    errors: list[BaseException] = []
+
+    def pause_other(boundary: str) -> None:
+        if boundary == "after_replace_0":
+            paused_after_first_target.set()
+            if not release_other.wait(timeout=5):
+                raise TimeoutError("other writer was not released")
+
+    def other_writer() -> None:
+        try:
+            artifacts.replace_artifacts_durably(
+                other_work,
+                [(first, b"B manifest"), (second, b"B tracker")],
+                interrupt=pause_other,
+                lock_timeout=5,
+            )
+        except BaseException as error:
+            errors.append(error)
+
+    thread = threading.Thread(target=other_writer)
+    thread.start()
+    assert paused_after_first_target.wait(timeout=5)
+    try:
+        with pytest.raises(artifacts.ArtifactLockTimeout):
+            artifacts.recover_artifact_transaction(
+                recovery_work, lock_timeout=0.05
+            )
+    finally:
+        release_other.set()
+        thread.join(timeout=5)
+
+    assert not thread.is_alive()
+    assert errors == []
+    artifacts.recover_artifact_transaction(recovery_work)
+    assert artifacts.read_artifact_pair(
+        tmp_path / "reader", first, second
+    ) == (b"B manifest", b"B tracker")
+
+
+@pytest.mark.parametrize("boundary", ["after_journal", "after_replace_0"])
+def test_stale_recovery_cannot_overwrite_a_later_cross_workdir_commit(
+    tmp_path: Path, boundary: str
+) -> None:
+    artifacts = importlib.import_module("ecf_layout.artifacts")
+    stale_work = tmp_path / "stale-work"
+    later_work = tmp_path / "later-work"
+    first = tmp_path / "published" / "manifest.json"
+    second = tmp_path / "published" / "tracker.md"
+    artifacts.replace_artifacts_durably(
+        stale_work,
+        [(first, b"old manifest"), (second, b"old tracker")],
+    )
+
+    class AbruptStop(BaseException):
+        pass
+
+    def interrupt(current: str) -> None:
+        if current == boundary:
+            raise AbruptStop(current)
+
+    with pytest.raises(AbruptStop):
+        artifacts.replace_artifacts_durably(
+            stale_work,
+            [(first, b"stale manifest"), (second, b"stale tracker")],
+            interrupt=interrupt,
+        )
+    artifacts.replace_artifacts_durably(
+        later_work,
+        [(first, b"later manifest"), (second, b"later tracker")],
+    )
+
+    artifacts.recover_artifact_transaction(stale_work)
+
+    assert artifacts.read_artifact_pair(
+        tmp_path / "reader", first, second
+    ) == (b"later manifest", b"later tracker")
+    assert not (stale_work / ".artifact-transactions").exists()
+
+
+def test_artifact_lock_is_os_backed_across_processes(tmp_path: Path) -> None:
+    artifacts = importlib.import_module("ecf_layout.artifacts")
+    writer_work_dir = tmp_path / "writer-work"
+    reader_work_dir = tmp_path / "reader-work"
+    first = tmp_path / "published" / "manifest.json"
+    second = tmp_path / "published" / "tracker.md"
+    artifacts.replace_artifacts_durably(
+        writer_work_dir,
         [(first, b"manifest"), (second, b"tracker")],
     )
     ready = tmp_path / "process-ready"
     release = tmp_path / "process-release"
     process = multiprocessing.get_context("spawn").Process(
         target=_hold_artifact_lock_in_process,
-        args=(str(work_dir), str(ready), str(release)),
+        args=(
+            str(writer_work_dir),
+            str(ready),
+            str(release),
+            str(first),
+            str(second),
+        ),
     )
     process.start()
     deadline = time.monotonic() + 5
@@ -1182,7 +1450,7 @@ def test_artifact_lock_is_os_backed_across_processes(tmp_path: Path) -> None:
     try:
         with pytest.raises(artifacts.ArtifactLockTimeout):
             artifacts.read_artifact_pair(
-                work_dir, first, second, lock_timeout=0.05
+                reader_work_dir, first, second, lock_timeout=0.05
             )
     finally:
         release.write_text("release", encoding="utf-8")
@@ -1191,6 +1459,106 @@ def test_artifact_lock_is_os_backed_across_processes(tmp_path: Path) -> None:
             process.terminate()
             process.join(timeout=5)
     assert process.exitcode == 0
+
+
+@pytest.mark.skipif(os.name == "nt", reason="requires POSIX directory flock")
+def test_posix_directory_lock_survives_auxiliary_lock_path_replacement(
+    tmp_path: Path,
+) -> None:
+    artifacts = importlib.import_module("ecf_layout.artifacts")
+    published = tmp_path / "published"
+    published.mkdir()
+    first = published / "manifest.json"
+    second = published / "tracker.md"
+    entered = threading.Event()
+    release = threading.Event()
+    errors: list[BaseException] = []
+
+    def holder() -> None:
+        try:
+            with artifacts._artifact_lock(
+                tmp_path / "work-a", targets=[first, second], timeout=5
+            ):
+                entered.set()
+                if not release.wait(timeout=5):
+                    raise TimeoutError("POSIX lock holder was not released")
+        except BaseException as error:
+            errors.append(error)
+
+    thread = threading.Thread(target=holder)
+    thread.start()
+    assert entered.wait(timeout=5)
+    auxiliary = published / ".artifact.lock"
+    auxiliary.write_bytes(b"replaceable auxiliary path")
+    auxiliary.unlink()
+    auxiliary.write_bytes(b"replacement auxiliary path")
+    try:
+        with pytest.raises(artifacts.ArtifactLockTimeout):
+            with artifacts._artifact_lock(
+                tmp_path / "work-b", targets=[first, second], timeout=0.05
+            ):
+                raise AssertionError("replacement pathname bypassed directory inode lock")
+    finally:
+        release.set()
+        thread.join(timeout=5)
+
+    assert not thread.is_alive()
+    assert errors == []
+
+
+def test_posix_backend_contract_keys_locking_by_canonical_destination_directory(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    artifacts = importlib.import_module("ecf_layout.artifacts")
+    registry: dict[str, threading.Lock] = {}
+    registry_guard = threading.Lock()
+
+    @contextmanager
+    def fake_posix_directory_lock(directory: Path, *, deadline: float):
+        key = os.path.normcase(str(Path(directory).resolve()))
+        with registry_guard:
+            lock = registry.setdefault(key, threading.Lock())
+        if not lock.acquire(timeout=max(0.0, deadline - time.monotonic())):
+            raise artifacts.ArtifactLockTimeout(
+                f"timed out waiting for artifact lock: {directory}"
+            )
+        try:
+            yield
+        finally:
+            lock.release()
+
+    monkeypatch.setattr(artifacts, "_IS_WINDOWS", False)
+    monkeypatch.setattr(
+        artifacts, "_posix_directory_lock", fake_posix_directory_lock
+    )
+    published = tmp_path / "published"
+    first = published / "manifest.json"
+    second = published / "tracker.md"
+    entered = threading.Event()
+    release = threading.Event()
+
+    def holder() -> None:
+        with artifacts._artifact_lock(
+            tmp_path / "work-a", targets=[first, second], timeout=5
+        ):
+            entered.set()
+            release.wait(timeout=5)
+
+    thread = threading.Thread(target=holder)
+    thread.start()
+    assert entered.wait(timeout=5)
+    try:
+        with pytest.raises(artifacts.ArtifactLockTimeout):
+            with artifacts._artifact_lock(
+                tmp_path / "work-b", targets=[second, first], timeout=0.05
+            ):
+                raise AssertionError("canonical destination lock was bypassed")
+    finally:
+        release.set()
+        thread.join(timeout=5)
+
+    assert not thread.is_alive()
+    assert not (published / ".artifact.lock").exists()
 
 
 def test_concurrent_promotions_serialize_without_lost_success(tmp_path: Path) -> None:
@@ -1284,6 +1652,162 @@ def test_concurrent_promotions_serialize_without_lost_success(tmp_path: Path) ->
     assert results == ["first", "second"]
     assert manifest_out.read_bytes() == expected_second_manifest
     assert tracker_out.read_bytes() == expected_second_tracker
+
+
+def test_concurrent_promotions_from_different_work_dirs_serialize_targets(
+    tmp_path: Path,
+) -> None:
+    first_root = tmp_path / "first"
+    first_root.mkdir()
+    artifacts, _records, _pdf, first_work, _manifest, _tracker, _evidence = (
+        _prepare_reviewed_generation(first_root)
+    )
+    second_root = tmp_path / "second"
+    second_root.mkdir()
+    second_records = _valid_records(reviewed=False)
+    second_records[0] = {**second_records[0], "title": "Second work directory"}
+    second_pdf = _manual(second_root)
+    second_work = second_root / "work"
+    second_manifest = second_work / "candidate" / "layout-12-manifest.json"
+    second_tracker = second_work / "candidate" / "STAGE_17_ECF_BASELINE.md"
+    artifacts.build_artifacts(
+        second_records,
+        second_work,
+        second_manifest,
+        second_tracker,
+        pdf=second_pdf,
+    )
+    second_evidence = second_root / "review.json"
+    second_evidence.write_text(
+        json.dumps(
+            _provenance_evidence(second_records, _provenance(second_work))
+        ),
+        encoding="utf-8",
+    )
+    artifacts.apply_review_evidence(second_work, [second_evidence])
+    expected_manifest = second_manifest.read_bytes()
+    expected_tracker = second_tracker.read_bytes()
+
+    published = tmp_path / "published"
+    published.mkdir()
+    schema = published / "layout-12-manifest.schema.json"
+    schema.write_text(json.dumps(_test_schema()), encoding="utf-8")
+    manifest_out = published / "layout-12-manifest.json"
+    tracker_out = published / "STAGE_17_ECF_BASELINE.md"
+    paused_after_first_target = threading.Event()
+    release_first = threading.Event()
+    results: list[str] = []
+    errors: list[BaseException] = []
+
+    def interrupt(boundary: str) -> None:
+        if boundary == "after_replace_0":
+            paused_after_first_target.set()
+            if not release_first.wait(timeout=5):
+                raise TimeoutError("first promotion was not released")
+
+    def promote(label: str, work_dir: Path, hook=None) -> None:
+        try:
+            artifacts.promote_artifacts(
+                work_dir,
+                manifest_out,
+                tracker_out,
+                schema_path=schema,
+                interrupt=hook,
+                lock_timeout=5,
+            )
+            results.append(label)
+        except BaseException as error:
+            errors.append(error)
+
+    first_thread = threading.Thread(
+        target=promote, args=("A", first_work, interrupt)
+    )
+    second_thread = threading.Thread(
+        target=promote, args=("B", second_work)
+    )
+    first_thread.start()
+    assert paused_after_first_target.wait(timeout=5)
+    second_thread.start()
+    second_thread.join(timeout=0.1)
+    try:
+        assert second_thread.is_alive()
+    finally:
+        release_first.set()
+        first_thread.join(timeout=5)
+        second_thread.join(timeout=5)
+
+    assert not first_thread.is_alive()
+    assert not second_thread.is_alive()
+    assert errors == []
+    assert results == ["A", "B"]
+    assert manifest_out.read_bytes() == expected_manifest
+    assert tracker_out.read_bytes() == expected_tracker
+    assert artifacts.read_artifact_pair(
+        tmp_path / "reader", manifest_out, tracker_out
+    ) == (expected_manifest, expected_tracker)
+
+
+@pytest.mark.parametrize("outputs_exist", [False, True], ids=["first-ever", "existing"])
+@pytest.mark.parametrize("operation", ["delete", "corrupt"])
+@pytest.mark.parametrize(
+    ("boundary", "survivor_index"),
+    [
+        ("after_staging_descriptor_0", 0),
+        ("after_staging_descriptor_1", 0),
+        ("after_staging_descriptor_1", 1),
+        ("after_staging_descriptor_2", 0),
+        ("after_staging_descriptor_2", 1),
+        ("after_staging_descriptor_2", 2),
+    ],
+)
+def test_sole_invalid_early_descriptor_requires_a_proven_prior_pair(
+    tmp_path: Path,
+    outputs_exist: bool,
+    operation: str,
+    boundary: str,
+    survivor_index: int,
+) -> None:
+    artifacts, work_dir, first, second = _crash_pair_transaction(
+        tmp_path, boundary, outputs_exist=outputs_exist
+    )
+    transaction_dir = next((work_dir / ".artifact-transactions").iterdir())
+    descriptors = [
+        work_dir / ".artifact-transaction.json",
+        work_dir / ".artifact-transaction.backup.json",
+        transaction_dir / "descriptor.json",
+    ]
+    created_count = int(boundary[-1]) + 1
+    for index, descriptor in enumerate(descriptors[:created_count]):
+        if index != survivor_index:
+            descriptor.unlink()
+    survivor = descriptors[survivor_index]
+    if operation == "delete":
+        survivor.unlink()
+    else:
+        survivor.write_text('{"corrupt": true}', encoding="utf-8")
+
+    if not outputs_exist:
+        with pytest.raises(artifacts.ArtifactPromotionError, match="quarantined.*unproven"):
+            artifacts.recover_artifact_transaction(work_dir)
+        assert (transaction_dir / "recovery-quarantine.json").is_file()
+        with pytest.raises(artifacts.ArtifactPromotionError, match="quarantined.*unproven"):
+            artifacts.replace_artifacts_durably(
+                work_dir,
+                [(first, b"later manifest"), (second, b"later tracker")],
+            )
+        assert _pair_state(first, second) == (None, None)
+        return
+
+    artifacts.recover_artifact_transaction(work_dir)
+    assert _pair_state(first, second) == (b"old manifest", b"old tracker")
+    artifacts.replace_artifacts_durably(
+        work_dir,
+        [(first, b"later manifest"), (second, b"later tracker")],
+    )
+    assert artifacts.read_artifact_pair(work_dir, first, second) == (
+        b"later manifest",
+        b"later tracker",
+    )
 
 
 def _make_filesystem_alias(source: Path, alias: Path, alias_kind: str) -> None:

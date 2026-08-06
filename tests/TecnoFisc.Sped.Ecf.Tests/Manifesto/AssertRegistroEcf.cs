@@ -335,10 +335,7 @@ internal static partial class AssertRegistroEcf
         if (declaraCnpj && tamanho == 14)
             return CampoSemantica.Cnpj;
 
-        bool declaraData = campo.Type == "D" ||
-                            (campo.Type == "N" &&
-                             tamanho == 8 &&
-                             DataTokenPattern().IsMatch(campo.Name));
+        bool declaraData = tamanho == 8 && DataTokenPattern().IsMatch(campo.Name);
         return declaraData ? CampoSemantica.Data : CampoSemantica.Generico;
     }
 
@@ -412,7 +409,7 @@ internal static partial class AssertRegistroEcf
     [GeneratedRegex("(?<![A-Z0-9])NIF(?![A-Z0-9])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex NifTokenPattern();
 
-    [GeneratedRegex("(?<![A-Z0-9])(?:DATA|DT)(?![A-Z0-9])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    [GeneratedRegex("(?<![A-Z0-9])(?:DATA|DT|VIG)(?![A-Z0-9])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex DataTokenPattern();
 
     [GeneratedRegex("[0-9]+", RegexOptions.CultureInvariant)]

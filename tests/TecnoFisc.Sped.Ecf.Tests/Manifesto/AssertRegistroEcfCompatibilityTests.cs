@@ -4,6 +4,73 @@ namespace TecnoFisc.Sped.Ecf.Tests.Manifesto;
 
 public sealed class AssertRegistroEcfCompatibilityTests
 {
+    [Theory]
+    [InlineData("E020", "DT_AP_LAL", false)]
+    [InlineData("E020", "DT_LIM_LAL", false)]
+    [InlineData("M010", "DT_AP_LAL", true)]
+    [InlineData("M010", "DT_LIM_LAL", false)]
+    [InlineData("Y620", "DATA_AQUIS", true)]
+    [InlineData("X280", "VIG_INI", true)]
+    [InlineData("X280", "VIG_FIM", true)]
+    public void CampoDataDeOitoPosicoes_ExigeDateOnly(
+        string codigo,
+        string campo,
+        bool obrigatorio)
+    {
+        var dateOnly = () => AssertRegistroEcf.FieldMetadataMatchesManifest(
+            codigo,
+            campo,
+            typeof(DateOnly),
+            tamanho: 8,
+            decimais: 0,
+            obrigatorio);
+        var stringLexical = () => AssertRegistroEcf.FieldMetadataMatchesManifest(
+            codigo,
+            campo,
+            typeof(string),
+            tamanho: 8,
+            decimais: 0,
+            obrigatorio);
+
+        dateOnly.Should().NotThrow();
+        stringLexical.Should().Throw<Xunit.Sdk.XunitException>()
+            .WithMessage($"*{codigo}*{campo}*tipo*incompatível*String*");
+    }
+
+    [Theory]
+    [InlineData("VIG_INI", "C")]
+    [InlineData("VIG_FIM", "N")]
+    public void CampoVigenciaDeOitoPosicoes_IndependeDoTipoLexical(
+        string nome,
+        string tipoManifesto)
+    {
+        ManifestoCampoEcf campo = CriarCampo(
+            nome,
+            descricao: "Prazo normativo.",
+            tipoManifesto,
+            tamanho: "8");
+
+        AssertRegistroEcf.TipoCompativel(campo, typeof(DateOnly)).Should().BeTrue();
+        AssertRegistroEcf.TipoCompativel(campo, typeof(string)).Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData("IDENTIFICADOR", "Data informada pelo contribuinte.", "C", "8")]
+    [InlineData("DATA_AQUIS", "Identificador genérico.", "C", "7")]
+    [InlineData("DT_REFERENCIA", "Identificador genérico.", "N", "9")]
+    [InlineData("VIGENCIA", "Identificador genérico.", "C", "8")]
+    public void CampoProximoDeData_SemTokenEFormaNormativa_PermaneceGenerico(
+        string nome,
+        string descricao,
+        string tipoManifesto,
+        string tamanho)
+    {
+        ManifestoCampoEcf campo = CriarCampo(nome, descricao, tipoManifesto, tamanho);
+
+        AssertRegistroEcf.TipoCompativel(campo, typeof(string)).Should().BeTrue();
+        AssertRegistroEcf.TipoCompativel(campo, typeof(DateOnly)).Should().BeFalse();
+    }
+
     [Fact]
     public void TinSubstitutaComNotinExteriorEBrasil_AceitaString()
     {
@@ -38,17 +105,11 @@ public sealed class AssertRegistroEcfCompatibilityTests
     [InlineData("Documento CNPJ (14) ou CNP (11).", "C")]
     public void NomeNeutro_NaoInfereCnpjDaDescricao(string descricao, string tipoManifesto)
     {
-        var campo = new ManifestoCampoEcf
-        {
-            Number = 2,
-            Name = "IDENTIFICADOR",
-            Description = descricao,
-            Type = tipoManifesto,
-            Size = "14",
-            Decimals = "-",
-            Required = "Não",
-            ValidValues = "-",
-        };
+        ManifestoCampoEcf campo = CriarCampo(
+            "IDENTIFICADOR",
+            descricao,
+            tipoManifesto,
+            tamanho: "14");
 
         AssertRegistroEcf.TipoCompativel(campo, typeof(string)).Should().BeTrue();
     }
@@ -161,4 +222,21 @@ public sealed class AssertRegistroEcfCompatibilityTests
         act.Should().Throw<Xunit.Sdk.XunitException>()
             .WithMessage("*Y600*CPF_CNPJ*tipo*incompatível*Cnpj*");
     }
+
+    private static ManifestoCampoEcf CriarCampo(
+        string nome,
+        string descricao,
+        string tipoManifesto,
+        string tamanho)
+        => new()
+        {
+            Number = 2,
+            Name = nome,
+            Description = descricao,
+            Type = tipoManifesto,
+            Size = tamanho,
+            Decimals = "-",
+            Required = "Não",
+            ValidValues = "-",
+        };
 }

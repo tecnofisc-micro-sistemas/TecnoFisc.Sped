@@ -98,13 +98,13 @@
 | 17.095 | Q001 | Abertura do Bloco Q | 344 | 345 | Q | [x] |
 | 17.096 | Q100 | Demonstrativo do Livro Caixa | 345 | 347 | Q | [x] |
 | 17.097 | Q990 | Encerramento do Bloco Q | 347 | 359 | Q | [x] |
-| 17.098 | T001 | Abertura do Bloco T | 359 | 360 | T | [ ] |
-| 17.099 | T030 | Identificação dos Períodos e Formas de Apuração do IRPJ e da CSLL das Empresas Tributadas pelo Lucro Arbitrado | 360 | 362 | T | [ ] |
-| 17.100 | T120 | Apuração da Base de Cálculo do IRPJ com Base no Lucro Arbitrado | 362 | 364 | T | [ ] |
-| 17.101 | T150 | Cálculo do IRPJ com Base no Lucro Arbitrado | 364 | 366 | T | [ ] |
-| 17.102 | T170 | Apuração da Base de Cálculo da CSLL com Base no Lucro Arbitrado | 366 | 368 | T | [ ] |
-| 17.103 | T181 | Cálculo da CSLL com Base no Lucro Arbitrado | 368 | 370 | T | [ ] |
-| 17.104 | T990 | Encerramento do Bloco T | 370 | 376 | T | [ ] |
+| 17.098 | T001 | Abertura do Bloco T | 359 | 360 | T | [x] |
+| 17.099 | T030 | Identificação dos Períodos e Formas de Apuração do IRPJ e da CSLL das Empresas Tributadas pelo Lucro Arbitrado | 360 | 362 | T | [x] |
+| 17.100 | T120 | Apuração da Base de Cálculo do IRPJ com Base no Lucro Arbitrado | 362 | 364 | T | [x] |
+| 17.101 | T150 | Cálculo do IRPJ com Base no Lucro Arbitrado | 364 | 366 | T | [x] |
+| 17.102 | T170 | Apuração da Base de Cálculo da CSLL com Base no Lucro Arbitrado | 366 | 368 | T | [x] |
+| 17.103 | T181 | Cálculo da CSLL com Base no Lucro Arbitrado | 368 | 370 | T | [x] |
+| 17.104 | T990 | Encerramento do Bloco T | 370 | 376 | T | [x] |
 | 17.105 | U001 | Abertura do Bloco U | 376 | 377 | U | [ ] |
 | 17.106 | U030 | Identificação dos Períodos e Formas de Apuração do IRPJ e da CSLL das Empresas Imunes e Isentas | 377 | 379 | U | [ ] |
 | 17.107 | U100 | Balanço Patrimonial | 379 | 384 | U | [ ] |

@@ -4,6 +4,55 @@ namespace TecnoFisc.Sped.Ecf.Tests.Manifesto;
 
 public sealed class AssertRegistroEcfCompatibilityTests
 {
+    [Fact]
+    public void TinSubstitutaComNotinExteriorEBrasil_AceitaString()
+    {
+        var act = () => AssertRegistroEcf.FieldMetadataMatchesManifest(
+            "W100",
+            "TIN_SUBSTITUTA",
+            typeof(string),
+            tamanho: 14,
+            decimais: 0,
+            obrigatorio: false);
+
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void DestinatarioComDocumentoDeOnzeOuQuatorzePosicoes_AceitaString()
+    {
+        var act = () => AssertRegistroEcf.FieldMetadataMatchesManifest(
+            "Y730",
+            "DESTINATARIO",
+            typeof(string),
+            tamanho: 14,
+            decimais: 0,
+            obrigatorio: true);
+
+        act.Should().NotThrow();
+    }
+
+    [Theory]
+    [InlineData("Se residente no Brasil, informar o CNPJ; no exterior, usar NOTIN.", "N")]
+    [InlineData("Identificador fiscal; quando aplicável, pode ser CNPJ.", "C")]
+    [InlineData("Documento CNPJ (14) ou CNP (11).", "C")]
+    public void NomeNeutro_NaoInfereCnpjDaDescricao(string descricao, string tipoManifesto)
+    {
+        var campo = new ManifestoCampoEcf
+        {
+            Number = 2,
+            Name = "IDENTIFICADOR",
+            Description = descricao,
+            Type = tipoManifesto,
+            Size = "14",
+            Decimals = "-",
+            Required = "Não",
+            ValidValues = "-",
+        };
+
+        AssertRegistroEcf.TipoCompativel(campo, typeof(string)).Should().BeTrue();
+    }
+
     [Theory]
     [InlineData("0930", "IDENT_CPF_CNPJ", 14, true)]
     [InlineData("X357", "NIF/CNPJ", 0, true)]
@@ -73,6 +122,29 @@ public sealed class AssertRegistroEcfCompatibilityTests
 
         act.Should().Throw<Xunit.Sdk.XunitException>()
             .WithMessage("*Y612*CPF*tipo*incompatível*Cnpj*");
+    }
+
+    [Fact]
+    public void CampoCnpjExclusivo_PreservaValueObjectForte()
+    {
+        var correto = () => AssertRegistroEcf.FieldMetadataMatchesManifest(
+            "0000",
+            "CNPJ",
+            typeof(Cnpj),
+            tamanho: 14,
+            decimais: 0,
+            obrigatorio: true);
+        var stringGenerica = () => AssertRegistroEcf.FieldMetadataMatchesManifest(
+            "0000",
+            "CNPJ",
+            typeof(string),
+            tamanho: 14,
+            decimais: 0,
+            obrigatorio: true);
+
+        correto.Should().NotThrow();
+        stringGenerica.Should().Throw<Xunit.Sdk.XunitException>()
+            .WithMessage("*0000*CNPJ*tipo*incompatível*String*");
     }
 
     [Fact]

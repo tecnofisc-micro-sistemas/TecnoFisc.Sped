@@ -273,7 +273,7 @@ internal static partial class AssertRegistroEcf
         }
     }
 
-    private static bool TipoCompativel(ManifestoCampoEcf campo, Type tipo)
+    internal static bool TipoCompativel(ManifestoCampoEcf campo, Type tipo)
     {
         Type alvo = Nullable.GetUnderlyingType(tipo) ?? tipo;
         CampoSemantica semantica = ClassificarSemantica(campo);
@@ -291,7 +291,11 @@ internal static partial class AssertRegistroEcf
             return alvo == typeof(string);
 
         if (campo.Type == "C")
-            return alvo == typeof(string) || alvo == typeof(char) || alvo.IsEnum;
+            return alvo == typeof(string) ||
+                   alvo == typeof(char) ||
+                   alvo == typeof(Cpf) ||
+                   alvo == typeof(Cnpj) ||
+                   alvo.IsEnum;
 
         if (campo.Type == "NS")
             return alvo == typeof(decimal);
@@ -315,10 +319,9 @@ internal static partial class AssertRegistroEcf
 
     private static CampoSemantica ClassificarSemantica(ManifestoCampoEcf campo)
     {
-        string textoNormativo = $"{campo.Name} {campo.Description}";
-        bool declaraCpf = CpfTokenPattern().IsMatch(textoNormativo);
-        bool declaraCnpj = CnpjTokenPattern().IsMatch(textoNormativo);
-        bool declaraNif = NifTokenPattern().IsMatch(textoNormativo);
+        bool declaraCpf = CpfTokenPattern().IsMatch(campo.Name);
+        bool declaraCnpj = CnpjTokenPattern().IsMatch(campo.Name);
+        bool declaraNif = NifTokenPattern().IsMatch(campo.Name);
 
         int documentosDeclarados = (declaraCpf ? 1 : 0) +
                                    (declaraCnpj ? 1 : 0) +
@@ -335,7 +338,7 @@ internal static partial class AssertRegistroEcf
         bool declaraData = campo.Type == "D" ||
                             (campo.Type == "N" &&
                              tamanho == 8 &&
-                             DataTokenPattern().IsMatch(textoNormativo));
+                             DataTokenPattern().IsMatch(campo.Name));
         return declaraData ? CampoSemantica.Data : CampoSemantica.Generico;
     }
 
@@ -409,7 +412,7 @@ internal static partial class AssertRegistroEcf
     [GeneratedRegex("(?<![A-Z0-9])NIF(?![A-Z0-9])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex NifTokenPattern();
 
-    [GeneratedRegex("(?<![A-Z0-9])DATA(?![A-Z0-9])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    [GeneratedRegex("(?<![A-Z0-9])(?:DATA|DT)(?![A-Z0-9])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex DataTokenPattern();
 
     [GeneratedRegex("[0-9]+", RegexOptions.CultureInvariant)]
@@ -449,9 +452,10 @@ internal static partial class AssertRegistroEcf
     }
 
     /// <summary>
-    /// Matriz semântica derivada de marcadores normativos de documento/data, nunca do código
-    /// do registro. Formas exclusivas exigem o value object forte; formas compostas preservam
-    /// <see cref="string"/> para não perder CPF/CNPJ/NIF alternativos.
+    /// Matriz semântica derivada de tokens explícitos no nome do campo e de metadados
+    /// estruturais, nunca da descrição livre ou do código do registro. Formas exclusivas
+    /// exigem o value object forte; formas compostas preservam <see cref="string"/> para não
+    /// perder CPF/CNPJ/NIF alternativos.
     /// </summary>
     private enum CampoSemantica
     {

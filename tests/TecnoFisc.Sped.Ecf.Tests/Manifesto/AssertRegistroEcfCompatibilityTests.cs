@@ -248,19 +248,25 @@ public sealed class AssertRegistroEcfCompatibilityTests
             .WithMessage("*0000*CNPJ*tipo*incompatível*String*");
     }
 
-    [Fact]
-    public void CampoDocumentoComposto_RejeitaValueObjectDeDocumentoUnico()
+    [Theory]
+    [InlineData("X357", "NIF/CNPJ", 0, true)]
+    [InlineData("Y600", "CPF_CNPJ", 14, false)]
+    public void CampoDocumentoComposto_RejeitaValueObjectDeDocumentoUnico(
+        string codigo,
+        string campo,
+        int tamanho,
+        bool obrigatorio)
     {
         var act = () => AssertRegistroEcf.FieldMetadataMatchesManifest(
-            "Y600",
-            "CPF_CNPJ",
+            codigo,
+            campo,
             typeof(Cnpj),
-            tamanho: 14,
+            tamanho,
             decimais: 0,
-            obrigatorio: false);
+            obrigatorio);
 
         act.Should().Throw<Xunit.Sdk.XunitException>()
-            .WithMessage("*Y600*CPF_CNPJ*tipo*incompatível*Cnpj*");
+            .WithMessage($"*{codigo}*{campo}*tipo*incompatível*Cnpj*");
     }
 
     [Fact]
@@ -280,9 +286,48 @@ public sealed class AssertRegistroEcfCompatibilityTests
             tamanho: 14,
             decimais: 0,
             obrigatorio: false);
+        var nifForte = () => AssertRegistroEcf.FieldMetadataMatchesManifest(
+            "X340",
+            "NIF",
+            typeof(Cnpj),
+            tamanho: 0,
+            decimais: 0,
+            obrigatorio: true);
+        var cnpjForte = () => AssertRegistroEcf.FieldMetadataMatchesManifest(
+            "X340",
+            "CNPJ",
+            typeof(Cnpj),
+            tamanho: 14,
+            decimais: 0,
+            obrigatorio: false);
 
         nif.Should().NotThrow();
         cnpj.Should().NotThrow();
+        nifForte.Should().Throw<Xunit.Sdk.XunitException>()
+            .WithMessage("*X340*NIF*tipo*incompatível*Cnpj*");
+        cnpjForte.Should().Throw<Xunit.Sdk.XunitException>()
+            .WithMessage("*X340*CNPJ*tipo*incompatível*Cnpj*");
+    }
+
+    [Fact]
+    public void NifIrmaoNaoTransformaCnpjQualificadoEmDocumentoComposto()
+    {
+        ManifestoCampoEcf nif = CriarCampo(
+            "NIF",
+            descricao: "Identificador fiscal no exterior.",
+            tipoManifesto: "C",
+            tamanho: "-");
+        ManifestoCampoEcf cnpjEstabelecimento = CriarCampo(
+            "CNPJ_ESTABELECIMENTO",
+            descricao: "CNPJ exclusivo do estabelecimento.",
+            tipoManifesto: "C",
+            tamanho: "14");
+        ManifestoRegistroEcf registro = CriarRegistro(nif, cnpjEstabelecimento);
+
+        AssertRegistroEcf.TipoCompativel(registro, cnpjEstabelecimento, typeof(Cnpj))
+            .Should().BeTrue();
+        AssertRegistroEcf.TipoCompativel(registro, cnpjEstabelecimento, typeof(string))
+            .Should().BeFalse();
     }
 
     private static ManifestoCampoEcf CriarCampo(
@@ -300,5 +345,19 @@ public sealed class AssertRegistroEcfCompatibilityTests
             Decimals = "-",
             Required = "Não",
             ValidValues = "-",
+        };
+
+    private static ManifestoRegistroEcf CriarRegistro(params ManifestoCampoEcf[] campos)
+        => new()
+        {
+            Code = "TESTE",
+            Block = "T",
+            Title = "Registro sintético",
+            PageStart = 1,
+            PageEnd = 2,
+            Level = "1",
+            Occurrence = "1:1",
+            Reviewed = true,
+            Fields = campos,
         };
 }

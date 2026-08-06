@@ -274,15 +274,22 @@ internal static partial class AssertRegistroEcf
         }
     }
 
-    private static bool TipoCompativel(
+    internal static bool TipoCompativel(
         ManifestoRegistroEcf registro,
         ManifestoCampoEcf campo,
         Type tipo)
     {
-        bool campoCnpj = CnpjTokenPattern().IsMatch(campo.Name);
-        bool possuiNifSeparado = registro.Fields.Any(item =>
-            NifTokenPattern().IsMatch(item.Name));
-        if (campoCnpj && possuiNifSeparado)
+        string nomeCampo = NormalizarNome(campo.Name);
+        bool campoNif = string.Equals(nomeCampo, "NIF", StringComparison.Ordinal);
+        bool campoCnpj = string.Equals(nomeCampo, "CNPJ", StringComparison.Ordinal);
+        bool possuiParDocumento = registro.Fields.Any(item =>
+        {
+            string nomeIrmao = NormalizarNome(item.Name);
+            return campoNif
+                ? string.Equals(nomeIrmao, "CNPJ", StringComparison.Ordinal)
+                : campoCnpj && string.Equals(nomeIrmao, "NIF", StringComparison.Ordinal);
+        });
+        if (possuiParDocumento)
         {
             Type alvo = Nullable.GetUnderlyingType(tipo) ?? tipo;
             return alvo == typeof(string);

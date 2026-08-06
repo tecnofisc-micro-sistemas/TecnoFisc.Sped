@@ -10,6 +10,7 @@ from collections import Counter
 from pathlib import Path
 from typing import Iterable
 
+from ecf_layout.cache import sha256_file
 from ecf_layout.fragmenter import RecordFragment, fragment_pages_with_errors
 
 
@@ -90,16 +91,19 @@ def validate_and_promote(
     return promote_to
 
 
-def records_from_work_dir(work_dir: Path) -> list[dict]:
+def records_from_work_dir(work_dir: Path, pdf: Path) -> list[dict]:
     """Rebuild records from the complete raw cache matching the promoted fragments."""
     work_dir = Path(work_dir)
+    pdf = Path(pdf)
+    if not pdf.is_file():
+        raise ManifestValidationError(f"normative PDF not found: {pdf}")
     fragment_dir = work_dir / "fragments"
     fragment_files = {path.stem: path for path in fragment_dir.glob("*.md")}
     if set(fragment_files) != set(EXPECTED_CODES):
         raise ManifestValidationError("fragment corpus does not contain the exact 180 canonical codes")
 
-    cache_directories = [path for path in (work_dir / "cache").glob("*/*") if path.is_dir()]
-    cache_directories.sort(key=_latest_mtime, reverse=True)
+    pdf_cache = work_dir / "cache" / sha256_file(pdf)
+    cache_directories = sorted(path for path in pdf_cache.iterdir() if path.is_dir()) if pdf_cache.is_dir() else []
     for cache_directory in cache_directories:
         page_files = sorted(cache_directory.glob("page-*.md"))
         if not page_files:
@@ -132,6 +136,7 @@ def record_from_fragment(fragment: RecordFragment) -> dict:
     )
     title = _plain(title_match.group(1)) if title_match else ""
     parsed_fields: dict[int, dict] = {}
+    ambiguities: list[str] = []
     current_number: int | None = None
     for line in fragment.markdown.splitlines():
         if not line.startswith("|"):
@@ -146,8 +151,12 @@ def record_from_fragment(fragment: RecordFragment) -> dict:
             if not 1 <= number <= len(fragment.fields) or number in parsed_fields:
                 continue
             expected_name = fragment.fields[number - 1]
-            field = _parse_field_cells(number, expected_name, cells, first_parts)
+            field, name_matches = _parse_field_cells(number, expected_name, cells, first_parts)
             parsed_fields[number] = field
+            if not name_matches:
+                ambiguities.append(
+                    f"field {number} name {field['name']!r} does not match fragment structure {expected_name!r}"
+                )
             current_number = number
             continue
         if current_number is not None and re.search(r"Regras? de Validação", _plain(line), re.IGNORECASE):
@@ -171,9 +180,9 @@ def record_from_fragment(fragment: RecordFragment) -> dict:
         "reviewed": False,
     }
     if len(fields) != len(fragment.fields):
-        record["ambiguities"] = [
-            f"expected {len(fragment.fields)} structured fields, parsed {len(fields)}"
-        ]
+        ambiguities.append(f"expected {len(fragment.fields)} structured fields, parsed {len(fields)}")
+    if ambiguities:
+        record["ambiguities"] = ambiguities
     return record
 
 
@@ -185,14 +194,66 @@ def write_quarantine(work_dir: Path, items: list[dict]) -> Path:
 
 def _quarantine_items(records: list[dict], *, require_reviewed: bool) -> list[dict]:
     items: list[dict] = []
-    codes = [record.get("code") for record in records]
+    reasons_by_record: list[list[str]] = [[] for _record in records]
+    record_keys = set(_RECORD_KEYS)
+    field_keys = set(_FIELD_KEYS)
+    for index, record in enumerate(records):
+        reasons = reasons_by_record[index]
+        if not isinstance(record, dict):
+            reasons.append("record must be an object")
+            continue
+        actual_keys = set(record)
+        missing_keys = sorted(record_keys - actual_keys)
+        unknown_keys = sorted(actual_keys - record_keys - {"ambiguities"})
+        if missing_keys:
+            reasons.append(f"missing record keys: {', '.join(missing_keys)}")
+        if unknown_keys:
+            reasons.append(f"unknown record keys: {', '.join(unknown_keys)}")
+        for key in ("code", "block", "title", "level", "occurrence"):
+            if key in record and not isinstance(record[key], str):
+                reasons.append(f"record {key} must be a string")
+        if isinstance(record.get("title"), str) and not record["title"].strip():
+            reasons.append("record title must not be empty")
+        for key in ("pageStart", "pageEnd"):
+            if key in record and (not isinstance(record[key], int) or isinstance(record[key], bool)):
+                reasons.append(f"record {key} must be an integer")
+        if "reviewed" in record and not isinstance(record["reviewed"], bool):
+            reasons.append("record reviewed must be a boolean")
+        ambiguities = record.get("ambiguities", [])
+        if not isinstance(ambiguities, list) or any(not isinstance(reason, str) for reason in ambiguities):
+            reasons.append("record ambiguities must be a list of strings")
+        fields = record.get("fields")
+        if "fields" in record and not isinstance(fields, list):
+            reasons.append("record fields must be an array")
+        if not isinstance(fields, list):
+            continue
+        for number, field in enumerate(fields, start=1):
+            if not isinstance(field, dict):
+                reasons.append(f"field {number} must be an object")
+                continue
+            actual_field_keys = set(field)
+            missing_field_keys = sorted(field_keys - actual_field_keys)
+            unknown_field_keys = sorted(actual_field_keys - field_keys)
+            if missing_field_keys:
+                reasons.append(f"field {number} missing keys: {', '.join(missing_field_keys)}")
+            if unknown_field_keys:
+                reasons.append(f"field {number} unknown keys: {', '.join(unknown_field_keys)}")
+            if "number" in field and (
+                not isinstance(field["number"], int) or isinstance(field["number"], bool)
+            ):
+                reasons.append(f"field {number} number must be an integer")
+            for key in _FIELD_KEYS[1:]:
+                if key in field and not isinstance(field[key], str):
+                    reasons.append(f"field {number} {key} must be a string")
+
+    codes = [record.get("code") for record in records if isinstance(record, dict) and isinstance(record.get("code"), str)]
     counts = Counter(codes)
     structural_reasons: list[str] = []
     if len(records) != len(EXPECTED_CODES):
         structural_reasons.append(f"expected 180 records, found {len(records)}")
     duplicates = sorted(str(code) for code, count in counts.items() if count > 1)
     missing = sorted(set(EXPECTED_CODES) - set(codes))
-    unknown = sorted(set(codes) - set(EXPECTED_CODES), key=str)
+    unknown = sorted(set(codes) - set(EXPECTED_CODES))
     if duplicates:
         structural_reasons.append(f"duplicate record codes: {', '.join(duplicates)}")
     if missing:
@@ -204,8 +265,11 @@ def _quarantine_items(records: list[dict], *, require_reviewed: bool) -> list[di
     if structural_reasons:
         items.append({"code": None, "reasons": structural_reasons, "pages": []})
 
-    for record in records:
-        reasons: list[str] = []
+    for index, record in enumerate(records):
+        reasons = reasons_by_record[index]
+        if not isinstance(record, dict):
+            items.append({"code": None, "reasons": reasons, "pages": []})
+            continue
         code = record.get("code")
         if code in _BLOCK_BY_CODE and record.get("block") != block_for_code(code):
             reasons.append(f"expected canonical block {block_for_code(code)}")
@@ -220,12 +284,12 @@ def _quarantine_items(records: list[dict], *, require_reviewed: bool) -> list[di
         if not isinstance(record.get("occurrence"), str) or not _OCCURRENCE.fullmatch(record["occurrence"]):
             reasons.append("occurrence must use MIN:MAX or MIN:N")
         fields = record.get("fields")
-        numbers = [field.get("number") for field in fields] if isinstance(fields, list) else []
+        numbers = [field.get("number") for field in fields if isinstance(field, dict)] if isinstance(fields, list) else []
         if not numbers or numbers != list(range(1, len(numbers) + 1)):
             reasons.append("field numbers must be present and contiguous from 1")
-        elif any(not field.get("name") for field in fields):
+        elif any(not field.get("name") for field in fields if isinstance(field, dict)):
             reasons.append("every field must have a name")
-        elif any(field.get("type") not in {"C", "N", "NS", "D"} for field in fields):
+        elif any(field.get("type") not in {"C", "N", "NS", "D"} for field in fields if isinstance(field, dict)):
             reasons.append("every field must have a recognized type")
         ambiguities = record.get("ambiguities")
         if ambiguities:
@@ -249,7 +313,9 @@ def _sanitize_record(record: dict) -> dict:
     return sanitized
 
 
-def _parse_field_cells(number: int, expected_name: str, cells: list[str], first_parts: list[str]) -> dict:
+def _parse_field_cells(
+    number: int, expected_name: str, cells: list[str], first_parts: list[str]
+) -> tuple[dict, bool]:
     if len(first_parts) >= 2 and first_parts[1] == expected_name and any(
         "REGRA_" in part or "Regras de Validação" in part for part in first_parts[2:]
     ):
@@ -257,11 +323,28 @@ def _parse_field_cells(number: int, expected_name: str, cells: list[str], first_
         description = description_parts[0] if description_parts else ""
         values = [(_parts(cell) or [""])[0] for cell in cells[2:7]]
         values.extend([""] * (5 - len(values)))
-        return _field(number, expected_name, description, values)
+        return _field(number, expected_name, description, values), True
 
     tokens = [part for cell in cells for part in (_parts(cell) or [""])]
     name_index = 1
     parsed_name = tokens[name_index] if len(tokens) > name_index else expected_name
+    name_end = name_index
+    name_matches = True
+    if _is_field_identifier(expected_name):
+        name_matches = False
+        joined_name = ""
+        for candidate_end in range(name_index, len(tokens)):
+            token = tokens[candidate_end]
+            if not _is_field_identifier(token):
+                break
+            joined_name += token
+            if _identifier_key(joined_name) == _identifier_key(expected_name):
+                parsed_name = expected_name
+                name_end = candidate_end
+                name_matches = True
+                break
+            if not _identifier_key(expected_name).startswith(_identifier_key(joined_name)):
+                break
     required_index = len(tokens) - 1
     type_indexes = [
         index
@@ -273,7 +356,7 @@ def _parse_field_cells(number: int, expected_name: str, cells: list[str], first_
     size = tokens[type_index + 1] if type_index + 1 < required_index else ""
     decimals = tokens[type_index + 2] if type_index + 2 < required_index else ""
     valid_values = " ".join(token for token in tokens[type_index + 3 : required_index] if token)
-    description = _without_rule_text(" ".join(token for token in tokens[name_index + 1 : type_index] if token))
+    description = _without_rule_text(" ".join(token for token in tokens[name_end + 1 : type_index] if token))
     values = [
         field_type,
         size,
@@ -281,7 +364,7 @@ def _parse_field_cells(number: int, expected_name: str, cells: list[str], first_
         valid_values,
         tokens[required_index],
     ]
-    return _field(number, parsed_name, description, values)
+    return _field(number, parsed_name, description, values), name_matches
 
 
 def _field(number: int, name: str, description: str, values: list[str]) -> dict:
@@ -310,8 +393,12 @@ def _without_rule_text(value: str) -> str:
     return re.split(r"\bREGRA_[A-Z0-9_]+", value, maxsplit=1)[0].rstrip(" :;-(")
 
 
-def _latest_mtime(directory: Path) -> int:
-    return max((path.stat().st_mtime_ns for path in directory.glob("page-*.md")), default=0)
+def _is_field_identifier(value: str) -> bool:
+    return bool(value) and re.fullmatch(r"[A-ZÀ-Ü0-9_ /]+", value) is not None
+
+
+def _identifier_key(value: str) -> str:
+    return re.sub(r"\s+", "", value)
 
 
 def _write_json_atomically(path: Path, payload: object) -> None:

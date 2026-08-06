@@ -77,7 +77,7 @@ def test_validate_writes_candidate_without_promoting(tmp_path: Path, monkeypatch
         }
         for position, code in enumerate(EXPECTED_CODES)
     ]
-    monkeypatch.setattr(cli, "records_from_work_dir", lambda _work_dir: records)
+    monkeypatch.setattr(cli, "records_from_work_dir", lambda _work_dir, _pdf: records)
 
     exit_code = cli.main(["validate", "--work-dir", str(tmp_path)])
 
@@ -88,3 +88,23 @@ def test_validate_writes_candidate_without_promoting(tmp_path: Path, monkeypatch
     assert len(candidate) == 180
     assert json.loads((tmp_path / "quarantine.json").read_text(encoding="utf-8")) == {"items": []}
     assert list(tmp_path.glob("layout-12-manifest.json")) == []
+
+
+def test_validate_replaces_stale_quarantine_when_cache_loading_fails(tmp_path: Path, monkeypatch) -> None:
+    stale = {"items": [{"code": "OLD", "reasons": ["stale failure"], "pages": [99]}]}
+    (tmp_path / "quarantine.json").write_text(json.dumps(stale), encoding="utf-8")
+
+    def fail(_work_dir: Path, _pdf: Path):
+        raise cli.ManifestValidationError("current PDF provenance failure")
+
+    monkeypatch.setattr(cli, "records_from_work_dir", fail)
+
+    exit_code = cli.main(["validate", "--work-dir", str(tmp_path)])
+
+    report = json.loads((tmp_path / "quarantine.json").read_text(encoding="utf-8"))
+    assert exit_code == 1
+    assert report == {
+        "items": [
+            {"code": None, "reasons": ["current PDF provenance failure"], "pages": []}
+        ]
+    }

@@ -28,6 +28,8 @@ def render_page(pdf: Path, page: int, output: Path) -> Path:
         check=True,
         capture_output=True,
     )
+    if not output.is_file():
+        raise FileNotFoundError(f"pdftoppm did not create expected output: {output}")
     return output
 
 

@@ -123,25 +123,35 @@ def main(argv: list[str] | None = None) -> int:
 
 def _validate(work_dir: Path, pdf: Path, *, render_suspicious: bool) -> int:
     try:
-        records = records_from_work_dir(work_dir)
+        records = records_from_work_dir(work_dir, pdf)
+    except ManifestValidationError as error:
+        report = {"items": [{"code": None, "reasons": [str(error)], "pages": []}]}
+        write_quarantine(work_dir, report["items"])
+        return _report_validation_failure(work_dir, pdf, report, error, render_suspicious)
+    try:
         validate_and_promote(records, work_dir)
     except ManifestValidationError as error:
-        quarantine_path = work_dir / "quarantine.json"
-        if quarantine_path.is_file():
-            report = json.loads(quarantine_path.read_text(encoding="utf-8"))
-        else:
-            report = {"items": [{"code": None, "reasons": [str(error)], "pages": []}]}
-            write_quarantine(work_dir, report["items"])
-        if render_suspicious:
-            rendered = render_suspicious_pages(pdf, report["items"], work_dir / "rendered")
-            for item in report["items"]:
-                item["renderedPages"] = [
-                    str(rendered[page]) for page in item.get("pages", []) if page in rendered
-                ]
-            write_quarantine(work_dir, report["items"])
-        print(f"validation failed: {error}")
-        print(f"quarantined: {len(report['items'])}")
-        return 1
+        report = json.loads((work_dir / "quarantine.json").read_text(encoding="utf-8"))
+        return _report_validation_failure(work_dir, pdf, report, error, render_suspicious)
     print(f"validated: {len(records)} records")
     print("quarantined: 0")
     return 0
+
+
+def _report_validation_failure(
+    work_dir: Path,
+    pdf: Path,
+    report: dict,
+    error: ManifestValidationError,
+    render_suspicious: bool,
+) -> int:
+    if render_suspicious:
+        rendered = render_suspicious_pages(pdf, report["items"], work_dir / "rendered")
+        for item in report["items"]:
+            item["renderedPages"] = [
+                str(rendered[page]) for page in item.get("pages", []) if page in rendered
+            ]
+        write_quarantine(work_dir, report["items"])
+    print(f"validation failed: {error}")
+    print(f"quarantined: {len(report['items'])}")
+    return 1

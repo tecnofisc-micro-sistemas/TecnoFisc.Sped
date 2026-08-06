@@ -1,6 +1,9 @@
 from pathlib import Path
 
-from ecf_layout.render import render_suspicious_pages
+import pytest
+
+import ecf_layout.render as render
+from ecf_layout.render import render_page, render_suspicious_pages
 
 
 def test_render_receives_only_suspicious_page_numbers(tmp_path: Path) -> None:
@@ -27,3 +30,25 @@ def test_render_receives_only_suspicious_page_numbers(tmp_path: Path) -> None:
         10: tmp_path / "rendered" / "page-010.png",
         12: tmp_path / "rendered" / "page-012.png",
     }
+
+
+def test_render_page_uses_one_based_pdftoppm_and_requires_output(tmp_path: Path, monkeypatch) -> None:
+    pdf = tmp_path / "manual.pdf"
+    output = tmp_path / "rendered" / "page-007.png"
+    calls: list[list[str]] = []
+
+    def successful_run(command, **kwargs):
+        calls.append(command)
+        Path(command[-1] + ".png").write_bytes(b"png")
+
+    monkeypatch.setattr(render.subprocess, "run", successful_run)
+
+    assert render_page(pdf, 7, output) == output
+    assert calls == [[
+        "pdftoppm", "-f", "7", "-l", "7", "-singlefile", "-png", str(pdf), str(output.with_suffix(""))
+    ]]
+
+    monkeypatch.setattr(render.subprocess, "run", lambda *_args, **_kwargs: None)
+    output.unlink()
+    with pytest.raises(FileNotFoundError):
+        render_page(pdf, 7, output)

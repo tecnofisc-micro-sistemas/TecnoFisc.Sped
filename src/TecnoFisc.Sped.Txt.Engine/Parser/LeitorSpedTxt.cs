@@ -92,6 +92,23 @@ public sealed class LeitorSpedTxt : ILeitorSped
                     long linhaRegistro = numeroLinha + 1;
                     numeroLinha += linhasFisicas;
 
+                    // Descarte antes de materializar: registro ignorado não é decodificado (multi-linha
+                    // não paga o custo dos 30 MB do ARQ_RTF) nem entra na hierarquia/stream. Roda antes
+                    // do gate de vigência: um registro que o chamador mandou descartar não pode ser
+                    // decodificado nem devolvido como sentinela só porque também está fora de vigência
+                    // (achado A do review final do PR 531) — o corte de subárvore do filtro é pelo
+                    // menos tão amplo quanto o de vigência que ele preemptaria.
+                    if (hasFilter && ShouldIgnore(metadados, ref nivelCorteSubarvore))
+                    {
+                        if (metadados is not null && metadados.Codigo == CodigoEncerramentoArquivo)
+                        {
+                            // Mesmo ignorado, o 9999 encerra o consumo (evita ler a assinatura anexa).
+                            encerrado = true;
+                            break;
+                        }
+                        continue;
+                    }
+
                     if (_respeitarVigencia && versaoLeiaute > 0 &&
                         ShouldIgnoreByVersion(metadados, versaoLeiaute, ref nivelCorteVigencia))
                     {
@@ -102,7 +119,7 @@ public sealed class LeitorSpedTxt : ILeitorSped
                         string linhaCrua = registroBytes.IsSingleSegment
                             ? EncodingSped.Latin1.GetString(registroBytes.FirstSpan)
                             : EncodingSped.Latin1.GetString(registroBytes.ToArray());
-                        string codigo = metadados?.Codigo ?? string.Empty;
+                        string codigo = metadados!.Codigo;
                         yield return new RegistroNaoReconhecido(
                             codigo,
                             linhaCrua,
@@ -110,19 +127,6 @@ public sealed class LeitorSpedTxt : ILeitorSped
                                 linhaRegistro,
                                 codigo,
                                 $"Registro posterior à versão declarada no 0000 ({versaoLeiaute})."));
-                        continue;
-                    }
-
-                    // Descarte antes de materializar: registro ignorado não é decodificado (multi-linha
-                    // não paga o custo dos 30 MB do ARQ_RTF) nem entra na hierarquia/stream.
-                    if (hasFilter && ShouldIgnore(metadados, ref nivelCorteSubarvore))
-                    {
-                        if (metadados is not null && metadados.Codigo == CodigoEncerramentoArquivo)
-                        {
-                            // Mesmo ignorado, o 9999 encerra o consumo (evita ler a assinatura anexa).
-                            encerrado = true;
-                            break;
-                        }
                         continue;
                     }
 

@@ -77,4 +77,22 @@ public sealed class ConversorEnumDominioTests
 
         ((int)registro.TipoItem).Should().Be(12);
     }
+
+    /// <summary>
+    /// O caminho permissivo (<c>porValorSped.Count == 0</c>, sem <c>[SpedValor]</c>) delega a
+    /// <c>Enum.Parse</c>, que aceita a forma "Primeiro, Segundo" separada por vírgula para um
+    /// enum <c>[Flags]</c> e combina os membros via OR — uma das três capacidades que a
+    /// restauração do conversor permissivo (achado 1 do PR 531) existia para preservar, sem
+    /// nenhum teste que a fixasse até aqui.
+    /// </summary>
+    [Fact]
+    public void SemValidacao_FlagsPorNomeSeparadasPorVirgulaSaoCombinadas()
+    {
+        var campo = Campo("MARCADORES");
+        var registro = new RegistroEnumDominioSintetico();
+
+        campo.Definidor(registro, "Primeiro, Segundo", validarDominio: false);
+
+        registro.Marcadores.Should().Be(MarcadoresSinteticos.Primeiro | MarcadoresSinteticos.Segundo);
+    }
 }

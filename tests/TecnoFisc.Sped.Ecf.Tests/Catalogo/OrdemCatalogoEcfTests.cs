@@ -36,4 +36,18 @@ public sealed class OrdemCatalogoEcfTests
         registros[0].Bloco.Should().Be("0");
         registros[^1].Bloco.Should().Be("9");
     }
+
+    [Fact]
+    public void EnumerarRegistros_BlocosNaSequenciaCanonica()
+    {
+        // Oráculo literal: sequência de blocos conforme ArquivoEcf._ordemBlocos,
+        // sem depender de CategoriaOrdemBloco. Detecta regressão em CategoriaOrdemBloco
+        // quando alterada simultaneamente no gerador e em todos os testes.
+        var seqEsperada = new[] { "0", "C", "E", "J", "K", "L", "M", "N", "P", "Q", "T", "U", "V", "W", "X", "Y", "9" };
+
+        var registros = new CatalogoSpedGerado().EnumerarRegistros().ToList();
+        var seqObservada = registros.Select(r => r.Bloco).Distinct().ToList();
+
+        seqObservada.Should().Equal(seqEsperada);
+    }
 }

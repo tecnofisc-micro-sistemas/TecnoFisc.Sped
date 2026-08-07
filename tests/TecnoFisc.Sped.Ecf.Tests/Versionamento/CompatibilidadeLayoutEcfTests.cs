@@ -62,16 +62,16 @@ public sealed class CompatibilidadeLayoutEcfTests
     {
         foreach (var (codigo, introduzidoEm) in IntroducoesEsperadas)
         {
-            EstaDisponivel(introduzidoEm, introduzidoEm - 1)
+            IsAvailable(introduzidoEm, introduzidoEm - 1)
                 .Should().BeFalse($"{codigo} ainda não existia no leiaute anterior");
-            EstaDisponivel(introduzidoEm, introduzidoEm)
+            IsAvailable(introduzidoEm, introduzidoEm)
                 .Should().BeTrue($"{codigo} passa a existir no leiaute declarado");
         }
 
-        EstaDisponivel(10, 9).Should().BeFalse();
-        EstaDisponivel(10, 10).Should().BeTrue();
-        EstaDisponivel(12, 11).Should().BeFalse();
-        EstaDisponivel(12, 12).Should().BeTrue();
+        IsAvailable(10, 9).Should().BeFalse();
+        IsAvailable(10, 10).Should().BeTrue();
+        IsAvailable(12, 11).Should().BeFalse();
+        IsAvailable(12, 12).Should().BeTrue();
     }
 
     [Theory]
@@ -139,7 +139,7 @@ public sealed class CompatibilidadeLayoutEcfTests
 
         registro.IntroducedIn.Should().Be(0);
         registro.Fields.Should().OnlyContain(campo => campo.SinceVersion == 0);
-        EstaDisponivel(registro.IntroducedIn, 8).Should().BeTrue();
+        IsAvailable(registro.IntroducedIn, 8).Should().BeTrue();
     }
 
     [Theory]
@@ -186,7 +186,7 @@ public sealed class CompatibilidadeLayoutEcfTests
             .Should().Equal("CODIGO", "DESCRICAO", "VALOR");
     }
 
-    private static bool EstaDisponivel(int introduzidoEm, int versao)
+    private static bool IsAvailable(int introduzidoEm, int versao)
         => introduzidoEm == 0 || introduzidoEm <= versao;
 
     private static async Task<List<RegistroSped>> ReadAsync(int versao, string linha)

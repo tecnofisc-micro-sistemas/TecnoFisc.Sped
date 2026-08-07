@@ -317,8 +317,8 @@ internal static partial class AssertRegistroEcf
             divergencias,
             contexto,
             "nome",
-            CanonicalFieldName(esperado.Name),
-            CanonicalFieldName(atual.Nome));
+            esperado.Name,
+            atual.Nome);
         AdicionarDivergencia(
             divergencias,
             contexto,

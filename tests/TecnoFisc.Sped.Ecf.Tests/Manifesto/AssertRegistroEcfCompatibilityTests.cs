@@ -163,7 +163,7 @@ public sealed class AssertRegistroEcfCompatibilityTests
 
     [Theory]
     [InlineData("0930", "IDENT_CPF_CNPJ", 14, true)]
-    [InlineData("X357", "NIF/CNPJ", 0, true)]
+    [InlineData("X357", "NIF_CNPJ", 0, true)]
     [InlineData("Y600", "CPF_CNPJ", 14, false)]
     public void CampoDocumentoComposto_AceitaStringSemForcarValueObject(
         string codigo,
@@ -256,7 +256,7 @@ public sealed class AssertRegistroEcfCompatibilityTests
     }
 
     [Theory]
-    [InlineData("X357", "NIF/CNPJ", 0, true)]
+    [InlineData("X357", "NIF_CNPJ", 0, true)]
     [InlineData("Y600", "CPF_CNPJ", 14, false)]
     public void CampoDocumentoComposto_RejeitaValueObjectDeDocumentoUnico(
         string codigo,

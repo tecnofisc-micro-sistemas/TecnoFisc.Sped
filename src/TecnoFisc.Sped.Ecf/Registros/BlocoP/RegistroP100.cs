@@ -1,4 +1,4 @@
-using TecnoFisc.Sped.Ecf.Enums;
+using TecnoFisc.Sped.Txt.Engine.Enums;
 using TecnoFisc.Sped.Txt.Engine.Abstracoes;
 using TecnoFisc.Sped.Txt.Engine.Atributos;
 

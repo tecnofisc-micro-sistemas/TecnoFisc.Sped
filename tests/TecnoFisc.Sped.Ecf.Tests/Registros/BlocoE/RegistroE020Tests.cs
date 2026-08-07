@@ -1,6 +1,7 @@
 using System.Reflection;
 
 using TecnoFisc.Sped.Ecf.Enums;
+using TecnoFisc.Sped.Txt.Engine.Enums;
 using TecnoFisc.Sped.Ecf.Parser;
 using TecnoFisc.Sped.Ecf.Registros.BlocoE;
 using TecnoFisc.Sped.Ecf.Tests.Manifesto;

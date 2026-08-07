@@ -1,4 +1,3 @@
-using TecnoFisc.Sped.Ecf.Enums;
 using TecnoFisc.Sped.Ecf.Generated;
 using TecnoFisc.Sped.Ecf.Parser;
 using TecnoFisc.Sped.Ecf.Registros.Bloco0;

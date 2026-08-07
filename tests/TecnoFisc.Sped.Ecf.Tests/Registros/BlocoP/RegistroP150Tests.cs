@@ -1,4 +1,4 @@
-using TecnoFisc.Sped.Ecf.Enums;
+using TecnoFisc.Sped.Txt.Engine.Enums;
 using TecnoFisc.Sped.Ecf.Parser;
 using TecnoFisc.Sped.Ecf.Registros.BlocoP;
 using TecnoFisc.Sped.Ecf.Tests.Manifesto;

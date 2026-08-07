@@ -1,6 +1,6 @@
 using TecnoFisc.Sped.Txt.Engine.Abstracoes;
 using TecnoFisc.Sped.Txt.Engine.Atributos;
-using TecnoFisc.Sped.Ecd.Enums;
+using TecnoFisc.Sped.Txt.Engine.Enums;
 
 namespace TecnoFisc.Sped.Ecd.Registros.BlocoK;
 

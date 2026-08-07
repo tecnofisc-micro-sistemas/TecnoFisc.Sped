@@ -32,17 +32,22 @@ public sealed class ParserEcf : ILeitorSped
     {
         ArgumentNullException.ThrowIfNull(catalogo);
         ArgumentNullException.ThrowIfNull(opcoes);
-        _leitor = new LeitorSpedTxt(catalogo, ComVigenciaDoLeiaute(opcoes));
+        _leitor = new LeitorSpedTxt(catalogo, ResolverOpcoes(opcoes));
     }
 
-    private static ReadingOptions ComVigenciaDoLeiaute(ReadingOptions opcoes)
+    /// <summary>
+    /// Resolve as opções do chamador contra os padrões do leiaute ECF: vigência e validação
+    /// de domínio ligadas quando o chamador não se pronunciou; override explícito sempre vence.
+    /// </summary>
+    internal static ReadingOptions ResolverOpcoes(ReadingOptions opcoes)
         => new()
         {
             RegistrosIgnorados = opcoes.RegistrosIgnorados,
             BlocosIgnorados = opcoes.BlocosIgnorados,
             LenientFieldParsing = opcoes.LenientFieldParsing,
             LenientLayout = opcoes.LenientLayout,
-            RespeitarVigenciaDoLeiaute = true,
+            RespeitarVigenciaDoLeiaute = opcoes.RespeitarVigenciaDoLeiaute ?? true,
+            ValidarDominioDeEnum = opcoes.ValidarDominioDeEnum ?? true,
         };
 
     /// <summary>Lê um registro por vez, preservando os vínculos hierárquicos.</summary>

@@ -17,4 +17,8 @@
                       ReferenceOutputAssembly="false" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="TecnoFisc.Sped.Ecf.Tests" />
+  </ItemGroup>
+
 </Project>

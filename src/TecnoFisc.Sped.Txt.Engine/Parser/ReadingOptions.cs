@@ -49,10 +49,19 @@ public sealed class ReadingOptions
     /// <summary>
     /// Quando <c>true</c>, omite registros anteriores a <c>IntroduzidoEm</c> e não atribui
     /// campos anteriores a <c>DesdeVersao</c>, usando a versão declarada pelo registro 0000.
-    /// O padrão permanece <c>false</c> para preservar o modelo informacional dos pacotes
-    /// read-only que não optaram por vigência sintática.
+    /// <c>null</c> (padrão) delega a decisão ao parser do leiaute: o ECF liga, os demais
+    /// leiautes read-only mantêm o modelo informacional completo e não ligam.
     /// </summary>
-    public bool RespeitarVigenciaDoLeiaute { get; init; }
+    public bool? RespeitarVigenciaDoLeiaute { get; init; }
+
+    /// <summary>
+    /// Quando <c>true</c>, um código numérico fora do domínio declarado de um enum fechado
+    /// (sem <c>[SpedValor]</c>) vira erro de campo em vez de cast permissivo. <c>null</c>
+    /// (padrão) delega a decisão ao parser do leiaute: o ECF liga, os demais mantêm o cast
+    /// permissivo — a Receita publica códigos novos entre versões do guia e um arquivo que
+    /// hoje é lido não pode passar a falhar por atualização de pacote.
+    /// </summary>
+    public bool? ValidarDominioDeEnum { get; init; }
 
     /// <summary>
     /// <c>true</c> quando há ao menos um filtro configurado. O leitor usa isto para pular toda a

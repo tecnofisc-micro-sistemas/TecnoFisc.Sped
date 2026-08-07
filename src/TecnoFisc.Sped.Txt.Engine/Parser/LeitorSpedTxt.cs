@@ -40,6 +40,8 @@ public sealed class LeitorSpedTxt : ILeitorSped
 
     private readonly IRegistroSpedCatalogo _catalogo;
     private readonly ReadingOptions _opcoes;
+    private readonly bool _respeitarVigencia;
+    private readonly bool _validarDominioDeEnum;
 
     public LeitorSpedTxt(IRegistroSpedCatalogo catalogo)
         : this(catalogo, ReadingOptions.Default)
@@ -52,6 +54,9 @@ public sealed class LeitorSpedTxt : ILeitorSped
         ArgumentNullException.ThrowIfNull(opcoes);
         _catalogo = catalogo;
         _opcoes = opcoes;
+        // Resolvido uma única vez no construtor: evita Nullable<bool> no hot path de parsing.
+        _respeitarVigencia = opcoes.RespeitarVigenciaDoLeiaute ?? false;
+        _validarDominioDeEnum = opcoes.ValidarDominioDeEnum ?? false;
     }
 
     public async IAsyncEnumerable<RegistroSped> ReadStreamingAsync(
@@ -87,7 +92,7 @@ public sealed class LeitorSpedTxt : ILeitorSped
                     long linhaRegistro = numeroLinha + 1;
                     numeroLinha += linhasFisicas;
 
-                    if (_opcoes.RespeitarVigenciaDoLeiaute && versaoLeiaute > 0 &&
+                    if (_respeitarVigencia && versaoLeiaute > 0 &&
                         ShouldIgnoreByVersion(metadados, versaoLeiaute, ref nivelCorteVigencia))
                     {
                         continue;
@@ -627,7 +632,7 @@ public sealed class LeitorSpedTxt : ILeitorSped
         return registro;
 
         bool CampoAtivo(MetadadosCampo campo, int versao)
-            => !_opcoes.RespeitarVigenciaDoLeiaute || versao <= 0 ||
+            => !_respeitarVigencia || versao <= 0 ||
                campo.DesdeVersao <= 0 || campo.DesdeVersao <= versao;
     }
 }

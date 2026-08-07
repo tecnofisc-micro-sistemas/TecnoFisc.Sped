@@ -369,13 +369,18 @@ public static class CatalogoBuilder
     }
 
     /// <summary>
-    /// Só enum fechado sem <c>[SpedValor]</c> tem política de domínio: os enums textuais já
-    /// rejeitam token desconhecido, e os demais tipos não têm domínio a validar.
+    /// Só enum fechado sem <c>[SpedValor]</c> e sem <c>[Flags]</c> tem política de domínio: os
+    /// enums textuais já rejeitam token desconhecido no caminho permissivo, e um <c>[Flags]</c>
+    /// não tem domínio fechado a validar (combinações de bits são válidas mesmo sem membro
+    /// nomeado) — construir um definidor estrito para ele faria bypass do <c>Enum.Parse</c>
+    /// usado pelo permissivo, perdendo o parsing por nome de membro e a forma separada por
+    /// vírgula. Espelha <c>RegistroSpedCatalogoGenerator.PrecisaSetterEstrito</c>, para que o
+    /// catálogo reflexivo e o gerado concordem.
     /// </summary>
     private static bool PrecisaDefinidorEstrito(Type tipo, CampoSpedAttribute atributo)
     {
         Type alvo = Nullable.GetUnderlyingType(tipo) ?? tipo;
-        if (!alvo.IsEnum)
+        if (!alvo.IsEnum || alvo.IsDefined(typeof(FlagsAttribute), inherit: false))
             return false;
 
         return !alvo.GetFields(BindingFlags.Public | BindingFlags.Static)
@@ -494,8 +499,12 @@ public static class CatalogoBuilder
     /// não tem entrada no dicionário). Quando é um enum numérico fechado sem <c>[SpedValor]</c>,
     /// <paramref name="validarDominio"/> escolhe entre o permissivo (o padrão histórico dos três
     /// pacotes já publicados: <see cref="Enum.Parse(Type, string, bool)"/> aceita código fora do
-    /// domínio via cast e nome de membro) e o estrito (valida <see cref="Enum.IsDefined"/>, exceto
-    /// em enums <see cref="FlagsAttribute"/>, cujas combinações não têm domínio fechado a validar).
+    /// domínio via cast e nome de membro) e o estrito (valida <see cref="Enum.IsDefined"/>).
+    /// <paramref name="validarDominio"/> só chega <c>true</c> aqui quando
+    /// <see cref="PrecisaDefinidorEstrito"/> mandou construir o definidor estrito, e esse
+    /// predicado já exclui enums <see cref="FlagsAttribute"/> — não têm domínio fechado a validar
+    /// e o caminho estrito, ao pular <c>Enum.Parse</c>, perderia o parsing por nome/combinação
+    /// separada por vírgula.
     /// </summary>
     private static Func<string, object> ConstruirConversorEnum(
         Type alvo,
@@ -517,13 +526,12 @@ public static class CatalogoBuilder
             if (!validarDominio)
                 return s => Enum.Parse(alvo, s, ignoreCase: false);
 
-            bool ehFlags = alvo.IsDefined(typeof(FlagsAttribute), inherit: false);
             Func<string, object> conversorSubjacente =
                 ConstruirConversorIntegral(Enum.GetUnderlyingType(alvo));
             return s =>
             {
                 object valor = Enum.ToObject(alvo, conversorSubjacente(s));
-                if (!ehFlags && !Enum.IsDefined(alvo, valor))
+                if (!Enum.IsDefined(alvo, valor))
                     throw new FormatException($"Valor '{s}' não é válido para {alvo.Name}.");
                 return valor;
             };

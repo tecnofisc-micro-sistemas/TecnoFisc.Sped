@@ -529,7 +529,7 @@ public sealed class LeitorSpedTxt : ILeitorSped
         {
             try
             {
-                campo.Definidor(registro!, valor);
+                campo.Definidor(registro!, valor, _validarDominioDeEnum);
             }
             catch (Exception ex) when (ex is FormatException or ArgumentException or OverflowException)
             {

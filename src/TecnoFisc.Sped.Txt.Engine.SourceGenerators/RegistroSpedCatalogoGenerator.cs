@@ -582,6 +582,11 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
             sb.Append(", capturaTudo: true");
         if (campo.CampoArquivo)
             sb.Append(", campoArquivo: true");
+        if (PrecisaSetterEstrito(campo))
+        {
+            sb.Append(", definidorEstrito: Set_").Append(reg.Codigo).Append('_')
+                .Append(campo.Nome).Append("_Estrito");
+        }
         sb.Append(')');
         sb.AppendLine(ultimo ? "" : ",");
     }
@@ -637,6 +642,17 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
             default:
                 EmitirSetterFallbackReflexivo(sb, c);
                 break;
+        }
+
+        if (PrecisaSetterEstrito(c))
+        {
+            sb.AppendLine("    }");
+            sb.AppendLine();
+            sb.Append("    private static void Set_").Append(reg.Codigo).Append('_').Append(c.Nome)
+                .AppendLine("_Estrito(RegistroSped registro, ReadOnlySpan<char> valor)");
+            sb.AppendLine("    {");
+            sb.Append("        var alvo = (").Append(reg.TipoFullyQualified).AppendLine(")registro;");
+            EmitirSetterEnumEstrito(sb, c);
         }
 
         sb.AppendLine("    }");
@@ -738,15 +754,46 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
         }
         sb.Append("        ").Append(under).Append(" bruto = ").Append(under)
             .AppendLine(".Parse(valor, NumberStyles.Integer, CultureInfo.InvariantCulture);");
-        sb.Append("        ").Append(c.TipoFq).Append(" convertido = (").Append(c.TipoFq).AppendLine(")bruto;");
-        if (!c.EnumFlags)
+        sb.Append("        alvo.").Append(c.Nome).Append(" = (").Append(c.TipoFq).AppendLine(")bruto;");
+    }
+
+    /// <summary>
+    /// Emite o corpo do setter estrito de enum fechado: mesma conversão do permissivo, mais a
+    /// checagem de domínio. Só é chamado quando <see cref="PrecisaSetterEstrito"/> for true.
+    /// </summary>
+    private static void EmitirSetterEnumEstrito(StringBuilder sb, InfoCampo c)
+    {
+        string under = c.UnderlyingPrimitivo ?? "int";
+        if (c.Nullable)
         {
-            sb.AppendLine("        if (!Enum.IsDefined(convertido))");
-            sb.Append("            throw new FormatException(\"Valor '\" + valor.ToString() + \"' não é válido para ")
-                .Append(EscaparLiteral(c.TipoNome)).AppendLine(".\");");
+            sb.Append("        if (valor.IsEmpty) { alvo.").Append(c.Nome).AppendLine(" = null; return; }");
         }
+        else
+        {
+            sb.AppendLine("        if (valor.IsEmpty)");
+            sb.AppendLine("        {");
+            sb.Append("            alvo.").Append(c.Nome).AppendLine(" = default;");
+            sb.AppendLine("            return;");
+            sb.AppendLine("        }");
+        }
+        sb.Append("        ").Append(under).Append(" bruto = ").Append(under)
+            .AppendLine(".Parse(valor, NumberStyles.Integer, CultureInfo.InvariantCulture);");
+        sb.Append("        ").Append(c.TipoFq).Append(" convertido = (").Append(c.TipoFq).AppendLine(")bruto;");
+        sb.AppendLine("        if (!Enum.IsDefined(convertido))");
+        sb.Append("            throw new FormatException(\"Valor '\" + valor.ToString() + \"' não é válido para ")
+            .Append(EscaparLiteral(c.TipoNome)).AppendLine(".\");");
         sb.Append("        alvo.").Append(c.Nome).AppendLine(" = convertido;");
     }
+
+    /// <summary>
+    /// Só enum fechado sem <c>[SpedValor]</c> e sem <c>[Flags]</c> tem domínio a validar: os
+    /// enums textuais já rejeitam token desconhecido no setter permissivo, e um <c>[Flags]</c>
+    /// não tem domínio fechado (combinações de bits são válidas mesmo sem membro nomeado) —
+    /// espelha <c>CatalogoBuilder.PrecisaDefinidorEstrito</c>, que exclui os mesmos dois casos
+    /// para que o catálogo gerado e o reflexivo concordem.
+    /// </summary>
+    private static bool PrecisaSetterEstrito(InfoCampo c)
+        => c.Categoria == CategoriaCampo.Enum && !c.EnumFlags && c.EnumValoresSped.IsDefaultOrEmpty;
 
     /// <summary>
     /// Emite setter para enum cujos membros declaram <c>[SpedValor("...")]</c> — usado quando

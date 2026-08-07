@@ -544,7 +544,6 @@ public sealed class LeitorSpedTxt : ILeitorSped
         }
         // Posição na nomenclatura do Guia Prático: 1 = REG; 2..N = campos do layout.
         int posicaoCampo = 1;
-        int indiceCampoMetadados = 0;
         int inicioCampo = 0;
 
         for (int i = 0; i <= conteudo.Length; i++)
@@ -576,15 +575,14 @@ public sealed class LeitorSpedTxt : ILeitorSped
             }
             else if (metadados is not null && registro is not null)
             {
-                while (indiceCampoMetadados < metadados.Campos.Count &&
-                       !CampoAtivo(metadados.Campos[indiceCampoMetadados], versaoLeiaute))
+                // A coluna é sempre consumida pela posição; um campo que ainda não vigorava
+                // na versão declarada no 0000 simplesmente não recebe o valor. Nenhum dos
+                // registros reais do catálogo tem campo versionado fora do fim do layout —
+                // o índice posicional é auto-corretivo e não precisa de cursor sequencial.
+                int indice = posicaoCampo - 2;
+                if (indice < metadados.Campos.Count && CampoAtivo(metadados.Campos[indice], versaoLeiaute))
                 {
-                    indiceCampoMetadados++;
-                }
-
-                if (indiceCampoMetadados < metadados.Campos.Count)
-                {
-                    var campo = metadados.Campos[indiceCampoMetadados++];
+                    var campo = metadados.Campos[indice];
                     if (campo.CapturaTudo)
                     {
                         // Campo variádico (*): captura tudo que resta na linha a partir
@@ -605,13 +603,11 @@ public sealed class LeitorSpedTxt : ILeitorSped
                             break;
                         }
                         Definir(campo, resto[..idxSep]);
-                        while (indiceCampoMetadados < metadados.Campos.Count &&
-                               !CampoAtivo(metadados.Campos[indiceCampoMetadados], versaoLeiaute))
+                        if (indice + 1 < metadados.Campos.Count &&
+                            CampoAtivo(metadados.Campos[indice + 1], versaoLeiaute))
                         {
-                            indiceCampoMetadados++;
+                            Definir(metadados.Campos[indice + 1], resto[(idxSep + 1)..]);
                         }
-                        if (indiceCampoMetadados < metadados.Campos.Count)
-                            Definir(metadados.Campos[indiceCampoMetadados], resto[(idxSep + 1)..]);
                         break;
                     }
                     Definir(campo, fatia);

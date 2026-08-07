@@ -125,10 +125,14 @@ public sealed class LeitorSpedTxtTests
     [Fact]
     public async Task LerStreamingAsync_VigenciaAtivada_IndexaPelosCamposAtivos()
     {
+        // A coluna do campo barrado (Futuro) continua fisicamente presente e vazia — é assim
+        // que o Guia Prático especifica um leiaute versionado, e é o único jeito de o mapeamento
+        // posicional (indice = posicaoCampo - 2) manter Depois alinhado. Omitir a coluna por
+        // completo deslocaria Depois para o índice de Futuro (achado 4 do PR 531).
         const string sped =
             "|0000|310|01012025|31012025|EMPRESA|11222333000181|\r\n" +
             "|C001|0|\r\n" +
-            "|Z200|ANTES|DEPOIS|\r\n" +
+            "|Z200|ANTES||DEPOIS|\r\n" +
             "|9999|4|\r\n";
         var opcoes = new ReadingOptions { RespeitarVigenciaDoLeiaute = true };
 

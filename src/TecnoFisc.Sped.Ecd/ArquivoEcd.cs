@@ -58,7 +58,10 @@ public sealed class ArquivoEcd : IArquivoSped
 
     /// <summary>
     /// Adiciona um registro ao bloco correspondente conforme a primeira posição do código.
-    /// Códigos fora dos seis blocos conhecidos lançam exceção.
+    /// <see cref="RegistroNaoReconhecido"/> desvia para <see cref="RegistrosNaoReconhecidos"/>
+    /// em vez de ser roteado por código — nunca lança. Qualquer outro registro cujo bloco não
+    /// exista lança <see cref="InvalidOperationException"/>: é erro de uso da API (registro
+    /// tipado de um bloco que a ECD não tem), não dado ruim de arquivo.
     /// </summary>
     public void Adicionar(RegistroSped registro)
     {

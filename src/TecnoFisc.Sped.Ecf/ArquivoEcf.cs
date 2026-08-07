@@ -60,7 +60,13 @@ public sealed class ArquivoEcf : IArquivoSped
                 yield return registro;
     }
 
-    /// <summary>Adiciona um registro ao bloco correspondente à primeira posição do código.</summary>
+    /// <summary>
+    /// Adiciona um registro ao bloco correspondente à primeira posição do código.
+    /// <see cref="RegistroNaoReconhecido"/> desvia para <see cref="RegistrosNaoReconhecidos"/>
+    /// em vez de ser roteado por código — nunca lança. Qualquer outro registro cujo bloco não
+    /// exista lança <see cref="InvalidOperationException"/>: é erro de uso da API (registro
+    /// tipado de um bloco que o ECF não tem), não dado ruim de arquivo.
+    /// </summary>
     public void Adicionar(RegistroSped registro)
     {
         ArgumentNullException.ThrowIfNull(registro);

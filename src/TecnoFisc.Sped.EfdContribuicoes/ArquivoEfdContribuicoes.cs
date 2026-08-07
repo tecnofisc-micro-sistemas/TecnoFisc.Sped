@@ -63,8 +63,11 @@ public sealed class ArquivoEfdContribuicoes : IArquivoSped
 
     /// <summary>
     /// Adiciona um registro ao bloco correspondente conforme a primeira posição do código
-    /// (convenção do leiaute: o caractere inicial identifica o bloco). Códigos fora dos dez
-    /// blocos conhecidos lançam exceção — o leiaute não tem outros.
+    /// (convenção do leiaute: o caractere inicial identifica o bloco).
+    /// <see cref="RegistroNaoReconhecido"/> desvia para <see cref="RegistrosNaoReconhecidos"/>
+    /// em vez de ser roteado por código — nunca lança. Qualquer outro registro cujo bloco não
+    /// exista lança <see cref="InvalidOperationException"/>: é erro de uso da API (registro
+    /// tipado de um bloco que a EFD Contribuições não tem), não dado ruim de arquivo.
     /// </summary>
     public void Adicionar(RegistroSped registro)
     {

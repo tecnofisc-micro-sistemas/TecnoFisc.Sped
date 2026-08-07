@@ -94,7 +94,16 @@ public sealed class CompatibilidadeLayoutEcfTests
         var abaixo = await LerAsync(introduzidoEm - 1, linha);
         var naIntroducao = await LerAsync(introduzidoEm, linha);
 
-        abaixo.Should().NotContain(registro => registro.Codigo == codigo);
+        // Abaixo da versão de introdução, o registro real nunca aparece — mas o descarte por
+        // vigência (achado 2 do PR 531) não é mais mudo: a linha vira RegistroNaoReconhecido,
+        // então a ausência precisa ser verificada excluindo a sentinela, e a sentinela em si
+        // precisa ser conferida explicitamente (não é ruído a ignorar). `is not` em pattern não
+        // é suportado em árvore de expressão, daí o filtro por tipo concreto via `Any` comum.
+        bool registroRealAbaixo = abaixo.Any(registro =>
+            registro.Codigo == codigo && registro.GetType() != typeof(RegistroNaoReconhecido));
+        registroRealAbaixo.Should().BeFalse($"{codigo} ainda não existia no leiaute anterior");
+        abaixo.OfType<RegistroNaoReconhecido>().Should().ContainSingle(registro => registro.Codigo == codigo)
+            .Which.Erro.Mensagem.Should().StartWith("Registro posterior à versão declarada no 0000");
         naIntroducao.Should().ContainSingle(registro => registro.Codigo == codigo);
     }
 

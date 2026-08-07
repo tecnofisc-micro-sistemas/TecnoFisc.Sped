@@ -85,8 +85,11 @@ public sealed class LeitorSpedTxtTests
     }
 
     [Fact]
-    public async Task LerStreamingAsync_VigenciaAtivada_OmiteRegistroAntesDaIntroducao()
+    public async Task LerStreamingAsync_VigenciaAtivada_SinalizaRegistroAntesDaIntroducaoComoSentinela()
     {
+        // Achado 2 do PR 531: descarte por vigência deixa de ser mudo. Z100 (IntroduzidoEm = 310)
+        // e a subárvore que ele corta (C170, nível maior) viram RegistroNaoReconhecido em vez de
+        // simplesmente sumir do stream — ver SentinelaVigenciaTests para os cenários dedicados.
         const string sped =
             "|0000|309|01012025|31012025|EMPRESA|11222333000181|\r\n" +
             "|C001|0|\r\n" +
@@ -97,7 +100,11 @@ public sealed class LeitorSpedTxtTests
 
         var registros = await LerComOpcoesAsync(sped, opcoes);
 
-        registros.Select(registro => registro.Codigo).Should().Equal("0000", "C001", "9999");
+        registros.Select(registro => registro.Codigo).Should().Equal("0000", "C001", "Z100", "C170", "9999");
+        registros.OfType<RegistroNaoReconhecido>().Select(registro => registro.Codigo)
+            .Should().BeEquivalentTo(["Z100", "C170"]);
+        registros.OfType<RegistroZ100Sintetico>().Should().BeEmpty();
+        registros.OfType<RegistroC170Sintetico>().Should().BeEmpty();
     }
 
     [Theory]

@@ -95,6 +95,21 @@ public sealed class LeitorSpedTxt : ILeitorSped
                     if (_respeitarVigencia && versaoLeiaute > 0 &&
                         ShouldIgnoreByVersion(metadados, versaoLeiaute, ref nivelCorteVigencia))
                     {
+                        // Descarte por vigência nunca é silencioso: o consumidor recebe a linha
+                        // crua e o motivo, e decide se filtra ou se trata como erro. A decodificação
+                        // só acontece aqui dentro (linha efetivamente descartada) — o caminho comum,
+                        // sem vigência ligada, não paga esse custo.
+                        string linhaCrua = registroBytes.IsSingleSegment
+                            ? EncodingSped.Latin1.GetString(registroBytes.FirstSpan)
+                            : EncodingSped.Latin1.GetString(registroBytes.ToArray());
+                        string codigo = metadados?.Codigo ?? string.Empty;
+                        yield return new RegistroNaoReconhecido(
+                            codigo,
+                            linhaCrua,
+                            new ErroLayout(
+                                linhaRegistro,
+                                codigo,
+                                $"Registro posterior à versão declarada no 0000 ({versaoLeiaute})."));
                         continue;
                     }
 

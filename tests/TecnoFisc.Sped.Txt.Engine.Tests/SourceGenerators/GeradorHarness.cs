@@ -44,6 +44,34 @@ internal static class GeradorHarness
         return string.Join(Environment.NewLine, resultado.GeneratedTrees.Select(arvore => arvore.ToString()));
     }
 
+    /// <summary>
+    /// Variante de <see cref="ExecutarGerador"/> que devolve os diagnósticos do gerador junto com
+    /// o texto gerado, sem falhar o teste quando há diagnóstico de erro — usada para provar que o
+    /// gerador ainda emite <c>CatalogoSpedGerado.g.cs</c>/<c>RegistroSpedVisitor.g.cs</c> mesmo
+    /// quando reporta um <c>TFSPED00x</c>.
+    /// </summary>
+    internal static (string Gerado, ImmutableArray<Diagnostic> Diagnosticos) ExecutarGeradorComDiagnosticos(string fonte)
+    {
+        var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);
+        var syntaxTree = CSharpSyntaxTree.ParseText(fonte, parseOptions);
+        var references = Referencias().ToArray();
+        var compilation = CSharpCompilation.Create(
+            "GeradorHarness" + Guid.NewGuid().ToString("N"),
+            [syntaxTree],
+            references,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable));
+        compilation.GetDiagnostics().Should().NotContain(diagnostico => diagnostico.Severity == DiagnosticSeverity.Error);
+
+        GeneratorDriver driver = CSharpGeneratorDriver.Create(
+            [new RegistroSpedCatalogoGenerator().AsSourceGenerator()],
+            parseOptions: parseOptions);
+        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out _, out ImmutableArray<Diagnostic> diagnosticos);
+
+        GeneratorDriverRunResult resultado = driver.GetRunResult();
+        string gerado = string.Join(Environment.NewLine, resultado.GeneratedTrees.Select(arvore => arvore.ToString()));
+        return (gerado, diagnosticos);
+    }
+
     private static IEnumerable<MetadataReference> Referencias()
     {
         string trusted = (string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!;

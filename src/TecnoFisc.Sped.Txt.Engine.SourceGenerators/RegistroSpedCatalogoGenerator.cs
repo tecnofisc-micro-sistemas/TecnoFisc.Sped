@@ -78,7 +78,6 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
             if (lista.IsDefaultOrEmpty)
                 return;
 
-            bool hasErrors = false;
             foreach (InfoRegistro recordInfo in lista)
             {
                 foreach (FieldError error in recordInfo.Errors)
@@ -87,20 +86,22 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
                     {
                         FieldErrorKind.InvalidName => InvalidFieldNameDiagnostic,
                         FieldErrorKind.DuplicateName => DuplicateFieldNameDiagnostic,
-                        _ => NonIncreasingVigenciaDiagnostic,
+                        FieldErrorKind.NonIncreasingVigencia => NonIncreasingVigenciaDiagnostic,
+                        _ => throw new System.InvalidOperationException(
+                            $"FieldErrorKind desconhecido ({error.Kind}) — adicionar o descriptor correspondente."),
                     };
                     spc.ReportDiagnostic(Diagnostic.Create(
                         descriptor,
                         error.Location,
                         error.Property,
                         error.Name));
-                    hasErrors = true;
                 }
             }
 
-            if (hasErrors)
-                return;
-
+            // Os diagnósticos acima seguem falhando o build (comportamento desejado). Mas o
+            // catálogo/visitor precisam ser emitidos de qualquer forma: um único diagnóstico de
+            // campo não pode suprimir os tipos gerados do assembly inteiro, senão o build real
+            // afoga o diagnóstico acionável sob uma cascata de CS0246 (achado 6 do PR 531).
             string fonte = GerarCatalogo(lista, asmName);
             spc.AddSource("CatalogoSpedGerado.g.cs", SourceText.From(fonte, Encoding.UTF8));
 
@@ -293,6 +294,9 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
                         location,
                         fullyQualifiedProperty,
                         EscapeFieldName(explicitName!)));
+                    // Alias inválido não tem fallback textual seguro para emitir no catálogo —
+                    // usa o nome CLR da propriedade, que sempre é um identificador válido.
+                    fieldName = propriedade.Name;
                 }
                 else if (!fieldNames.Add(fieldName))
                 {

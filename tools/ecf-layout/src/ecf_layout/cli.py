@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
@@ -19,6 +20,7 @@ from ecf_layout.artifacts import (
     promote_artifacts,
 )
 from ecf_layout.converter import EmptyMarkdownError, convert_page
+from ecf_layout.field_names import aplicar, nomes_por_ordem
 from ecf_layout.fragmenter import fragment_pages_with_errors, write_fragments
 from ecf_layout.manifest import (
     ManifestValidationError,
@@ -32,6 +34,7 @@ from ecf_layout.scaffold import ScaffoldError, scaffold
 
 Converter = Callable[[Path, int], str]
 EXPECTED_FRAGMENT_COUNT = 180
+_ARQUIVO_REGISTRO = re.compile(r"^Registro(?P<codigo>[0-9A-Z]+)\.cs$")
 
 
 @dataclass(frozen=True)
@@ -95,6 +98,47 @@ def _parse_codes(value: str) -> tuple[str, ...]:
     return codes
 
 
+class FieldNamesError(Exception):
+    """Sinaliza inconsistência entre o manifesto e os registros gerados."""
+
+
+def apply_field_names(manifest: Path, registros_root: Path) -> int:
+    """Reescreve todos os registros ECF com o alias `Nome` normativo do manifesto.
+
+    Casa cada arquivo `RegistroXXXX.cs` pelo código do registro no nome do
+    arquivo e aplica `aplicar` usando os nomes de campo do manifesto. Retorna
+    a quantidade de arquivos efetivamente alterados.
+    """
+    nomes = nomes_por_ordem(manifest)
+    arquivos = sorted(registros_root.rglob("*.cs"))
+    if not arquivos:
+        raise FieldNamesError(f"nenhum arquivo .cs encontrado em {registros_root}")
+
+    alterados = 0
+    for arquivo in arquivos:
+        correspondencia = _ARQUIVO_REGISTRO.match(arquivo.name)
+        if correspondencia is None:
+            raise FieldNamesError(
+                f"arquivo {arquivo} não segue o padrão RegistroXXXX.cs"
+            )
+        codigo = correspondencia.group("codigo")
+        nomes_do_registro = nomes.get(codigo)
+        if nomes_do_registro is None:
+            raise FieldNamesError(
+                f"registro {codigo} ({arquivo}) não encontrado no manifesto"
+            )
+
+        with open(arquivo, "r", encoding="utf-8", newline="") as stream:
+            original = stream.read()
+        reescrito = aplicar(original, nomes_do_registro)
+        if reescrito != original:
+            with open(arquivo, "w", encoding="utf-8", newline="") as stream:
+                stream.write(reescrito)
+            alterados += 1
+
+    return alterados
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="ecf-layout")
     subcommands = parser.add_subparsers(dest="command", required=True)
@@ -141,6 +185,17 @@ def main(argv: list[str] | None = None) -> int:
     anonymize_parser.add_argument("--output", type=Path, required=True)
     anonymize_parser.add_argument("--fixture-id", required=True)
     anonymize_parser.add_argument("--denylist", type=Path, required=True)
+    field_names_parser = subcommands.add_parser("field-names")
+    field_names_parser.add_argument(
+        "--manifest",
+        type=Path,
+        default=Path("sped/ecf/layout-12-manifest.json"),
+    )
+    field_names_parser.add_argument(
+        "--registros-root",
+        type=Path,
+        default=Path("src/TecnoFisc.Sped.Ecf/Registros"),
+    )
     args = parser.parse_args(argv)
 
     if args.command == "validate":
@@ -215,6 +270,14 @@ def main(argv: list[str] | None = None) -> int:
             print(f"anonymization failed: {error}")
             return 1
         print(result.log_line)
+        return 0
+    if args.command == "field-names":
+        try:
+            changed = apply_field_names(args.manifest, args.registros_root)
+        except FieldNamesError as error:
+            print(f"field-names failed: {error}")
+            return 1
+        print(f"field-names: {changed} arquivos atualizados")
         return 0
 
     pages = args.pages

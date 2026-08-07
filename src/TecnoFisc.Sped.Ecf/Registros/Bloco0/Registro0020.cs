@@ -138,12 +138,7 @@ public sealed partial class Registro0020 : RegistroSped
     /// Valor posicional do campo 31: <c>IND_PR_TRANSF</c> nos leiautes 10 e 11 e
     /// <c>POSSUI_CEBRAS</c> no leiaute 12.
     /// </summary>
-    [CampoSped(
-        Ordem = 31,
-        Tamanho = 1,
-        Obrigatorio = true,
-        DesdeVersao = (int)LayoutEcf.V010,
-        Nome = "POSSUI_CEBRAS")]
+    [CampoSped(Ordem = 31, Tamanho = 1, Obrigatorio = true, DesdeVersao = (int)LayoutEcf.V010, Nome = "POSSUI_CEBRAS")]
     public IndicadorSimNao IndicadorPosicao31 { get; set; }
 
     /// <summary>

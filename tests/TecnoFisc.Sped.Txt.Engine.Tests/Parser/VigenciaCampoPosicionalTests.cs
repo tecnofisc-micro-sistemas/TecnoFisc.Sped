@@ -23,7 +23,7 @@ public sealed class VigenciaCampoPosicionalTests
     private static readonly IRegistroSpedCatalogo _catalogo =
         CatalogoBuilder.BuildFromAssembly(typeof(RegistroVigenciaColunaSintetico).Assembly);
 
-    private static async Task<RegistroVigenciaColunaSintetico> LerAsync(int versao)
+    private static async Task<RegistroVigenciaColunaSintetico> ReadAsync(int versao)
     {
         string sped =
             $"|0000|{versao:D3}|01012025|31012025|EMPRESA|11222333000181|\r\n" +
@@ -46,7 +46,7 @@ public sealed class VigenciaCampoPosicionalTests
     [Fact]
     public async Task ColunasBarradasPresentesNoArquivo_NaoSaoAtribuidas()
     {
-        var registro = await LerAsync(versao: 10);
+        var registro = await ReadAsync(versao: 10);
 
         registro.Antes.Should().Be("a");
         registro.Novo.Should().BeNull();
@@ -56,7 +56,7 @@ public sealed class VigenciaCampoPosicionalTests
     [Fact]
     public async Task VersaoNoLimite_AtribuiOCampoNovoSemAfetarOAindaBarrado()
     {
-        var registro = await LerAsync(versao: 12);
+        var registro = await ReadAsync(versao: 12);
 
         registro.Antes.Should().Be("a");
         registro.Novo.Should().Be("n");
@@ -66,7 +66,7 @@ public sealed class VigenciaCampoPosicionalTests
     [Fact]
     public async Task VersaoAlcancaOSegundoLimite_AtribuiTodosOsCamposAtivos()
     {
-        var registro = await LerAsync(versao: 20);
+        var registro = await ReadAsync(versao: 20);
 
         registro.Antes.Should().Be("a");
         registro.Novo.Should().Be("n");

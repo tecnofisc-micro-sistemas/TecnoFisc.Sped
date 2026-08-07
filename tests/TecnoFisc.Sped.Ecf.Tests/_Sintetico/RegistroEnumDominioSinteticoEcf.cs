@@ -12,7 +12,7 @@ namespace TecnoFisc.Sped.Ecf.Tests._Sintetico;
 /// <c>[SpedValor]</c> e sem <c>[Flags]</c> — todos os enums de <c>TecnoFisc.Sped.Ecf.Enums</c> são
 /// indicadores textuais com <c>[SpedValor]</c> (ex.: <c>IndicadorTributoContaParteB</c>,
 /// <c>IndicadorDebitoCredito</c> do próprio <c>RegistroM500</c>), então nenhum campo do catálogo
-/// gerado da ECF passa pelo definidor estrito (ver <c>CatalogoBuilder.PrecisaDefinidorEstrito</c>).
+/// gerado da ECF passa pelo definidor estrito (ver <c>CatalogoBuilder.RequiresStrictSetter</c>).
 /// Por isso o teste monta seu próprio catálogo reflexivo a partir deste registro fictício —
 /// via <see cref="TecnoFisc.Sped.Txt.Engine.Catalogo.CatalogoBuilder.BuildFromAssembly"/> e o
 /// injeta em <see cref="TecnoFisc.Sped.Ecf.Parser.ParserEcf(IRegistroSpedCatalogo)"/> — em vez de

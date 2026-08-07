@@ -213,7 +213,7 @@ public static class CatalogoBuilder
             Action<RegistroSped, ReadOnlySpan<char>> definidor =
                 ComporDefinidor(propriedade, atributo, validarDominio: false);
             Action<RegistroSped, ReadOnlySpan<char>>? definidorEstrito =
-                PrecisaDefinidorEstrito(propriedade.PropertyType, atributo)
+                RequiresStrictSetter(propriedade.PropertyType, atributo)
                     ? ComporDefinidor(propriedade, atributo, validarDominio: true)
                     : null;
 
@@ -413,10 +413,10 @@ public static class CatalogoBuilder
     /// não tem domínio fechado a validar (combinações de bits são válidas mesmo sem membro
     /// nomeado) — construir um definidor estrito para ele faria bypass do <c>Enum.Parse</c>
     /// usado pelo permissivo, perdendo o parsing por nome de membro e a forma separada por
-    /// vírgula. Espelha <c>RegistroSpedCatalogoGenerator.PrecisaSetterEstrito</c>, para que o
+    /// vírgula. Espelha <c>RegistroSpedCatalogoGenerator.RequiresStrictSetter</c>, para que o
     /// catálogo reflexivo e o gerado concordem.
     /// </summary>
-    private static bool PrecisaDefinidorEstrito(Type tipo, CampoSpedAttribute atributo)
+    private static bool RequiresStrictSetter(Type tipo, CampoSpedAttribute atributo)
     {
         Type alvo = Nullable.GetUnderlyingType(tipo) ?? tipo;
         if (!alvo.IsEnum || alvo.IsDefined(typeof(FlagsAttribute), inherit: false))
@@ -540,7 +540,7 @@ public static class CatalogoBuilder
     /// pacotes já publicados: <see cref="Enum.Parse(Type, string, bool)"/> aceita código fora do
     /// domínio via cast e nome de membro) e o estrito (valida <see cref="Enum.IsDefined"/>).
     /// <paramref name="validarDominio"/> só chega <c>true</c> aqui quando
-    /// <see cref="PrecisaDefinidorEstrito"/> mandou construir o definidor estrito, e esse
+    /// <see cref="RequiresStrictSetter"/> mandou construir o definidor estrito, e esse
     /// predicado já exclui enums <see cref="FlagsAttribute"/> — não têm domínio fechado a validar
     /// e o caminho estrito, ao pular <c>Enum.Parse</c>, perderia o parsing por nome/combinação
     /// separada por vírgula.

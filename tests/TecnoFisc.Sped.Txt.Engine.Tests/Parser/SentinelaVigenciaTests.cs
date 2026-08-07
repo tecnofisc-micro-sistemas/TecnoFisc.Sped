@@ -24,7 +24,7 @@ public sealed class SentinelaVigenciaTests
         "|A410|desc-filho|\r\n" +
         "|9999|3|\r\n";
 
-    private static async Task<List<RegistroSped>> LerAsync(string conteudo)
+    private static async Task<List<RegistroSped>> ReadAsync(string conteudo)
     {
         var catalogo = CatalogoBuilder.BuildFromAssembly(typeof(RegistroVigenciaColunaSintetico).Assembly);
         var leitor = new LeitorSpedTxt(catalogo, new ReadingOptions { RespeitarVigenciaDoLeiaute = true });
@@ -39,7 +39,7 @@ public sealed class SentinelaVigenciaTests
     [Fact]
     public async Task RegistroPosteriorAVersaoDeclarada_ViraSentinelaEmVezDeSumir()
     {
-        var lidos = await LerAsync(ArquivoSinteticoComRegistroFuturo);
+        var lidos = await ReadAsync(ArquivoSinteticoComRegistroFuturo);
 
         var sentinela = lidos.OfType<RegistroNaoReconhecido>().Should().ContainSingle().Which;
         sentinela.Codigo.Should().Be("A400");
@@ -50,7 +50,7 @@ public sealed class SentinelaVigenciaTests
     [Fact]
     public async Task SubarvoreCortada_TambemViraSentinela()
     {
-        var lidos = await LerAsync(ArquivoSinteticoComRegistroFuturoEFilho);
+        var lidos = await ReadAsync(ArquivoSinteticoComRegistroFuturoEFilho);
 
         lidos.OfType<RegistroNaoReconhecido>().Select(r => r.Codigo)
             .Should().BeEquivalentTo(["A400", "A410"]);

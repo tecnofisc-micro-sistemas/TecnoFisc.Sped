@@ -8,7 +8,7 @@ public sealed class ParserEcfOpcoesTests
     [Fact]
     public void SemOpcoes_LigaVigenciaEValidacaoDeDominio()
     {
-        var resolvidas = ParserEcf.ResolverOpcoes(ReadingOptions.Default);
+        var resolvidas = ParserEcf.ResolveOptions(ReadingOptions.Default);
 
         resolvidas.RespeitarVigenciaDoLeiaute.Should().BeTrue();
         resolvidas.ValidarDominioDeEnum.Should().BeTrue();
@@ -17,7 +17,7 @@ public sealed class ParserEcfOpcoesTests
     [Fact]
     public void OverrideExplicito_VenceOPadraoDoLeiaute()
     {
-        var resolvidas = ParserEcf.ResolverOpcoes(new ReadingOptions
+        var resolvidas = ParserEcf.ResolveOptions(new ReadingOptions
         {
             RespeitarVigenciaDoLeiaute = false,
             ValidarDominioDeEnum = false,
@@ -38,7 +38,7 @@ public sealed class ParserEcfOpcoesTests
             BlocosIgnorados = new HashSet<string>(StringComparer.Ordinal) { "X" },
         };
 
-        var resolvidas = ParserEcf.ResolverOpcoes(origem);
+        var resolvidas = ParserEcf.ResolveOptions(origem);
 
         resolvidas.LenientLayout.Should().BeTrue();
         resolvidas.LenientFieldParsing.Should().BeTrue();

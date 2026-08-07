@@ -1,4 +1,4 @@
-using static TecnoFisc.Sped.Txt.Engine.Tests.SourceGenerators.GeradorHarness;
+using static TecnoFisc.Sped.Txt.Engine.Tests.SourceGenerators.GeneratorHarness;
 
 namespace TecnoFisc.Sped.Txt.Engine.Tests.SourceGenerators;
 
@@ -77,7 +77,7 @@ public sealed class RegistroSpedCatalogoGeneratorDiagnosticoTests
     [Fact]
     public void AliasInvalido_ReportaUmDiagnosticoEAindaEmiteOCatalogo()
     {
-        var (gerado, diagnosticos) = ExecutarGeradorComDiagnosticos(FonteComAliasInvalido);
+        var (gerado, diagnosticos) = RunGeneratorWithDiagnostics(FonteComAliasInvalido);
 
         diagnosticos.Should().ContainSingle().Which.Id.Should().Be("TFSPED001");
         gerado.Should().Contain("class CatalogoSpedGerado");
@@ -87,7 +87,7 @@ public sealed class RegistroSpedCatalogoGeneratorDiagnosticoTests
     [Fact]
     public void AliasInvalido_CampoEntraNoCatalogoComONomeClr()
     {
-        var (gerado, _) = ExecutarGeradorComDiagnosticos(FonteComAliasInvalido);
+        var (gerado, _) = RunGeneratorWithDiagnostics(FonteComAliasInvalido);
 
         gerado.Should().Contain("\"CodVer\"");
         gerado.Should().NotContain("COD VER");
@@ -96,7 +96,7 @@ public sealed class RegistroSpedCatalogoGeneratorDiagnosticoTests
     [Fact]
     public void AliasInvalidoComFallbackColidindoComOutroAlias_ReportaTFSPED001ETFSPED002()
     {
-        var (gerado, diagnosticos) = ExecutarGeradorComDiagnosticos(FonteComAliasInvalidoCujoFallbackColideComOutroAlias);
+        var (gerado, diagnosticos) = RunGeneratorWithDiagnostics(FonteComAliasInvalidoCujoFallbackColideComOutroAlias);
 
         diagnosticos.Select(d => d.Id).Should().BeEquivalentTo(["TFSPED001", "TFSPED002"]);
         gerado.Should().Contain("class CatalogoSpedGerado");
@@ -111,7 +111,7 @@ public sealed class RegistroSpedCatalogoGeneratorDiagnosticoTests
     [Fact]
     public void VigenciaForaDeOrdem_ReportaUmDiagnosticoTFSPED003EAindaEmiteOCatalogo()
     {
-        var (gerado, diagnosticos) = ExecutarGeradorComDiagnosticos(FonteComVigenciaForaDeOrdem);
+        var (gerado, diagnosticos) = RunGeneratorWithDiagnostics(FonteComVigenciaForaDeOrdem);
 
         diagnosticos.Should().ContainSingle().Which.Id.Should().Be("TFSPED003");
         gerado.Should().Contain("class CatalogoSpedGerado");

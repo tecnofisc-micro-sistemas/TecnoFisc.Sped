@@ -32,14 +32,14 @@ public sealed class ParserEcf : ILeitorSped
     {
         ArgumentNullException.ThrowIfNull(catalogo);
         ArgumentNullException.ThrowIfNull(opcoes);
-        _leitor = new LeitorSpedTxt(catalogo, ResolverOpcoes(opcoes));
+        _leitor = new LeitorSpedTxt(catalogo, ResolveOptions(opcoes));
     }
 
     /// <summary>
     /// Resolve as opções do chamador contra os padrões do leiaute ECF: vigência e validação
     /// de domínio ligadas quando o chamador não se pronunciou; override explícito sempre vence.
     /// </summary>
-    internal static ReadingOptions ResolverOpcoes(ReadingOptions opcoes)
+    internal static ReadingOptions ResolveOptions(ReadingOptions opcoes)
         => new()
         {
             RegistrosIgnorados = opcoes.RegistrosIgnorados,

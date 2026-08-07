@@ -12,7 +12,7 @@ namespace TecnoFisc.Sped.Benchmarks;
 /// cada campo. O ponto não é provar que o caminho ligado é rápido — é provar que o caminho
 /// <b>desligado</b> não paga nada, porque é o caminho hoje em produção nos três pacotes já
 /// publicados no nuget.org (EFD Contribuições, EFD ICMS-IPI, ECD). Só o ECF liga vigência por
-/// padrão (<c>ParserEcf.ResolverOpcoes</c>), mas aqui a flag é sempre passada explícita —
+/// padrão (<c>ParserEcf.ResolveOptions</c>), mas aqui a flag é sempre passada explícita —
 /// <c>null</c> resolveria diferente conforme o leiaute e mascararia a comparação.
 /// <list type="bullet">
 ///   <item><see cref="SemVigencia"/> — baseline; <c>RespeitarVigenciaDoLeiaute = false</c>. O gate

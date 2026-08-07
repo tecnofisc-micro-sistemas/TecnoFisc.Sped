@@ -28,10 +28,10 @@ def nomes_por_ordem(manifesto: Path) -> dict[str, dict[int, str]]:
     }
 
 
-def aplicar(fonte: str, nomes: dict[int, str]) -> str:
+def apply(fonte: str, nomes: dict[int, str]) -> str:
     """Reescreve os atributos [CampoSped] da fonte com o alias normativo."""
 
-    def substituir(match: re.Match[str]) -> str:
+    def replace(match: re.Match[str]) -> str:
         args = match.group("args")
         ordem_match = _ORDEM.search(args)
         if ordem_match is None:
@@ -49,12 +49,12 @@ def aplicar(fonte: str, nomes: dict[int, str]) -> str:
         limpo = ", ".join(partes)
         return f'[CampoSped({limpo}, Nome = "{nome}")]\n{match.group("indent")}public '
 
-    return _CAMPO.sub(substituir, fonte)
+    return _CAMPO.sub(replace, fonte)
 
 
 def contar_atributos(fonte: str) -> int:
     """Conta quantos atributos `[CampoSped(...)]` existem na fonte, independente
-    de o padrão de casamento de `aplicar` (`_CAMPO`) conseguir associá-los a uma
+    de o padrão de casamento de `apply` (`_CAMPO`) conseguir associá-los a uma
     declaração `public` imediatamente seguinte."""
     return len(_ATRIBUTO.findall(fonte))
 
@@ -63,5 +63,5 @@ def contar_campos_casados(fonte: str) -> int:
     """Conta quantos atributos `[CampoSped(...)]` o padrão de reescrita (`_CAMPO`)
     efetivamente casa. Deve ser igual a `contar_atributos`; se for menor, há um
     campo com atributo adicional (`[Obsolete]` etc.) ou comentário entre `]` e
-    `public` que `aplicar` está ignorando silenciosamente."""
+    `public` que `apply` está ignorando silenciosamente."""
     return len(_CAMPO.findall(fonte))

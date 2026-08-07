@@ -20,7 +20,7 @@ from ecf_layout.artifacts import (
     promote_artifacts,
 )
 from ecf_layout.converter import EmptyMarkdownError, convert_page
-from ecf_layout.field_names import aplicar, contar_atributos, contar_campos_casados, nomes_por_ordem
+from ecf_layout.field_names import apply, contar_atributos, contar_campos_casados, nomes_por_ordem
 from ecf_layout.fragmenter import fragment_pages_with_errors, write_fragments
 from ecf_layout.manifest import (
     ManifestValidationError,
@@ -106,7 +106,7 @@ def apply_field_names(manifest: Path, registros_root: Path) -> int:
     """Reescreve todos os registros ECF com o alias `Nome` normativo do manifesto.
 
     Casa cada arquivo `RegistroXXXX.cs` pelo código do registro no nome do
-    arquivo e aplica `aplicar` usando os nomes de campo do manifesto. Retorna
+    arquivo e aplica `apply` usando os nomes de campo do manifesto. Retorna
     a quantidade de arquivos efetivamente alterados.
     """
     nomes = nomes_por_ordem(manifest)
@@ -138,10 +138,10 @@ def apply_field_names(manifest: Path, registros_root: Path) -> int:
                 f"{arquivo}: {esperado} atributo(s) [CampoSped(...)] na fonte, mas "
                 f"apenas {casado} casado(s) pelo padrão de reescrita - provável "
                 "atributo adicional (ex.: [Obsolete]) ou comentário entre ']' e "
-                "'public' que aplicar() está ignorando em silêncio"
+                "'public' que apply() está ignorando em silêncio"
             )
 
-        reescrito = aplicar(original, nomes_do_registro)
+        reescrito = apply(original, nomes_do_registro)
         if reescrito != original:
             with open(arquivo, "w", encoding="utf-8", newline="") as stream:
                 stream.write(reescrito)

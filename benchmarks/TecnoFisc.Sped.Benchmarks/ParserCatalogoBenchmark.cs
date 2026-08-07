@@ -64,7 +64,7 @@ public class ParserCatalogoBenchmark
 /// sobre o mesmo arquivo sintético do Bloco 9 (nenhum campo ali é enum fechado sem
 /// <c>[SpedValor]</c>), isolando o custo de threading do parâmetro do custo do check em si.
 /// O caminho desligado é o baseline: é o que os três pacotes já publicados no nuget.org exercitam
-/// hoje (só o ECF liga por padrão — ver <c>ParserEcf.ResolverOpcoes</c>).
+/// hoje (só o ECF liga por padrão — ver <c>ParserEcf.ResolveOptions</c>).
 /// </summary>
 [MemoryDiagnoser]
 public class ValidacaoDominioEnumCatalogoBenchmark

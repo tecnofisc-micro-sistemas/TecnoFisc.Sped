@@ -8,7 +8,7 @@ namespace TecnoFisc.Sped.Ecf.Tests;
 /// Achado 3 (PR #531): <see cref="RegistroNaoReconhecido"/> tem duas origens independentes —
 /// código desconhecido pelo catálogo sob <see cref="ReadingOptions.LenientLayout"/>, e descarte
 /// por vigência sob <see cref="ReadingOptions.RespeitarVigenciaDoLeiaute"/> (que no ECF é
-/// <c>true</c> por padrão, ver <see cref="ParserEcf.ResolverOpcoes"/> — não é opt-in). Em ambos
+/// <c>true</c> por padrão, ver <see cref="ParserEcf.ResolveOptions"/> — não é opt-in). Em ambos
 /// os casos <see cref="ArquivoEcf.Adicionar"/> estourava (ou, pior, misclassificava
 /// silenciosamente quando o primeiro caractere do código cru coincidia com um bloco real) ao
 /// tentar rotear a sentinela pelo primeiro caractere do seu código cru, anulando a leitura

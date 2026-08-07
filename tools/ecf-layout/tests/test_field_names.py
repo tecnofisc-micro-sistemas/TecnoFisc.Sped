@@ -1,4 +1,4 @@
-from ecf_layout.field_names import aplicar, contar_atributos, contar_campos_casados
+from ecf_layout.field_names import apply, contar_atributos, contar_campos_casados
 
 
 def test_adiciona_alias_quando_nao_existe():
@@ -6,7 +6,7 @@ def test_adiciona_alias_quando_nao_existe():
         "    [CampoSped(Ordem = 4, Tamanho = 19, Decimais = 2, Obrigatorio = true)]\n"
         "    public decimal SdIniLal { get; set; }\n"
     )
-    assert 'Nome = "SD_INI_LAL"' in aplicar(fonte, {4: "SD_INI_LAL"})
+    assert 'Nome = "SD_INI_LAL"' in apply(fonte, {4: "SD_INI_LAL"})
 
 
 def test_substitui_alias_existente():
@@ -14,14 +14,14 @@ def test_substitui_alias_existente():
         '    [CampoSped(Ordem = 5, Tamanho = 1, Nome = "ERRADO")]\n'
         "    public int Campo { get; set; }\n"
     )
-    resultado = aplicar(fonte, {5: "IND_SD_INI_LAL"})
+    resultado = apply(fonte, {5: "IND_SD_INI_LAL"})
     assert 'Nome = "IND_SD_INI_LAL"' in resultado
     assert "ERRADO" not in resultado
 
 
 def test_preserva_campo_ausente_do_manifesto():
     fonte = "    [CampoSped(Ordem = 9)]\n    public int Campo { get; set; }\n"
-    assert aplicar(fonte, {}) == fonte
+    assert apply(fonte, {}) == fonte
 
 
 def test_substitui_alias_quando_nome_e_o_primeiro_argumento():
@@ -32,7 +32,7 @@ def test_substitui_alias_quando_nome_e_o_primeiro_argumento():
         '    [CampoSped(Nome = "ERRADO", Ordem = 6, Tamanho = 1)]\n'
         "    public string? Campo { get; set; }\n"
     )
-    resultado = aplicar(fonte, {6: "CERTO"})
+    resultado = apply(fonte, {6: "CERTO"})
     assert '[CampoSped(Ordem = 6, Tamanho = 1, Nome = "CERTO")]' in resultado
     assert "ERRADO" not in resultado
     assert ",  Ordem" not in resultado
@@ -55,7 +55,7 @@ def test_contar_atributos_conta_todo_campo_sped_independente_de_casar():
 def test_contar_campos_casados_ignora_atributo_com_comentario_ou_segundo_atributo_antes_de_public():
     """`_CAMPO` exige `public` imediatamente após `]`; um segundo atributo (ex.:
     `[Obsolete]`) ou comentário intercalado entre `[CampoSped(...)]` e `public`
-    faz `aplicar` ignorar o campo em silêncio. `contar_campos_casados` expõe essa
+    faz `apply` ignorar o campo em silêncio. `contar_campos_casados` expõe essa
     divergência para que quem orquestra a reescrita (o subcomando `field-names`)
     possa falhar alto em vez de aplicar o alias parcialmente sem avisar."""
     fonte = (
@@ -69,6 +69,6 @@ def test_contar_campos_casados_ignora_atributo_com_comentario_ou_segundo_atribut
     assert contar_atributos(fonte) == 2
     assert contar_campos_casados(fonte) == 1
 
-    resultado = aplicar(fonte, {2: "PRIMEIRO", 3: "SEGUNDO"})
+    resultado = apply(fonte, {2: "PRIMEIRO", 3: "SEGUNDO"})
     assert 'Nome = "PRIMEIRO"' in resultado
     assert 'Nome = "SEGUNDO"' not in resultado

@@ -15,20 +15,20 @@ namespace TecnoFisc.Sped.Txt.Engine.Tests.SourceGenerators;
 /// Compare com <c>RegistroSpedCatalogoGeneratorNomeCampoTests.CompilarComGerador</c>, que emite
 /// e carrega o assembly — usado quando o teste precisa executar o catálogo gerado.
 /// </summary>
-internal static class GeradorHarness
+internal static class GeneratorHarness
 {
     /// <summary>
     /// Roda o gerador sobre <paramref name="fonte"/> e devolve o texto C# de todas as árvores
     /// geradas concatenado. Falha o teste (via FluentAssertions) se a compilação de entrada ou
     /// o próprio gerador reportarem diagnóstico de erro.
     /// </summary>
-    internal static string ExecutarGerador(string fonte)
+    internal static string RunGenerator(string fonte)
     {
         var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);
         var syntaxTree = CSharpSyntaxTree.ParseText(fonte, parseOptions);
         var references = Referencias().ToArray();
         var compilation = CSharpCompilation.Create(
-            "GeradorHarness" + Guid.NewGuid().ToString("N"),
+            "GeneratorHarness" + Guid.NewGuid().ToString("N"),
             [syntaxTree],
             references,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable));
@@ -45,18 +45,18 @@ internal static class GeradorHarness
     }
 
     /// <summary>
-    /// Variante de <see cref="ExecutarGerador"/> que devolve os diagnósticos do gerador junto com
+    /// Variante de <see cref="RunGenerator"/> que devolve os diagnósticos do gerador junto com
     /// o texto gerado, sem falhar o teste quando há diagnóstico de erro — usada para provar que o
     /// gerador ainda emite <c>CatalogoSpedGerado.g.cs</c>/<c>RegistroSpedVisitor.g.cs</c> mesmo
     /// quando reporta um <c>TFSPED00x</c>.
     /// </summary>
-    internal static (string Gerado, ImmutableArray<Diagnostic> Diagnosticos) ExecutarGeradorComDiagnosticos(string fonte)
+    internal static (string Gerado, ImmutableArray<Diagnostic> Diagnosticos) RunGeneratorWithDiagnostics(string fonte)
     {
         var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);
         var syntaxTree = CSharpSyntaxTree.ParseText(fonte, parseOptions);
         var references = Referencias().ToArray();
         var compilation = CSharpCompilation.Create(
-            "GeradorHarness" + Guid.NewGuid().ToString("N"),
+            "GeneratorHarness" + Guid.NewGuid().ToString("N"),
             [syntaxTree],
             references,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable));

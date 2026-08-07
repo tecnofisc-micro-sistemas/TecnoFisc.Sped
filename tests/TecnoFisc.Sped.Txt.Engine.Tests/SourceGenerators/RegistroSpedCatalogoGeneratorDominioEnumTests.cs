@@ -1,4 +1,4 @@
-using static TecnoFisc.Sped.Txt.Engine.Tests.SourceGenerators.GeradorHarness;
+using static TecnoFisc.Sped.Txt.Engine.Tests.SourceGenerators.GeneratorHarness;
 
 namespace TecnoFisc.Sped.Txt.Engine.Tests.SourceGenerators;
 
@@ -47,7 +47,7 @@ public sealed class RegistroSpedCatalogoGeneratorDominioEnumTests
     [Fact]
     public void EnumFechado_GeraSetterPermissivoESetterEstrito()
     {
-        string gerado = ExecutarGerador(Fonte);
+        string gerado = RunGenerator(Fonte);
 
         gerado.Should().Contain("Set_B100_TipoItem_Estrito");
         gerado.Should().Contain("Enum.IsDefined(convertido)");
@@ -56,7 +56,7 @@ public sealed class RegistroSpedCatalogoGeneratorDominioEnumTests
     [Fact]
     public void SetterPermissivo_NaoValidaODominio()
     {
-        string gerado = ExecutarGerador(Fonte);
+        string gerado = RunGenerator(Fonte);
 
         int inicio = gerado.IndexOf("Set_B100_TipoItem(", StringComparison.Ordinal);
         int fim = gerado.IndexOf("Set_B100_TipoItem_Estrito(", StringComparison.Ordinal);
@@ -68,23 +68,23 @@ public sealed class RegistroSpedCatalogoGeneratorDominioEnumTests
     [Fact]
     public void MetadadosCampo_RecebeODefinidorEstritoComoUltimoArgumento()
     {
-        string gerado = ExecutarGerador(Fonte);
+        string gerado = RunGenerator(Fonte);
 
         gerado.Should().Contain("Set_B100_TipoItem_Estrito)");
     }
 
     /// <summary>
-    /// Ponto exato do escopo extra desta task: <c>PrecisaSetterEstrito</c> exclui <c>[Flags]</c>
+    /// Ponto exato do escopo extra desta task: <c>RequiresStrictSetter</c> exclui <c>[Flags]</c>
     /// porque a combinação de bits não tem domínio fechado a validar, e o caminho estrito, ao
     /// pular <c>Enum.Parse</c>, perderia o parsing por nome/forma separada por vírgula do
     /// permissivo. Sem este teste, remover o <c>!c.EnumFlags</c> do predicado compila e não
-    /// quebra nenhuma suíte — só diverge do lado reflexivo (<c>CatalogoBuilder.PrecisaDefinidorEstrito</c>)
+    /// quebra nenhuma suíte — só diverge do lado reflexivo (<c>CatalogoBuilder.RequiresStrictSetter</c>)
     /// em tempo de leitura real.
     /// </summary>
     [Fact]
     public void EnumFlags_NaoGeraSetterEstrito()
     {
-        string gerado = ExecutarGerador(Fonte);
+        string gerado = RunGenerator(Fonte);
 
         gerado.Should().NotContain("Set_B100_Marcadores_Estrito");
     }
@@ -97,7 +97,7 @@ public sealed class RegistroSpedCatalogoGeneratorDominioEnumTests
     [Fact]
     public void EnumComSpedValor_NaoGeraSetterEstrito()
     {
-        string gerado = ExecutarGerador(Fonte);
+        string gerado = RunGenerator(Fonte);
 
         gerado.Should().NotContain("Set_B100_Situacao_Estrito");
     }

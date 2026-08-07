@@ -641,7 +641,7 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
             sb.Append(", capturaTudo: true");
         if (campo.CampoArquivo)
             sb.Append(", campoArquivo: true");
-        if (PrecisaSetterEstrito(campo))
+        if (RequiresStrictSetter(campo))
         {
             sb.Append(", definidorEstrito: Set_").Append(reg.Codigo).Append('_')
                 .Append(campo.Nome).Append("_Estrito");
@@ -703,7 +703,7 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
                 break;
         }
 
-        if (PrecisaSetterEstrito(c))
+        if (RequiresStrictSetter(c))
         {
             sb.AppendLine("    }");
             sb.AppendLine();
@@ -818,7 +818,7 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
 
     /// <summary>
     /// Emite o corpo do setter estrito de enum fechado: mesma conversão do permissivo, mais a
-    /// checagem de domínio. Só é chamado quando <see cref="PrecisaSetterEstrito"/> for true.
+    /// checagem de domínio. Só é chamado quando <see cref="RequiresStrictSetter"/> for true.
     /// </summary>
     private static void EmitirSetterEnumEstrito(StringBuilder sb, InfoCampo c)
     {
@@ -848,10 +848,10 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
     /// Só enum fechado sem <c>[SpedValor]</c> e sem <c>[Flags]</c> tem domínio a validar: os
     /// enums textuais já rejeitam token desconhecido no setter permissivo, e um <c>[Flags]</c>
     /// não tem domínio fechado (combinações de bits são válidas mesmo sem membro nomeado) —
-    /// espelha <c>CatalogoBuilder.PrecisaDefinidorEstrito</c>, que exclui os mesmos dois casos
+    /// espelha <c>CatalogoBuilder.RequiresStrictSetter</c>, que exclui os mesmos dois casos
     /// para que o catálogo gerado e o reflexivo concordem.
     /// </summary>
-    private static bool PrecisaSetterEstrito(InfoCampo c)
+    private static bool RequiresStrictSetter(InfoCampo c)
         => c.Categoria == CategoriaCampo.Enum && !c.EnumFlags && c.EnumValoresSped.IsDefaultOrEmpty;
 
     /// <summary>

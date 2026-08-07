@@ -16,7 +16,7 @@ namespace TecnoFisc.Sped.Ecf.Tests.Parser;
 /// hoje um campo elegível ao definidor estrito (todos os enums de <c>TecnoFisc.Sped.Ecf.Enums</c>
 /// carregam <c>[SpedValor]</c>), então o teste monta seu próprio catálogo a partir de um registro
 /// sintético e o injeta via <see cref="ParserEcf(IRegistroSpedCatalogo)"/> — esse construtor passa
-/// pelo mesmo <see cref="ParserEcf.ResolverOpcoes"/> usado por <see cref="ParserEcf()"/>, então a
+/// pelo mesmo <see cref="ParserEcf.ResolveOptions"/> usado por <see cref="ParserEcf()"/>, então a
 /// política padrão (validação ligada) testada aqui é a mesma do construtor sem catálogo.
 /// <para>
 /// Usa <see cref="ParserEcf.ReadStreamingAsync"/>, não <see cref="ParserEcf.ParseLinha"/>:

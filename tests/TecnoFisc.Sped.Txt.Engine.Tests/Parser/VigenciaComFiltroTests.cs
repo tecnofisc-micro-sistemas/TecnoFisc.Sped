@@ -26,7 +26,7 @@ public sealed class VigenciaComFiltroTests
         "|A410|desc-filho|\r\n" +
         "|9999|3|\r\n";
 
-    private static async Task<List<RegistroSped>> LerAsync(string conteudo, ReadingOptions opcoes)
+    private static async Task<List<RegistroSped>> ReadAsync(string conteudo, ReadingOptions opcoes)
     {
         var catalogo = CatalogoBuilder.BuildFromAssembly(typeof(RegistroVigenciaColunaSintetico).Assembly);
         var leitor = new LeitorSpedTxt(catalogo, opcoes);
@@ -47,7 +47,7 @@ public sealed class VigenciaComFiltroTests
             RegistrosIgnorados = new HashSet<string>(StringComparer.Ordinal) { "A400" },
         };
 
-        var lidos = await LerAsync(ArquivoSinteticoComRegistroFuturo, opcoes);
+        var lidos = await ReadAsync(ArquivoSinteticoComRegistroFuturo, opcoes);
 
         lidos.OfType<RegistroNaoReconhecido>().Should().BeEmpty();
         lidos.Select(r => r.Codigo).Should().NotContain("A400");
@@ -62,7 +62,7 @@ public sealed class VigenciaComFiltroTests
             BlocosIgnorados = new HashSet<string>(StringComparer.Ordinal) { "A" },
         };
 
-        var lidos = await LerAsync(ArquivoSinteticoComRegistroFuturoEFilho, opcoes);
+        var lidos = await ReadAsync(ArquivoSinteticoComRegistroFuturoEFilho, opcoes);
 
         lidos.OfType<RegistroNaoReconhecido>().Should().BeEmpty();
         lidos.Select(r => r.Codigo).Should().NotContain("A400");

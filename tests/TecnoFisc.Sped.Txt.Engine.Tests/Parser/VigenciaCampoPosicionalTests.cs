@@ -6,17 +6,25 @@ using TecnoFisc.Sped.Txt.Engine.Tests._Sintetico;
 namespace TecnoFisc.Sped.Txt.Engine.Tests.Parser;
 
 /// <summary>
-/// Prova que a coluna barrada por vigência é sempre consumida pela posição, mesmo quando está
-/// fisicamente presente no arquivo abaixo da versão de introdução do campo (achado 4 do PR 531):
-/// o cursor sequencial antigo assumia que a coluna estaria ausente e deslocava o restante da
-/// linha um campo à esquerda quando ela existia. <see cref="RegistroVigenciaColunaSintetico"/>
-/// (A300) encadeia dois campos versionados com limiares crescentes (12, depois 20) — a única
-/// forma que <c>CatalogoBuilder.ValidarVigenciaCrescente</c> aceita hoje; um campo sempre
-/// presente ou de versão anterior depois de um campo versionado é rejeitado na construção do
-/// catálogo (ver <c>RegistroSpedCatalogoGeneratorVigenciaTests</c>), não apenas evitado aqui em
-/// tempo de leitura. Exercita o caminho real (<see cref="LeitorSpedTxt.ReadStreamingAsync"/>) com
-/// um <c>0000</c> sintético que declara a versão, em vez de acessar <c>InterpretarLinha</c>
-/// diretamente — não amplia a superfície interna/pública da biblioteca.
+/// Prova que um campo fora de vigência (<c>DesdeVersao</c> posterior à versão declarada no
+/// <c>0000</c>) simplesmente não é atribuído — a função local <c>CampoAtivo</c> de
+/// <c>LeitorSpedTxt.InterpretarLinha</c> combinada com o mapeamento posicional
+/// (<c>indice = posicaoCampo - 2</c>) — sem afetar os campos vizinhos.
+/// <see cref="RegistroVigenciaColunaSintetico"/> (A300) encadeia dois campos versionados com
+/// limiares crescentes (12, depois 20).
+/// <para>
+/// Não prova o deslocamento do cursor sequencial antigo (achado 4 do PR 531): com a invariante de
+/// vigência não-decrescente agora imposta na construção do catálogo (<c>DesdeVersao</c> não pode
+/// decrescer ao longo da posição — ver <c>CatalogoBuilder.ValidarVigenciaCrescente</c> e o
+/// diagnóstico <c>TFSPED003</c> do source generator), cursor sequencial e índice posicional passam
+/// a ser equivalentes para qualquer catálogo válido, e esta suíte não os distingue mais. O bug
+/// original — cursor deslocando as colunas seguintes quando um campo barrado estava fisicamente
+/// presente no arquivo — é o que <c>RegistroSpedCatalogoGeneratorVigenciaTests</c> prova ao rejeitar
+/// a construção de um catálogo com vigência fora de ordem.
+/// </para>
+/// Exercita o caminho real (<see cref="LeitorSpedTxt.ReadStreamingAsync"/>) com um <c>0000</c>
+/// sintético que declara a versão, em vez de acessar <c>InterpretarLinha</c> diretamente — não
+/// amplia a superfície interna/pública da biblioteca.
 /// </summary>
 public sealed class VigenciaCampoPosicionalTests
 {

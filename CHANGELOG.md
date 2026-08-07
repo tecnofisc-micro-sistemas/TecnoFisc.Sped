@@ -17,7 +17,7 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 #### Quebrado
 
-- `TecnoFisc.Sped.Ecd.Enums.IndicadorDebitoCredito` e `TecnoFisc.Sped.Ecd.Enums.IndicadorTipoConta` — cópias idênticas que também existiam em `TecnoFisc.Sped.Ecf.Enums` — foram unificados em `TecnoFisc.Sped.Txt.Engine.Enums`. Troque `using TecnoFisc.Sped.Ecd.Enums;` por `using TecnoFisc.Sped.Txt.Engine.Enums;` nos pontos que referenciam esses dois tipos. **Esta é a única mudança breaking desta release.**
+- `TecnoFisc.Sped.Ecd.Enums.IndicadorDebitoCredito` e `TecnoFisc.Sped.Ecd.Enums.IndicadorTipoConta` — cópias idênticas que também existiam em `TecnoFisc.Sped.Ecf.Enums` — foram unificados em `TecnoFisc.Sped.Txt.Engine.Enums`. Troque `using TecnoFisc.Sped.Ecd.Enums;` por `using TecnoFisc.Sped.Txt.Engine.Enums;` nos pontos que referenciam esses dois tipos. Ver também a quebra em `TecnoFisc.Sped.Txt.Engine` (`MetadadosCampo`).
 
 ### TecnoFisc.Sped.Txt.Engine
 
@@ -26,12 +26,16 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 - `ReadingOptions.RespeitarVigenciaDoLeiaute` (`bool?`) — quando `true`, omite registros anteriores a `IntroduzidoEm` e não atribui campos anteriores a `DesdeVersao`, usando a versão declarada no registro `0000`. `null` (padrão) delega a decisão ao parser do leiaute: a ECF liga; EFD Contribuições, EFD ICMS-IPI e ECD mantêm o modelo informacional completo (comportamento anterior).
 - `ReadingOptions.ValidarDominioDeEnum` (`bool?`) — quando `true`, um código numérico fora do domínio declarado de um enum fechado (sem `[SpedValor]`) vira erro de campo em vez de cast permissivo. `null` (padrão) delega a decisão ao parser do leiaute: a ECF liga; os demais mantêm o cast permissivo — a Receita publica códigos novos entre versões do guia e um arquivo que hoje é lido não pode passar a falhar por atualização de pacote.
 - Nova validação de catálogo: `DesdeVersao` precisa ser não-decrescente ao longo das posições declaradas de um registro. Enforçada em runtime por `CatalogoBuilder.ValidarVigenciaCrescente` e em build-time pelo diagnóstico `TFSPED003` (erro) do source generator em `TecnoFisc.Sped.Txt.Engine.SourceGenerators`. Consequência: modelar um campo versionado fora do fim do registro passa a ser **erro de build**, não mais um bug silencioso de leitura.
+- `SnifferSped` passa a classificar arquivos ECF: `IdentificarAsync` reconhece o discriminador `LECF` do registro `0000` (via `ClassificarEcf`) e devolve `MetadadosArquivoSped { Projeto = ProjetoSped.Ecf, VersaoLeiaute }` para as versões 8 a 12 — onde antes devolvia `ProjetoSped.Desconhecido` para qualquer arquivo ECF. Mudança aditiva (novo projeto reconhecido), não afeta a classificação dos demais leiautes.
 
 #### Alterado
 
-- `ReadingOptions.RespeitarVigenciaDoLeiaute` e a nova `ReadingOptions.ValidarDominioDeEnum` são `bool?`: `null` delega a decisão ao parser do leiaute. O ECF liga as duas; EFD Contribuições, EFD ICMS-IPI e ECD mantêm o comportamento anterior.
 - `Arquivo*.Adicionar` passa a coletar `RegistroNaoReconhecido` em `RegistrosNaoReconhecidos` em vez de lançar, nos quatro leiautes. Registro tipado de bloco inexistente continua lançando.
 - A ordem de enumeração de `CatalogoSpedGerado.EnumerarRegistros()` passa a ser a ordem canônica de bloco (`0`, blocos alfabéticos, blocos `1`–`8`, `9`) em todos os módulos. Quem dependia da ordem puramente lexicográfica do código precisa reordenar.
+
+#### Quebrado
+
+- O construtor público de `MetadadosCampo` ganhou o parâmetro opcional `definidorEstrito` (último da lista). É **source-compatible** (código existente compila sem alteração), mas **binary-incompatible**: um assembly de terceiro compilado contra a `0.9.0` que construa `MetadadosCampo` diretamente — cenário legítimo, já que `IRegistroSpedCatalogo` é pública e um catálogo customizado é caminho documentado — recebe `MissingMethodException` em runtime ao carregar contra esta versão, não erro de compilação. O major bump desta release absorve a quebra.
 
 #### Corrigido
 
@@ -39,6 +43,7 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 - Campo barrado por vigência não desloca mais as colunas seguintes do registro.
 - Um diagnóstico de campo (`TFSPED001`/`TFSPED002`/`TFSPED003`) deixa de suprimir a emissão do catálogo, o que soterrava a causa sob uma cascata de `CS0246`.
 - Sob `LenientLayout`, EFD ICMS-IPI e EFD Contribuições deixam de absorver silenciosamente sentinelas de código desconhecido iniciado por `1` dentro de `Bloco1.Registros`: agora vão para `RegistrosNaoReconhecidos`, igual a qualquer outro código fora do catálogo. Quem adotou `LenientLayout` desde a `0.9.0` deve revisar o que fazia com `Bloco1.Registros` — o comportamento antigo corrompia silenciosamente esse bloco com um objeto de tipo errado; a mudança é correção, não quebra anunciável.
+- O gate de vigência deixa de rodar antes do filtro de `RegistrosIgnorados`/`BlocosIgnorados`: um registro que o chamador pediu para descartar não é mais decodificado nem devolvido como `RegistroNaoReconhecido` só porque também está fora da versão declarada no `0000`.
 
 ### TecnoFisc.Sped.Txt / TecnoFisc.Sped
 

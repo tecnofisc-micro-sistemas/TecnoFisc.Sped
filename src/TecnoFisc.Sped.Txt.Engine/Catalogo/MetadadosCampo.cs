@@ -71,6 +71,19 @@ public sealed class MetadadosCampo
     /// Primeira versão de leiaute em que o campo passa a existir. <c>0</c> = sempre presente.
     /// Origem em <see cref="Atributos.CampoSpedAttribute.DesdeVersao"/>.
     /// </summary>
+    /// <remarks>
+    /// Invariante: ao longo da posição dos campos de um mesmo registro, <c>DesdeVersao</c> precisa
+    /// ser não-decrescente — é do que o mapeamento posicional do leitor
+    /// (<c>LeitorSpedTxt.InterpretarLinha</c>, <c>indice = posicaoCampo - 2</c>) depende para não
+    /// desalinhar as colunas seguintes quando uma anterior está fora de vigência. Os dois caminhos
+    /// que constroem catálogo a partir de atributos (<see cref="CatalogoBuilder"/>, via
+    /// <c>ValidarVigenciaCrescente</c>, e <c>RegistroSpedCatalogoGenerator</c>, via diagnóstico
+    /// <c>TFSPED003</c> em tempo de compilação) validam essa invariante automaticamente. Este
+    /// construtor não a valida: <see cref="IRegistroSpedCatalogo"/> é pública e um catálogo
+    /// montado à mão (chamando este construtor diretamente, fora dos dois caminhos acima) escapa da
+    /// checagem — a invariante vira contrato de quem constrói o catálogo, não algo o tipo garante
+    /// por si só.
+    /// </remarks>
     public int DesdeVersao { get; }
 
     /// <summary>

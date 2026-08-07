@@ -115,8 +115,13 @@ public sealed class CatalogoBuilderTests
     }
 
     [Fact]
-    public void ParseLinha_EnumNumericoFechadoIndefinido_RegistraErroSemAtribuirValor()
+    public void ParseLinha_EnumNumericoFechadoIndefinido_AceitaComoCastPermissivo()
     {
+        // O leitor ainda não liga ReadingOptions.ValidarDominioDeEnum (isso é Task 4); por ora
+        // MetadadosCampo.Definidor(registro, valor) — a sobrecarga de dois argumentos que
+        // LeitorSpedTxt chama — é sempre o caminho permissivo. Código fora do domínio declarado
+        // do enum fechado é aceito via cast, preservando o comportamento já publicado nos três
+        // pacotes (EFD Contribuições, EFD ICMS-IPI, ECD).
         var catalogo = CatalogoBuilder.BuildFromAssembly(_assembly);
         var leitor = new LeitorSpedTxt(catalogo);
 
@@ -124,10 +129,9 @@ public sealed class CatalogoBuilderTests
 
         resultado.Sucesso.Should().BeTrue();
         var registro = resultado.Valor.Should().BeOfType<RegistroE100Sintetico>().Which;
-        registro.Situacao.Should().BeNull();
+        registro.Situacao.Should().Be((SituacaoSintetica)6);
         registro.Permissoes.Should().Be(PermissoesSinteticas.Leitura | PermissoesSinteticas.Escrita);
-        registro.ErrosDeFormato.Should().ContainSingle()
-            .Which.Campo.Should().Be(nameof(RegistroE100Sintetico.Situacao));
+        registro.ErrosDeFormato.Should().BeEmpty();
     }
 
     [Theory]

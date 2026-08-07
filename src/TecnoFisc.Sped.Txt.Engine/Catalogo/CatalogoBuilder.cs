@@ -203,20 +203,22 @@ public static class CatalogoBuilder
                 throw new InvalidOperationException(
                     $"Propriedade {tipo.FullName}.{propriedade.Name} precisa de setter para receber valor SPED.");
 
-            var conversor = ConstruirConversor(propriedade.PropertyType, atributo);
-            var setter = ConstruirSetter(propriedade);
-            var getter = ConstruirGetter(propriedade);
-            var serializador = ConstruirSerializador(propriedade.PropertyType, atributo);
-
             // Compõe a nova API zero-alloc-no-chamador a partir dos delegates intermediários:
             // o caminho reflexivo continua boxando (string + object) por dentro, mas o consumidor
-            // só vê os dois delegates da API pública de MetadadosCampo.
-            Action<RegistroSped, ReadOnlySpan<char>> definidor = (registro, valor) =>
-            {
-                string texto = valor.IsEmpty ? string.Empty : valor.ToString();
-                object? convertido = conversor(texto);
-                setter(registro, convertido);
-            };
+            // só vê os dois delegates da API pública de MetadadosCampo. O definidor padrão é
+            // sempre o permissivo (validarDominio: false) — preserva o comportamento já publicado
+            // nos três pacotes. O estrito só é construído quando há política de domínio a aplicar
+            // (enum fechado sem [SpedValor]); os demais campos recebem null e a leitura em tempo
+            // de parsing cai de volta no permissivo (ver MetadadosCampo.Definidor).
+            Action<RegistroSped, ReadOnlySpan<char>> definidor =
+                ComporDefinidor(propriedade, atributo, validarDominio: false);
+            Action<RegistroSped, ReadOnlySpan<char>>? definidorEstrito =
+                PrecisaDefinidorEstrito(propriedade.PropertyType, atributo)
+                    ? ComporDefinidor(propriedade, atributo, validarDominio: true)
+                    : null;
+
+            var getter = ConstruirGetter(propriedade);
+            var serializador = ConstruirSerializador(propriedade.PropertyType, atributo);
 
             Func<RegistroSped, string> serializadorComposto = registro =>
             {
@@ -236,7 +238,8 @@ public static class CatalogoBuilder
                 serializadorComposto,
                 atributo.DesdeVersao,
                 atributo.CapturaTudo,
-                atributo.CampoArquivo)));
+                atributo.CampoArquivo,
+                definidorEstrito)));
         }
 
         lista.Sort(static (a, b) => a.Ordem.CompareTo(b.Ordem));
@@ -345,13 +348,47 @@ public static class CatalogoBuilder
         return Expression.Lambda<Func<RegistroSped, object?>>(boxed, paramRegistro).Compile();
     }
 
-    private static Func<string, object?> ConstruirConversor(Type tipo, CampoSpedAttribute atributo)
+    /// <summary>
+    /// Compõe o delegate público <see cref="MetadadosCampo.Definidor(RegistroSped, ReadOnlySpan{char})"/>
+    /// a partir da propriedade e do atributo: parse do texto (via conversor) + atribuição (via setter).
+    /// <paramref name="validarDominio"/> escolhe a política de conversão de enum fechado, repassada a
+    /// <see cref="ConstruirConversor"/> — é o único ponto de diferença entre o definidor permissivo
+    /// (o padrão, preservado byte a byte dos três pacotes já publicados) e o estrito.
+    /// </summary>
+    private static Action<RegistroSped, ReadOnlySpan<char>> ComporDefinidor(
+        PropertyInfo propriedade, CampoSpedAttribute atributo, bool validarDominio)
+    {
+        var conversor = ConstruirConversor(propriedade.PropertyType, atributo, validarDominio);
+        var setter = ConstruirSetter(propriedade);
+        return (registro, valor) =>
+        {
+            string texto = valor.IsEmpty ? string.Empty : valor.ToString();
+            object? convertido = conversor(texto);
+            setter(registro, convertido);
+        };
+    }
+
+    /// <summary>
+    /// Só enum fechado sem <c>[SpedValor]</c> tem política de domínio: os enums textuais já
+    /// rejeitam token desconhecido, e os demais tipos não têm domínio a validar.
+    /// </summary>
+    private static bool PrecisaDefinidorEstrito(Type tipo, CampoSpedAttribute atributo)
+    {
+        Type alvo = Nullable.GetUnderlyingType(tipo) ?? tipo;
+        if (!alvo.IsEnum)
+            return false;
+
+        return !alvo.GetFields(BindingFlags.Public | BindingFlags.Static)
+            .Any(campo => campo.IsDefined(typeof(SpedValorAttribute), inherit: false));
+    }
+
+    private static Func<string, object?> ConstruirConversor(Type tipo, CampoSpedAttribute atributo, bool validarDominio)
     {
         var subjacente = Nullable.GetUnderlyingType(tipo);
         bool ehNulavel = subjacente is not null;
         var alvo = subjacente ?? tipo;
 
-        Func<string, object?> conversorAlvo = SelecionarConversor(alvo, atributo);
+        Func<string, object?> conversorAlvo = SelecionarConversor(alvo, atributo, validarDominio);
 
         if (ehNulavel || !alvo.IsValueType)
         {
@@ -363,7 +400,7 @@ public static class CatalogoBuilder
         return s => string.IsNullOrEmpty(s) ? valorPadrao : conversorAlvo(s);
     }
 
-    private static Func<string, object?> SelecionarConversor(Type alvo, CampoSpedAttribute atributo)
+    private static Func<string, object?> SelecionarConversor(Type alvo, CampoSpedAttribute atributo, bool validarDominio)
     {
         if (alvo == typeof(string))
             return static s => s;
@@ -395,7 +432,7 @@ public static class CatalogoBuilder
                 : throw new FormatException($"Esperado 1 caractere, recebeu '{s}'.");
 
         if (alvo.IsEnum)
-            return ConstruirConversorEnum(alvo);
+            return ConstruirConversorEnum(alvo, atributo, validarDominio);
 
         if (ConversoresPrimitivosCatalogo.TentarObter(alvo, out var registrado))
             return registrado;
@@ -451,7 +488,19 @@ public static class CatalogoBuilder
         return static v => v.ToString() ?? string.Empty;
     }
 
-    private static Func<string, object?> ConstruirConversorEnum(Type alvo)
+    /// <summary>
+    /// Conversor de enum a partir do texto SPED. Quando o enum tem membros <c>[SpedValor]</c>, o
+    /// mapeamento textual é a única política — sempre estrito por natureza (token desconhecido já
+    /// não tem entrada no dicionário). Quando é um enum numérico fechado sem <c>[SpedValor]</c>,
+    /// <paramref name="validarDominio"/> escolhe entre o permissivo (o padrão histórico dos três
+    /// pacotes já publicados: <see cref="Enum.Parse(Type, string, bool)"/> aceita código fora do
+    /// domínio via cast e nome de membro) e o estrito (valida <see cref="Enum.IsDefined"/>, exceto
+    /// em enums <see cref="FlagsAttribute"/>, cujas combinações não têm domínio fechado a validar).
+    /// </summary>
+    private static Func<string, object> ConstruirConversorEnum(
+        Type alvo,
+        CampoSpedAttribute atributo,
+        bool validarDominio)
     {
         var porValorSped = alvo
             .GetFields(BindingFlags.Public | BindingFlags.Static)
@@ -465,6 +514,9 @@ public static class CatalogoBuilder
 
         if (porValorSped.Count == 0)
         {
+            if (!validarDominio)
+                return s => Enum.Parse(alvo, s, ignoreCase: false);
+
             bool ehFlags = alvo.IsDefined(typeof(FlagsAttribute), inherit: false);
             Func<string, object> conversorSubjacente =
                 ConstruirConversorIntegral(Enum.GetUnderlyingType(alvo));
@@ -478,7 +530,7 @@ public static class CatalogoBuilder
         }
 
         return s => porValorSped.TryGetValue(s, out var valor)
-            ? valor
+            ? valor!
             : throw new FormatException($"Valor '{s}' não é válido para {alvo.Name}.");
     }
 

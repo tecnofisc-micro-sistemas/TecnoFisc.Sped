@@ -106,7 +106,9 @@
         },
         "name": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "pattern": "^[^\\d\\W]\\w*$",
+          "$comment": "Espelha (com folga) o IsFieldNameValid do CatalogoBuilder/gerador .NET: primeiro caractere letra ou underscore, demais letra/digito/underscore. Bloqueia espaco, hifen, barra e outros separadores que quebrariam o alias Nome do [CampoSped]."
         },
         "description": {
           "type": "string"

@@ -76,7 +76,13 @@ public sealed partial class Registro0020 : RegistroSped
     [CampoSped(Ordem = 17, Tamanho = 1, Obrigatorio = true, Nome = "IND_PGTO_EXT")]
     public IndicadorSimNao IndPgtoExt { get; set; }
 
-    /// <summary>Indicador de comércio eletrônico e tecnologia da informação.</summary>
+    /// <summary>
+    /// Indicador de comércio eletrônico e tecnologia da informação.
+    /// Nome normativo do manual (pág. 81) é <c>IND_E-COM_TI</c>, com hífen deliberado
+    /// ("E-COM" = e-commerce). O alias abaixo normaliza o hífen para underscore porque
+    /// não é um separador válido em <c>Nome</c> (CatalogoBuilder.IsFieldNameValid); não é
+    /// erro de extração do PDF.
+    /// </summary>
     [CampoSped(Ordem = 18, Tamanho = 1, Obrigatorio = true, Nome = "IND_E_COM_TI")]
     public IndicadorSimNao IndEComTi { get; set; }
 

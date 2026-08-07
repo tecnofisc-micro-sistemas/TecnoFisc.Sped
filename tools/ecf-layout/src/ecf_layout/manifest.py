@@ -515,10 +515,33 @@ def _parse_omitted_metadata_cells(
     return _field(number, parsed_name, _plain(cells[2]), values), name_matches
 
 
+_KNOWN_FIELD_NAME_FIXUPS: dict[str, str] = {
+    # Correcoes conhecidas e deterministicas para os nomes de campo do leiaute
+    # 12 que o manual em PDF renderiza fora do padrao de identificador aceito
+    # pelo alias `Nome` do catalogo .NET (IsFieldNameValid: primeiro caractere
+    # letra/underscore, demais letra/digito/underscore - nunca espaco, hifen
+    # ou barra). A maioria dos casos observados (0020.IND_REC_EXT, L300 e
+    # P150/U150.IND_VALOR, M305/M355.IND_VL_CTA) e quebra de linha de celula
+    # da tabela do PDF que introduz um espaco espurio no meio do nome; a
+    # remocao de espacos logo abaixo ja resolve esses automaticamente. Os dois
+    # casos aqui listados nao sao ruido de extracao: sao nomes compostos
+    # legitimos do RFB com separador que nao e espaco, entao precisam de
+    # normalizacao explicita para virar identificador valido.
+    # - "IND_E-COM_TI" (0020.18): pag. 81 do manual, hifen deliberado de
+    #   "E-COM" (comercio eletronico), coerente com a descricao do campo.
+    # - "NIF/CNPJ" (X357.3): pag. 474 do manual, nome composto porque o
+    #   campo aceita NIF ou CNPJ conforme o pais da investidora.
+    "IND_E-COM_TI": "IND_E_COM_TI",
+    "NIF/CNPJ": "NIF_CNPJ",
+}
+
+
 def _field(number: int, name: str, description: str, values: list[str]) -> dict:
+    normalized = re.sub(r"\s+", "", name)
+    normalized = _KNOWN_FIELD_NAME_FIXUPS.get(normalized, normalized)
     return {
         "number": number,
-        "name": re.sub(r"\s+", "", name),
+        "name": normalized,
         "description": description,
         "type": values[0],
         "size": values[1],

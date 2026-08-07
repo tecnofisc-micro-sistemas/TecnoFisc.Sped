@@ -741,6 +741,59 @@ def test_reconstructs_split_uppercase_field_name_suffix_without_record_exception
     assert "ambiguities" not in record
 
 
+def test_normalizes_hyphenated_ecommerce_field_name_to_valid_identifier() -> None:
+    """0020.18 e "IND_E-COM_TI" no manual (pag. 81) - hifen deliberado do RFB,
+    nao ruido de extracao, mas invalido como identificador (IsFieldNameValid).
+    A reextracao a partir do PDF deve normalizar para "IND_E_COM_TI" sem
+    depender de edicao manual do manifesto gerado."""
+    fragment = RecordFragment(
+        code="0020",
+        block="0",
+        page_start=77,
+        page_end=91,
+        level="0",
+        occurrence="1:1",
+        fields=["REG", "IND_E-COM_TI"],
+        markdown="""# **Registro 0020: Parâmetros Complementares**
+|**1**|REG|Identificacao.|C|4|-|[0020]|Sim|
+|**2**|IND_E-COM_TI|Comércio Eletrônico e Tecnologia da Informação.|C|1|-|[S;N]|Sim|
+""",
+    )
+
+    record = manifest.record_from_fragment(fragment)
+
+    assert record["fields"][1]["name"] == "IND_E_COM_TI"
+    assert "ambiguities" not in record
+
+
+def test_normalizes_composite_nif_cnpj_field_name_to_valid_identifier() -> None:
+    """X357.3 e "NIF/CNPJ" no manual (pag. 474) - nome composto legitimo do
+    RFB porque o campo aceita NIF ou CNPJ conforme o pais da investidora, mas
+    a barra e invalida como identificador. Precisa normalizar para
+    "NIF_CNPJ" na reextracao, nao so no JSON promovido a mao."""
+    fragment = RecordFragment(
+        code="X357",
+        block="X",
+        page_start=474,
+        page_end=476,
+        level="3",
+        occurrence="0:N",
+        fields=["REG", "PAIS", "NIF/CNPJ", "RAZAO_SOCIAL", "PERCENTUAL"],
+        markdown="""# **Registro X357: Investidoras Diretas**
+|**1**|REG|Identificacao.|C|4|-|[X357]|Sim|
+|**2**|PAIS|Pais de cada investidora direta.|N|3|-|-|Sim|
+|**3**|NIF/CNPJ|NIF ou CNPJ da investidora direta.|C|-|-|-|Sim|
+|**4**|RAZAO_SOCIAL|Razao social da investidora direta.|C|-|-|-|Sim|
+|**5**|PERCENTUAL|Percentual de participacao.|N|8|4|-|Sim|
+""",
+    )
+
+    record = manifest.record_from_fragment(fragment)
+
+    assert record["fields"][2]["name"] == "NIF_CNPJ"
+    assert "ambiguities" not in record
+
+
 def test_title_stops_at_first_visual_line_when_picture_text_fuses_narrative() -> None:
     fragment = RecordFragment(
         code="Y730",

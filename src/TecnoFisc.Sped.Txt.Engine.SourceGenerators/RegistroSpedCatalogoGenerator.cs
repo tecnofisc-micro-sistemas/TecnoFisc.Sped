@@ -295,10 +295,25 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
                         fullyQualifiedProperty,
                         EscapeFieldName(explicitName!)));
                     // Alias inválido não tem fallback textual seguro para emitir no catálogo —
-                    // usa o nome CLR da propriedade, que sempre é um identificador válido.
+                    // usa o nome CLR da propriedade, que sempre é um identificador válido. O
+                    // nome resolvido (fallback incluído) precisa passar pela mesma checagem de
+                    // deduplicação abaixo — senão uma colisão do fallback com outro campo do
+                    // registro fica sem TFSPED002 e o catálogo emitido acaba com dois campos de
+                    // mesmo nome sem nenhum diagnóstico apontando isso.
+                    //
+                    // Divergência intencional vs. CatalogoBuilder.ResolveFieldName (reflexivo):
+                    // lá não existe canal de diagnóstico, então lançar InvalidOperationException
+                    // É o diagnóstico — o build reflexivo nunca produz um catálogo para o tipo.
+                    // Aqui o gerador tem TFSPED001 como diagnóstico (falha o build), então em vez
+                    // de lançar ele reporta e segue com o fallback, para não apagar o resto do
+                    // catálogo do assembly (achado 6 do PR 531). Os dois caminhos só divergem de
+                    // fato se TFSPED001 for suprimido (#pragma/.editorconfig) — nesse cenário
+                    // artificial o build passa com o nome CLR no catálogo gerado, enquanto o
+                    // reflexivo continuaria lançando se fosse chamado para o mesmo tipo.
                     fieldName = propriedade.Name;
                 }
-                else if (!fieldNames.Add(fieldName))
+
+                if (!fieldNames.Add(fieldName))
                 {
                     errors.Add(new FieldError(
                         FieldErrorKind.DuplicateName,

@@ -28,6 +28,33 @@ public sealed class RegistroSpedCatalogoGeneratorDiagnosticoTests
         }
         """;
 
+    /// <summary>
+    /// Achado do review da Task 8: o fallback de <c>TFSPED001</c> (nome CLR no lugar do alias
+    /// inválido) precisa passar pela mesma deduplicação que qualquer outro nome de campo. Aqui
+    /// <c>CodVer</c> tem alias inválido "COD VER" e cai para o nome CLR "CodVer"; <c>Outro</c>
+    /// declara o alias explícito "CodVer" (válido, mas igual ao nome CLR do primeiro campo) — a
+    /// colisão só existe por causa do fallback, então precisa disparar TFSPED002 além do
+    /// TFSPED001 do alias inválido.
+    /// </summary>
+    private const string FonteComAliasInvalidoCujoFallbackColideComOutroAlias = """
+        using TecnoFisc.Sped.Txt.Engine.Abstracoes;
+        using TecnoFisc.Sped.Txt.Engine.Atributos;
+
+        namespace Exemplo;
+
+        [RegistroSped(Codigo = "B400", Nivel = 2, Bloco = "B")]
+        public sealed partial class RegistroB400 : RegistroSped
+        {
+            public override string Codigo => "B400";
+
+            [CampoSped(Ordem = 2, Nome = "COD VER")]
+            public string? CodVer { get; set; }
+
+            [CampoSped(Ordem = 3, Nome = "CodVer")]
+            public string? Outro { get; set; }
+        }
+        """;
+
     private const string FonteComVigenciaForaDeOrdem = """
         using TecnoFisc.Sped.Txt.Engine.Abstracoes;
         using TecnoFisc.Sped.Txt.Engine.Atributos;
@@ -64,6 +91,16 @@ public sealed class RegistroSpedCatalogoGeneratorDiagnosticoTests
 
         gerado.Should().Contain("\"CodVer\"");
         gerado.Should().NotContain("COD VER");
+    }
+
+    [Fact]
+    public void AliasInvalidoComFallbackColidindoComOutroAlias_ReportaTFSPED001ETFSPED002()
+    {
+        var (gerado, diagnosticos) = ExecutarGeradorComDiagnosticos(FonteComAliasInvalidoCujoFallbackColideComOutroAlias);
+
+        diagnosticos.Select(d => d.Id).Should().BeEquivalentTo(["TFSPED001", "TFSPED002"]);
+        gerado.Should().Contain("class CatalogoSpedGerado");
+        gerado.Should().Contain("IRegistroSpedVisitor");
     }
 
     /// <summary>

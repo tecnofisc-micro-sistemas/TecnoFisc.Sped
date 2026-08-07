@@ -303,6 +303,16 @@ public static class CatalogoBuilder
         }
     }
 
+    /// <summary>
+    /// Divergência intencional vs. <c>RegistroSpedCatalogoGenerator</c> (compile-time): aqui não
+    /// existe canal de diagnóstico, então lançar é o próprio diagnóstico — nenhum catálogo é
+    /// construído para o tipo com alias inválido. O gerador, que tem <c>TFSPED001</c> como
+    /// diagnóstico de build, reporta o erro e cai para o nome CLR da propriedade em vez de
+    /// lançar, para não suprimir o resto do catálogo gerado do assembly (achado 6 do PR 531). Os
+    /// dois caminhos só produzem resultado diferente para o mesmo tipo se <c>TFSPED001</c> for
+    /// suprimido via <c>#pragma</c>/<c>.editorconfig</c> — nesse cenário artificial o catálogo
+    /// gerado teria o nome CLR onde este método continuaria lançando.
+    /// </summary>
     private static string ResolveFieldName(
         Type type,
         PropertyInfo property,

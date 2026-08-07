@@ -13,119 +13,119 @@ public sealed partial class Registro0020 : RegistroSped
     public override string Codigo => "0020";
 
     /// <summary>Indicador da alíquota de CSLL.</summary>
-    [CampoSped(Ordem = 2, Tamanho = 1, Obrigatorio = true)]
+    [CampoSped(Ordem = 2, Tamanho = 1, Obrigatorio = true, Nome = "IND_ALIQ_CSLL")]
     public string? IndAliqCsll { get; set; }
 
     /// <summary>Quantidade de sociedades em conta de participação.</summary>
-    [CampoSped(Ordem = 3, Tamanho = 3, Obrigatorio = true)]
+    [CampoSped(Ordem = 3, Tamanho = 3, Obrigatorio = true, Nome = "IND_QTE_SCP")]
     public int IndQteScp { get; set; }
 
     /// <summary>Indicador de administração de fundos ou clubes de investimento.</summary>
-    [CampoSped(Ordem = 4, Tamanho = 1, Obrigatorio = true)]
+    [CampoSped(Ordem = 4, Tamanho = 1, Obrigatorio = true, Nome = "IND_ADM_FUN_CLU")]
     public IndicadorSimNao IndAdmFunClu { get; set; }
 
     /// <summary>Indicador de participações em consórcios de empresas.</summary>
-    [CampoSped(Ordem = 5, Tamanho = 1, Obrigatorio = true)]
+    [CampoSped(Ordem = 5, Tamanho = 1, Obrigatorio = true, Nome = "IND_PART_CONS")]
     public IndicadorSimNao IndPartCons { get; set; }
 
     /// <summary>Indicador de operações com o exterior.</summary>
-    [CampoSped(Ordem = 6, Tamanho = 1, Obrigatorio = true)]
+    [CampoSped(Ordem = 6, Tamanho = 1, Obrigatorio = true, Nome = "IND_OP_EXT")]
     public IndicadorSimNao IndOpExt { get; set; }
 
     /// <summary>Indicador de operações com pessoa vinculada ou interposta.</summary>
-    [CampoSped(Ordem = 7, Tamanho = 1, Obrigatorio = true)]
+    [CampoSped(Ordem = 7, Tamanho = 1, Obrigatorio = true, Nome = "IND_OP_VINC")]
     public IndicadorSimNao IndOpVinc { get; set; }
 
     /// <summary>Indicador de enquadramento da pessoa jurídica.</summary>
-    [CampoSped(Ordem = 8, Tamanho = 1, Obrigatorio = true)]
+    [CampoSped(Ordem = 8, Tamanho = 1, Obrigatorio = true, Nome = "IND_PJ_ENQUAD")]
     public IndicadorSimNao IndPjEnquad { get; set; }
 
     /// <summary>Indicador de participações no exterior.</summary>
-    [CampoSped(Ordem = 9, Tamanho = 1, Obrigatorio = true)]
+    [CampoSped(Ordem = 9, Tamanho = 1, Obrigatorio = true, Nome = "IND_PART_EXT")]
     public IndicadorSimNao IndPartExt { get; set; }
 
     /// <summary>Indicador de atividade rural.</summary>
-    [CampoSped(Ordem = 10, Tamanho = 1, Obrigatorio = true)]
+    [CampoSped(Ordem = 10, Tamanho = 1, Obrigatorio = true, Nome = "IND_ATIV_RURAL")]
     public IndicadorSimNao IndAtivRural { get; set; }
 
     /// <summary>Indicador de lucros, rendimentos ou ganhos de capital do exterior.</summary>
-    [CampoSped(Ordem = 11, Tamanho = 1, Obrigatorio = true)]
+    [CampoSped(Ordem = 11, Tamanho = 1, Obrigatorio = true, Nome = "IND_LUC_EXP")]
     public IndicadorSimNao IndLucExp { get; set; }
 
     /// <summary>Indicador de isenção ou redução de imposto.</summary>
-    [CampoSped(Ordem = 12, Tamanho = 1, Obrigatorio = true)]
+    [CampoSped(Ordem = 12, Tamanho = 1, Obrigatorio = true, Nome = "IND_RED_ISEN")]
     public IndicadorSimNao IndRedIsen { get; set; }
 
     /// <summary>Indicador de instituição financeira.</summary>
-    [CampoSped(Ordem = 13, Tamanho = 1, Obrigatorio = true)]
+    [CampoSped(Ordem = 13, Tamanho = 1, Obrigatorio = true, Nome = "IND_FIN")]
     public IndicadorSimNao IndFin { get; set; }
 
     /// <summary>Indicador de participações avaliadas pelo método da equivalência patrimonial.</summary>
-    [CampoSped(Ordem = 14, Tamanho = 1, Obrigatorio = true)]
+    [CampoSped(Ordem = 14, Tamanho = 1, Obrigatorio = true, Nome = "IND_PART_COLIG")]
     public IndicadorSimNao IndPartColig { get; set; }
 
     /// <summary>Indicador de recebimentos do exterior ou de não residentes.</summary>
-    [CampoSped(Ordem = 15, Tamanho = 1, Obrigatorio = true)]
+    [CampoSped(Ordem = 15, Tamanho = 1, Obrigatorio = true, Nome = "IND_REC_EXT")]
     public IndicadorSimNao IndRecExt { get; set; }
 
     /// <summary>Indicador de ativos no exterior.</summary>
-    [CampoSped(Ordem = 16, Tamanho = 1, Obrigatorio = true)]
+    [CampoSped(Ordem = 16, Tamanho = 1, Obrigatorio = true, Nome = "IND_ATIV_EXT")]
     public IndicadorSimNao IndAtivExt { get; set; }
 
     /// <summary>Indicador de pagamentos ao exterior ou a não residentes.</summary>
-    [CampoSped(Ordem = 17, Tamanho = 1, Obrigatorio = true)]
+    [CampoSped(Ordem = 17, Tamanho = 1, Obrigatorio = true, Nome = "IND_PGTO_EXT")]
     public IndicadorSimNao IndPgtoExt { get; set; }
 
     /// <summary>Indicador de comércio eletrônico e tecnologia da informação.</summary>
-    [CampoSped(Ordem = 18, Tamanho = 1, Obrigatorio = true)]
+    [CampoSped(Ordem = 18, Tamanho = 1, Obrigatorio = true, Nome = "IND_E_COM_TI")]
     public IndicadorSimNao IndEComTi { get; set; }
 
     /// <summary>Indicador de recebimento de royalties.</summary>
-    [CampoSped(Ordem = 19, Tamanho = 1, Obrigatorio = true)]
+    [CampoSped(Ordem = 19, Tamanho = 1, Obrigatorio = true, Nome = "IND_ROY_REC")]
     public IndicadorSimNao IndRoyRec { get; set; }
 
     /// <summary>Indicador de pagamento de royalties.</summary>
-    [CampoSped(Ordem = 20, Tamanho = 1, Obrigatorio = true)]
+    [CampoSped(Ordem = 20, Tamanho = 1, Obrigatorio = true, Nome = "IND_ROY_PAG")]
     public IndicadorSimNao IndRoyPag { get; set; }
 
     /// <summary>Indicador de rendimentos relativos a serviços.</summary>
-    [CampoSped(Ordem = 21, Tamanho = 1, Obrigatorio = true)]
+    [CampoSped(Ordem = 21, Tamanho = 1, Obrigatorio = true, Nome = "IND_REND_SERV")]
     public IndicadorSimNao IndRendServ { get; set; }
 
     /// <summary>Indicador de pagamentos ou remessas por serviços.</summary>
-    [CampoSped(Ordem = 22, Tamanho = 1, Obrigatorio = true)]
+    [CampoSped(Ordem = 22, Tamanho = 1, Obrigatorio = true, Nome = "IND_PGTO_REM")]
     public IndicadorSimNao IndPgtoRem { get; set; }
 
     /// <summary>Indicador de inovação tecnológica e desenvolvimento tecnológico.</summary>
-    [CampoSped(Ordem = 23, Tamanho = 1, Obrigatorio = true)]
+    [CampoSped(Ordem = 23, Tamanho = 1, Obrigatorio = true, Nome = "IND_INOV_TEC")]
     public IndicadorSimNao IndInovTec { get; set; }
 
     /// <summary>Indicador de capacitação de informática e inclusão digital.</summary>
-    [CampoSped(Ordem = 24, Tamanho = 1, Obrigatorio = true)]
+    [CampoSped(Ordem = 24, Tamanho = 1, Obrigatorio = true, Nome = "IND_CAP_INF")]
     public IndicadorSimNao IndCapInf { get; set; }
 
     /// <summary>Indicador de pessoa jurídica habilitada no Repes, Recap, Padis ou Reidi.</summary>
-    [CampoSped(Ordem = 25, Tamanho = 1, Obrigatorio = true)]
+    [CampoSped(Ordem = 25, Tamanho = 1, Obrigatorio = true, Nome = "IND_PJ_HAB")]
     public IndicadorSimNao IndPjHab { get; set; }
 
     /// <summary>Indicador de polo industrial de Manaus e Amazônia Ocidental.</summary>
-    [CampoSped(Ordem = 26, Tamanho = 1, Obrigatorio = true)]
+    [CampoSped(Ordem = 26, Tamanho = 1, Obrigatorio = true, Nome = "IND_POLO_AM")]
     public IndicadorSimNao IndPoloAm { get; set; }
 
     /// <summary>Indicador de Zonas de Processamento de Exportação.</summary>
-    [CampoSped(Ordem = 27, Tamanho = 1, Obrigatorio = true)]
+    [CampoSped(Ordem = 27, Tamanho = 1, Obrigatorio = true, Nome = "IND_ZON_EXP")]
     public IndicadorSimNao IndZonExp { get; set; }
 
     /// <summary>Indicador de áreas de livre comércio.</summary>
-    [CampoSped(Ordem = 28, Tamanho = 1, Obrigatorio = true)]
+    [CampoSped(Ordem = 28, Tamanho = 1, Obrigatorio = true, Nome = "IND_AREA_COM")]
     public IndicadorSimNao IndAreaCom { get; set; }
 
     /// <summary>Indicador de declaração País-a-País.</summary>
-    [CampoSped(Ordem = 29, Tamanho = 1, Obrigatorio = true)]
+    [CampoSped(Ordem = 29, Tamanho = 1, Obrigatorio = true, Nome = "IND_PAIS_A_PAIS")]
     public IndicadorSimNao IndPaisAPais { get; set; }
 
     /// <summary>Indicador de adesão ao Derex.</summary>
-    [CampoSped(Ordem = 30, Tamanho = 1, Obrigatorio = true)]
+    [CampoSped(Ordem = 30, Tamanho = 1, Obrigatorio = true, Nome = "IND_DEREX")]
     public IndicadorSimNao IndDerex { get; set; }
 
     /// <summary>
@@ -134,10 +134,10 @@ public sealed partial class Registro0020 : RegistroSped
     /// </summary>
     [CampoSped(
         Ordem = 31,
-        Nome = "POSSUI_CEBRAS",
         Tamanho = 1,
         Obrigatorio = true,
-        DesdeVersao = (int)LayoutEcf.V010)]
+        DesdeVersao = (int)LayoutEcf.V010,
+        Nome = "POSSUI_CEBRAS")]
     public IndicadorSimNao IndicadorPosicao31 { get; set; }
 
     /// <summary>
@@ -158,6 +158,6 @@ public sealed partial class Registro0020 : RegistroSped
     }
 
     /// <summary>Número do Cebas, condicionado ao indicador de posse.</summary>
-    [CampoSped(Ordem = 32, Tamanho = 255, DesdeVersao = (int)LayoutEcf.V012)]
+    [CampoSped(Ordem = 32, Tamanho = 255, DesdeVersao = (int)LayoutEcf.V012, Nome = "CEBAS")]
     public string? Cebas { get; set; }
 }

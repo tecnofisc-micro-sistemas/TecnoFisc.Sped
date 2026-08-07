@@ -10,31 +10,31 @@ public sealed partial class RegistroX420 : RegistroSped
 {
     public override string Codigo => "X420";
 
-    [CampoSped(Ordem = 2, Tamanho = 1, Obrigatorio = true)]
+    [CampoSped(Ordem = 2, Tamanho = 1, Obrigatorio = true, Nome = "TIP_ROY")]
     public TipoRoyalty TipRoy { get; set; }
 
     /// <summary>País conforme tabela dinâmica, preservado como código lexical.</summary>
-    [CampoSped(Ordem = 3, Tamanho = 3, Obrigatorio = true)]
+    [CampoSped(Ordem = 3, Tamanho = 3, Obrigatorio = true, Nome = "PAIS")]
     public string? Pais { get; set; }
 
-    [CampoSped(Ordem = 4, Tamanho = 19, Decimais = 2)]
+    [CampoSped(Ordem = 4, Tamanho = 19, Decimais = 2, Nome = "VL_EXPL_DIR_SW")]
     public decimal? VlExplDirSw { get; set; }
 
-    [CampoSped(Ordem = 5, Tamanho = 19, Decimais = 2)]
+    [CampoSped(Ordem = 5, Tamanho = 19, Decimais = 2, Nome = "VL_EXPL_DIR_AUT")]
     public decimal? VlExplDirAut { get; set; }
 
-    [CampoSped(Ordem = 6, Tamanho = 19, Decimais = 2)]
+    [CampoSped(Ordem = 6, Tamanho = 19, Decimais = 2, Nome = "VL_EXPL_MARCA")]
     public decimal? VlExplMarca { get; set; }
 
-    [CampoSped(Ordem = 7, Tamanho = 19, Decimais = 2)]
+    [CampoSped(Ordem = 7, Tamanho = 19, Decimais = 2, Nome = "VL_EXPL_PAT")]
     public decimal? VlExplPat { get; set; }
 
-    [CampoSped(Ordem = 8, Tamanho = 19, Decimais = 2)]
+    [CampoSped(Ordem = 8, Tamanho = 19, Decimais = 2, Nome = "VL_EXPL_KNOW")]
     public decimal? VlExplKnow { get; set; }
 
-    [CampoSped(Ordem = 9, Tamanho = 19, Decimais = 2)]
+    [CampoSped(Ordem = 9, Tamanho = 19, Decimais = 2, Nome = "VL_EXPL_FRANQ")]
     public decimal? VlExplFranq { get; set; }
 
-    [CampoSped(Ordem = 10, Tamanho = 19, Decimais = 2)]
+    [CampoSped(Ordem = 10, Tamanho = 19, Decimais = 2, Nome = "VL_EXPL_INT")]
     public decimal? VlExplInt { get; set; }
 }

@@ -13,26 +13,26 @@ public sealed partial class RegistroY730 : RegistroSped
     public override string Codigo => "Y730";
 
     /// <summary>Código dinâmico da dedução, preservado lexicalmente.</summary>
-    [CampoSped(Ordem = 2, Tamanho = 4, Obrigatorio = true)]
+    [CampoSped(Ordem = 2, Tamanho = 4, Obrigatorio = true, Nome = "DEDUCAO")]
     public string? Deducao { get; set; }
 
     /// <summary>Código dinâmico do tipo de doação, preservado lexicalmente.</summary>
-    [CampoSped(Ordem = 3, Tamanho = 4, Obrigatorio = true)]
+    [CampoSped(Ordem = 3, Tamanho = 4, Obrigatorio = true, Nome = "TIPO")]
     public string? Tipo { get; set; }
 
-    [CampoSped(Ordem = 4, Tamanho = 8, Formato = "ddMMyyyy", Obrigatorio = true)]
+    [CampoSped(Ordem = 4, Tamanho = 8, Formato = "ddMMyyyy", Obrigatorio = true, Nome = "DATA")]
     public DateOnly Data { get; set; }
 
-    [CampoSped(Ordem = 5, Tamanho = 2, Obrigatorio = true)]
+    [CampoSped(Ordem = 5, Tamanho = 2, Obrigatorio = true, Nome = "TIPO_DESTINATARIO")]
     public TipoDestinatarioDeducao TipoDestinatario { get; set; }
 
     /// <summary>CPF ou CNPJ preservado como documento composto condicional.</summary>
-    [CampoSped(Ordem = 6, Tamanho = 14, Obrigatorio = true)]
+    [CampoSped(Ordem = 6, Tamanho = 14, Obrigatorio = true, Nome = "DESTINATARIO")]
     public string? Destinatario { get; set; }
 
-    [CampoSped(Ordem = 7, Tamanho = 19, Decimais = 2, Obrigatorio = true)]
+    [CampoSped(Ordem = 7, Tamanho = 19, Decimais = 2, Obrigatorio = true, Nome = "VALOR")]
     public decimal Valor { get; set; }
 
-    [CampoSped(Ordem = 8)]
+    [CampoSped(Ordem = 8, Nome = "OBSERVACAO")]
     public string? Observacao { get; set; }
 }

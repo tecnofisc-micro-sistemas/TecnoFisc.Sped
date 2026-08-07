@@ -11,14 +11,14 @@ public sealed partial class RegistroP030 : RegistroSped
     public override string Codigo => "P030";
 
     /// <summary>Data inicial do período de apuração.</summary>
-    [CampoSped(Ordem = 2, Tamanho = 8, Formato = "ddMMyyyy", Obrigatorio = true)]
+    [CampoSped(Ordem = 2, Tamanho = 8, Formato = "ddMMyyyy", Obrigatorio = true, Nome = "DT_INI")]
     public DateOnly DtIni { get; set; }
 
     /// <summary>Data final do período de apuração.</summary>
-    [CampoSped(Ordem = 3, Tamanho = 8, Formato = "ddMMyyyy", Obrigatorio = true)]
+    [CampoSped(Ordem = 3, Tamanho = 8, Formato = "ddMMyyyy", Obrigatorio = true, Nome = "DT_FIN")]
     public DateOnly DtFin { get; set; }
 
     /// <summary>Código do período de apuração, preservado sem validação tributária condicional.</summary>
-    [CampoSped(Ordem = 4, Tamanho = 3, Obrigatorio = true)]
+    [CampoSped(Ordem = 4, Tamanho = 3, Obrigatorio = true, Nome = "PER_APUR")]
     public string? PerApur { get; set; }
 }

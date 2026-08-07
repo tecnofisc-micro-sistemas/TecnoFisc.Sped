@@ -10,24 +10,24 @@ public sealed partial class RegistroX430 : RegistroSped
     public override string Codigo => "X430";
 
     /// <summary>País conforme tabela dinâmica, preservado como código lexical.</summary>
-    [CampoSped(Ordem = 2, Tamanho = 3, Obrigatorio = true)]
+    [CampoSped(Ordem = 2, Tamanho = 3, Obrigatorio = true, Nome = "PAIS")]
     public string? Pais { get; set; }
 
-    [CampoSped(Ordem = 3, Decimais = 2)]
+    [CampoSped(Ordem = 3, Decimais = 2, Nome = "VL_SERV_ASSIST")]
     public decimal? VlServAssist { get; set; }
 
-    [CampoSped(Ordem = 4, Tamanho = 19, Decimais = 2)]
+    [CampoSped(Ordem = 4, Tamanho = 19, Decimais = 2, Nome = "VL_SERV_SEM_ASSIST")]
     public decimal? VlServSemAssist { get; set; }
 
-    [CampoSped(Ordem = 5, Tamanho = 19, Decimais = 2)]
+    [CampoSped(Ordem = 5, Tamanho = 19, Decimais = 2, Nome = "VL_SERV_SEM_ASSIST_EXT")]
     public decimal? VlServSemAssistExt { get; set; }
 
-    [CampoSped(Ordem = 6, Tamanho = 19, Decimais = 2)]
+    [CampoSped(Ordem = 6, Tamanho = 19, Decimais = 2, Nome = "VL_JURO")]
     public decimal? VlJuro { get; set; }
 
-    [CampoSped(Ordem = 7, Tamanho = 19, Decimais = 2)]
+    [CampoSped(Ordem = 7, Tamanho = 19, Decimais = 2, Nome = "VL_DEMAIS_JUROS")]
     public decimal? VlDemaisJuros { get; set; }
 
-    [CampoSped(Ordem = 8, Tamanho = 19, Decimais = 2)]
+    [CampoSped(Ordem = 8, Tamanho = 19, Decimais = 2, Nome = "VL_DIVID")]
     public decimal? VlDivid { get; set; }
 }

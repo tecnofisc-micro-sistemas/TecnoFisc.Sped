@@ -12,6 +12,6 @@ public sealed partial class Registro0001 : RegistroSped
     public override string Codigo => "0001";
 
     /// <summary>Indicador de movimento do bloco.</summary>
-    [CampoSped(Ordem = 2, Tamanho = 1, Obrigatorio = true)]
+    [CampoSped(Ordem = 2, Tamanho = 1, Obrigatorio = true, Nome = "IND_DAD")]
     public IndicadorMovimentoBloco IndDad { get; set; }
 }

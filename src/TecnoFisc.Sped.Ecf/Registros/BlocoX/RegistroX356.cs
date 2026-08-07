@@ -9,12 +9,12 @@ public sealed partial class RegistroX356 : RegistroSped
 {
     public override string Codigo => "X356";
 
-    [CampoSped(Ordem = 2, Tamanho = 8, Decimais = 4, Obrigatorio = true)]
+    [CampoSped(Ordem = 2, Tamanho = 8, Decimais = 4, Obrigatorio = true, Nome = "PERC_PART")]
     public decimal PercPart { get; set; }
 
-    [CampoSped(Ordem = 3, Tamanho = 19, Decimais = 2, Obrigatorio = true)]
+    [CampoSped(Ordem = 3, Tamanho = 19, Decimais = 2, Obrigatorio = true, Nome = "ATIVO_TOTAL")]
     public decimal AtivoTotal { get; set; }
 
-    [CampoSped(Ordem = 4, Tamanho = 19, Decimais = 2, Obrigatorio = true)]
+    [CampoSped(Ordem = 4, Tamanho = 19, Decimais = 2, Obrigatorio = true, Nome = "PAT_LIQUIDO")]
     public decimal PatLiquido { get; set; }
 }

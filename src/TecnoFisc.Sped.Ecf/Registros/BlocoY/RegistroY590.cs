@@ -11,19 +11,19 @@ public sealed partial class RegistroY590 : RegistroSped
     public override string Codigo => "Y590";
 
     /// <summary>Tipo do ativo conforme tabela dinâmica do Sped.</summary>
-    [CampoSped(Ordem = 2, Tamanho = 14, Obrigatorio = true)]
+    [CampoSped(Ordem = 2, Tamanho = 14, Obrigatorio = true, Nome = "TIP_ATIVO")]
     public string? TipAtivo { get; set; }
 
     /// <summary>Código de país preservado lexicalmente.</summary>
-    [CampoSped(Ordem = 3, Tamanho = 3, Obrigatorio = true)]
+    [CampoSped(Ordem = 3, Tamanho = 3, Obrigatorio = true, Nome = "PAIS")]
     public string? Pais { get; set; }
 
-    [CampoSped(Ordem = 4, Obrigatorio = true)]
+    [CampoSped(Ordem = 4, Obrigatorio = true, Nome = "DISCRIMINACAO")]
     public string? Discriminacao { get; set; }
 
-    [CampoSped(Ordem = 5, Tamanho = 19, Decimais = 2, Obrigatorio = true)]
+    [CampoSped(Ordem = 5, Tamanho = 19, Decimais = 2, Obrigatorio = true, Nome = "VL_ANT")]
     public decimal VlAnt { get; set; }
 
-    [CampoSped(Ordem = 6, Tamanho = 19, Decimais = 2, Obrigatorio = true)]
+    [CampoSped(Ordem = 6, Tamanho = 19, Decimais = 2, Obrigatorio = true, Nome = "VL_ATUAL")]
     public decimal VlAtual { get; set; }
 }

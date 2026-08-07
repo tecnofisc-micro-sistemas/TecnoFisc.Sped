@@ -11,6 +11,6 @@ public sealed partial class RegistroV030 : RegistroSped
     public override string Codigo => "V030";
 
     /// <summary>Mês com dois caracteres, preservado sem validar o período do arquivo.</summary>
-    [CampoSped(Ordem = 2, Tamanho = 2, Obrigatorio = true)]
+    [CampoSped(Ordem = 2, Tamanho = 2, Obrigatorio = true, Nome = "MES")]
     public string? Mes { get; set; }
 }

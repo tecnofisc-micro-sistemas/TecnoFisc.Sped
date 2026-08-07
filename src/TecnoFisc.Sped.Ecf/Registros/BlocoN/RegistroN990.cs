@@ -11,6 +11,6 @@ public sealed partial class RegistroN990 : RegistroSped
     public override string Codigo => "N990";
 
     /// <summary>Quantidade total de registros do Bloco N.</summary>
-    [CampoSped(Ordem = 2, Obrigatorio = true)]
+    [CampoSped(Ordem = 2, Obrigatorio = true, Nome = "QTD_LIN")]
     public int QtdLin { get; set; }
 }

@@ -11,54 +11,54 @@ public sealed partial class RegistroY672 : RegistroSped
     /// <inheritdoc />
     public override string Codigo => "Y672";
 
-    [CampoSped(Ordem = 2, Tamanho = 19, Decimais = 2)]
+    [CampoSped(Ordem = 2, Tamanho = 19, Decimais = 2, Nome = "VL_CAPITAL_ANT")]
     public decimal? VlCapitalAnt { get; set; }
 
-    [CampoSped(Ordem = 3, Tamanho = 19, Decimais = 2)]
+    [CampoSped(Ordem = 3, Tamanho = 19, Decimais = 2, Nome = "VL_CAPITAL")]
     public decimal? VlCapital { get; set; }
 
-    [CampoSped(Ordem = 4, Tamanho = 19, Decimais = 2)]
+    [CampoSped(Ordem = 4, Tamanho = 19, Decimais = 2, Nome = "VL_ESTOQUE_ANT")]
     public decimal? VlEstoqueAnt { get; set; }
 
-    [CampoSped(Ordem = 5, Tamanho = 19, Decimais = 2)]
+    [CampoSped(Ordem = 5, Tamanho = 19, Decimais = 2, Nome = "VL_ESTOQUES")]
     public decimal? VlEstoques { get; set; }
 
-    [CampoSped(Ordem = 6, Tamanho = 19, Decimais = 2)]
+    [CampoSped(Ordem = 6, Tamanho = 19, Decimais = 2, Nome = "VL_CAIXA_ANT")]
     public decimal? VlCaixaAnt { get; set; }
 
-    [CampoSped(Ordem = 7, Tamanho = 19, Decimais = 2)]
+    [CampoSped(Ordem = 7, Tamanho = 19, Decimais = 2, Nome = "VL_CAIXA")]
     public decimal? VlCaixa { get; set; }
 
-    [CampoSped(Ordem = 8, Tamanho = 19, Decimais = 2)]
+    [CampoSped(Ordem = 8, Tamanho = 19, Decimais = 2, Nome = "VL_APLIC_FIN_ANT")]
     public decimal? VlAplicFinAnt { get; set; }
 
-    [CampoSped(Ordem = 9, Tamanho = 19, Decimais = 2)]
+    [CampoSped(Ordem = 9, Tamanho = 19, Decimais = 2, Nome = "VL_APLIC_FIN")]
     public decimal? VlAplicFin { get; set; }
 
-    [CampoSped(Ordem = 10, Tamanho = 19, Decimais = 2)]
+    [CampoSped(Ordem = 10, Tamanho = 19, Decimais = 2, Nome = "VL_CTA_REC_ANT")]
     public decimal? VlCtaRecAnt { get; set; }
 
-    [CampoSped(Ordem = 11, Tamanho = 19, Decimais = 2)]
+    [CampoSped(Ordem = 11, Tamanho = 19, Decimais = 2, Nome = "VL_CTA_REC")]
     public decimal? VlCtaRec { get; set; }
 
-    [CampoSped(Ordem = 12, Tamanho = 19, Decimais = 2)]
+    [CampoSped(Ordem = 12, Tamanho = 19, Decimais = 2, Nome = "VL_CTA_PAG_ANT")]
     public decimal? VlCtaPagAnt { get; set; }
 
-    [CampoSped(Ordem = 13, Tamanho = 19, Decimais = 2)]
+    [CampoSped(Ordem = 13, Tamanho = 19, Decimais = 2, Nome = "VL_CTA_PAG")]
     public decimal? VlCtaPag { get; set; }
 
-    [CampoSped(Ordem = 14, Tamanho = 19, Decimais = 2)]
+    [CampoSped(Ordem = 14, Tamanho = 19, Decimais = 2, Nome = "VL_COMPRA_MERC")]
     public decimal? VlCompraMerc { get; set; }
 
-    [CampoSped(Ordem = 15, Tamanho = 19, Decimais = 2)]
+    [CampoSped(Ordem = 15, Tamanho = 19, Decimais = 2, Nome = "VL_COMPRA_ATIVO")]
     public decimal? VlCompraAtivo { get; set; }
 
-    [CampoSped(Ordem = 16, Tamanho = 19, Decimais = 2)]
+    [CampoSped(Ordem = 16, Tamanho = 19, Decimais = 2, Nome = "VL_RECEITAS")]
     public decimal? VlReceitas { get; set; }
 
-    [CampoSped(Ordem = 17, Tamanho = 19, Decimais = 2)]
+    [CampoSped(Ordem = 17, Tamanho = 19, Decimais = 2, Nome = "TOT_ATIVO")]
     public decimal? TotAtivo { get; set; }
 
-    [CampoSped(Ordem = 18, Tamanho = 1)]
+    [CampoSped(Ordem = 18, Tamanho = 1, Nome = "IND_AVAL_ESTOQ")]
     public MetodoAvaliacaoEstoque? IndAvalEstoq { get; set; }
 }

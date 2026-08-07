@@ -10,6 +10,6 @@ public sealed partial class RegistroX450 : RegistroSped
     public override string Codigo => "X450";
 
     /// <summary>País conforme tabela dinâmica, preservado como código lexical.</summary>
-    [CampoSped(Ordem = 2, Tamanho = 3, Obrigatorio = true)]
+    [CampoSped(Ordem = 2, Tamanho = 3, Obrigatorio = true, Nome = "PAIS")]
     public string? Pais { get; set; }
 }

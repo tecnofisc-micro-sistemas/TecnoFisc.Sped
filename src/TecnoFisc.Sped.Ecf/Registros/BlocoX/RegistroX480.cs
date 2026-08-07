@@ -12,9 +12,9 @@ public sealed partial class RegistroX480 : RegistroSped
     [CampoSped(Ordem = 2, Tamanho = 6, Obrigatorio = true, Nome = "CODIGO")]
     public string? CampoCodigo { get; set; }
 
-    [CampoSped(Ordem = 3)]
+    [CampoSped(Ordem = 3, Nome = "DESCRICAO")]
     public string? Descricao { get; set; }
 
-    [CampoSped(Ordem = 4, Tamanho = 19, Decimais = 2)]
+    [CampoSped(Ordem = 4, Tamanho = 19, Decimais = 2, Nome = "VALOR")]
     public decimal? Valor { get; set; }
 }

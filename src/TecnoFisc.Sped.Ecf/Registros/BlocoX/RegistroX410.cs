@@ -11,12 +11,12 @@ public sealed partial class RegistroX410 : RegistroSped
     public override string Codigo => "X410";
 
     /// <summary>País conforme tabela dinâmica, preservado como código lexical.</summary>
-    [CampoSped(Ordem = 2, Tamanho = 3, Obrigatorio = true)]
+    [CampoSped(Ordem = 2, Tamanho = 3, Obrigatorio = true, Nome = "PAIS")]
     public string? Pais { get; set; }
 
-    [CampoSped(Ordem = 3, Tamanho = 1, Obrigatorio = true)]
+    [CampoSped(Ordem = 3, Tamanho = 1, Obrigatorio = true, Nome = "IND_HOME_DISP")]
     public IndicadorSimNao IndHomeDisp { get; set; }
 
-    [CampoSped(Ordem = 4, Tamanho = 1, Obrigatorio = true)]
+    [CampoSped(Ordem = 4, Tamanho = 1, Obrigatorio = true, Nome = "IND_SERV_DISP")]
     public IndicadorSimNao IndServDisp { get; set; }
 }

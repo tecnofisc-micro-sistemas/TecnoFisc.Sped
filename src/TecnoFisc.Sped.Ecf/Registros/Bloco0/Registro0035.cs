@@ -11,9 +11,9 @@ public sealed partial class Registro0035 : RegistroSped
     /// <inheritdoc />
     public override string Codigo => "0035";
 
-    [CampoSped(Ordem = 2, Tamanho = 14, Obrigatorio = true)]
+    [CampoSped(Ordem = 2, Tamanho = 14, Obrigatorio = true, Nome = "COD_SCP")]
     public Cnpj CodScp { get; set; }
 
-    [CampoSped(Ordem = 3, Tamanho = 0)]
+    [CampoSped(Ordem = 3, Tamanho = 0, Nome = "NOME_SCP")]
     public string? NomeScp { get; set; }
 }

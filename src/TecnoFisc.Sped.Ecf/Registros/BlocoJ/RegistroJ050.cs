@@ -13,30 +13,30 @@ public sealed partial class RegistroJ050 : RegistroSped
     public override string Codigo => "J050";
 
     /// <summary>Data de inclusão ou alteração da conta.</summary>
-    [CampoSped(Ordem = 2, Tamanho = 8, Formato = "ddMMyyyy", Obrigatorio = true)]
+    [CampoSped(Ordem = 2, Tamanho = 8, Formato = "ddMMyyyy", Obrigatorio = true, Nome = "DT_ALT")]
     public DateOnly DtAlt { get; set; }
 
     /// <summary>Natureza da conta analítica ou sintética.</summary>
-    [CampoSped(Ordem = 3, Tamanho = 2, Obrigatorio = true)]
+    [CampoSped(Ordem = 3, Tamanho = 2, Obrigatorio = true, Nome = "COD_NAT")]
     public CodigoNaturezaContaContabil CodNat { get; set; }
 
     /// <summary>Indicador do tipo de conta.</summary>
-    [CampoSped(Ordem = 4, Tamanho = 1, Obrigatorio = true)]
+    [CampoSped(Ordem = 4, Tamanho = 1, Obrigatorio = true, Nome = "IND_CTA")]
     public IndicadorTipoConta IndCta { get; set; }
 
     /// <summary>Nível da conta analítica ou sintética.</summary>
-    [CampoSped(Ordem = 5, Nome = "NÍVEL", Tamanho = 0, Obrigatorio = true)]
+    [CampoSped(Ordem = 5, Tamanho = 0, Obrigatorio = true, Nome = "NÍVEL")]
     public int Nível { get; set; }
 
     /// <summary>Código da conta analítica ou sintética.</summary>
-    [CampoSped(Ordem = 6, Tamanho = 0, Obrigatorio = true)]
+    [CampoSped(Ordem = 6, Tamanho = 0, Obrigatorio = true, Nome = "COD_CTA")]
     public string? CodCta { get; set; }
 
     /// <summary>Código da conta sintética de nível imediatamente superior.</summary>
-    [CampoSped(Ordem = 7, Tamanho = 0)]
+    [CampoSped(Ordem = 7, Tamanho = 0, Nome = "COD_CTA_SUP")]
     public string? CodCtaSup { get; set; }
 
     /// <summary>Nome da conta.</summary>
-    [CampoSped(Ordem = 8, Tamanho = 0, Obrigatorio = true)]
+    [CampoSped(Ordem = 8, Tamanho = 0, Obrigatorio = true, Nome = "CTA")]
     public string? Cta { get; set; }
 }

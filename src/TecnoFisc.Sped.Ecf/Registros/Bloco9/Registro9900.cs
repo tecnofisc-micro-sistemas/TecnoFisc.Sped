@@ -11,18 +11,18 @@ public sealed partial class Registro9900 : RegistroSped
     public override string Codigo => "9900";
 
     /// <summary>Código do registro totalizado.</summary>
-    [CampoSped(Ordem = 2, Tamanho = 4, Obrigatorio = true)]
+    [CampoSped(Ordem = 2, Tamanho = 4, Obrigatorio = true, Nome = "REG_BLC")]
     public string? RegBlc { get; set; }
 
     /// <summary>Quantidade de ocorrências do registro totalizado.</summary>
-    [CampoSped(Ordem = 3, Obrigatorio = true)]
+    [CampoSped(Ordem = 3, Obrigatorio = true, Nome = "QTD_REG_BLC")]
     public int QtdRegBlc { get; set; }
 
     /// <summary>Versão da tabela dinâmica, quando aplicável.</summary>
-    [CampoSped(Ordem = 4, Tamanho = 4)]
+    [CampoSped(Ordem = 4, Tamanho = 4, Nome = "VERSAO")]
     public string? Versao { get; set; }
 
     /// <summary>Identificação da tabela dinâmica, quando aplicável.</summary>
-    [CampoSped(Ordem = 5)]
+    [CampoSped(Ordem = 5, Nome = "ID_TAB_DIN")]
     public string? IdTabDin { get; set; }
 }

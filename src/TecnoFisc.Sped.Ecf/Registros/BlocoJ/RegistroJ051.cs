@@ -11,10 +11,10 @@ public sealed partial class RegistroJ051 : RegistroSped
     public override string Codigo => "J051";
 
     /// <summary>Código do centro de custos.</summary>
-    [CampoSped(Ordem = 2, Tamanho = 0)]
+    [CampoSped(Ordem = 2, Tamanho = 0, Nome = "COD_CCUS")]
     public string? CodCcus { get; set; }
 
     /// <summary>Código da conta no plano de contas referencial.</summary>
-    [CampoSped(Ordem = 3, Tamanho = 0, Obrigatorio = true)]
+    [CampoSped(Ordem = 3, Tamanho = 0, Obrigatorio = true, Nome = "COD_CTA_REF")]
     public string? CodCtaRef { get; set; }
 }

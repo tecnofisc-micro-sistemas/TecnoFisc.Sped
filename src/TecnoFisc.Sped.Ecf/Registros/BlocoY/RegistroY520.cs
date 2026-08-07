@@ -11,20 +11,20 @@ public sealed partial class RegistroY520 : RegistroSped
     /// <inheritdoc />
     public override string Codigo => "Y520";
 
-    [CampoSped(Ordem = 2, Tamanho = 1, Obrigatorio = true)]
+    [CampoSped(Ordem = 2, Tamanho = 1, Obrigatorio = true, Nome = "TIP_EXT")]
     public TipoOperacaoExterior TipExt { get; set; }
 
     /// <summary>Código de país preservado lexicalmente.</summary>
-    [CampoSped(Ordem = 3, Tamanho = 3, Obrigatorio = true)]
+    [CampoSped(Ordem = 3, Tamanho = 3, Obrigatorio = true, Nome = "PAIS")]
     public string? Pais { get; set; }
 
-    [CampoSped(Ordem = 4, Tamanho = 1, Obrigatorio = true)]
+    [CampoSped(Ordem = 4, Tamanho = 1, Obrigatorio = true, Nome = "FORMA")]
     public FormaPagamentoRecebimentoExterior Forma { get; set; }
 
     /// <summary>Código da natureza da operação conforme tabela dinâmica do Sped.</summary>
-    [CampoSped(Ordem = 5, Tamanho = 5, Obrigatorio = true)]
+    [CampoSped(Ordem = 5, Tamanho = 5, Obrigatorio = true, Nome = "NAT_OPER")]
     public string? NatOper { get; set; }
 
-    [CampoSped(Ordem = 6, Tamanho = 19, Decimais = 2, Obrigatorio = true)]
+    [CampoSped(Ordem = 6, Tamanho = 19, Decimais = 2, Obrigatorio = true, Nome = "VL_PERIODO")]
     public decimal VlPeriodo { get; set; }
 }

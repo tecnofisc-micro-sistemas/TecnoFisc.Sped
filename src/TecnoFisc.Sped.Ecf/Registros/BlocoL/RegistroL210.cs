@@ -15,12 +15,12 @@ public sealed partial class RegistroL210 : RegistroSped
     public string? CampoCodigo { get; set; }
 
     /// <summary>Descrição da conta de custos.</summary>
-    [CampoSped(Ordem = 3, Tamanho = 0)]
+    [CampoSped(Ordem = 3, Tamanho = 0, Nome = "DESCRICAO")]
     public string? Descricao { get; set; }
 
     /// <summary>
     /// Valor textual da linha dinâmica, inclusive rótulos e cálculos representados como texto.
     /// </summary>
-    [CampoSped(Ordem = 4, Tamanho = 0)]
+    [CampoSped(Ordem = 4, Tamanho = 0, Nome = "VALOR")]
     public string? Valor { get; set; }
 }

@@ -10,9 +10,9 @@ public sealed partial class RegistroC150 : RegistroSped
     /// <inheritdoc />
     public override string Codigo => "C150";
 
-    [CampoSped(Ordem = 2, Tamanho = 8, Formato = "ddMMyyyy", Obrigatorio = true)]
+    [CampoSped(Ordem = 2, Tamanho = 8, Formato = "ddMMyyyy", Obrigatorio = true, Nome = "DT_INI")]
     public DateOnly DtIni { get; set; }
 
-    [CampoSped(Ordem = 3, Tamanho = 8, Formato = "ddMMyyyy", Obrigatorio = true)]
+    [CampoSped(Ordem = 3, Tamanho = 8, Formato = "ddMMyyyy", Obrigatorio = true, Nome = "DT_FIN")]
     public DateOnly DtFin { get; set; }
 }

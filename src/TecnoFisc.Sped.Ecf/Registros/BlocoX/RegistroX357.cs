@@ -10,16 +10,16 @@ public sealed partial class RegistroX357 : RegistroSped
     public override string Codigo => "X357";
 
     /// <summary>País conforme tabela dinâmica do Sped, preservado lexicalmente.</summary>
-    [CampoSped(Ordem = 2, Tamanho = 3, Obrigatorio = true)]
+    [CampoSped(Ordem = 2, Tamanho = 3, Obrigatorio = true, Nome = "PAIS")]
     public string? Pais { get; set; }
 
     /// <summary>NIF ou CNPJ composto, sem coerção para um identificador brasileiro.</summary>
     [CampoSped(Ordem = 3, Obrigatorio = true, Nome = "NIF_CNPJ")]
     public string? NifCnpj { get; set; }
 
-    [CampoSped(Ordem = 4, Obrigatorio = true)]
+    [CampoSped(Ordem = 4, Obrigatorio = true, Nome = "RAZAO_SOCIAL")]
     public string? RazaoSocial { get; set; }
 
-    [CampoSped(Ordem = 5, Tamanho = 8, Decimais = 4, Obrigatorio = true)]
+    [CampoSped(Ordem = 5, Tamanho = 8, Decimais = 4, Obrigatorio = true, Nome = "PERCENTUAL")]
     public decimal Percentual { get; set; }
 }

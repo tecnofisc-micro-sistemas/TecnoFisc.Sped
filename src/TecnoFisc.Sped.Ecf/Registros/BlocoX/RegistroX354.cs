@@ -9,12 +9,12 @@ public sealed partial class RegistroX354 : RegistroSped
 {
     public override string Codigo => "X354";
 
-    [CampoSped(Ordem = 2, Tamanho = 19, Decimais = 2, Obrigatorio = true)]
+    [CampoSped(Ordem = 2, Tamanho = 19, Decimais = 2, Obrigatorio = true, Nome = "RES_NEG_ANT")]
     public decimal ResNegAnt { get; set; }
 
-    [CampoSped(Ordem = 3, Tamanho = 19, Decimais = 2, Obrigatorio = true)]
+    [CampoSped(Ordem = 3, Tamanho = 19, Decimais = 2, Obrigatorio = true, Nome = "RES_NEG_ANT_REAL")]
     public decimal ResNegAntReal { get; set; }
 
-    [CampoSped(Ordem = 4, Tamanho = 19, Decimais = 2, Obrigatorio = true)]
+    [CampoSped(Ordem = 4, Tamanho = 19, Decimais = 2, Obrigatorio = true, Nome = "SALDO_NEG_ACUM")]
     public decimal SaldoNegAcum { get; set; }
 }

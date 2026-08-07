@@ -10,6 +10,6 @@ public sealed partial class RegistroC990 : RegistroSped
     /// <inheritdoc />
     public override string Codigo => "C990";
 
-    [CampoSped(Ordem = 2, Tamanho = 0, Obrigatorio = true)]
+    [CampoSped(Ordem = 2, Tamanho = 0, Obrigatorio = true, Nome = "QTD_LIN")]
     public int QtdLin { get; set; }
 }

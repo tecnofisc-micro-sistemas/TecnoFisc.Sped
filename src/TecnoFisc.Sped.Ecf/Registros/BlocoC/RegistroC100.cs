@@ -10,12 +10,12 @@ public sealed partial class RegistroC100 : RegistroSped
     /// <inheritdoc />
     public override string Codigo => "C100";
 
-    [CampoSped(Ordem = 2, Tamanho = 8, Formato = "ddMMyyyy", Obrigatorio = true)]
+    [CampoSped(Ordem = 2, Tamanho = 8, Formato = "ddMMyyyy", Obrigatorio = true, Nome = "DT_ALT")]
     public DateOnly DtAlt { get; set; }
 
-    [CampoSped(Ordem = 3, Tamanho = 0, Obrigatorio = true)]
+    [CampoSped(Ordem = 3, Tamanho = 0, Obrigatorio = true, Nome = "COD_CCUS")]
     public string? CodCcus { get; set; }
 
-    [CampoSped(Ordem = 4, Tamanho = 0, Obrigatorio = true)]
+    [CampoSped(Ordem = 4, Tamanho = 0, Obrigatorio = true, Nome = "CCUS")]
     public string? Ccus { get; set; }
 }

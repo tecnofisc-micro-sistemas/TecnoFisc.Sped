@@ -12,53 +12,53 @@ public sealed partial class RegistroY600 : RegistroSped
     /// <inheritdoc />
     public override string Codigo => "Y600";
 
-    [CampoSped(Ordem = 2, Tamanho = 8, Formato = "ddMMyyyy", Obrigatorio = true)]
+    [CampoSped(Ordem = 2, Tamanho = 8, Formato = "ddMMyyyy", Obrigatorio = true, Nome = "DT_ALT_SOC")]
     public DateOnly DtAltSoc { get; set; }
 
-    [CampoSped(Ordem = 3, Tamanho = 8, Formato = "ddMMyyyy")]
+    [CampoSped(Ordem = 3, Tamanho = 8, Formato = "ddMMyyyy", Nome = "DT_FIM_SOC")]
     public DateOnly? DtFimSoc { get; set; }
 
     /// <summary>Código de país preservado lexicalmente.</summary>
-    [CampoSped(Ordem = 4, Tamanho = 3, Obrigatorio = true)]
+    [CampoSped(Ordem = 4, Tamanho = 3, Obrigatorio = true, Nome = "PAIS")]
     public string? Pais { get; set; }
 
-    [CampoSped(Ordem = 5, Tamanho = 2, Obrigatorio = true)]
+    [CampoSped(Ordem = 5, Tamanho = 2, Obrigatorio = true, Nome = "IND_QUALIF")]
     public TipoQualificacaoSocio IndQualif { get; set; }
 
     /// <summary>CPF ou CNPJ preservado como documento composto condicional.</summary>
-    [CampoSped(Ordem = 6, Tamanho = 14)]
+    [CampoSped(Ordem = 6, Tamanho = 14, Nome = "CPF_CNPJ")]
     public string? CpfCnpj { get; set; }
 
-    [CampoSped(Ordem = 7, Obrigatorio = true)]
+    [CampoSped(Ordem = 7, Obrigatorio = true, Nome = "NOM_EMP")]
     public string? NomEmp { get; set; }
 
-    [CampoSped(Ordem = 8, Tamanho = 2, Obrigatorio = true)]
+    [CampoSped(Ordem = 8, Tamanho = 2, Obrigatorio = true, Nome = "QUALIF")]
     public QualificacaoSocio Qualif { get; set; }
 
-    [CampoSped(Ordem = 9, Tamanho = 8, Decimais = 4, Obrigatorio = true)]
+    [CampoSped(Ordem = 9, Tamanho = 8, Decimais = 4, Obrigatorio = true, Nome = "PERC_CAP_TOT")]
     public decimal PercCapTot { get; set; }
 
-    [CampoSped(Ordem = 10, Tamanho = 8, Decimais = 4, Obrigatorio = true)]
+    [CampoSped(Ordem = 10, Tamanho = 8, Decimais = 4, Obrigatorio = true, Nome = "PERC_CAP_VOT")]
     public decimal PercCapVot { get; set; }
 
-    [CampoSped(Ordem = 11, Tamanho = 11)]
+    [CampoSped(Ordem = 11, Tamanho = 11, Nome = "CPF_REP_LEG")]
     public Cpf? CpfRepLeg { get; set; }
 
-    [CampoSped(Ordem = 12, Tamanho = 2)]
+    [CampoSped(Ordem = 12, Tamanho = 2, Nome = "QUALIF_REP_LEG")]
     public QualificacaoRepresentanteLegal? QualifRepLeg { get; set; }
 
-    [CampoSped(Ordem = 13, Tamanho = 19, Decimais = 2, Obrigatorio = true)]
+    [CampoSped(Ordem = 13, Tamanho = 19, Decimais = 2, Obrigatorio = true, Nome = "VL_REM_TRAB")]
     public decimal VlRemTrab { get; set; }
 
-    [CampoSped(Ordem = 14, Tamanho = 19, Decimais = 2, Obrigatorio = true)]
+    [CampoSped(Ordem = 14, Tamanho = 19, Decimais = 2, Obrigatorio = true, Nome = "VL_LUC_DIV")]
     public decimal VlLucDiv { get; set; }
 
-    [CampoSped(Ordem = 15, Tamanho = 19, Decimais = 2, Obrigatorio = true)]
+    [CampoSped(Ordem = 15, Tamanho = 19, Decimais = 2, Obrigatorio = true, Nome = "VL_JUR_CAP")]
     public decimal VlJurCap { get; set; }
 
-    [CampoSped(Ordem = 16, Tamanho = 19, Decimais = 2, Obrigatorio = true)]
+    [CampoSped(Ordem = 16, Tamanho = 19, Decimais = 2, Obrigatorio = true, Nome = "VL_DEM_REND")]
     public decimal VlDemRend { get; set; }
 
-    [CampoSped(Ordem = 17, Tamanho = 19, Decimais = 2, Obrigatorio = true)]
+    [CampoSped(Ordem = 17, Tamanho = 19, Decimais = 2, Obrigatorio = true, Nome = "VL_IR_RET")]
     public decimal VlIrRet { get; set; }
 }

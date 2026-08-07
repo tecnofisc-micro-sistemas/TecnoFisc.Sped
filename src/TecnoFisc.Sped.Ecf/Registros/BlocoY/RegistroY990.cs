@@ -10,6 +10,6 @@ public sealed partial class RegistroY990 : RegistroSped
     /// <inheritdoc />
     public override string Codigo => "Y990";
 
-    [CampoSped(Ordem = 2, Obrigatorio = true)]
+    [CampoSped(Ordem = 2, Obrigatorio = true, Nome = "QTD_LIN")]
     public int QtdLin { get; set; }
 }

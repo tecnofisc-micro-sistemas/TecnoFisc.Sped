@@ -10,9 +10,9 @@ public sealed partial class RegistroX365 : RegistroSped
 {
     public override string Codigo => "X365";
 
-    [CampoSped(Ordem = 2, Tamanho = 6, Obrigatorio = true)]
+    [CampoSped(Ordem = 2, Tamanho = 6, Obrigatorio = true, Nome = "IDENTIFICADOR")]
     public string? Identificador { get; set; }
 
-    [CampoSped(Ordem = 3)]
+    [CampoSped(Ordem = 3, Nome = "NOME_ENT")]
     public string? NomeEnt { get; set; }
 }

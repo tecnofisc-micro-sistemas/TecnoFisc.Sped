@@ -10,9 +10,9 @@ public sealed partial class RegistroC051 : RegistroSped
     /// <inheritdoc />
     public override string Codigo => "C051";
 
-    [CampoSped(Ordem = 2, Tamanho = 0)]
+    [CampoSped(Ordem = 2, Tamanho = 0, Nome = "COD_CCUS")]
     public string? CodCcus { get; set; }
 
-    [CampoSped(Ordem = 3, Tamanho = 0, Obrigatorio = true)]
+    [CampoSped(Ordem = 3, Tamanho = 0, Obrigatorio = true, Nome = "COD_CTA_REF")]
     public string? CodCtaRef { get; set; }
 }

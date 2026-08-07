@@ -10,12 +10,12 @@ public sealed partial class RegistroE030 : RegistroSped
     /// <inheritdoc />
     public override string Codigo => "E030";
 
-    [CampoSped(Ordem = 2, Tamanho = 8, Formato = "ddMMyyyy", Obrigatorio = true)]
+    [CampoSped(Ordem = 2, Tamanho = 8, Formato = "ddMMyyyy", Obrigatorio = true, Nome = "DT_INI")]
     public DateOnly DtIni { get; set; }
 
-    [CampoSped(Ordem = 3, Tamanho = 8, Formato = "ddMMyyyy", Obrigatorio = true)]
+    [CampoSped(Ordem = 3, Tamanho = 8, Formato = "ddMMyyyy", Obrigatorio = true, Nome = "DT_FIN")]
     public DateOnly DtFin { get; set; }
 
-    [CampoSped(Ordem = 4, Tamanho = 3, Obrigatorio = true)]
+    [CampoSped(Ordem = 4, Tamanho = 3, Obrigatorio = true, Nome = "PER_APUR")]
     public string? PerApur { get; set; }
 }

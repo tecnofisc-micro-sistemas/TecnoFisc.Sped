@@ -11,9 +11,9 @@ public sealed partial class RegistroY682 : RegistroSped
     /// <inheritdoc />
     public override string Codigo => "Y682";
 
-    [CampoSped(Ordem = 2, Tamanho = 2, Obrigatorio = true)]
+    [CampoSped(Ordem = 2, Tamanho = 2, Obrigatorio = true, Nome = "MES")]
     public MesCalendarioEcf Mes { get; set; }
 
-    [CampoSped(Ordem = 3, Tamanho = 19, Decimais = 2, Obrigatorio = true)]
+    [CampoSped(Ordem = 3, Tamanho = 19, Decimais = 2, Obrigatorio = true, Nome = "ACRES_PATR")]
     public decimal AcresPatr { get; set; }
 }

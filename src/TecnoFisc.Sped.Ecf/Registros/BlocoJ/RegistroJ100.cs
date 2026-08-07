@@ -11,14 +11,14 @@ public sealed partial class RegistroJ100 : RegistroSped
     public override string Codigo => "J100";
 
     /// <summary>Data de inclusão ou alteração do centro de custos.</summary>
-    [CampoSped(Ordem = 2, Tamanho = 8, Formato = "ddMMyyyy", Obrigatorio = true)]
+    [CampoSped(Ordem = 2, Tamanho = 8, Formato = "ddMMyyyy", Obrigatorio = true, Nome = "DT_ALT")]
     public DateOnly DtAlt { get; set; }
 
     /// <summary>Código do centro de custos.</summary>
-    [CampoSped(Ordem = 3, Tamanho = 0, Obrigatorio = true)]
+    [CampoSped(Ordem = 3, Tamanho = 0, Obrigatorio = true, Nome = "COD_CCUS")]
     public string? CodCcus { get; set; }
 
     /// <summary>Nome do centro de custos.</summary>
-    [CampoSped(Ordem = 4, Tamanho = 0, Obrigatorio = true)]
+    [CampoSped(Ordem = 4, Tamanho = 0, Obrigatorio = true, Nome = "CCUS")]
     public string? Ccus { get; set; }
 }

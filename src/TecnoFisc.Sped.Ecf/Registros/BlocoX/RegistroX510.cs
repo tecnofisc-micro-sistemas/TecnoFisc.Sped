@@ -15,10 +15,10 @@ public sealed partial class RegistroX510 : RegistroSped
     public string? CampoCodigo { get; set; }
 
     /// <summary>Descricao conforme a tabela dinamica do Sped.</summary>
-    [CampoSped(Ordem = 3)]
+    [CampoSped(Ordem = 3, Nome = "DESCRICAO")]
     public string? Descricao { get; set; }
 
     /// <summary>Valor textual da linha dinamica.</summary>
-    [CampoSped(Ordem = 4)]
+    [CampoSped(Ordem = 4, Nome = "VALOR")]
     public string? Valor { get; set; }
 }

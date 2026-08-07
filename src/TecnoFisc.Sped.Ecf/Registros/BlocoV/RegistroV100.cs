@@ -15,10 +15,10 @@ public sealed partial class RegistroV100 : RegistroSped
     public string? CampoCodigo { get; set; }
 
     /// <summary>Descrição opcional da linha.</summary>
-    [CampoSped(Ordem = 3, Tamanho = 1000)]
+    [CampoSped(Ordem = 3, Tamanho = 1000, Nome = "DESCRICAO")]
     public string? Descricao { get; set; }
 
     /// <summary>Valor opcional preservado na representação definida pela tabela dinâmica.</summary>
-    [CampoSped(Ordem = 4)]
+    [CampoSped(Ordem = 4, Nome = "VALOR")]
     public string? Valor { get; set; }
 }

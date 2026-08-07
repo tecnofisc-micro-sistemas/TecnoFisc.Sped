@@ -12,9 +12,9 @@ public sealed partial class RegistroX292 : RegistroSped
     [CampoSped(Ordem = 2, Tamanho = 6, Obrigatorio = true, Nome = "CODIGO")]
     public string? CampoCodigo { get; set; }
 
-    [CampoSped(Ordem = 3)]
+    [CampoSped(Ordem = 3, Nome = "DESCRICAO")]
     public string? Descricao { get; set; }
 
-    [CampoSped(Ordem = 4)]
+    [CampoSped(Ordem = 4, Nome = "VALOR")]
     public string? Valor { get; set; }
 }

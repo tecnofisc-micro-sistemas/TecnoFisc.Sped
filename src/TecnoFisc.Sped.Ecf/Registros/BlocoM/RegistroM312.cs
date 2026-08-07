@@ -11,6 +11,6 @@ public sealed partial class RegistroM312 : RegistroSped
     public override string Codigo => "M312";
 
     /// <summary>Número do Lançamento Descrito na ECD (Escrituração Contábil Digital) no campo 2 (NUM_LCTO)registro “I200 – Lançamento Contábil”.</summary>
-    [CampoSped(Ordem = 2, Tamanho = 50, Obrigatorio = true)]
+    [CampoSped(Ordem = 2, Tamanho = 50, Obrigatorio = true, Nome = "NUM_LCTO")]
     public string? NumLcto { get; set; }
 }

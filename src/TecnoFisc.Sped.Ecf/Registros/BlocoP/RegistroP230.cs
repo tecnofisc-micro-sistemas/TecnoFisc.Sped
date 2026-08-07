@@ -15,10 +15,10 @@ public sealed partial class RegistroP230 : RegistroSped
     public string? CampoCodigo { get; set; }
 
     /// <summary>Descrição da linha na tabela dinâmica.</summary>
-    [CampoSped(Ordem = 3)]
+    [CampoSped(Ordem = 3, Nome = "DESCRICAO")]
     public string? Descricao { get; set; }
 
     /// <summary>Valor na representação textual da tabela dinâmica.</summary>
-    [CampoSped(Ordem = 4)]
+    [CampoSped(Ordem = 4, Nome = "VALOR")]
     public string? Valor { get; set; }
 }

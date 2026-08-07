@@ -12,6 +12,6 @@ public sealed partial class RegistroL200 : RegistroSped
     public override string Codigo => "L200";
 
     /// <summary>Método de avaliação do estoque final.</summary>
-    [CampoSped(Ordem = 2, Tamanho = 1, Obrigatorio = true)]
+    [CampoSped(Ordem = 2, Tamanho = 1, Obrigatorio = true, Nome = "IND_AVAL_ESTOQ")]
     public MetodoAvaliacaoEstoque IndAvalEstoq { get; set; }
 }

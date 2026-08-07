@@ -11,6 +11,6 @@ public sealed partial class RegistroY001 : RegistroSped
     /// <inheritdoc />
     public override string Codigo => "Y001";
 
-    [CampoSped(Ordem = 2, Tamanho = 1, Obrigatorio = true)]
+    [CampoSped(Ordem = 2, Tamanho = 1, Obrigatorio = true, Nome = "IND_DAD")]
     public IndicadorMovimentoBloco IndDad { get; set; }
 }

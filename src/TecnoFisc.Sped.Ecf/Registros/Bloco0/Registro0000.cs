@@ -26,58 +26,58 @@ public sealed partial class Registro0000 : RegistroSped
     };
 
     /// <summary>Identificador fixo do tipo de escrituração: <c>LECF</c>.</summary>
-    [CampoSped(Ordem = 2, Tamanho = 4, Obrigatorio = true)]
+    [CampoSped(Ordem = 2, Tamanho = 4, Obrigatorio = true, Nome = "NOME_ESC")]
     public string? NomeEsc { get; set; } = "LECF";
 
     /// <summary>Código declarado da versão do leiaute, de <c>0008</c> a <c>0012</c>.</summary>
-    [CampoSped(Ordem = 3, Tamanho = 4, Obrigatorio = true)]
+    [CampoSped(Ordem = 3, Tamanho = 4, Obrigatorio = true, Nome = "COD_VER")]
     public string? CodVer { get; set; }
 
     /// <summary>CNPJ do declarante ou do sócio ostensivo, no caso de SCP.</summary>
-    [CampoSped(Ordem = 4, Tamanho = 14, Obrigatorio = true)]
+    [CampoSped(Ordem = 4, Tamanho = 14, Obrigatorio = true, Nome = "CNPJ")]
     public Cnpj Cnpj { get; set; }
 
     /// <summary>Nome empresarial da pessoa jurídica ou da SCP.</summary>
-    [CampoSped(Ordem = 5, Tamanho = 0, Obrigatorio = true)]
+    [CampoSped(Ordem = 5, Tamanho = 0, Obrigatorio = true, Nome = "NOME")]
     public string? Nome { get; set; }
 
     /// <summary>Indicador do início do período.</summary>
-    [CampoSped(Ordem = 6, Tamanho = 1, Obrigatorio = true)]
+    [CampoSped(Ordem = 6, Tamanho = 1, Obrigatorio = true, Nome = "IND_SIT_INI_PER")]
     public int IndSitIniPer { get; set; }
 
     /// <summary>Indicador de situação especial ou outro evento.</summary>
-    [CampoSped(Ordem = 7, Tamanho = 1, Obrigatorio = true)]
+    [CampoSped(Ordem = 7, Tamanho = 1, Obrigatorio = true, Nome = "SIT_ESPECIAL")]
     public string? SitEspecial { get; set; }
 
     /// <summary>Percentual do patrimônio remanescente em caso de cisão.</summary>
-    [CampoSped(Ordem = 8, Tamanho = 8, Decimais = 4)]
+    [CampoSped(Ordem = 8, Tamanho = 8, Decimais = 4, Nome = "PAT_REMAN_CIS")]
     public decimal? PatRemanCis { get; set; }
 
     /// <summary>Data da situação especial ou do evento.</summary>
-    [CampoSped(Ordem = 9, Tamanho = 8, Formato = "ddMMyyyy")]
+    [CampoSped(Ordem = 9, Tamanho = 8, Formato = "ddMMyyyy", Nome = "DT_SIT_ESP")]
     public DateOnly? DtSitEsp { get; set; }
 
     /// <summary>Data inicial das informações contidas no arquivo.</summary>
-    [CampoSped(Ordem = 10, Tamanho = 8, Formato = "ddMMyyyy", Obrigatorio = true)]
+    [CampoSped(Ordem = 10, Tamanho = 8, Formato = "ddMMyyyy", Obrigatorio = true, Nome = "DT_INI")]
     public DateOnly DtIni { get; set; }
 
     /// <summary>Data final das informações contidas no arquivo.</summary>
-    [CampoSped(Ordem = 11, Tamanho = 8, Formato = "ddMMyyyy", Obrigatorio = true)]
+    [CampoSped(Ordem = 11, Tamanho = 8, Formato = "ddMMyyyy", Obrigatorio = true, Nome = "DT_FIN")]
     public DateOnly DtFin { get; set; }
 
     /// <summary>Indicador de escrituração original, retificadora ou com mudança de tributação.</summary>
-    [CampoSped(Ordem = 12, Tamanho = 1, Obrigatorio = true)]
+    [CampoSped(Ordem = 12, Tamanho = 1, Obrigatorio = true, Nome = "RETIFICADORA")]
     public string? Retificadora { get; set; }
 
     /// <summary>Número do recibo da ECF anterior, quando aplicável.</summary>
-    [CampoSped(Ordem = 13, Tamanho = 40)]
+    [CampoSped(Ordem = 13, Tamanho = 40, Nome = "NUM_REC")]
     public string? NumRec { get; set; }
 
     /// <summary>Indicador do tipo da ECF.</summary>
-    [CampoSped(Ordem = 14, Tamanho = 1, Obrigatorio = true)]
+    [CampoSped(Ordem = 14, Tamanho = 1, Obrigatorio = true, Nome = "TIP_ECF")]
     public int TipEcf { get; set; }
 
     /// <summary>CNPJ da SCP, preenchido somente pela própria SCP.</summary>
-    [CampoSped(Ordem = 15, Tamanho = 14)]
+    [CampoSped(Ordem = 15, Tamanho = 14, Nome = "COD_SCP")]
     public Cnpj? CodScp { get; set; }
 }

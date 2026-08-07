@@ -15,10 +15,10 @@ public sealed partial class RegistroN670 : RegistroSped
     public string? CampoCodigo { get; set; }
 
     /// <summary>Descrição da linha na tabela dinâmica do Sped.</summary>
-    [CampoSped(Ordem = 3)]
+    [CampoSped(Ordem = 3, Nome = "DESCRICAO")]
     public string? Descricao { get; set; }
 
     /// <summary>Valor declarado da linha.</summary>
-    [CampoSped(Ordem = 4, Tamanho = 19, Decimais = 2)]
+    [CampoSped(Ordem = 4, Tamanho = 19, Decimais = 2, Nome = "VALOR")]
     public decimal? Valor { get; set; }
 }

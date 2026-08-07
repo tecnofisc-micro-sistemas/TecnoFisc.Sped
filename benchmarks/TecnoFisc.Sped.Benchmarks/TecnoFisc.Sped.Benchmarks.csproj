@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\TecnoFisc.Sped.Core\TecnoFisc.Sped.Core.csproj" />
+    <ProjectReference Include="..\..\src\TecnoFisc.Sped.Ecf\TecnoFisc.Sped.Ecf.csproj" />
     <ProjectReference Include="..\..\src\TecnoFisc.Sped.EfdContribuicoes\TecnoFisc.Sped.EfdContribuicoes.csproj" />
     <ProjectReference Include="..\..\src\TecnoFisc.Sped.NFeNFCe\TecnoFisc.Sped.NFeNFCe.csproj" />
   </ItemGroup>

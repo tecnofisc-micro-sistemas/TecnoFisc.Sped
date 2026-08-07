@@ -269,9 +269,38 @@ public static class CatalogoBuilder
                     $"CapturaTudo em {tipo.FullName}.{campo.Nome} requer tipo string (nullable ou não).");
         }
 
+        ValidarVigenciaCrescente(tipo, lista);
+
         return lista.Count == 0
             ? Array.Empty<MetadadosCampo>()
             : lista.ConvertAll(static x => x.Campo);
+    }
+
+    /// <summary>
+    /// Exige que <see cref="CampoSpedAttribute.DesdeVersao"/> seja não-decrescente ao longo da
+    /// posição dos campos (tratando <c>0</c> — "sempre presente" — como o mínimo possível). É a
+    /// invariante da qual o mapeamento posicional do leitor depende
+    /// (<c>LeitorSpedTxt.InterpretarLinha</c>, <c>indice = posicaoCampo - 2</c>): um campo
+    /// versionado só pode aparecer no <b>fim</b> do registro, nunca seguido por um campo sempre
+    /// presente ou por um campo de versão anterior. Um arquivo SPED real nunca reordena colunas —
+    /// o Guia Prático só acrescenta campos novos ao final numa revisão — então uma sequência
+    /// decrescente indicaria erro de modelagem, não um leiaute real. Espelha
+    /// <c>RegistroSpedCatalogoGenerator</c> (diagnóstico em tempo de compilação), para que o
+    /// catálogo reflexivo e o gerado concordem sobre o que é um registro válido.
+    /// </summary>
+    private static void ValidarVigenciaCrescente(Type tipo, List<(int Ordem, MetadadosCampo Campo)> lista)
+    {
+        for (int i = 1; i < lista.Count; i++)
+        {
+            var anterior = lista[i - 1].Campo;
+            var atual = lista[i].Campo;
+            if (atual.DesdeVersao < anterior.DesdeVersao)
+                throw new InvalidOperationException(
+                    $"Campo {tipo.FullName}.{atual.Nome} (DesdeVersao={atual.DesdeVersao}) vem depois de " +
+                    $"{anterior.Nome} (DesdeVersao={anterior.DesdeVersao}); DesdeVersao precisa ser " +
+                    "não-decrescente ao longo da posição dos campos — campo versionado só pode ficar no " +
+                    "fim do registro, senão o mapeamento posicional do leitor desalinha silenciosamente.");
+        }
     }
 
     private static string ResolveFieldName(

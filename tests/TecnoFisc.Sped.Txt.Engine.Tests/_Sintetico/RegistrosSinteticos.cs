@@ -274,6 +274,15 @@ public sealed class RegistroZ100Sintetico : RegistroSped
     public string? IndComplemento { get; set; }
 }
 
+/// <summary>
+/// Cadeia de dois campos versionados no fim do registro, com limiares crescentes (312, depois
+/// 400) — a única forma que <c>CatalogoBuilder</c> aceita hoje
+/// (<c>DesdeVersao</c> não-decrescente ao longo da posição; ver
+/// <c>CatalogoBuilder.ValidarVigenciaCrescente</c>). Exercita o mapeamento posicional do leitor
+/// (<c>indice = posicaoCampo - 2</c>) indexando dois portões de vigência independentes no mesmo
+/// registro, sem depender de um campo sempre presente vir depois de um versionado (esse desenho
+/// é rejeitado na construção do catálogo — ver <c>RegistroSpedCatalogoGeneratorVigenciaTests</c>).
+/// </summary>
 [RegistroSped(Codigo = "Z200", Nivel = 2, Bloco = "Z", IntroduzidoEm = 310)]
 public sealed class RegistroZ200Sintetico : RegistroSped
 {
@@ -285,6 +294,6 @@ public sealed class RegistroZ200Sintetico : RegistroSped
     [CampoSped(Ordem = 3, DesdeVersao = 312)]
     public string? Futuro { get; set; }
 
-    [CampoSped(Ordem = 4)]
+    [CampoSped(Ordem = 4, DesdeVersao = 400)]
     public string? Depois { get; set; }
 }

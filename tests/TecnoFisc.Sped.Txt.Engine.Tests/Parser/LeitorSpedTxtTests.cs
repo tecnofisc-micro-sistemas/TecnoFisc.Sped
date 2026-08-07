@@ -125,14 +125,19 @@ public sealed class LeitorSpedTxtTests
     [Fact]
     public async Task LerStreamingAsync_VigenciaAtivada_IndexaPelosCamposAtivos()
     {
-        // A coluna do campo barrado (Futuro) continua fisicamente presente e vazia — é assim
-        // que o Guia Prático especifica um leiaute versionado, e é o único jeito de o mapeamento
-        // posicional (indice = posicaoCampo - 2) manter Depois alinhado. Omitir a coluna por
-        // completo deslocaria Depois para o índice de Futuro (achado 4 do PR 531).
+        // Z200 encadeia dois campos versionados no fim do registro (Futuro desde 312, Depois
+        // desde 400) — é a única forma que CatalogoBuilder.ValidarVigenciaCrescente aceita hoje
+        // (DesdeVersao não-decrescente ao longo da posição; um campo versionado só pode ficar no
+        // fim, nunca seguido por um sempre-presente ou por um de versão anterior). No arquivo de
+        // versão 312, Futuro já vigora mas Depois ainda não — mesmo com a coluna de Depois
+        // fisicamente preenchida (não vazia, para provar que é a guarda de vigência CampoAtivo,
+        // e não a coincidência de string vazia → null, que bloqueia a atribuição). Prova que o
+        // mapeamento posicional (indice = posicaoCampo - 2) indexa dois portões de vigência
+        // independentes no mesmo registro sem misturar as colunas.
         const string sped =
-            "|0000|310|01012025|31012025|EMPRESA|11222333000181|\r\n" +
+            "|0000|312|01012025|31012025|EMPRESA|11222333000181|\r\n" +
             "|C001|0|\r\n" +
-            "|Z200|ANTES||DEPOIS|\r\n" +
+            "|Z200|ANTES|FUTURO|DEPOIS|\r\n" +
             "|9999|4|\r\n";
         var opcoes = new ReadingOptions { RespeitarVigenciaDoLeiaute = true };
 
@@ -140,8 +145,8 @@ public sealed class LeitorSpedTxtTests
             .OfType<RegistroZ200Sintetico>().Single();
 
         registro.Antes.Should().Be("ANTES");
-        registro.Futuro.Should().BeNull();
-        registro.Depois.Should().Be("DEPOIS");
+        registro.Futuro.Should().Be("FUTURO");
+        registro.Depois.Should().BeNull();
     }
 
     [Fact]

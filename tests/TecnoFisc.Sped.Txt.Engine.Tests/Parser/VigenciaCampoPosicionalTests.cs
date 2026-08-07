@@ -9,8 +9,13 @@ namespace TecnoFisc.Sped.Txt.Engine.Tests.Parser;
 /// Prova que a coluna barrada por vigência é sempre consumida pela posição, mesmo quando está
 /// fisicamente presente no arquivo abaixo da versão de introdução do campo (achado 4 do PR 531):
 /// o cursor sequencial antigo assumia que a coluna estaria ausente e deslocava o restante da
-/// linha um campo à esquerda quando ela existia. Exercita o caminho real (<see cref="LeitorSpedTxt.ReadStreamingAsync"/>)
-/// com um <c>0000</c> sintético que declara a versão, em vez de acessar <c>InterpretarLinha</c>
+/// linha um campo à esquerda quando ela existia. <see cref="RegistroVigenciaColunaSintetico"/>
+/// (A300) encadeia dois campos versionados com limiares crescentes (12, depois 20) — a única
+/// forma que <c>CatalogoBuilder.ValidarVigenciaCrescente</c> aceita hoje; um campo sempre
+/// presente ou de versão anterior depois de um campo versionado é rejeitado na construção do
+/// catálogo (ver <c>RegistroSpedCatalogoGeneratorVigenciaTests</c>), não apenas evitado aqui em
+/// tempo de leitura. Exercita o caminho real (<see cref="LeitorSpedTxt.ReadStreamingAsync"/>) com
+/// um <c>0000</c> sintético que declara a versão, em vez de acessar <c>InterpretarLinha</c>
 /// diretamente — não amplia a superfície interna/pública da biblioteca.
 /// </summary>
 public sealed class VigenciaCampoPosicionalTests
@@ -39,19 +44,29 @@ public sealed class VigenciaCampoPosicionalTests
     }
 
     [Fact]
-    public async Task ColunaBarradaPresenteNoArquivo_NaoDeslocaAsSeguintes()
+    public async Task ColunasBarradasPresentesNoArquivo_NaoSaoAtribuidas()
     {
         var registro = await LerAsync(versao: 10);
 
         registro.Antes.Should().Be("a");
         registro.Novo.Should().BeNull();
-        registro.Depois.Should().Be("d");
+        registro.Depois.Should().BeNull();
     }
 
     [Fact]
-    public async Task VersaoNoLimite_AtribuiOCampoNovo()
+    public async Task VersaoNoLimite_AtribuiOCampoNovoSemAfetarOAindaBarrado()
     {
         var registro = await LerAsync(versao: 12);
+
+        registro.Antes.Should().Be("a");
+        registro.Novo.Should().Be("n");
+        registro.Depois.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task VersaoAlcancaOSegundoLimite_AtribuiTodosOsCamposAtivos()
+    {
+        var registro = await LerAsync(versao: 20);
 
         registro.Antes.Should().Be("a");
         registro.Novo.Should().Be("n");

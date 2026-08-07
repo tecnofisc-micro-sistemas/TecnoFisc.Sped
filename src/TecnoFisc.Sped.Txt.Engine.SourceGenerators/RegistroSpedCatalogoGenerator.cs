@@ -42,6 +42,20 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
+    /// <summary>
+    /// Espelha <c>CatalogoBuilder.ValidarVigenciaCrescente</c>: <c>DesdeVersao</c> precisa ser
+    /// não-decrescente ao longo da posição dos campos, porque o mapeamento posicional do leitor
+    /// (<c>LeitorSpedTxt.InterpretarLinha</c>, <c>indice = posicaoCampo - 2</c>) só é correto
+    /// quando um campo versionado fica no fim do registro.
+    /// </summary>
+    private static readonly DiagnosticDescriptor NonIncreasingVigenciaDiagnostic = new(
+        id: "TFSPED003",
+        title: "Vigência de campo fora de ordem",
+        messageFormat: "Campo '{0}' viola vigência não-decrescente: {1}",
+        category: "TecnoFisc.Sped.Txt.Engine",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         IncrementalValuesProvider<InfoRegistro> registros = context.SyntaxProvider
@@ -69,9 +83,12 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
             {
                 foreach (FieldError error in recordInfo.Errors)
                 {
-                    DiagnosticDescriptor descriptor = error.Kind == FieldErrorKind.InvalidName
-                        ? InvalidFieldNameDiagnostic
-                        : DuplicateFieldNameDiagnostic;
+                    DiagnosticDescriptor descriptor = error.Kind switch
+                    {
+                        FieldErrorKind.InvalidName => InvalidFieldNameDiagnostic,
+                        FieldErrorKind.DuplicateName => DuplicateFieldNameDiagnostic,
+                        _ => NonIncreasingVigenciaDiagnostic,
+                    };
                     spc.ReportDiagnostic(Diagnostic.Create(
                         descriptor,
                         error.Location,
@@ -226,6 +243,7 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
     {
         var lista = new List<InfoCampo>();
         var fieldNames = new HashSet<string>(System.StringComparer.Ordinal);
+        var locationPorOrdem = new Dictionary<int, Location?>();
         ImmutableArray<FieldError>.Builder errors = ImmutableArray.CreateBuilder<FieldError>();
 
         // Atravessa toda a hierarquia (heranças entre registros existem em alguns layouts).
@@ -265,6 +283,8 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
 
                 string fieldName = string.IsNullOrEmpty(explicitName) ? propriedade.Name : explicitName!;
                 Location? location = propriedade.Locations.FirstOrDefault();
+                if (!locationPorOrdem.ContainsKey(ordem))
+                    locationPorOrdem[ordem] = location;
                 string fullyQualifiedProperty = propriedade.ContainingType.ToDisplayString() + "." + propriedade.Name;
                 if (!string.IsNullOrEmpty(explicitName) && !IsFieldNameValid(explicitName!))
                 {
@@ -332,6 +352,26 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
             .Select(g => g.First())
             .OrderBy(c => c.Ordem)
             .ToImmutableArray();
+
+        // DesdeVersao precisa ser não-decrescente ao longo da posição — ver NonIncreasingVigenciaDiagnostic.
+        for (int i = 1; i < fields.Length; i++)
+        {
+            InfoCampo anterior = fields[i - 1];
+            InfoCampo atual = fields[i];
+            if (atual.DesdeVersao < anterior.DesdeVersao)
+            {
+                string fullyQualifiedProperty = tipoRegistro.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) + "." + atual.Nome;
+                Location? location = locationPorOrdem.TryGetValue(atual.Ordem, out Location? loc) ? loc : null;
+                errors.Add(new FieldError(
+                    FieldErrorKind.NonIncreasingVigencia,
+                    location,
+                    fullyQualifiedProperty,
+                    $"DesdeVersao={atual.DesdeVersao} vem depois de '{anterior.FieldName}' (DesdeVersao=" +
+                    $"{anterior.DesdeVersao}); campo versionado só pode ficar no fim do registro, senão o " +
+                    "mapeamento posicional do leitor desalinha silenciosamente."));
+            }
+        }
+
         return new FieldCollectionResult(fields, errors.ToImmutable());
     }
 
@@ -1108,5 +1148,6 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
     {
         InvalidName,
         DuplicateName,
+        NonIncreasingVigencia,
     }
 }

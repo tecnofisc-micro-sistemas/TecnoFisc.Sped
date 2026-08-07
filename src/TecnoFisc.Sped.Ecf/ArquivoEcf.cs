@@ -11,6 +11,7 @@ public sealed class ArquivoEcf : IArquivoSped
     private static readonly string[] _ordemBlocos = ["0", "C", "E", "J", "K", "L", "M", "N", "P", "Q", "T", "U", "V", "W", "X", "Y", "9"];
 
     private readonly Dictionary<string, BlocoEcf> _blocos;
+    private readonly List<RegistroNaoReconhecido> _naoReconhecidos = [];
 
     public ArquivoEcf()
     {
@@ -37,6 +38,13 @@ public sealed class ArquivoEcf : IArquivoSped
     public BlocoEcf BlocoY => _blocos["Y"];
     public BlocoEcf Bloco9 => _blocos["9"];
 
+    /// <summary>
+    /// Registros que o leitor não conseguiu classificar — código desconhecido pelo catálogo ou
+    /// descartado por vigência. Só é populado sob <c>LenientLayout</c> ou vigência ligada; sob
+    /// leitura estrita o parser já teria abortado antes.
+    /// </summary>
+    public IReadOnlyList<RegistroNaoReconhecido> RegistrosNaoReconhecidos => _naoReconhecidos;
+
     /// <inheritdoc />
     public IEnumerable<IBlocoSped> EnumerarBlocos()
     {
@@ -56,6 +64,12 @@ public sealed class ArquivoEcf : IArquivoSped
     public void Adicionar(RegistroSped registro)
     {
         ArgumentNullException.ThrowIfNull(registro);
+
+        if (registro is RegistroNaoReconhecido naoReconhecido)
+        {
+            _naoReconhecidos.Add(naoReconhecido);
+            return;
+        }
 
         var codigo = registro.Codigo;
         if (string.IsNullOrEmpty(codigo))

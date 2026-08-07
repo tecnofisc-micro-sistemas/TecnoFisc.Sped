@@ -53,7 +53,7 @@ public sealed class RegistroX356Tests
         resultado.Sucesso.Should().BeTrue();
         resultado.Valor.Should().BeOfType<RegistroX356>()
             .Which.ErrosDeFormato.Should().ContainSingle(erro =>
-                erro.Campo == nameof(RegistroX356.PercPart) && erro.ValorBruto == "INVALIDO");
+                erro.Campo == "PERC_PART" && erro.ValorBruto == "INVALIDO");
     }
 
     [Fact]

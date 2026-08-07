@@ -34,6 +34,6 @@ public sealed class RegistroX352Tests
         resultado.Sucesso.Should().BeTrue();
         resultado.Valor.Should().BeOfType<RegistroX352>()
             .Which.ErrosDeFormato.Should().ContainSingle(erro =>
-                erro.Campo == nameof(RegistroX352.ResPer) && erro.ValorBruto == "INVALIDO");
+                erro.Campo == "RES_PER" && erro.ValorBruto == "INVALIDO");
     }
 }

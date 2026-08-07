@@ -35,6 +35,6 @@ public sealed class RegistroX480Tests
         vazio.Valor.Should().BeOfType<RegistroX480>().Which.Valor.Should().BeNull();
         invalido.Valor.Should().BeOfType<RegistroX480>()
             .Which.ErrosDeFormato.Should().ContainSingle(erro =>
-                erro.Campo == nameof(RegistroX480.Valor));
+                erro.Campo == "VALOR");
     }
 }

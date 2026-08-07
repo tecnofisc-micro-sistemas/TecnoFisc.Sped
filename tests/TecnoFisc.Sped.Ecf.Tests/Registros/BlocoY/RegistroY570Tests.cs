@@ -42,11 +42,11 @@ public sealed class RegistroY570Tests
         resultado.Valor.Should().BeOfType<RegistroY570>()
             .Which.ErrosDeFormato.Select(erro => erro.Campo)
             .Should().Contain([
-                nameof(RegistroY570.CnpjFon),
-                nameof(RegistroY570.IndOrgPub),
-                nameof(RegistroY570.VlRend),
-                nameof(RegistroY570.IrRet),
-                nameof(RegistroY570.CsllRet),
+                "CNPJ_FON",
+                "IND_ORG_PUB",
+                "VL_REND",
+                "IR_RET",
+                "CSLL_RET",
             ]);
     }
 }

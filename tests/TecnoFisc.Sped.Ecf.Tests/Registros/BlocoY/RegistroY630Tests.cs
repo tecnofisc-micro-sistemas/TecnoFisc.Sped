@@ -60,12 +60,12 @@ public sealed class RegistroY630Tests
         resultado.Valor.Should().BeOfType<RegistroY630>()
             .Which.ErrosDeFormato.Select(erro => erro.Campo)
             .Should().Contain([
-                nameof(RegistroY630.Cnpj),
-                nameof(RegistroY630.QteQuot),
-                nameof(RegistroY630.QteQuota),
-                nameof(RegistroY630.PatrFinPer),
-                nameof(RegistroY630.DatAbert),
-                nameof(RegistroY630.DatEncer),
+                "CNPJ",
+                "QTE_QUOT",
+                "QTE_QUOTA",
+                "PATR_FIN_PER",
+                "DAT_ABERT",
+                "DAT_ENCER",
             ]);
     }
 }

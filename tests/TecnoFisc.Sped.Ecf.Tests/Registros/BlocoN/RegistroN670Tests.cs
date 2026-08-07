@@ -56,6 +56,6 @@ public sealed class RegistroN670Tests
         resultado.Sucesso.Should().BeTrue();
         resultado.Valor.Should().BeOfType<RegistroN670>()
             .Which.ErrosDeFormato.Should().ContainSingle(erro =>
-                erro.Campo == nameof(RegistroN670.Valor) && erro.ValorBruto == "INVALIDO");
+                erro.Campo == "VALOR" && erro.ValorBruto == "INVALIDO");
     }
 }

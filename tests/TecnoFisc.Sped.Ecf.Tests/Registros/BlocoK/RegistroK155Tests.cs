@@ -51,6 +51,6 @@ public sealed class RegistroK155Tests
         resultado.Sucesso.Should().BeTrue();
         resultado.Valor.Should().BeOfType<RegistroK155>()
             .Which.ErrosDeFormato.Select(erro => erro.Campo)
-            .Should().Contain([nameof(RegistroK155.VlSldIni), nameof(RegistroK155.IndVlSldIni)]);
+            .Should().Contain(["VL_SLD_INI", "IND_VL_SLD_INI"]);
     }
 }

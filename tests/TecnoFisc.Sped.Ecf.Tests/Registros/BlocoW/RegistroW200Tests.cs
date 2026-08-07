@@ -64,8 +64,8 @@ public sealed class RegistroW200Tests
     }
 
     [Theory]
-    [InlineData("INVALIDO", "321", nameof(RegistroW200.VlRecNaoRel))]
-    [InlineData("500", "3,5", nameof(RegistroW200.NumEmp))]
+    [InlineData("INVALIDO", "321", "VL_REC_NAO_REL")]
+    [InlineData("500", "3,5", "NUM_EMP")]
     public void Parser_FormatoNumericoInvalido_RegistraErro(
         string receita,
         string empregados,

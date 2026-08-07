@@ -33,6 +33,6 @@ public sealed class RegistroX354Tests
         resultado.Sucesso.Should().BeTrue();
         resultado.Valor.Should().BeOfType<RegistroX354>()
             .Which.ErrosDeFormato.Should().ContainSingle(erro =>
-                erro.Campo == nameof(RegistroX354.ResNegAntReal) && erro.ValorBruto == "INVALIDO");
+                erro.Campo == "RES_NEG_ANT_REAL" && erro.ValorBruto == "INVALIDO");
     }
 }

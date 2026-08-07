@@ -48,9 +48,9 @@ public sealed class RegistroY520Tests
         resultado.Valor.Should().BeOfType<RegistroY520>()
             .Which.ErrosDeFormato.Select(erro => erro.Campo)
             .Should().Contain([
-                nameof(RegistroY520.TipExt),
-                nameof(RegistroY520.Forma),
-                nameof(RegistroY520.VlPeriodo),
+                "TIP_EXT",
+                "FORMA",
+                "VL_PERIODO",
             ]);
     }
 

@@ -32,7 +32,7 @@ public sealed class RegistroU030Tests
         resultado.Sucesso.Should().BeTrue();
         resultado.Valor.Should().BeOfType<RegistroU030>()
             .Which.ErrosDeFormato.Select(erro => erro.Campo)
-            .Should().Contain([nameof(RegistroU030.DtIni), nameof(RegistroU030.DtFin)]);
+            .Should().Contain(["DT_INI", "DT_FIN"]);
     }
 
     [Theory]

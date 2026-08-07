@@ -52,6 +52,6 @@ public sealed class RegistroX353Tests
         resultado.Sucesso.Should().BeTrue();
         resultado.Valor.Should().BeOfType<RegistroX353>()
             .Which.ErrosDeFormato.Should().ContainSingle(erro =>
-                erro.Campo == nameof(RegistroX353.ResProp) && erro.ValorBruto == "INVALIDO");
+                erro.Campo == "RES_PROP" && erro.ValorBruto == "INVALIDO");
     }
 }

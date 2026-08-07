@@ -51,7 +51,7 @@ public sealed class RegistroC050Tests
             {
                 Linha = 0L,
                 CodigoRegistro = "C050",
-                Campo = nameof(RegistroC050.CodNat),
+                Campo = "COD_NAT",
                 ValorBruto = "06",
                 Mensagem = "Valor '06' não é válido para CodigoNaturezaContaContabil.",
             });

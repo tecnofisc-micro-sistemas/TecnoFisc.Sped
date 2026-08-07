@@ -43,8 +43,8 @@ public sealed class RegistroX420Tests
         resultado.Valor.Should().BeOfType<RegistroX420>()
             .Which.ErrosDeFormato.Select(erro => erro.Campo)
             .Should().Contain([
-                nameof(RegistroX420.TipRoy),
-                nameof(RegistroX420.VlExplDirSw),
+                "TIP_ROY",
+                "VL_EXPL_DIR_SW",
             ]);
     }
 }

@@ -59,6 +59,6 @@ public sealed class RegistroP100Tests
         resultado.Sucesso.Should().BeTrue();
         resultado.Valor.Should().BeOfType<RegistroP100>()
             .Which.ErrosDeFormato.Select(erro => erro.Campo)
-            .Should().Contain([nameof(RegistroP100.Nivel), nameof(RegistroP100.ValCtaRefIni)]);
+            .Should().Contain(["NIVEL", "VAL_CTA_REF_INI"]);
     }
 }

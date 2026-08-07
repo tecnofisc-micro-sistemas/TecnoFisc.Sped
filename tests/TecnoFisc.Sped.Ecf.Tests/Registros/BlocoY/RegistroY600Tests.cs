@@ -93,19 +93,19 @@ public sealed class RegistroY600Tests
         resultado.Valor.Should().BeOfType<RegistroY600>()
             .Which.ErrosDeFormato.Select(erro => erro.Campo)
             .Should().Contain([
-                nameof(RegistroY600.DtAltSoc),
-                nameof(RegistroY600.DtFimSoc),
-                nameof(RegistroY600.IndQualif),
-                nameof(RegistroY600.Qualif),
-                nameof(RegistroY600.PercCapTot),
-                nameof(RegistroY600.PercCapVot),
-                nameof(RegistroY600.CpfRepLeg),
-                nameof(RegistroY600.QualifRepLeg),
-                nameof(RegistroY600.VlRemTrab),
-                nameof(RegistroY600.VlLucDiv),
-                nameof(RegistroY600.VlJurCap),
-                nameof(RegistroY600.VlDemRend),
-                nameof(RegistroY600.VlIrRet),
+                "DT_ALT_SOC",
+                "DT_FIM_SOC",
+                "IND_QUALIF",
+                "QUALIF",
+                "PERC_CAP_TOT",
+                "PERC_CAP_VOT",
+                "CPF_REP_LEG",
+                "QUALIF_REP_LEG",
+                "VL_REM_TRAB",
+                "VL_LUC_DIV",
+                "VL_JUR_CAP",
+                "VL_DEM_REND",
+                "VL_IR_RET",
             ]);
     }
 

@@ -55,6 +55,6 @@ public sealed class RegistroN660Tests
         resultado.Sucesso.Should().BeTrue();
         resultado.Valor.Should().BeOfType<RegistroN660>()
             .Which.ErrosDeFormato.Should().ContainSingle(erro =>
-                erro.Campo == nameof(RegistroN660.Valor) && erro.ValorBruto == "INVALIDO");
+                erro.Campo == "VALOR" && erro.ValorBruto == "INVALIDO");
     }
 }

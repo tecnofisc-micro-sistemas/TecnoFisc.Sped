@@ -32,6 +32,6 @@ public sealed class RegistroM415Tests
         resultado.Sucesso.Should().BeTrue();
         resultado.Valor.Should().BeOfType<RegistroM415>()
             .Which.ErrosDeFormato.Should().ContainSingle(erro =>
-                erro.Campo == nameof(RegistroM415.IndProc) && erro.ValorBruto == "0");
+                erro.Campo == "IND_PROC" && erro.ValorBruto == "0");
     }
 }

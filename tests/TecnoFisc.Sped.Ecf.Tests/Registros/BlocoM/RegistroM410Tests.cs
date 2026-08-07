@@ -60,10 +60,10 @@ public sealed class RegistroM410Tests
         resultado.Valor.Should().BeOfType<RegistroM410>()
             .Which.ErrosDeFormato.Select(erro => erro.Campo)
             .Should().Contain([
-                nameof(RegistroM410.CodTributo),
-                nameof(RegistroM410.ValLanLalbPb),
-                nameof(RegistroM410.IndValLanLalbPb),
-                nameof(RegistroM410.IndLanAnt),
+                "COD_TRIBUTO",
+                "VAL_LAN_LALB_PB",
+                "IND_VAL_LAN_LALB_PB",
+                "IND_LAN_ANT",
             ]);
     }
 }

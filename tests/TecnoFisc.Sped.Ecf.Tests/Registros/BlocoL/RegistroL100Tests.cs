@@ -74,6 +74,6 @@ public sealed class RegistroL100Tests
         var registro = resultado.Valor.Should().BeOfType<RegistroL100>().Which;
         registro.ValCtaRefFin.Should().Be("CALCULADO");
         registro.ErrosDeFormato.Should().ContainSingle(erro =>
-            erro.Campo == nameof(RegistroL100.ValCtaRefIni));
+            erro.Campo == "VAL_CTA_REF_INI");
     }
 }

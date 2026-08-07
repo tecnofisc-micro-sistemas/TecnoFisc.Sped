@@ -39,6 +39,6 @@ public sealed class RegistroC155Tests
         resultado.Sucesso.Should().BeTrue();
         resultado.Valor.Should().BeOfType<RegistroC155>()
             .Which.ErrosDeFormato.Should().ContainSingle(erro =>
-                erro.Campo == "VlSldIni" && erro.ValorBruto == "INVALIDO");
+                erro.Campo == "VL_SLD_INI" && erro.ValorBruto == "INVALIDO");
     }
 }

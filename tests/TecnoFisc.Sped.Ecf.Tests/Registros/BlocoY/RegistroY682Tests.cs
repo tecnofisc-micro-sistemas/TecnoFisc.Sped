@@ -38,6 +38,6 @@ public sealed class RegistroY682Tests
             .Should().BeOfType<RegistroY682>().Which;
 
         registro.ErrosDeFormato.Select(erro => erro.Campo)
-            .Should().Contain([nameof(RegistroY682.Mes), nameof(RegistroY682.AcresPatr)]);
+            .Should().Contain(["MES", "ACRES_PATR"]);
     }
 }

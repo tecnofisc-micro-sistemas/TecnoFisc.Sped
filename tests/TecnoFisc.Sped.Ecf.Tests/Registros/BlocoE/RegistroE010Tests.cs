@@ -36,6 +36,6 @@ public sealed class RegistroE010Tests
 
         resultado.Sucesso.Should().BeTrue();
         resultado.Valor.Should().BeOfType<RegistroE010>()
-            .Which.ErrosDeFormato.Should().ContainSingle(erro => erro.Campo == "ValCtaRef");
+            .Which.ErrosDeFormato.Should().ContainSingle(erro => erro.Campo == "VAL_CTA_REF");
     }
 }

@@ -72,6 +72,6 @@ public sealed class RegistroW300Tests
         resultado.Sucesso.Should().BeTrue();
         resultado.Valor.Should().BeOfType<RegistroW300>()
             .Which.ErrosDeFormato.Should().ContainSingle(erro =>
-                erro.Campo == nameof(RegistroW300.IndRecNaoRel) && erro.ValorBruto == "X");
+                erro.Campo == "IND_REC_NAO_REL" && erro.ValorBruto == "X");
     }
 }

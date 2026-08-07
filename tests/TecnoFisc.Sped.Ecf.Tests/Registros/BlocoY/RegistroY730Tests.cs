@@ -72,7 +72,7 @@ public sealed class RegistroY730Tests
             .Should().BeOfType<RegistroY730>().Which;
 
         registro.ErrosDeFormato.Select(erro => erro.Campo).Should().Contain([
-            nameof(RegistroY730.Data), nameof(RegistroY730.TipoDestinatario), nameof(RegistroY730.Valor),
+            "DATA", "TIPO_DESTINATARIO", "VALOR",
         ]);
     }
 }

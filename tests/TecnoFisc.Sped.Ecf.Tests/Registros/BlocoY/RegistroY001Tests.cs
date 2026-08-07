@@ -48,7 +48,7 @@ public sealed class RegistroY001Tests
         resultado.Sucesso.Should().BeTrue();
         resultado.Valor.Should().BeOfType<RegistroY001>()
             .Which.ErrosDeFormato.Should().ContainSingle(erro =>
-                erro.Campo == nameof(RegistroY001.IndDad) && erro.ValorBruto == "9");
+                erro.Campo == "IND_DAD" && erro.ValorBruto == "9");
     }
 
     [Fact]

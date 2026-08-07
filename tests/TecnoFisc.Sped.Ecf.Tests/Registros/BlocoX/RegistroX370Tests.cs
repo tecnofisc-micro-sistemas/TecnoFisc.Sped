@@ -72,9 +72,9 @@ public sealed class RegistroX370Tests
         var erros = resultado.Valor.Should().BeOfType<RegistroX370>()
             .Which.ErrosDeFormato.Select(erro => erro.Campo);
         erros.Should().Contain([
-            nameof(RegistroX370.VlTransacao),
-            nameof(RegistroX370.IndAjustes),
-            nameof(RegistroX370.CompIntencional),
+            "VL_TRANSACAO",
+            "IND_AJUSTES",
+            "COMP_INTENCIONAL",
         ]);
     }
 }

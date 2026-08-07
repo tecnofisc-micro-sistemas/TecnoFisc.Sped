@@ -35,6 +35,6 @@ public sealed class RegistroY650Tests
         resultado.Sucesso.Should().BeTrue();
         resultado.Valor.Should().BeOfType<RegistroY650>()
             .Which.ErrosDeFormato.Select(erro => erro.Campo)
-            .Should().Contain([nameof(RegistroY650.Cnpj), nameof(RegistroY650.VlPart)]);
+            .Should().Contain(["CNPJ", "VL_PART"]);
     }
 }

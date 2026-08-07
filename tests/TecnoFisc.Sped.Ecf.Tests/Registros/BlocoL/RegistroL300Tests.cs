@@ -58,6 +58,6 @@ public sealed class RegistroL300Tests
         resultado.Sucesso.Should().BeTrue();
         resultado.Valor.Should().BeOfType<RegistroL300>()
             .Which.ErrosDeFormato.Select(erro => erro.Campo)
-            .Should().Contain([nameof(RegistroL300.Valor), nameof(RegistroL300.IndValor)]);
+            .Should().Contain(["VALOR", "IND_VALOR"]);
     }
 }

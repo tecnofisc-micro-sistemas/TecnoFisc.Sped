@@ -38,6 +38,6 @@ public sealed class RegistroY590Tests
         resultado.Sucesso.Should().BeTrue();
         resultado.Valor.Should().BeOfType<RegistroY590>()
             .Which.ErrosDeFormato.Select(erro => erro.Campo)
-            .Should().Contain([nameof(RegistroY590.VlAnt), nameof(RegistroY590.VlAtual)]);
+            .Should().Contain(["VL_ANT", "VL_ATUAL"]);
     }
 }

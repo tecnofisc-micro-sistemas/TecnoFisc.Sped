@@ -38,6 +38,6 @@ public sealed class RegistroX371Tests
         resultado.Sucesso.Should().BeTrue();
         resultado.Valor.Should().BeOfType<RegistroX371>()
             .Which.ErrosDeFormato.Should().ContainSingle(erro =>
-                erro.Campo == nameof(RegistroX371.IndValor) && erro.ValorBruto == "X");
+                erro.Campo == "IND_VALOR" && erro.ValorBruto == "X");
     }
 }

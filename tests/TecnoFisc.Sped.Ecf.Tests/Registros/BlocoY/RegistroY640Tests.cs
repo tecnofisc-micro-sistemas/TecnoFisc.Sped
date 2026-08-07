@@ -62,11 +62,11 @@ public sealed class RegistroY640Tests
         resultado.Valor.Should().BeOfType<RegistroY640>()
             .Which.ErrosDeFormato.Select(erro => erro.Campo)
             .Should().Contain([
-                nameof(RegistroY640.Cnpj),
-                nameof(RegistroY640.CondDecl),
-                nameof(RegistroY640.VlCons),
-                nameof(RegistroY640.CnpjLid),
-                nameof(RegistroY640.VlDecl),
+                "CNPJ",
+                "COND_DECL",
+                "VL_CONS",
+                "CNPJ_LID",
+                "VL_DECL",
             ]);
     }
 }

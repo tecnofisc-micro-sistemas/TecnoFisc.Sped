@@ -38,12 +38,12 @@ public sealed class RegistroN615Tests
         resultado.Valor.Should().BeOfType<RegistroN615>()
             .Which.ErrosDeFormato.Select(erro => erro.Campo)
             .Should().Contain([
-                nameof(RegistroN615.BaseCalc),
-                nameof(RegistroN615.PerIncenFinor),
-                nameof(RegistroN615.VlLiqIncenFinor),
-                nameof(RegistroN615.PerIncenFinam),
-                nameof(RegistroN615.VlLiqIncenFinam),
-                nameof(RegistroN615.VlTotal),
+                "BASE_CALC",
+                "PER_INCEN_FINOR",
+                "VL_LIQ_INCEN_FINOR",
+                "PER_INCEN_FINAM",
+                "VL_LIQ_INCEN_FINAM",
+                "VL_TOTAL",
             ]);
     }
 }

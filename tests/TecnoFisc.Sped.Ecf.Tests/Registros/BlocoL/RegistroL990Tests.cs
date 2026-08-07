@@ -36,7 +36,7 @@ public sealed class RegistroL990Tests
         resultado.Sucesso.Should().BeTrue();
         resultado.Valor.Should().BeOfType<RegistroL990>()
             .Which.ErrosDeFormato.Should().ContainSingle(erro =>
-                erro.Campo == nameof(RegistroL990.QtdLin) && erro.ValorBruto == "INVALIDA");
+                erro.Campo == "QTD_LIN" && erro.ValorBruto == "INVALIDA");
     }
 
     [Fact]

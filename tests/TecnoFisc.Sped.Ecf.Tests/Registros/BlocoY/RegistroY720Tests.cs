@@ -59,9 +59,9 @@ public sealed class RegistroY720Tests
             .Should().BeOfType<RegistroY720>().Which;
 
         registro.ErrosDeFormato.Select(erro => erro.Campo).Should().Contain([
-            nameof(RegistroY720.LucLiq), nameof(RegistroY720.DtLucLiq),
-            nameof(RegistroY720.RecBrutAnt), nameof(RegistroY720.Intimacao),
-            nameof(RegistroY720.IntAtraso),
+            "LUC_LIQ", "DT_LUC_LIQ",
+            "REC_BRUT_ANT", "INTIMACAO",
+            "INT_ATRASO",
         ]);
     }
 }

@@ -74,12 +74,12 @@ public sealed class RegistroM010Tests
         resultado.Valor.Should().BeOfType<RegistroM010>()
             .Which.ErrosDeFormato.Select(erro => erro.Campo)
             .Should().Contain([
-                nameof(RegistroM010.DtApLal),
-                nameof(RegistroM010.DtLimLal),
-                nameof(RegistroM010.CodTributo),
-                nameof(RegistroM010.VlSaldoIni),
-                nameof(RegistroM010.IndVlSaldoIni),
-                nameof(RegistroM010.CnpjSitEsp),
+                "DT_AP_LAL",
+                "DT_LIM_LAL",
+                "COD_TRIBUTO",
+                "VL_SALDO_INI",
+                "IND_VL_SALDO_INI",
+                "CNPJ_SIT_ESP",
             ]);
     }
 }

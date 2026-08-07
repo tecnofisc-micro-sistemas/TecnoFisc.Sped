@@ -54,9 +54,9 @@ public sealed class RegistroP150Tests
         resultado.Valor.Should().BeOfType<RegistroP150>()
             .Which.ErrosDeFormato.Select(erro => erro.Campo)
             .Should().Contain([
-                nameof(RegistroP150.Tipo),
-                nameof(RegistroP150.Valor),
-                nameof(RegistroP150.IndValor),
+                "TIPO",
+                "VALOR",
+                "IND_VALOR",
             ]);
     }
 }

@@ -44,6 +44,6 @@ public sealed class RegistroM360Tests
         resultado.Sucesso.Should().BeTrue();
         resultado.Valor.Should().BeOfType<RegistroM360>()
             .Which.ErrosDeFormato.Select(erro => erro.Campo)
-            .Should().Contain([nameof(RegistroM360.VlCta), nameof(RegistroM360.IndVlCta)]);
+            .Should().Contain(["VL_CTA", "IND_VL_CTA"]);
     }
 }

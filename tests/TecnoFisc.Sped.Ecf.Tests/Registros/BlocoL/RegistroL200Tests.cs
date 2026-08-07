@@ -41,6 +41,6 @@ public sealed class RegistroL200Tests
         resultado.Sucesso.Should().BeTrue();
         resultado.Valor.Should().BeOfType<RegistroL200>()
             .Which.ErrosDeFormato.Should().ContainSingle(erro =>
-                erro.Campo == nameof(RegistroL200.IndAvalEstoq) && erro.ValorBruto == "9");
+                erro.Campo == "IND_AVAL_ESTOQ" && erro.ValorBruto == "9");
     }
 }

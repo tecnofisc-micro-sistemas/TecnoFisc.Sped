@@ -15,7 +15,7 @@ public sealed class RegistroQ100Tests
         var catalogo = new CatalogoSpedGerado();
         catalogo.TentarObter("Q100", out var metadados).Should().BeTrue();
         metadados!.Campos.Select(campo => campo.Nome)
-            .Should().Equal("Data", "NumDoc", "Hist", "VlEntrada", "VlSaida", "SldFin");
+            .Should().Equal("DATA", "NUM_DOC", "HIST", "VL_ENTRADA", "VL_SAIDA", "SLD_FIN");
         metadados.Campos[0].Tipo.Should().Be<DateOnly>();
         metadados.Campos[0].Formato.Should().Be("ddMMyyyy");
     }
@@ -61,10 +61,10 @@ public sealed class RegistroQ100Tests
         resultado.Valor.Should().BeOfType<RegistroQ100>()
             .Which.ErrosDeFormato.Select(erro => erro.Campo)
             .Should().Equal(
-                nameof(RegistroQ100.Data),
-                nameof(RegistroQ100.VlEntrada),
-                nameof(RegistroQ100.VlSaida),
-                nameof(RegistroQ100.SldFin));
+                "DATA",
+                "VL_ENTRADA",
+                "VL_SAIDA",
+                "SLD_FIN");
     }
 
     [Fact]

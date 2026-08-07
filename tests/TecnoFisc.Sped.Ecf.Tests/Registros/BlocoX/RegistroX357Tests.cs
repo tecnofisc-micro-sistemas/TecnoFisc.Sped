@@ -40,6 +40,6 @@ public sealed class RegistroX357Tests
         var registro = resultado.Valor.Should().BeOfType<RegistroX357>().Which;
         registro.NifCnpj.Should().Be("NIF-A9");
         registro.ErrosDeFormato.Should().ContainSingle(erro =>
-            erro.Campo == nameof(RegistroX357.Percentual) && erro.ValorBruto == "INVALIDO");
+            erro.Campo == "PERCENTUAL" && erro.ValorBruto == "INVALIDO");
     }
 }

@@ -84,11 +84,11 @@ public sealed class RegistroX485Tests
         resultado.Valor.Should().BeOfType<RegistroX485>()
             .Which.ErrosDeFormato.Select(erro => erro.Campo)
             .Should().Contain([
-                nameof(RegistroX485.TipoBenef),
-                nameof(RegistroX485.CnpjIncorp),
-                nameof(RegistroX485.DtDouPortCebas),
-                nameof(RegistroX485.DtIniPortCebas),
-                nameof(RegistroX485.DtFinPortCebas),
+                "TIPO_BENEF",
+                "CNPJ_INCORP",
+                "DT_DOU_PORT_CEBAS",
+                "DT_INI_PORT_CEBAS",
+                "DT_FIN_PORT_CEBAS",
             ]);
     }
 }

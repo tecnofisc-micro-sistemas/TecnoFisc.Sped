@@ -60,12 +60,12 @@ public sealed class RegistroU100Tests
         resultado.Valor.Should().BeOfType<RegistroU100>()
             .Which.ErrosDeFormato.Select(erro => erro.Campo)
             .Should().Contain([
-                nameof(RegistroU100.Tipo),
-                nameof(RegistroU100.Nivel),
-                nameof(RegistroU100.ValCtaRefIni),
-                nameof(RegistroU100.IndValCtaRefIni),
-                nameof(RegistroU100.ValCtaRefDeb),
-                nameof(RegistroU100.IndValCtaRefFin),
+                "TIPO",
+                "NIVEL",
+                "VAL_CTA_REF_INI",
+                "IND_VAL_CTA_REF_INI",
+                "VAL_CTA_REF_DEB",
+                "IND_VAL_CTA_REF_FIN",
             ]);
     }
 }

@@ -79,14 +79,14 @@ public sealed class RegistroX280Tests
         resultado.Valor.Should().BeOfType<RegistroX280>()
             .Which.ErrosDeFormato.Select(erro => erro.Campo)
             .Should().Contain([
-                nameof(RegistroX280.IndAtiv),
-                nameof(RegistroX280.IndConcedente),
-                nameof(RegistroX280.IndProj),
-                nameof(RegistroX280.VigIni),
-                nameof(RegistroX280.VigFim),
-                nameof(RegistroX280.CnpjIncentivo),
-                nameof(RegistroX280.RecLiqIncentivo),
-                nameof(RegistroX280.VlIncentivo),
+                "IND_ATIV",
+                "IND_CONCEDENTE",
+                "IND_PROJ",
+                "VIG_INI",
+                "VIG_FIM",
+                "CNPJ_INCENTIVO",
+                "REC_LIQ_INCENTIVO",
+                "VL_INCENTIVO",
             ]);
     }
 }

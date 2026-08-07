@@ -32,6 +32,6 @@ public sealed class Registro0035Tests
         resultado.Sucesso.Should().BeTrue();
         var registro = resultado.Valor.Should().BeOfType<Registro0035>().Which;
         registro.ErrosDeFormato.Should().ContainSingle(erro =>
-            erro.Campo == "CodScp" && erro.ValorBruto == "INVALIDO");
+            erro.Campo == "COD_SCP" && erro.ValorBruto == "INVALIDO");
     }
 }

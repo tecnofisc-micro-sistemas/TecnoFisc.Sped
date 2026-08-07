@@ -33,6 +33,6 @@ public sealed class RegistroT001Tests
         resultado.Sucesso.Should().BeTrue();
         resultado.Valor.Should().BeOfType<RegistroT001>()
             .Which.ErrosDeFormato.Should().ContainSingle(erro =>
-                erro.Campo == nameof(RegistroT001.IndDad) && erro.ValorBruto == "X");
+                erro.Campo == "IND_DAD" && erro.ValorBruto == "X");
     }
 }

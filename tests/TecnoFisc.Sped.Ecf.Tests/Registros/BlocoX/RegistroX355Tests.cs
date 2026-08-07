@@ -53,6 +53,6 @@ public sealed class RegistroX355Tests
         resultado.Sucesso.Should().BeTrue();
         resultado.Valor.Should().BeOfType<RegistroX355>()
             .Which.ErrosDeFormato.Should().ContainSingle(erro =>
-                erro.Campo == nameof(RegistroX355.Percentual) && erro.ValorBruto == "INVALIDO");
+                erro.Campo == "PERCENTUAL" && erro.ValorBruto == "INVALIDO");
     }
 }

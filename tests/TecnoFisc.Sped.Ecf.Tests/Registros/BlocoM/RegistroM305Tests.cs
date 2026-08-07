@@ -33,6 +33,6 @@ public sealed class RegistroM305Tests
         resultado.Sucesso.Should().BeTrue();
         resultado.Valor.Should().BeOfType<RegistroM305>()
             .Which.ErrosDeFormato.Select(erro => erro.Campo)
-            .Should().Contain([nameof(RegistroM305.VlCta), nameof(RegistroM305.IndVlCta)]);
+            .Should().Contain(["VL_CTA", "IND_VL_CTA"]);
     }
 }

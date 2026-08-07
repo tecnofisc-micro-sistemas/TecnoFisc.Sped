@@ -93,7 +93,7 @@ public sealed class RegistroY672Tests
             .Should().BeOfType<RegistroY672>().Which;
 
         registro.ErrosDeFormato.Should().HaveCount(17);
-        registro.ErrosDeFormato[^1].Campo.Should().Be(nameof(RegistroY672.IndAvalEstoq));
+        registro.ErrosDeFormato[^1].Campo.Should().Be("IND_AVAL_ESTOQ");
     }
 
     [Fact]
@@ -111,7 +111,7 @@ public sealed class RegistroY672Tests
         diagnostico.TotAtivo.Should().Be(100000m);
         diagnostico.IndAvalEstoq.Should().BeNull();
         diagnostico.ErrosDeFormato.Should().ContainSingle(erro =>
-            erro.Campo == nameof(RegistroY672.IndAvalEstoq) && erro.ValorBruto == "10000,00");
+            erro.Campo == "IND_AVAL_ESTOQ" && erro.ValorBruto == "10000,00");
 
         var camposMaterializados = typeof(RegistroY672).GetProperties()
             .Where(propriedade => propriedade.GetCustomAttribute<CampoSpedAttribute>() is not null)
@@ -123,7 +123,7 @@ public sealed class RegistroY672Tests
 
         var assercao = await act.Should().ThrowAsync<ErroFormatoSpedException>();
         assercao.Which.Erro.CodigoRegistro.Should().Be("Y672");
-        assercao.Which.Erro.Campo.Should().Be(nameof(RegistroY672.IndAvalEstoq));
+        assercao.Which.Erro.Campo.Should().Be("IND_AVAL_ESTOQ");
         assercao.Which.Erro.ValorBruto.Should().Be("10000,00");
     }
 }

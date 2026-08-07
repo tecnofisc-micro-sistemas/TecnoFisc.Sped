@@ -38,6 +38,6 @@ public sealed class RegistroX430Tests
         resultado.Sucesso.Should().BeTrue();
         resultado.Valor.Should().BeOfType<RegistroX430>()
             .Which.ErrosDeFormato.Should().ContainSingle(erro =>
-                erro.Campo == nameof(RegistroX430.VlServAssist));
+                erro.Campo == "VL_SERV_ASSIST");
     }
 }

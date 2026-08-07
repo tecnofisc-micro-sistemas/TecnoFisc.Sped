@@ -55,6 +55,6 @@ public sealed class RegistroX351Tests
         resultado.Sucesso.Should().BeTrue();
         resultado.Valor.Should().BeOfType<RegistroX351>()
             .Which.ErrosDeFormato.Should().ContainSingle(erro =>
-                erro.Campo == nameof(RegistroX351.ImpRetBr) && erro.ValorBruto == "INVALIDO");
+                erro.Campo == "IMP_RET_BR" && erro.ValorBruto == "INVALIDO");
     }
 }

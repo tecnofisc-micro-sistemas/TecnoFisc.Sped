@@ -96,17 +96,17 @@ public sealed class RegistroY620Tests
         resultado.Valor.Should().BeOfType<RegistroY620>()
             .Which.ErrosDeFormato.Select(erro => erro.Campo)
             .Should().Contain([
-                nameof(RegistroY620.DtEvento),
-                nameof(RegistroY620.IndRelac),
-                nameof(RegistroY620.Cnpj),
-                nameof(RegistroY620.ValorReais),
-                nameof(RegistroY620.ValorEstr),
-                nameof(RegistroY620.PercCapTot),
-                nameof(RegistroY620.PercCapVot),
-                nameof(RegistroY620.ResEqPat),
-                nameof(RegistroY620.DataAquis),
-                nameof(RegistroY620.IndProcCart),
-                nameof(RegistroY620.IndProcRfb),
+                "DT_EVENTO",
+                "IND_RELAC",
+                "CNPJ",
+                "VALOR_REAIS",
+                "VALOR_ESTR",
+                "PERC_CAP_TOT",
+                "PERC_CAP_VOT",
+                "RES_EQ_PAT",
+                "DATA_AQUIS",
+                "IND_PROC_CART",
+                "IND_PROC_RFB",
             ]);
     }
 }

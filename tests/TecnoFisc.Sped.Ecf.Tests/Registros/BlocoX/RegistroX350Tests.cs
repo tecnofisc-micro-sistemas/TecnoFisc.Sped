@@ -58,6 +58,6 @@ public sealed class RegistroX350Tests
         resultado.Sucesso.Should().BeTrue();
         resultado.Valor.Should().BeOfType<RegistroX350>()
             .Which.ErrosDeFormato.Should().ContainSingle(erro =>
-                erro.Campo == nameof(RegistroX350.RecLiq) && erro.ValorBruto == "INVALIDO");
+                erro.Campo == "REC_LIQ" && erro.ValorBruto == "INVALIDO");
     }
 }

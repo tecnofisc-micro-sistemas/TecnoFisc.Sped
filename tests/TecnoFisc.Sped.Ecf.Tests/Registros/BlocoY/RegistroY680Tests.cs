@@ -47,6 +47,6 @@ public sealed class RegistroY680Tests
         var registro = new ParserEcf().ParseLinha("|Y680|13|").Valor
             .Should().BeOfType<RegistroY680>().Which;
 
-        registro.ErrosDeFormato.Should().ContainSingle(erro => erro.Campo == nameof(RegistroY680.Mes));
+        registro.ErrosDeFormato.Should().ContainSingle(erro => erro.Campo == "MES");
     }
 }

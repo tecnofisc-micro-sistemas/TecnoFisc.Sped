@@ -38,6 +38,6 @@ public sealed class Registro9900Tests
             .Should().BeOfType<Registro9900>().Which;
 
         registro.ErrosDeFormato.Should().ContainSingle(erro =>
-            erro.Campo == nameof(Registro9900.QtdRegBlc) && erro.ValorBruto == "INVALIDA");
+            erro.Campo == "QTD_REG_BLC" && erro.ValorBruto == "INVALIDA");
     }
 }

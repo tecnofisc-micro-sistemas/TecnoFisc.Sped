@@ -41,6 +41,6 @@ public sealed class RegistroY660Tests
         resultado.Sucesso.Should().BeTrue();
         resultado.Valor.Should().BeOfType<RegistroY660>()
             .Which.ErrosDeFormato.Select(erro => erro.Campo)
-            .Should().Contain([nameof(RegistroY660.Cnpj), nameof(RegistroY660.PercPatLiq)]);
+            .Should().Contain(["CNPJ", "PERC_PAT_LIQ"]);
     }
 }

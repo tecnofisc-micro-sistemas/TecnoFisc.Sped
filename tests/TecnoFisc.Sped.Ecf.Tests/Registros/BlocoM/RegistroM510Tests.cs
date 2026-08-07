@@ -61,10 +61,10 @@ public sealed class RegistroM510Tests
         resultado.Valor.Should().BeOfType<RegistroM510>()
             .Which.ErrosDeFormato.Select(erro => erro.Campo)
             .Should().Contain([
-                nameof(RegistroM510.CodTributo),
-                nameof(RegistroM510.SdIniLal),
-                nameof(RegistroM510.IndSdIniLal),
-                nameof(RegistroM510.IndVlLctoParteA),
+                "COD_TRIBUTO",
+                "SD_INI_LAL",
+                "IND_SD_INI_LAL",
+                "IND_VL_LCTO_PARTE_A",
                 "IND_VL_LCTO_PARTEB",
                 "IND_SD_FIM_LAL",
             ]);

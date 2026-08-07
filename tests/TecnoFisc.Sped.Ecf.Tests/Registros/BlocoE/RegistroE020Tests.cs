@@ -86,6 +86,6 @@ public sealed class RegistroE020Tests
         resultado.Sucesso.Should().BeTrue();
         resultado.Valor.Should().BeOfType<RegistroE020>()
             .Which.ErrosDeFormato.Select(erro => erro.Campo)
-            .Should().Contain(["DtApLal", "DtLimLal"]);
+            .Should().Contain(["DT_AP_LAL", "DT_LIM_LAL"]);
     }
 }

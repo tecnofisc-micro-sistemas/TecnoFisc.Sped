@@ -34,6 +34,6 @@ public sealed class RegistroM365Tests
         resultado.Sucesso.Should().BeTrue();
         resultado.Valor.Should().BeOfType<RegistroM365>()
             .Which.ErrosDeFormato.Should().ContainSingle(erro =>
-                erro.Campo == nameof(RegistroM365.IndProc) && erro.ValorBruto == "3");
+                erro.Campo == "IND_PROC" && erro.ValorBruto == "3");
     }
 }

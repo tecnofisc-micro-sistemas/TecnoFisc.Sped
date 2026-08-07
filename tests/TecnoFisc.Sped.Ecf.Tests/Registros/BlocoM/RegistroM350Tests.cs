@@ -59,6 +59,6 @@ public sealed class RegistroM350Tests
         resultado.Sucesso.Should().BeTrue();
         resultado.Valor.Should().BeOfType<RegistroM350>()
             .Which.ErrosDeFormato.Select(erro => erro.Campo)
-            .Should().Contain(nameof(RegistroM350.TipoLancamento));
+            .Should().Contain("TIPO_LANCAMENTO");
     }
 }

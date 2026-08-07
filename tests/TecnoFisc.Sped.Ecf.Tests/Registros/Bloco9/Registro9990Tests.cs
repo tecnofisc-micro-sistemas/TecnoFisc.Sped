@@ -34,6 +34,6 @@ public sealed class Registro9990Tests
             .Should().BeOfType<Registro9990>().Which;
 
         registro.ErrosDeFormato.Should().ContainSingle(erro =>
-            erro.Campo == nameof(Registro9990.QtdLin) && erro.ValorBruto == "INVALIDA");
+            erro.Campo == "QTD_LIN" && erro.ValorBruto == "INVALIDA");
     }
 }

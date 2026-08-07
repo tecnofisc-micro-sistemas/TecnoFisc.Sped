@@ -87,9 +87,9 @@ public sealed class RegistroM300Tests
         resultado.Valor.Should().BeOfType<RegistroM300>()
             .Which.ErrosDeFormato.Select(erro => erro.Campo)
             .Should().Contain([
-                nameof(RegistroM300.TipoLancamento),
-                nameof(RegistroM300.IndRelacao),
-                nameof(RegistroM300.Valor),
+                "TIPO_LANCAMENTO",
+                "IND_RELACAO",
+                "VALOR",
             ]);
     }
 }

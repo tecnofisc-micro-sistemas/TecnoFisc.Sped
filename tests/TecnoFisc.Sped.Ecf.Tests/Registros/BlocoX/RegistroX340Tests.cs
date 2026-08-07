@@ -76,9 +76,9 @@ public sealed class RegistroX340Tests
         resultado.Valor.Should().BeOfType<RegistroX340>()
             .Which.ErrosDeFormato.Select(erro => erro.Campo)
             .Should().Contain([
-                nameof(RegistroX340.IndControle),
-                nameof(RegistroX340.IndIsenPetr),
-                nameof(RegistroX340.IndConsol),
+                "IND_CONTROLE",
+                "IND_ISEN_PETR",
+                "IND_CONSOL",
             ]);
     }
 

@@ -83,8 +83,8 @@ public sealed class RegistroW250Tests
     }
 
     [Theory]
-    [InlineData("OECD999", "S", nameof(RegistroW250.TipEnd))]
-    [InlineData("OECD302", "X", nameof(RegistroW250.Ativ1))]
+    [InlineData("OECD999", "S", "TIP_END")]
+    [InlineData("OECD302", "X", "ATIV_1")]
     public void Parser_DominioInvalido_RegistraErroDeFormato(
         string tipoEndereco,
         string atividade,

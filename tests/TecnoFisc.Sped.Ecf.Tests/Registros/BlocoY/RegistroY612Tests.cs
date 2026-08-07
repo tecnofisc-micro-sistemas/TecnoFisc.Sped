@@ -53,11 +53,11 @@ public sealed class RegistroY612Tests
         resultado.Valor.Should().BeOfType<RegistroY612>()
             .Which.ErrosDeFormato.Select(erro => erro.Campo)
             .Should().Contain([
-                nameof(RegistroY612.Cpf),
-                nameof(RegistroY612.Qualif),
-                nameof(RegistroY612.VlRemTrab),
-                nameof(RegistroY612.VlDemRend),
-                nameof(RegistroY612.VlIrRet),
+                "CPF",
+                "QUALIF",
+                "VL_REM_TRAB",
+                "VL_DEM_REND",
+                "VL_IR_RET",
             ]);
     }
 }

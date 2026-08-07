@@ -46,6 +46,6 @@ public sealed class RegistroC040Tests
         resultado.Sucesso.Should().BeTrue();
         resultado.Valor.Should().BeOfType<RegistroC040>()
             .Which.ErrosDeFormato.Select(erro => erro.Campo)
-            .Should().Contain(["DtIni", "DtFin", "Cnpj", "NumOrd"]);
+            .Should().Contain(["DT_INI", "DT_FIN", "CNPJ", "NUM_ORD"]);
     }
 }

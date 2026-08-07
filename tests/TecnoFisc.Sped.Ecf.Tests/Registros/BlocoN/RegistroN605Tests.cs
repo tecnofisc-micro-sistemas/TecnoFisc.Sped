@@ -34,6 +34,6 @@ public sealed class RegistroN605Tests
         resultado.Sucesso.Should().BeTrue();
         resultado.Valor.Should().BeOfType<RegistroN605>()
             .Which.ErrosDeFormato.Select(erro => erro.Campo)
-            .Should().Contain([nameof(RegistroN605.Valor), nameof(RegistroN605.IndValor)]);
+            .Should().Contain(["VALOR", "IND_VALOR"]);
     }
 }

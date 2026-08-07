@@ -61,9 +61,9 @@ public sealed class RegistroW100Tests
     }
 
     [Theory]
-    [InlineData("X", "1", "PT", nameof(RegistroW100.IndControladora))]
-    [InlineData("S", "9", "PT", nameof(RegistroW100.IndModalidade))]
-    [InlineData("S", "1", "XX", nameof(RegistroW100.IndIdioma))]
+    [InlineData("X", "1", "PT", "IND_CONTROLADORA")]
+    [InlineData("S", "9", "PT", "IND_MODALIDADE")]
+    [InlineData("S", "1", "XX", "IND_IDIOMA")]
     public void Parser_DominioInvalido_RegistraErroDeFormato(
         string controladora,
         string modalidade,
@@ -91,6 +91,6 @@ public sealed class RegistroW100Tests
         resultado.Sucesso.Should().BeTrue();
         resultado.Valor.Should().BeOfType<RegistroW100>()
             .Which.ErrosDeFormato.Should().ContainSingle(erro =>
-                erro.Campo == nameof(RegistroW100.DtIni) && erro.ValorBruto == "31132025");
+                erro.Campo == "DT_INI" && erro.ValorBruto == "31132025");
     }
 }

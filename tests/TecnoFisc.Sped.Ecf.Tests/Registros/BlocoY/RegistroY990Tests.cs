@@ -43,7 +43,7 @@ public sealed class RegistroY990Tests
         var registro = new ParserEcf().ParseLinha("|Y990|INVALIDA|").Valor
             .Should().BeOfType<RegistroY990>().Which;
 
-        registro.ErrosDeFormato.Should().ContainSingle(erro => erro.Campo == nameof(RegistroY990.QtdLin));
+        registro.ErrosDeFormato.Should().ContainSingle(erro => erro.Campo == "QTD_LIN");
     }
 
     [Fact]

@@ -54,8 +54,8 @@ public sealed class RegistroX410Tests
         resultado.Valor.Should().BeOfType<RegistroX410>()
             .Which.ErrosDeFormato.Select(erro => erro.Campo)
             .Should().Contain([
-                nameof(RegistroX410.IndHomeDisp),
-                nameof(RegistroX410.IndServDisp),
+                "IND_HOME_DISP",
+                "IND_SERV_DISP",
             ]);
     }
 

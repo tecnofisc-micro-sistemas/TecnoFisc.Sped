@@ -32,7 +32,7 @@ public sealed class Registro0990Tests
         resultado.Sucesso.Should().BeTrue();
         resultado.Valor.Should().BeOfType<Registro0990>()
             .Which.ErrosDeFormato.Should().ContainSingle(erro =>
-                erro.Campo == "QtdLin" && erro.ValorBruto == "INVALIDA");
+                erro.Campo == "QTD_LIN" && erro.ValorBruto == "INVALIDA");
     }
 
     [Fact]

@@ -35,7 +35,7 @@ public sealed class RegistroV990Tests
         resultado.Sucesso.Should().BeTrue();
         resultado.Valor.Should().BeOfType<RegistroV990>()
             .Which.ErrosDeFormato.Should().ContainSingle(erro =>
-                erro.Campo == nameof(RegistroV990.QtdLinM) && erro.ValorBruto == "INVALIDA");
+                erro.Campo == "QTD_LIN_M" && erro.ValorBruto == "INVALIDA");
     }
 
     [Fact]

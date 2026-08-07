@@ -22,7 +22,12 @@ publicados pelos projetos do **SPED — Sistema Público de Escrituração Digit
 > adiciona o sniffer fiscal TXT opt-in para extrair CNPJ e período do registro `0000`. A `0.9.0`
 > adiciona **parsing tolerante opt-in** no leitor TXT (`ReadingOptions.LenientFieldParsing` e
 > `LenientLayout`, mais `LeitorSpedTxt.ParseLinha`): campo falho ou registro desconhecido deixam
-> de abortar a leitura quando o consumidor optar por isso. Veja o `CHANGELOG.md` para detalhes.
+> de abortar a leitura quando o consumidor optar por isso. Na árvore de desenvolvimento ainda não
+> publicada, a ECF introduz mais duas flags `bool?` em `ReadingOptions`:
+> `RespeitarVigenciaDoLeiaute` (omite registro/campo anterior à vigência declarada no `0000`) e
+> `ValidarDominioDeEnum` (rejeita código fora do domínio de um enum fechado em vez de aceitar por
+> cast permissivo). `null` delega a decisão ao parser do leiaute — a ECF liga as duas, os leiautes
+> já publicados mantêm o comportamento atual. Veja o `CHANGELOG.md` para detalhes.
 
 ## Visão geral
 

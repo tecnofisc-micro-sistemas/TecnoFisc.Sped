@@ -12,6 +12,18 @@ public sealed class RegistroSpedCatalogoGeneratorDominioEnumTests
 
         public enum TipoItemGerado { Mercadoria = 0, Servico = 1 }
 
+        [System.Flags]
+        public enum MarcadoresGerados { Nenhum = 0, Primeiro = 1, Segundo = 2 }
+
+        public enum SituacaoGerada
+        {
+            [SpedValor("N")]
+            Nao,
+
+            [SpedValor("S")]
+            Sim,
+        }
+
         [RegistroSped(Codigo = "B100", Nivel = 2, Bloco = "B")]
         public sealed partial class RegistroB100 : RegistroSped
         {
@@ -19,6 +31,12 @@ public sealed class RegistroSpedCatalogoGeneratorDominioEnumTests
 
             [CampoSped(Ordem = 2, Tamanho = 2, Nome = "TIPO_ITEM")]
             public TipoItemGerado TipoItem { get; set; }
+
+            [CampoSped(Ordem = 3, Tamanho = 3, Nome = "MARCADORES")]
+            public MarcadoresGerados Marcadores { get; set; }
+
+            [CampoSped(Ordem = 4, Tamanho = 1, Nome = "SITUACAO")]
+            public SituacaoGerada Situacao { get; set; }
         }
         """;
 
@@ -53,5 +71,34 @@ public sealed class RegistroSpedCatalogoGeneratorDominioEnumTests
         string gerado = ExecutarGerador(Fonte);
 
         gerado.Should().Contain("Set_B100_TipoItem_Estrito)");
+    }
+
+    /// <summary>
+    /// Ponto exato do escopo extra desta task: <c>PrecisaSetterEstrito</c> exclui <c>[Flags]</c>
+    /// porque a combinação de bits não tem domínio fechado a validar, e o caminho estrito, ao
+    /// pular <c>Enum.Parse</c>, perderia o parsing por nome/forma separada por vírgula do
+    /// permissivo. Sem este teste, remover o <c>!c.EnumFlags</c> do predicado compila e não
+    /// quebra nenhuma suíte — só diverge do lado reflexivo (<c>CatalogoBuilder.PrecisaDefinidorEstrito</c>)
+    /// em tempo de leitura real.
+    /// </summary>
+    [Fact]
+    public void EnumFlags_NaoGeraSetterEstrito()
+    {
+        string gerado = ExecutarGerador(Fonte);
+
+        gerado.Should().NotContain("Set_B100_Marcadores_Estrito");
+    }
+
+    /// <summary>
+    /// Enum com <c>[SpedValor]</c> textual: o parsing já é por switch de token conhecido — token
+    /// desconhecido já lança <c>FormatException</c> no próprio setter permissivo textual, então
+    /// não há setter estrito irmão a construir nem a referenciar em <c>MetadadosCampo</c>.
+    /// </summary>
+    [Fact]
+    public void EnumComSpedValor_NaoGeraSetterEstrito()
+    {
+        string gerado = ExecutarGerador(Fonte);
+
+        gerado.Should().NotContain("Set_B100_Situacao_Estrito");
     }
 }

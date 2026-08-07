@@ -19,6 +19,28 @@ public sealed class ManifestoCatalogoTests
         codigos.Should().Equal(manifesto.CodigosCanonicos);
     }
 
+    /// <summary>
+    /// Carrega o manifesto real (não sintético) contra o schema real usando o
+    /// validador .NET (Json.Schema / JsonSchema.Net), que <c>ManifestoEcf.Parse</c>
+    /// usa em produção. Existe porque o <c>pattern</c> de <c>field.name</c> no
+    /// schema já divergiu de comportamento entre o <c>jsonschema</c> do Python
+    /// (tooling em <c>tools/ecf-layout</c>) e o <c>JsonSchema.Net</c> do .NET: um
+    /// <c>pattern</c> escrito com <c>\w</c>/<c>\W</c> passou nos 516 testes Python
+    /// (semântica Unicode) e falhou aqui (semântica ASCII-only sob ECMAScript),
+    /// rejeitando os 5 registros com nome de campo acentuado
+    /// (C050, J050, W250, W300, 9100). Um teste só em Python nunca pegaria essa
+    /// classe de divergência — só carregar o schema real pelo runtime .NET real
+    /// pega. Se o schema voltar a usar uma classe de caractere dependente de
+    /// runtime, este teste falha aqui, não só na CI de outra linguagem.
+    /// </summary>
+    [Fact]
+    public void ManifestoReal_ValidaContraSchemaRealPeloValidadorNet()
+    {
+        var act = () => ManifestoEcf.Carregar();
+
+        act.Should().NotThrow();
+    }
+
     [Fact]
     public void NomeCanonico_PreservaDiacriticoSemDependerDeDecomposicaoUnicode()
     {

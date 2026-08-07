@@ -107,8 +107,8 @@
         "name": {
           "type": "string",
           "minLength": 1,
-          "pattern": "^[^\\d\\W]\\w*$",
-          "$comment": "Espelha (com folga) o IsFieldNameValid do CatalogoBuilder/gerador .NET: primeiro caractere letra ou underscore, demais letra/digito/underscore. Bloqueia espaco, hifen, barra e outros separadores que quebrariam o alias Nome do [CampoSped]."
+          "pattern": "^[A-Za-z_\\u00C0-\\u00D6\\u00D8-\\u00F6\\u00F8-\\u00FF][A-Za-z0-9_\\u00C0-\\u00D6\\u00D8-\\u00F6\\u00F8-\\u00FF]*$",
+          "$comment": "Espelha exatamente o IsFieldNameValid do CatalogoBuilder/gerador .NET: primeiro caractere letra ASCII, letra Latino-1 ou underscore; demais, letra ASCII/Latino-1, digito ASCII ou underscore. NAO usar \\w/\\W (semantica Unicode no jsonschema Python, ASCII-only sob ECMAScript no JsonSchema.Net usado por ManifestoEcf.Parse - a mesma regex validou diferente nos dois runtimes e deixou passar nome de campo acentuado invalido). O intervalo Latino-1 (\\u00C0-\\u00FF) e dividido em duas faixas para excluir U+00D7 (multiplicacao, x) e U+00F7 (divisao, /), que caem dentro do intervalo mas nao sao letra para char.IsLetter (a mesma exclusao que IsFieldNameStart aplica via char.IsLetter). Bloqueia espaco, hifen, barra e outros separadores que quebrariam o alias Nome do [CampoSped]."
         },
         "description": {
           "type": "string"

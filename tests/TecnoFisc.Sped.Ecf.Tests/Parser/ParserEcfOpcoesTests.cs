@@ -28,7 +28,7 @@ public sealed class ParserEcfOpcoesTests
     }
 
     [Fact]
-    public void ResolverOpcoes_PreservaOsDemaisCamposDoChamador()
+    public void ResolveOptions_PreservaOsDemaisCamposDoChamador()
     {
         var origem = new ReadingOptions
         {

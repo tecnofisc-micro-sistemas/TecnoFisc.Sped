@@ -29,12 +29,12 @@ public sealed partial class Registro0000 : RegistroSped
     /// Zero é um caso diferente: <c>COD_VER</c> ausente, de comprimento diferente de 4 ou não
     /// numérico (ex.: <c>"ABCD"</c>) — arquivo inválido, não leiaute novo. Aqui
     /// <see cref="IsLeiauteConhecido"/> também é <c>false</c> (zero está fora de
-    /// <see cref="LayoutEcf.V008"/>–<see cref="LayoutEcf.V012"/>), mas o leitor nunca chega a
-    /// consultá-lo: o gate acima de <c>VersaoLeiaute &gt; 0</c> não é satisfeito, então nenhum aviso é
-    /// emitido e a leitura segue em modo estrito, sem vigência sintática ligada. É intencional —
-    /// um <c>COD_VER</c> malformado é erro de dado, não evolução de leiaute — mas significa que
-    /// <see cref="IsLeiauteConhecido"/> por si só não é garantia de que o leitor avisou o
-    /// consumidor; depende também de <see cref="VersaoLeiaute"/> ser positivo.
+    /// <see cref="LayoutEcf.V008"/>–<see cref="LayoutEcf.V012"/>), e o leitor distingue os dois
+    /// casos: com versão positiva fora da faixa, avisa e passa a ler em modo tolerante; com versão
+    /// zero, registra em <c>ErrosDeFormato</c> um erro apontando
+    /// <c>COD_VER</c> como ilegível — dizendo que a vigência do leiaute não será aplicada — e
+    /// <b>mantém o modo estrito</b>. Dado corrompido não autoriza afrouxar a leitura, mas também
+    /// não passa em silêncio.
     /// </para>
     /// </summary>
     public override int VersaoLeiaute =>

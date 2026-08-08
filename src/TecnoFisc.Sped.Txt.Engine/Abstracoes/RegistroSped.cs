@@ -39,8 +39,11 @@ public abstract class RegistroSped
     /// Indica se a versão declarada por este registro pertence à faixa de leiautes que o módulo
     /// modela. Só o registro de abertura (<c>0000</c>) de cada módulo tem essa informação; os
     /// demais herdam <c>true</c>, que preserva o comportamento estrito. Quando <c>false</c>, o
-    /// leitor degrada para diagnóstico em vez de exceção: um arquivo de leiaute que a biblioteca
-    /// ainda não conhece deve ser legível, não fatal.
+    /// leitor separa dois casos pelo valor de <see cref="VersaoLeiaute"/>: positivo significa
+    /// leiaute novo ou antigo demais e o leitor degrada para diagnóstico em vez de exceção — um
+    /// arquivo de leiaute que a biblioteca ainda não conhece deve ser legível, não fatal; zero
+    /// significa versão ilegível no arquivo, e aí o leitor registra o diagnóstico mas <b>mantém o
+    /// modo estrito</b>, porque dado corrompido não é evolução de leiaute.
     /// <para>
     /// Ressalva: o próprio <c>0000</c> é interpretado <b>antes</b> de o leitor conseguir
     /// consultar esta propriedade — ele precisa terminar de montar o registro para então ler

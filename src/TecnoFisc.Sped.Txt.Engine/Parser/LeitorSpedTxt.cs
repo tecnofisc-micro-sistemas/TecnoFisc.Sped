@@ -72,6 +72,7 @@ public sealed class LeitorSpedTxt : ILeitorSped
         bool encerrado = false;
         int versaoLeiaute = 0;
         bool leiauteConhecido = true;
+        bool versaoAvaliada = false;
 
         // Estado de descarte (ReadingOptions). nivelCorteSubarvore >= 0 indica que estamos dentro
         // da subárvore de um registro ignorado por código; sobrevive entre iterações de ReadAsync.
@@ -138,20 +139,43 @@ public sealed class LeitorSpedTxt : ILeitorSped
                                                   versaoLeiaute, leiauteConhecido, metadados);
                     if (registro is not null)
                     {
-                        // Captura a versão do leiaute assim que o Registro0000 é processado.
-                        if (versaoLeiaute == 0 && registro.VersaoLeiaute > 0)
+                        // Captura a versão do leiaute no primeiro registro que a carrega — na
+                        // prática o 0000. Portador é todo registro que declara uma versão
+                        // (VersaoLeiaute > 0) ou que sabe dizer que a versão declarada está fora
+                        // da faixa modelada (IsLeiauteConhecido == false, que só o 0000 de um
+                        // módulo sobrescreve). Avaliado uma única vez: o restante do arquivo não
+                        // repete a decisão nem paga o custo dela.
+                        if (!versaoAvaliada && (registro.VersaoLeiaute > 0 || !registro.IsLeiauteConhecido))
                         {
+                            versaoAvaliada = true;
                             versaoLeiaute = registro.VersaoLeiaute;
-                            leiauteConhecido = registro.IsLeiauteConhecido;
-                            if (!leiauteConhecido)
+                            if (versaoLeiaute > 0)
+                            {
+                                leiauteConhecido = registro.IsLeiauteConhecido;
+                                if (!leiauteConhecido)
+                                    registro.RegistrarErroDeFormato(new ErroFormato(
+                                        linhaRegistro, registro.Codigo, "COD_VER",
+                                        $"Leiaute {versaoLeiaute} está fora da faixa conhecida por esta " +
+                                        "versão da biblioteca; a leitura segue em modo tolerante e campos " +
+                                        "podem ter mudado de significado.")
+                                    {
+                                        ValorBruto = versaoLeiaute.ToString("0000", CultureInfo.InvariantCulture)
+                                    });
+                            }
+                            else
+                            {
+                                // Versão zero num registro que sabe classificar a faixa significa
+                                // COD_VER ilegível (ausente, com comprimento errado ou não
+                                // numérico): arquivo inválido, não leiaute novo. Não é motivo para
+                                // afrouxar nada — o modo estrito continua valendo (leiauteConhecido
+                                // permanece true) —, mas também não pode ser silencioso: sem versão
+                                // não há gate de vigência, e o consumidor precisa saber disso.
                                 registro.RegistrarErroDeFormato(new ErroFormato(
                                     linhaRegistro, registro.Codigo, "COD_VER",
-                                    $"Leiaute {versaoLeiaute} está fora da faixa conhecida por esta " +
-                                    "versão da biblioteca; a leitura segue em modo tolerante e campos " +
-                                    "podem ter mudado de significado.")
-                                {
-                                    ValorBruto = versaoLeiaute.ToString("0000", CultureInfo.InvariantCulture)
-                                });
+                                    "COD_VER ilegível (ausente, com comprimento inesperado ou não " +
+                                    "numérico): a vigência do leiaute não será aplicada e a leitura " +
+                                    "segue em modo estrito."));
+                            }
                         }
 
                         yield return registro;

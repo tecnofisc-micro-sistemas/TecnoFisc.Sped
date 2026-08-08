@@ -1,5 +1,6 @@
 using TecnoFisc.Sped.Core.Erros;
 using TecnoFisc.Sped.Ecf.Generated;
+using TecnoFisc.Sped.Ecf.Versionamento;
 using TecnoFisc.Sped.Txt.Engine.Abstracoes;
 using TecnoFisc.Sped.Txt.Engine.Parser;
 
@@ -60,8 +61,21 @@ public sealed class ParserEcf : ILeitorSped
     public Task<ArquivoEcf> ReadAsync(Stream entrada, CancellationToken cancelamento = default)
         => ArquivoEcf.LoadAsync(ReadStreamingAsync(entrada, cancelamento), cancelamento);
 
-    /// <summary>Interpreta uma única linha ECF sem construir a hierarquia.</summary>
+    /// <summary>
+    /// Interpreta uma única linha ECF sem construir a hierarquia e sem aplicar vigência — todos
+    /// os campos do catálogo são aceitos, inclusive os introduzidos em leiautes posteriores. Use
+    /// a sobrecarga com <see cref="LayoutEcf"/> quando a vigência do leiaute importar.
+    /// </summary>
     public ResultadoParse<RegistroSped> ParseLinha(ReadOnlySpan<char> linha, long numeroLinha = 0)
         => _leitor.ParseLinha(linha, numeroLinha);
 
+    /// <summary>
+    /// Interpreta uma única linha ECF sem construir a hierarquia, aplicando a vigência do
+    /// <paramref name="leiaute"/> informado — o mesmo critério que <c>ReadStreamingAsync</c>
+    /// aplica a partir do <c>COD_VER</c> do arquivo. A sobrecarga sem <paramref name="leiaute"/>
+    /// não aplica vigência nenhuma.
+    /// </summary>
+    public ResultadoParse<RegistroSped> ParseLinha(
+        ReadOnlySpan<char> linha, LayoutEcf leiaute, long numeroLinha = 0)
+        => _leitor.ParseLinha(linha, numeroLinha, (int)leiaute);
 }

@@ -19,7 +19,7 @@ namespace TecnoFisc.Sped.Ecf.Tests.Parser;
 /// <c>CodigoNaturezaContaContabil</c> (campo <c>COD_NAT</c> de C050 e J050). Como o ECF usa
 /// <c>ValidarDominioDeEnum = true</c> por padrão, esses campos são caminho de produção.
 /// <para>
-/// Usa <see cref="ParserEcf.ReadStreamingAsync"/>, não <see cref="ParserEcf.ParseLinha"/>:
+/// Usa <see cref="ParserEcf.ReadStreamingAsync"/>, não <c>ParserEcf.ParseLinha</c>:
 /// <c>ParseLinha</c> é leniente por contrato — força <c>LenientFieldParsing</c> internamente e
 /// nunca lança para erro de campo (ver <c>ValidacaoDominioEnumTests</c> no Txt.Engine.Tests) —
 /// então não serve para provar rejeição.

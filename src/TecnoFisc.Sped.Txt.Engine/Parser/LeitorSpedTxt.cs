@@ -187,8 +187,21 @@ public sealed class LeitorSpedTxt : ILeitorSped
     /// traz os campos conversíveis preenchidos e os que falharam no valor default, com os erros em
     /// <see cref="Abstracoes.RegistroSped.ErrosDeFormato"/>. Devolve falha apenas quando nenhum
     /// registro pôde ser produzido (linha sem '|' nas pontas ou código desconhecido pelo catálogo).
+    /// <para>
+    /// <paramref name="versaoLeiaute"/> controla a vigência sintática exatamente como em
+    /// <c>ReadStreamingAsync</c>. O default <c>0</c> significa "sem vigência" — todos os campos
+    /// do catálogo são aceitos, inclusive os introduzidos em versões posteriores. Informe a
+    /// versão para que a validação linha a linha concorde com a leitura do arquivo inteiro.
+    /// </para>
+    /// <para>
+    /// A linha é sempre tratada como dentro da faixa de leiautes conhecida
+    /// (<c>leiauteConhecido: true</c>): decidir a faixa exige o <c>COD_VER</c> do registro
+    /// <c>0000</c>, que não existe quando se interpreta uma linha isolada — este método é
+    /// deliberadamente "sem hierarquia".
+    /// </para>
     /// </summary>
-    public ResultadoParse<RegistroSped> ParseLinha(ReadOnlySpan<char> linha, long numeroLinha = 0)
+    public ResultadoParse<RegistroSped> ParseLinha(
+        ReadOnlySpan<char> linha, long numeroLinha = 0, int versaoLeiaute = 0)
     {
         // Duplica-se o guard de pipes aqui: ParseLinha devolve Falha (nunca lança),
         // enquanto InterpretarLinha lança ErroFormatoSpedException — contratos divergem.
@@ -200,7 +213,7 @@ public sealed class LeitorSpedTxt : ILeitorSped
                 });
 
         var pilha = new PilhaHierarquica();   // descartável: ParseLinha não constrói hierarquia
-        var registro = InterpretarLinha(linha, numeroLinha, pilha, versaoLeiaute: 0,
+        var registro = InterpretarLinha(linha, numeroLinha, pilha, versaoLeiaute,
             leiauteConhecido: true, metadadosResolvido: null,
             forcarLenienteCampo: true, forcarLenienteLayout: true);
 

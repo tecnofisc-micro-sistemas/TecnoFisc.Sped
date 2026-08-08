@@ -22,9 +22,10 @@ public sealed partial class Registro0000 : RegistroSped
     /// fora da faixa que a biblioteca conhece (ver <see cref="LayoutEcf"/>): descartar o número
     /// desligaria o gate de vigência e faria o arquivo ser lido como se fosse leiaute 12. Um
     /// leiaute numérico fora da faixa conhecida (ex.: <c>0013</c>) é sinalizado à parte, por
-    /// <see cref="IsLeiauteConhecido"/>, não por zero — e esse sinal chega ao leitor, porque
-    /// <c>LeitorSpedTxt.ReadStreamingAsync</c> só consulta <see cref="IsLeiauteConhecido"/>
-    /// quando <c>VersaoLeiaute &gt; 0</c>.
+    /// <see cref="IsLeiauteConhecido"/>, não por zero — e esse sinal chega ao leitor, que consulta
+    /// <see cref="IsLeiauteConhecido"/> sempre, junto com <see cref="VersaoLeiaute"/>, no primeiro
+    /// registro que carrega versão; o que depende do valor de <see cref="VersaoLeiaute"/> é como
+    /// o leitor <b>age</b> sobre o sinal (ver o parágrafo seguinte).
     /// <para>
     /// Zero é um caso diferente: <c>COD_VER</c> ausente, de comprimento diferente de 4 ou não
     /// numérico (ex.: <c>"ABCD"</c>) — arquivo inválido, não leiaute novo. Aqui

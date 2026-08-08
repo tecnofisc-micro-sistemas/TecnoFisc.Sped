@@ -7,9 +7,12 @@ namespace TecnoFisc.Sped.Ecf.Registros.BlocoX;
 
 /// <summary>
 /// Registro X291 — existiu nos leiautes 8 a 10 e foi removido no leiaute 11.
-/// Reconhecido pelo catálogo para que arquivos históricos sejam legíveis, mas sem campos
-/// modelados: o conteúdo das colunas sai por <c>ColunasNaoModeladas</c>. Modelar os campos
-/// exige extraí-los do manual do leiaute 10 e é evolução planejada, puramente aditiva.
+/// O registro é reconhecido pelo catálogo para que um arquivo histórico seja legível, mas seus
+/// campos não são modelados: o conteúdo das colunas não é materializado nesta versão (a leitura
+/// descarta as colunas). Modelar os campos exige extraí-los do manual do leiaute correspondente
+/// e é evolução planejada, puramente aditiva. Escrita não suportada: um <c>EscritorSpedTxt</c>
+/// lança <see cref="InvalidOperationException"/> ao tentar gravar este registro, em vez de emitir
+/// uma linha só com o código.
 /// Nível hierárquico confirmado no Manual ECF Leiaute 10 (Anexo ADE Cofis nº 59/2023, página 450).
 /// </summary>
 [RegistroSped(Codigo = "X291", Nivel = 2, Bloco = "X")]

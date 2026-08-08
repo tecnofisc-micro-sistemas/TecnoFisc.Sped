@@ -2,11 +2,16 @@ namespace TecnoFisc.Sped.Core.Atributos;
 
 /// <summary>
 /// Marca um registro ou campo SPED como descontinuado a partir de uma versão de leiaute.
-/// Atributo **informacional** — não altera o comportamento do parser nem do gerador. Em
-/// pacotes read-only (ARCHITECTURE §2.5/§4.7) o parser continua reconhecendo registros
-/// marcados como descontinuados porque arquivos históricos das versões anteriores ainda
-/// precisam ser lidos. Pacotes read+write podem usar a anotação para decidir se geram ou
-/// não o registro em arquivos da versão alvo.
+/// Atributo **informacional** quanto ao comportamento de leitura/escrita — não muda o que o
+/// parser aceita nem o que o escritor materializa numa linha. Em pacotes read-only
+/// (ARCHITECTURE §2.5/§4.7) o parser continua reconhecendo registros marcados como
+/// descontinuados porque arquivos históricos das versões anteriores ainda precisam ser lidos.
+/// Pacotes read+write podem usar a anotação para decidir se geram ou não o registro em arquivos
+/// da versão alvo. O valor de <see cref="EmVersao"/> é propagado ao catálogo (
+/// <c>MetadadosRegistro.DescontinuadoEm</c>) pelos dois caminhos que constroem catálogo —
+/// o gerado em compile-time (<c>RegistroSpedCatalogoGenerator</c>) e o reflexivo
+/// (<c>CatalogoBuilder</c>) — que precisam concordar (ver
+/// <c>RegistroSpedCatalogoGeneratorVigenciaTests</c>).
 /// </summary>
 /// <remarks>
 /// <para>

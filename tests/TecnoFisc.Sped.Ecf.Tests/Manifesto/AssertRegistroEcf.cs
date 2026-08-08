@@ -21,10 +21,12 @@ internal static partial class AssertRegistroEcf
         var manifesto = _manifesto.Value;
         var codigosManifesto = manifesto.CodigosCanonicos.ToHashSet(StringComparer.Ordinal);
         // Registros descontinuados (DescontinuadoEm != 0) existem no catálogo para leitura de
-        // arquivos históricos, mas o manifesto descreve só o leiaute 12 vigente — não fazem parte
-        // desta comparação catálogo × manifesto, nem como "extras" nem como candidatos a
-        // "ausentes". Ver Catalogo_SoDivergeDoManifestoNosSeteRemovidosNoLeiaute11, que trava que
-        // a divergência fica restrita a esse conjunto.
+        // arquivos históricos, mas o manifesto descreve só o leiaute 12 vigente — o filtro abaixo
+        // os tira de codigosCatalogo, então não contam como "extras no catálogo" (linha 46-49).
+        // Isso não é um tratamento simétrico para "ausentes" (linha 42-45): um código pedido pelo
+        // chamador que estivesse listado no manifesto e só existisse descontinuado no catálogo
+        // ainda seria reportado como ausente — cenário que hoje não ocorre porque nenhum
+        // descontinuado consta do manifesto (ver Catalogo_SoDivergeDoManifestoNosSeteRemovidosNoLeiaute11).
         var codigosCatalogo = _catalogo.EnumerarRegistros()
             .Where(registro => registro.DescontinuadoEm == 0)
             .Select(registro => registro.Codigo)

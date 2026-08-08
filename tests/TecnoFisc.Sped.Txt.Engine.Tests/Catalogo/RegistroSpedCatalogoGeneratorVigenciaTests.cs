@@ -19,6 +19,9 @@ namespace TecnoFisc.Sped.Txt.Engine.Tests.Catalogo;
 /// anterior. Cobre os dois lados que precisam concordar (regra dos "três lugares" do catálogo):
 /// <see cref="CatalogoBuilder"/> (reflexivo, lança em runtime) e
 /// <see cref="RegistroSpedCatalogoGenerator"/> (compile-time, diagnóstico <c>TFSPED003</c>).
+/// Também cobre a mesma paridade gerado × reflexivo para <c>DescontinuadoEm</c>
+/// (<see cref="DescontinuadoEmDeclarado_CompilaSemDiagnosticoEAmbosCatalogosConcordam"/>) —
+/// achado de follow-up do PR 531 sobre esta mesma classe de drift.
 /// </summary>
 public sealed class RegistroSpedCatalogoGeneratorVigenciaTests
 {
@@ -41,6 +44,47 @@ public sealed class RegistroSpedCatalogoGeneratorVigenciaTests
 
         metaGerado!.Campos.Select(campo => campo.DesdeVersao).Should().Equal(0, 5, 10);
         metaReflexivo!.Campos.Select(campo => campo.DesdeVersao).Should().Equal(0, 5, 10);
+    }
+
+    /// <summary>
+    /// Paridade gerado × reflexivo para <c>DescontinuadoEm</c> (achado de follow-up do PR 531): o
+    /// <see cref="RegistroSpedCatalogoGenerator"/> passou a ler <c>[Descontinuado]</c> depois de
+    /// um período em que só o <see cref="CatalogoBuilder"/> reflexivo lia, deixando o catálogo
+    /// gerado — o que os parsers padrão realmente instanciam — com <c>DescontinuadoEm == 0</c> em
+    /// produção (Registro0210/Registro1600 do EFD ICMS-IPI). A cobertura anterior desse bug era só
+    /// indireta, via testes específicos do EFD ICMS-IPI; este teste prova a paridade na fonte, no
+    /// próprio projeto do gerador, para qualquer registro futuro que declare o atributo.
+    /// </summary>
+    [Fact]
+    public void DescontinuadoEmDeclarado_CompilaSemDiagnosticoEAmbosCatalogosConcordam()
+    {
+        string source = """
+            using TecnoFisc.Sped.Core.Atributos;
+            using TecnoFisc.Sped.Txt.Engine.Abstracoes;
+            using TecnoFisc.Sped.Txt.Engine.Atributos;
+
+            namespace VigenciaGerada;
+
+            [RegistroSped(Codigo = "A100", Nivel = 1, Bloco = "A")]
+            [Descontinuado(EmVersao = 11)]
+            public sealed class RegistroA100 : RegistroSped
+            {
+                public override string Codigo => "A100";
+
+                [CampoSped(Ordem = 2)] public string? Campo { get; set; }
+            }
+            """;
+
+        Assembly assembly = CompilarComGerador(source, out var diagnosticos);
+        diagnosticos.Should().NotContain(diagnostico => diagnostico.Severity == DiagnosticSeverity.Error);
+
+        var gerado = CriarCatalogoGerado(assembly);
+        var reflexivo = CatalogoBuilder.BuildFromAssembly(assembly);
+        gerado.TentarObter("A100", out var metaGerado).Should().BeTrue();
+        reflexivo.TentarObter("A100", out var metaReflexivo).Should().BeTrue();
+
+        metaGerado!.DescontinuadoEm.Should().Be(11);
+        metaReflexivo!.DescontinuadoEm.Should().Be(metaGerado.DescontinuadoEm);
     }
 
     [Fact]

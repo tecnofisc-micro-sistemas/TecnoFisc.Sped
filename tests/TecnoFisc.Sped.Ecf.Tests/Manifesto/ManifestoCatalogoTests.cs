@@ -2,6 +2,7 @@ using System.Text.Json.Nodes;
 
 using TecnoFisc.Sped.Ecf.Generated;
 using TecnoFisc.Sped.Ecf.Registros.Bloco0;
+using TecnoFisc.Sped.Ecf.Tests.Versionamento;
 using TecnoFisc.Sped.Txt.Engine.Catalogo;
 
 namespace TecnoFisc.Sped.Ecf.Tests.Manifesto;
@@ -103,8 +104,7 @@ public sealed class ManifestoCatalogoTests
         var catalogo = new CatalogoSpedGerado().EnumerarRegistros()
             .Select(registro => registro.Codigo).ToHashSet(StringComparer.Ordinal);
 
-        catalogo.Except(manifesto).Should().BeEquivalentTo(
-            ["X291", "X300", "X305", "X310", "X320", "X325", "X330"]);
+        catalogo.Except(manifesto).Should().BeEquivalentTo(RegistrosRemovidosLeiaute11Tests.CodigosRemovidos);
         manifesto.Except(catalogo).Should().BeEmpty();
     }
 

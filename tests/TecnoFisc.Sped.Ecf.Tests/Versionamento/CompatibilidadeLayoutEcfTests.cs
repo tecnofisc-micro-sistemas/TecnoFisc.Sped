@@ -165,13 +165,13 @@ public sealed class CompatibilidadeLayoutEcfTests
     [Fact]
     public void CatalogoAtual_ReconheceRegistrosRemovidosNoLeiaute11SemModelarCampos()
     {
-        string[] removidos = ["X291", "X300", "X305", "X310", "X320", "X325", "X330"];
         var catalogo = new CatalogoSpedGerado();
 
-        foreach (var codigo in removidos)
+        foreach (var codigo in RegistrosRemovidosLeiaute11Tests.CodigosRemovidos)
         {
             catalogo.TentarObter(codigo, out var metadados).Should().BeTrue();
-            metadados!.DescontinuadoEm.Should().Be(11);
+            metadados!.DescontinuadoEm.Should().Be((int)LayoutEcf.V011);
+            metadados.Campos.Should().BeEmpty();
         }
     }
 

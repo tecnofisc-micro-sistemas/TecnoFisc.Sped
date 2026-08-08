@@ -189,9 +189,13 @@ public sealed class LeitorSpedTxt : ILeitorSped
     /// registro pôde ser produzido (linha sem '|' nas pontas ou código desconhecido pelo catálogo).
     /// <para>
     /// <paramref name="versaoLeiaute"/> controla a vigência sintática exatamente como em
-    /// <c>ReadStreamingAsync</c>. O default <c>0</c> significa "sem vigência" — todos os campos
-    /// do catálogo são aceitos, inclusive os introduzidos em versões posteriores. Informe a
-    /// versão para que a validação linha a linha concorde com a leitura do arquivo inteiro.
+    /// <c>ReadStreamingAsync</c>, nos dois níveis: um registro cujo <c>IntroduzidoEm</c> é
+    /// posterior à versão informada devolve falha com a mesma mensagem que o streaming usa, e um
+    /// campo cujo <c>DesdeVersao</c> é posterior não recebe valor. O default <c>0</c> significa
+    /// "sem vigência" — todo o catálogo é aceito, inclusive registros e campos introduzidos em
+    /// versões posteriores. Informe a versão para que a validação linha a linha concorde com a
+    /// leitura do arquivo inteiro. Em linha isolada não há subárvore a cortar: a decisão vale só
+    /// para a própria linha.
     /// </para>
     /// <para>
     /// A linha é sempre tratada como dentro da faixa de leiautes conhecida
@@ -211,6 +215,19 @@ public sealed class LeitorSpedTxt : ILeitorSped
                 {
                     ValorBruto = linha.IsEmpty ? null : linha.ToString()
                 });
+
+        // Vigência de registro, espelhando ShouldIgnoreByVersion do streaming. Sem hierarquia não
+        // há subárvore a cortar — só a decisão sobre a própria linha. O streaming devolve a
+        // sentinela RegistroNaoReconhecido; aqui o formato equivalente é a falha, que é como
+        // ParseLinha já converte qualquer sentinela logo abaixo.
+        if (_respeitarVigencia && versaoLeiaute > 0 &&
+            ResolverMetadados(linha) is { IntroduzidoEm: > 0 } metadadosDaLinha &&
+            metadadosDaLinha.IntroduzidoEm > versaoLeiaute)
+        {
+            return ResultadoParse<RegistroSped>.Falhar(new ErroFormato(
+                numeroLinha, metadadosDaLinha.Codigo, null,
+                $"Registro posterior à versão declarada no 0000 ({versaoLeiaute})."));
+        }
 
         var pilha = new PilhaHierarquica();   // descartável: ParseLinha não constrói hierarquia
         var registro = InterpretarLinha(linha, numeroLinha, pilha, versaoLeiaute,
@@ -483,6 +500,23 @@ public sealed class LeitorSpedTxt : ILeitorSped
         int qtd = EncodingSped.Latin1.GetChars(bytes[..comprimento], chars);
 
         return _catalogo.TentarObter(chars[..qtd], out var metadados) ? metadados : null;
+    }
+
+    /// <summary>
+    /// Resolve os metadados do registro a partir do código de uma linha já decodificada
+    /// (<c>|REG|...|</c>), sem alocar string. Devolve <c>null</c> para linha degenerada, código
+    /// vazio ou código desconhecido pelo catálogo.
+    /// </summary>
+    private MetadadosRegistro? ResolverMetadados(ReadOnlySpan<char> linha)
+    {
+        if (linha.Length < 2)
+            return null;
+
+        var conteudo = linha[1..^1];
+        int fimCodigo = conteudo.IndexOf('|');
+        var codigo = fimCodigo < 0 ? conteudo : conteudo[..fimCodigo];
+
+        return !codigo.IsEmpty && _catalogo.TentarObter(codigo, out var metadados) ? metadados : null;
     }
 
     private static ReadOnlySequence<byte> AparaCrFinal(in ReadOnlySequence<byte> linha)

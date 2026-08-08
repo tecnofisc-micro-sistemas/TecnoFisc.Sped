@@ -72,7 +72,9 @@ public sealed class ParserEcf : ILeitorSped
     /// <summary>
     /// Interpreta uma única linha ECF sem construir a hierarquia, aplicando a vigência do
     /// <paramref name="leiaute"/> informado — o mesmo critério que <c>ReadStreamingAsync</c>
-    /// aplica a partir do <c>COD_VER</c> do arquivo. A sobrecarga sem <paramref name="leiaute"/>
+    /// aplica a partir do <c>COD_VER</c> do arquivo, tanto para o registro (um registro
+    /// introduzido depois do <paramref name="leiaute"/> devolve falha) quanto para os campos (um
+    /// campo introduzido depois não recebe valor). A sobrecarga sem <paramref name="leiaute"/>
     /// não aplica vigência nenhuma.
     /// </summary>
     public ResultadoParse<RegistroSped> ParseLinha(

@@ -240,12 +240,18 @@ public sealed class LeitorSpedTxt : ILeitorSped
                     ValorBruto = linha.IsEmpty ? null : linha.ToString()
                 });
 
+        // Resolve o código uma única vez e repassa: serve ao gate de vigência abaixo e chega a
+        // InterpretarLinha pelo parâmetro metadadosResolvido, que existe justamente para não
+        // repetir a busca no catálogo (este é um método público, chamável em laço). null — código
+        // desconhecido ou linha degenerada — mantém o caminho de sempre: InterpretarLinha faz a
+        // própria busca e produz a sentinela.
+        var metadadosDaLinha = ResolverMetadados(linha);
+
         // Vigência de registro, espelhando ShouldIgnoreByVersion do streaming. Sem hierarquia não
         // há subárvore a cortar — só a decisão sobre a própria linha. O streaming devolve a
         // sentinela RegistroNaoReconhecido; aqui o formato equivalente é a falha, que é como
         // ParseLinha já converte qualquer sentinela logo abaixo.
-        if (_respeitarVigencia && versaoLeiaute > 0 &&
-            ResolverMetadados(linha) is { IntroduzidoEm: > 0 } metadadosDaLinha &&
+        if (_respeitarVigencia && versaoLeiaute > 0 && metadadosDaLinha is { IntroduzidoEm: > 0 } &&
             metadadosDaLinha.IntroduzidoEm > versaoLeiaute)
         {
             return ResultadoParse<RegistroSped>.Falhar(new ErroFormato(
@@ -255,7 +261,7 @@ public sealed class LeitorSpedTxt : ILeitorSped
 
         var pilha = new PilhaHierarquica();   // descartável: ParseLinha não constrói hierarquia
         var registro = InterpretarLinha(linha, numeroLinha, pilha, versaoLeiaute,
-            leiauteConhecido: true, metadadosResolvido: null,
+            leiauteConhecido: true, metadadosResolvido: metadadosDaLinha,
             forcarLenienteCampo: true, forcarLenienteLayout: true);
 
         if (registro is RegistroNaoReconhecido sentinela)

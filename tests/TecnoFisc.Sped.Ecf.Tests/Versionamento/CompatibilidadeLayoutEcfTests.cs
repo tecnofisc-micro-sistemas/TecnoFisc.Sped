@@ -1,8 +1,6 @@
 using System.Text.Json.Nodes;
-using System.Text;
 
 using TecnoFisc.Sped.Ecf.Generated;
-using TecnoFisc.Sped.Ecf.Parser;
 using TecnoFisc.Sped.Ecf.Registros.Bloco0;
 using TecnoFisc.Sped.Txt.Engine.Abstracoes;
 using TecnoFisc.Sped.Txt.Engine.Enums;
@@ -91,8 +89,8 @@ public sealed class CompatibilidadeLayoutEcfTests
         string codigo,
         string linha)
     {
-        var abaixo = await ReadAsync(introduzidoEm - 1, linha);
-        var naIntroducao = await ReadAsync(introduzidoEm, linha);
+        var abaixo = await FixtureEcf.ReadAsync(introduzidoEm - 1, linha);
+        var naIntroducao = await FixtureEcf.ReadAsync(introduzidoEm, linha);
 
         // Abaixo da versão de introdução, o registro real nunca aparece — mas o descarte por
         // vigência (achado 2 do PR 531) não é mais mudo: a linha vira RegistroNaoReconhecido,
@@ -123,7 +121,7 @@ public sealed class CompatibilidadeLayoutEcfTests
         valores.Add("CEBAS-TESTE");
         string linha0020 = "|0020|" + string.Join('|', valores) + "|";
 
-        var registro = (await ReadAsync(versao, linha0020)).OfType<Registro0020>().Single();
+        var registro = (await FixtureEcf.ReadAsync(versao, linha0020)).OfType<Registro0020>().Single();
 
         registro.IndicadorPosicao31.Should().Be(
             posicao31Ativa ? IndicadorSimNao.Sim : IndicadorSimNao.Nao);
@@ -188,19 +186,6 @@ public sealed class CompatibilidadeLayoutEcfTests
 
     private static bool IsAvailable(int introduzidoEm, int versao)
         => introduzidoEm == 0 || introduzidoEm <= versao;
-
-    private static async Task<List<RegistroSped>> ReadAsync(int versao, string linha)
-    {
-        string arquivo =
-            $"|0000|LECF|{versao:0000}|11111111000191|EMPRESA TESTE|0|0|||01012025|31122025|N||0||\r\n" +
-            linha + "\r\n" +
-            "|9999|3|\r\n";
-        var registros = new List<RegistroSped>();
-        await using var stream = new MemoryStream(Encoding.Latin1.GetBytes(arquivo));
-        await foreach (var registro in new ParserEcf().ReadStreamingAsync(stream))
-            registros.Add(registro);
-        return registros;
-    }
 
     private static (string Manifesto, string Schema) LerArtefatosCopiados()
     {

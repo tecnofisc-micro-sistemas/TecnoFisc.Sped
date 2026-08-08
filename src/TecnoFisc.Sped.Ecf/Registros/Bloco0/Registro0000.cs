@@ -21,10 +21,21 @@ public sealed partial class Registro0000 : RegistroSped
     /// Versão declarada em <see cref="CodVer"/>, convertida em número. Devolve o valor mesmo
     /// fora da faixa que a biblioteca conhece (ver <see cref="LayoutEcf"/>): descartar o número
     /// desligaria o gate de vigência e faria o arquivo ser lido como se fosse leiaute 12. Um
-    /// leiaute fora da faixa conhecida é sinalizado à parte, por <see cref="IsLeiauteConhecido"/>,
-    /// não por zero.
-    /// Zero significa apenas <c>COD_VER</c> ausente, de comprimento diferente de 4 ou não
-    /// numérico — arquivo inválido, não leiaute novo.
+    /// leiaute numérico fora da faixa conhecida (ex.: <c>0013</c>) é sinalizado à parte, por
+    /// <see cref="IsLeiauteConhecido"/>, não por zero — e esse sinal chega ao leitor, porque
+    /// <c>LeitorSpedTxt.ReadStreamingAsync</c> só consulta <see cref="IsLeiauteConhecido"/>
+    /// quando <c>VersaoLeiaute &gt; 0</c>.
+    /// <para>
+    /// Zero é um caso diferente: <c>COD_VER</c> ausente, de comprimento diferente de 4 ou não
+    /// numérico (ex.: <c>"ABCD"</c>) — arquivo inválido, não leiaute novo. Aqui
+    /// <see cref="IsLeiauteConhecido"/> também é <c>false</c> (zero está fora de
+    /// <see cref="LayoutEcf.V008"/>–<see cref="LayoutEcf.V012"/>), mas o leitor nunca chega a
+    /// consultá-lo: o gate acima de <c>VersaoLeiaute &gt; 0</c> não é satisfeito, então nenhum aviso é
+    /// emitido e a leitura segue em modo estrito, sem vigência sintática ligada. É intencional —
+    /// um <c>COD_VER</c> malformado é erro de dado, não evolução de leiaute — mas significa que
+    /// <see cref="IsLeiauteConhecido"/> por si só não é garantia de que o leitor avisou o
+    /// consumidor; depende também de <see cref="VersaoLeiaute"/> ser positivo.
+    /// </para>
     /// </summary>
     public override int VersaoLeiaute =>
         CodVer is { Length: 4 } &&

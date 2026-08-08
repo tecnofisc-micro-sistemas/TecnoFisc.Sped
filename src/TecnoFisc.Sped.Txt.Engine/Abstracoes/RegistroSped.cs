@@ -41,6 +41,15 @@ public abstract class RegistroSped
     /// demais herdam <c>true</c>, que preserva o comportamento estrito. Quando <c>false</c>, o
     /// leitor degrada para diagnóstico em vez de exceção: um arquivo de leiaute que a biblioteca
     /// ainda não conhece deve ser legível, não fatal.
+    /// <para>
+    /// Ressalva: o próprio <c>0000</c> é interpretado <b>antes</b> de o leitor conseguir
+    /// consultar esta propriedade — ele precisa terminar de montar o registro para então ler
+    /// <see cref="VersaoLeiaute"/> e <c>IsLeiauteConhecido</c>. Se um leiaute desconhecido
+    /// mudar o formato de um campo do próprio <c>0000</c> (posição, tipo, domínio), a leitura
+    /// desse registro específico ainda ocorre em modo estrito e pode abortar antes que a
+    /// biblioteca saiba que está diante de um leiaute que não conhece. O modo tolerante só se
+    /// aplica aos registros <b>seguintes</b> ao <c>0000</c>.
+    /// </para>
     /// </summary>
     public virtual bool IsLeiauteConhecido => true;
 

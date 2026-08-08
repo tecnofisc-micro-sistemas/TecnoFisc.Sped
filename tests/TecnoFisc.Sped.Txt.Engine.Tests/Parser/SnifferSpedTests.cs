@@ -95,12 +95,7 @@ public sealed class SnifferSpedTests
     [Theory]
     [InlineData("|0000|lecf|0012|11222333000181|EMPRESA TESTE|0|0|||01012025|31122025|N||0||")]
     [InlineData("|0000|XECF|0012|11222333000181|EMPRESA TESTE|0|0|||01012025|31122025|N||0||")]
-    [InlineData("|0000|LECF|0007|11222333000181|EMPRESA TESTE|0|0|||01012025|31122025|N||0||")]
-    [InlineData("|0000|LECF|0013|11222333000181|EMPRESA TESTE|0|0|||01012025|31122025|N||0||")]
-    [InlineData("|0000|LECF|0012|11222333000181|EMPRESA TESTE|0|0|||01012025|31122025|N||0|")]
-    [InlineData("|0000|LECF|0012|11222333000181|EMPRESA TESTE|0|0|||01012025|31122025|N||0|||")]
     [InlineData("|0000|LECF|0012|11222333000181|EMPRESA TESTE|0|0|||01012025|31122025|N||0||EXTRA")]
-    [InlineData("|0000|LECF|0012|11222333000181|EMPRESA TESTE|")]
     public async Task IdentificarAsync_LecfQuaseValido_RetornaDesconhecido(string linha)
     {
         await using var stream = Sped(linha);
@@ -110,6 +105,106 @@ public sealed class SnifferSpedTests
         metadados.Projeto.Should().Be(ProjetoSped.Desconhecido);
         metadados.VersaoLeiaute.Should().Be(0);
         stream.Position.Should().Be(0);
+    }
+
+    /// <summary>
+    /// Quem classifica é o discriminador <c>LECF</c>, não a versão: um leiaute fora da faixa que a
+    /// biblioteca modela (8–12) continua sendo ECF e precisa chegar ao <c>ParserEcf</c>, que o lê em
+    /// modo tolerante. Antes o sniffer devolvia <c>Desconhecido</c> para 7 e 13, e quem roteava por
+    /// ele nunca alcançava o parser.
+    /// </summary>
+    [Theory]
+    [InlineData("0007", 7)]
+    [InlineData("0008", 8)]
+    [InlineData("0012", 12)]
+    [InlineData("0013", 13)]
+    [InlineData("0100", 100)]
+    public async Task IdentificarAsync_LecfForaDaFaixaModelada_RetornaEcfComVersaoDeclarada(
+        string codVer, int versaoEsperada)
+    {
+        await using var stream = Sped(
+            $"|0000|LECF|{codVer}|11222333000181|EMPRESA TESTE|0|0|||01012025|31122025|N||0||");
+
+        var metadados = await SnifferSped.IdentificarAsync(stream, TestContext.Current.CancellationToken);
+
+        metadados.Projeto.Should().Be(ProjetoSped.Ecf);
+        metadados.VersaoLeiaute.Should().Be(versaoEsperada);
+        metadados.CodigoVersaoDeclarado.Should().Be(codVer);
+    }
+
+    /// <summary>
+    /// A largura da linha é checada por mínimo, não por igualdade — senão um leiaute futuro que
+    /// acrescente uma coluna ao <c>0000</c> deixaria de ser roteado. Validar a largura do registro
+    /// é trabalho do parser, que reporta linha, registro e campo.
+    /// </summary>
+    [Theory]
+    [InlineData("|0000|LECF|0012|11222333000181|EMPRESA TESTE|0|0|||01012025|31122025|N||0|")]
+    [InlineData("|0000|LECF|0012|11222333000181|EMPRESA TESTE|0|0|||01012025|31122025|N||0|||")]
+    [InlineData("|0000|LECF|0012|11222333000181|EMPRESA TESTE|")]
+    [InlineData("|0000|LECF|0012|")]
+    public async Task IdentificarAsync_LecfComLarguraDiferente_ContinuaSendoEcf(string linha)
+    {
+        await using var stream = Sped(linha);
+
+        var metadados = await SnifferSped.IdentificarAsync(stream, TestContext.Current.CancellationToken);
+
+        metadados.Projeto.Should().Be(ProjetoSped.Ecf);
+        metadados.VersaoLeiaute.Should().Be(12);
+    }
+
+    /// <summary>
+    /// <c>COD_VER</c> ilegível (ausente, com comprimento diferente de 4 ou não numérico) é arquivo
+    /// inválido, não leiaute novo: continua <c>Desconhecido</c>.
+    /// </summary>
+    [Theory]
+    [InlineData("ABCD")]
+    [InlineData("")]
+    [InlineData("012")]
+    [InlineData("00123")]
+    [InlineData("00 1")]
+    [InlineData("0000")]
+    public async Task IdentificarAsync_LecfComCodVerIlegivel_RetornaDesconhecido(string codVer)
+    {
+        await using var stream = Sped(
+            $"|0000|LECF|{codVer}|11222333000181|EMPRESA TESTE|0|0|||01012025|31122025|N||0||");
+
+        var metadados = await SnifferSped.IdentificarAsync(stream, TestContext.Current.CancellationToken);
+
+        metadados.Projeto.Should().Be(ProjetoSped.Desconhecido);
+        metadados.VersaoLeiaute.Should().Be(0);
+        metadados.CodigoVersaoDeclarado.Should().Be(codVer);
+    }
+
+    /// <summary>
+    /// Guarda de regressão dos três leiautes já publicados: a mudança do caminho ECF não pode
+    /// mexer na classificação de ECD, EFD Contribuições nem EFD ICMS-IPI.
+    /// </summary>
+    [Theory]
+    [InlineData("|0000|LECD|01012023|31122023|EMPRESA|11222333000181|ES|", ProjetoSped.Ecd, 9)]
+    [InlineData("|0000|006|0|||01022025|28022025|EMPRESA|11222333000181|MG|3126901||00|2|",
+        ProjetoSped.EfdContribuicoes, 6)]
+    [InlineData("|0000|015|1|01012021|31012021|EMPRESA|11222333000181||MG|123456789|3139409|||B|1|",
+        ProjetoSped.EfdIcmsIpi, 15)]
+    [InlineData("|0000|020|1|01012026|31012026|EMPRESA|11222333000181||MG|123456789|3139409|||B|1|",
+        ProjetoSped.EfdIcmsIpi, 20)]
+    // Largura errada continua desqualificando os leiautes numéricos: o afrouxamento é só do ECF.
+    [InlineData("|0000|006|0|||01022025|28022025|EMPRESA|11222333000181|MG|3126901||00|2||",
+        ProjetoSped.Desconhecido, 0)]
+    [InlineData("|0000|015|1|01012021|31012021|EMPRESA|11222333000181||MG|123456789|3139409|||B|",
+        ProjetoSped.Desconhecido, 0)]
+    [InlineData("|0000|007|0|||01022025|28022025|EMPRESA|11222333000181|MG|3126901||00|2|",
+        ProjetoSped.Desconhecido, 0)]
+    [InlineData("|0000|021|1|01012026|31012026|EMPRESA|11222333000181||MG|123456789|3139409|||B|1|",
+        ProjetoSped.Desconhecido, 0)]
+    public async Task IdentificarAsync_ProjetosPublicados_MantemClassificacao(
+        string linha, ProjetoSped projetoEsperado, int versaoEsperada)
+    {
+        await using var stream = Sped(linha);
+
+        var metadados = await SnifferSped.IdentificarAsync(stream, TestContext.Current.CancellationToken);
+
+        metadados.Projeto.Should().Be(projetoEsperado);
+        metadados.VersaoLeiaute.Should().Be(versaoEsperada);
     }
 
     [Fact]

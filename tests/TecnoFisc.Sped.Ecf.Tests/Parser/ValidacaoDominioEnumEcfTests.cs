@@ -70,7 +70,7 @@ public sealed class ValidacaoDominioEnumEcfTests
         // qualquer checagem de domínio (setter estrito e permissivo compartilham o parse).
         // Exercita o alargamento de LenientFieldParsing (lenienteCampo), não a validação de
         // domínio — ver DominioDeEnum_* abaixo para o caso que de fato exercita domínio.
-        var registros = await LeiauteForaDaFaixaTests.ReadAsync(13, "|0001|Z|");
+        var registros = await FixtureEcf.ReadAsync(13, "|0001|Z|");
 
         var zero0001 = registros.Single(registro => registro.Codigo == "0001");
         zero0001.ErrosDeFormato.Should().ContainSingle();
@@ -79,7 +79,7 @@ public sealed class ValidacaoDominioEnumEcfTests
     [Fact]
     public async Task FalhaDeConversaoDeCampo_DentroDaFaixa_ContinuaSendoExcecao()
     {
-        var act = async () => await LeiauteForaDaFaixaTests.ReadAsync(12, "|0001|Z|");
+        var act = async () => await FixtureEcf.ReadAsync(12, "|0001|Z|");
 
         await act.Should().ThrowAsync<ErroFormatoSpedException>();
     }
@@ -91,7 +91,7 @@ public sealed class ValidacaoDominioEnumEcfTests
         // (só define 0 e 1) — exercita de fato o setter estrito (Enum.IsDefined) e prova que a
         // validação de domínio continua ligada fora da faixa conhecida: quem converte a
         // exceção em diagnóstico é o lenienteCampo alargado, não o desligamento da validação.
-        var registros = await LeiauteForaDaFaixaTests.ReadAsync(13, "|0001|9|");
+        var registros = await FixtureEcf.ReadAsync(13, "|0001|9|");
 
         var zero0001 = registros.Single(registro => registro.Codigo == "0001");
         zero0001.ErrosDeFormato.Should().ContainSingle();
@@ -100,7 +100,7 @@ public sealed class ValidacaoDominioEnumEcfTests
     [Fact]
     public async Task DominioDeEnum_DentroDaFaixa_ContinuaSendoExcecao()
     {
-        var act = async () => await LeiauteForaDaFaixaTests.ReadAsync(12, "|0001|9|");
+        var act = async () => await FixtureEcf.ReadAsync(12, "|0001|9|");
 
         await act.Should().ThrowAsync<ErroFormatoSpedException>();
     }
@@ -112,7 +112,7 @@ public sealed class ValidacaoDominioEnumEcfTests
     [Fact]
     public async Task IndDad_DentroDoDominio_EhLido()
     {
-        var registros = await LeiauteForaDaFaixaTests.ReadAsync(12, "|0001|0|");
+        var registros = await FixtureEcf.ReadAsync(12, "|0001|0|");
 
         registros.Should().Contain(registro => registro.Codigo == "0001");
     }
@@ -121,7 +121,7 @@ public sealed class ValidacaoDominioEnumEcfTests
     public async Task CodNat_ForaDoDominio_AbortaNoLeiauteConhecido()
     {
         // C050 traz COD_NAT; "99" não pertence a CodigoNaturezaContaContabil.
-        var act = async () => await LeiauteForaDaFaixaTests.ReadAsync(
+        var act = async () => await FixtureEcf.ReadAsync(
             12, "|C001|0|\r\n|C050|01012025|99|A|1|CTA001||CONTA TESTE|");
 
         await act.Should().ThrowAsync<ErroFormatoSpedException>();

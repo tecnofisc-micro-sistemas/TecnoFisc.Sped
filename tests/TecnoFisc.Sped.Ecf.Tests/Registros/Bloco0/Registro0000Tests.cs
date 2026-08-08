@@ -45,40 +45,36 @@ public sealed class Registro0000Tests
             [null, null, null, null, null, null, null, "ddMMyyyy", "ddMMyyyy", "ddMMyyyy", null, null, null, null]);
     }
 
+    /// <summary>
+    /// <c>COD_VER</c> é convertido numericamente, inclusive fora da faixa 8–12 que a biblioteca
+    /// modela — descartar o número desligaria o gate de vigência em silêncio. Quem sinaliza a
+    /// faixa é <c>IsLeiauteConhecido</c> (coberto em <c>LeiauteForaDaFaixaTests</c>).
+    /// </summary>
     [Theory]
     [InlineData("0008", 8)]
     [InlineData("0009", 9)]
     [InlineData("0010", 10)]
     [InlineData("0011", 11)]
     [InlineData("0012", 12)]
-    [InlineData(null, 0)]
-    [InlineData("", 0)]
-    [InlineData(" ", 0)]
-    [InlineData("ABCD", 0)]
-    public void VersaoLeiaute_ConverteCodVer(string? codVer, int esperado)
-    {
-        var registro = new Registro0000 { CodVer = codVer };
-
-        registro.VersaoLeiaute.Should().Be(esperado);
-    }
-
-    [Theory]
-    [InlineData("0008", 8)]
-    [InlineData("0012", 12)]
-    [InlineData("0013", 13)]
     [InlineData("0007", 7)]
+    [InlineData("0013", 13)]
     [InlineData("0100", 100)]
-    public void VersaoLeiaute_ParseiaCodVerNumericamente(string codVer, int esperado)
+    public void VersaoLeiaute_ConverteCodVer(string codVer, int esperado)
         => new Registro0000 { CodVer = codVer }.VersaoLeiaute.Should().Be(esperado);
 
+    /// <summary>
+    /// Zero é reservado a <c>COD_VER</c> ilegível — ausente, de comprimento diferente de 4 ou não
+    /// numérico. Arquivo inválido, não leiaute novo.
+    /// </summary>
     [Theory]
     [InlineData(null)]
     [InlineData("")]
+    [InlineData(" ")]
     [InlineData("ABCD")]
     [InlineData("00 1")]
     [InlineData("012")]
     [InlineData("00123")]
-    public void VersaoLeiaute_EhZeroQuandoCodVerInvalido(string? codVer)
+    public void VersaoLeiaute_EhZeroQuandoCodVerIlegivel(string? codVer)
         => new Registro0000 { CodVer = codVer }.VersaoLeiaute.Should().Be(0);
 
     [Fact]

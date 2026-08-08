@@ -1,7 +1,4 @@
-using System.Text;
-
 using TecnoFisc.Sped.Core.Erros;
-using TecnoFisc.Sped.Ecf.Parser;
 using TecnoFisc.Sped.Ecf.Registros.Bloco0;
 using TecnoFisc.Sped.Txt.Engine.Abstracoes;
 
@@ -21,7 +18,7 @@ public sealed class LeiauteForaDaFaixaTests
     [Fact]
     public async Task Leitura_DeLeiauteForaDaFaixa_AvisaNoZeroZeroZeroZeroSemAbortar()
     {
-        var registros = await ReadAsync(13, "|0001|0|");
+        var registros = await FixtureEcf.ReadAsync(13, "|0001|0|");
 
         var zero = registros.OfType<Registro0000>().Single();
         var erro = zero.ErrosDeFormato.Should().ContainSingle().Which;
@@ -33,7 +30,7 @@ public sealed class LeiauteForaDaFaixaTests
     [Fact]
     public async Task Leitura_DeLeiauteConhecido_NaoAvisa()
     {
-        var registros = await ReadAsync(12, "|0001|0|");
+        var registros = await FixtureEcf.ReadAsync(12, "|0001|0|");
 
         registros.OfType<Registro0000>().Single().ErrosDeFormato.Should().BeEmpty();
     }
@@ -41,7 +38,7 @@ public sealed class LeiauteForaDaFaixaTests
     [Fact]
     public async Task Leitura_DeLeiaute13ComRegistroNovo_ViraSentinelaEmVezDeAbortar()
     {
-        var registros = await ReadAsync(13, "|X999|conteudo novo|");
+        var registros = await FixtureEcf.ReadAsync(13, "|X999|conteudo novo|");
 
         var sentinela = registros.OfType<RegistroNaoReconhecido>().Should().ContainSingle().Subject;
         sentinela.Codigo.Should().Be("X999");
@@ -51,22 +48,42 @@ public sealed class LeiauteForaDaFaixaTests
     [Fact]
     public async Task Leitura_DeLeiauteConhecidoComCodigoDesconhecido_ContinuaAbortando()
     {
-        var act = async () => await ReadAsync(12, "|X999|conteudo novo|");
+        var act = async () => await FixtureEcf.ReadAsync(12, "|X999|conteudo novo|");
 
         await act.Should().ThrowAsync<ErroLayoutSpedException>();
     }
 
-    internal static async Task<List<RegistroSped>> ReadAsync(int versao, string linha)
+    /// <summary>
+    /// <c>COD_VER</c> ilegível não é leiaute novo, é arquivo inválido: o <c>0000</c> recebe um
+    /// diagnóstico dizendo que a vigência não será aplicada — antes esse subconjunto passava em
+    /// silêncio e o arquivo era lido como se fosse leiaute 12.
+    /// </summary>
+    [Theory]
+    [InlineData("ABCD")]
+    [InlineData("")]
+    [InlineData("012")]
+    [InlineData("00123")]
+    public async Task Leitura_ComCodVerIlegivel_AvisaNoZeroZeroZeroZero(string codVer)
     {
-        string arquivo =
-            $"|0000|LECF|{versao:0000}|11111111000191|EMPRESA TESTE|0|0|||01012025|31122025|N||0||\r\n" +
-            linha + "\r\n" +
-            "|9999|3|\r\n";
-        var registros = new List<RegistroSped>();
-        await using var stream = new MemoryStream(Encoding.Latin1.GetBytes(arquivo));
-        await foreach (var registro in new ParserEcf().ReadStreamingAsync(
-            stream, TestContext.Current.CancellationToken))
-            registros.Add(registro);
-        return registros;
+        var registros = await FixtureEcf.ReadAsync(codVer, "|0001|0|");
+
+        var zero = registros.OfType<Registro0000>().Single();
+        zero.VersaoLeiaute.Should().Be(0);
+        var erro = zero.ErrosDeFormato.Should().ContainSingle().Which;
+        erro.Campo.Should().Be("COD_VER");
+        erro.Mensagem.Should().Contain("ilegível").And.Contain("vigência");
+    }
+
+    /// <summary>
+    /// E o diagnóstico não afrouxa nada: sem versão legível, o modo estrito continua valendo e um
+    /// código fora do catálogo segue abortando, ao contrário do que acontece com um leiaute fora
+    /// da faixa (que tem versão positiva e é lido em modo tolerante).
+    /// </summary>
+    [Fact]
+    public async Task Leitura_ComCodVerIlegivelECodigoDesconhecido_ContinuaAbortando()
+    {
+        var act = async () => await FixtureEcf.ReadAsync("ABCD", "|X999|conteudo novo|");
+
+        await act.Should().ThrowAsync<ErroLayoutSpedException>();
     }
 }

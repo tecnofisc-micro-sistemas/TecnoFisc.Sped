@@ -1,7 +1,4 @@
-using System.Text;
-
 using TecnoFisc.Sped.Ecf.Generated;
-using TecnoFisc.Sped.Ecf.Parser;
 using TecnoFisc.Sped.Ecf.Registros.BlocoX;
 using TecnoFisc.Sped.Txt.Engine.Abstracoes;
 using TecnoFisc.Sped.Txt.Engine.Gerador;
@@ -24,7 +21,7 @@ public sealed class RegistrosRemovidosLeiaute11Tests
     [Fact]
     public async Task Leitura_DeLeiaute10ComX300_NaoAborta()
     {
-        var registros = await ReadAsync(10, "|X300|000001|EXPORTACAO|1234,56|");
+        var registros = await FixtureEcf.ReadAsync(10, "|X300|000001|EXPORTACAO|1234,56|");
 
         registros.Should().ContainSingle(registro => registro.Codigo == "X300");
         registros.OfType<RegistroNaoReconhecido>().Should().BeEmpty();
@@ -91,16 +88,42 @@ public sealed class RegistrosRemovidosLeiaute11Tests
             .WithMessage("*X300*não tem campos modelados*");
     }
 
-    internal static async Task<List<RegistroSped>> ReadAsync(int versao, string linha)
+    /// <summary>
+    /// O <c>Nivel</c> dos sete veio da leitura do manual em PDF e até aqui só era conferido contra
+    /// o catálogo — conferir metadado contra metadado não prova nada sobre a árvore. Este teste lê
+    /// um arquivo real e assere a vinculação: X305 e X310 (nível 3) penduram em X300 (nível 2),
+    /// X325 e X330 (nível 3) penduram em X320 (nível 2), e os três de nível 2 (X291, X300, X320)
+    /// penduram no X001 (nível 1). Um nível errado em qualquer um deles reparenta a subárvore em
+    /// silêncio.
+    /// </summary>
+    [Fact]
+    public async Task Leitura_DeLeiaute10_PenduraOsFilhosNosPaisCertos()
     {
-        string arquivo =
-            $"|0000|LECF|{versao:0000}|11111111000191|EMPRESA TESTE|0|0|||01012025|31122025|N||0||\r\n" +
-            linha + "\r\n" +
-            "|9999|3|\r\n";
-        var registros = new List<RegistroSped>();
-        await using var stream = new MemoryStream(Encoding.Latin1.GetBytes(arquivo));
-        await foreach (var registro in new ParserEcf().ReadStreamingAsync(stream))
-            registros.Add(registro);
-        return registros;
+        var registros = await FixtureEcf.ReadAsync(
+            10,
+            "|X001|0|",
+            "|X291|000001|AJUSTE|",
+            "|X300|000001|EXPORTACAO|1234,56|",
+            "|X305|000001|DETALHE|",
+            "|X310|000001|DETALHE|",
+            "|X320|000002|IMPORTACAO|7890,12|",
+            "|X325|000002|DETALHE|",
+            "|X330|000002|DETALHE|");
+
+        var porCodigo = registros.ToDictionary(registro => registro.Codigo, StringComparer.Ordinal);
+        registros.OfType<RegistroNaoReconhecido>().Should().BeEmpty();
+
+        porCodigo["X291"].Pai.Should().BeSameAs(porCodigo["X001"]);
+        porCodigo["X291"].Filhos.Should().BeEmpty("X291 é nível 2 e não abre subárvore");
+        porCodigo["X300"].Pai.Should().BeSameAs(porCodigo["X001"]);
+        porCodigo["X320"].Pai.Should().BeSameAs(porCodigo["X001"]);
+        porCodigo["X305"].Pai.Should().BeSameAs(porCodigo["X300"]);
+        porCodigo["X310"].Pai.Should().BeSameAs(porCodigo["X300"]);
+        porCodigo["X325"].Pai.Should().BeSameAs(porCodigo["X320"]);
+        porCodigo["X330"].Pai.Should().BeSameAs(porCodigo["X320"]);
+
+        porCodigo["X300"].Filhos.Select(filho => filho.Codigo).Should().Equal("X305", "X310");
+        porCodigo["X320"].Filhos.Select(filho => filho.Codigo).Should().Equal("X325", "X330");
+        porCodigo["X001"].Filhos.Select(filho => filho.Codigo).Should().Equal("X291", "X300", "X320");
     }
 }

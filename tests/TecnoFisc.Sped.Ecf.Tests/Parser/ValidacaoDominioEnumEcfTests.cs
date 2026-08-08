@@ -13,12 +13,11 @@ namespace TecnoFisc.Sped.Ecf.Tests.Parser;
 /// padrão e que a política chega de ponta a ponta até o leitor real.
 /// </summary>
 /// <remarks>
-/// Ver o comentário em <c>RegistroEnumDominioSinteticoEcf</c>: nenhum registro real da ECF tem
-/// hoje um campo elegível ao definidor estrito (todos os enums de <c>TecnoFisc.Sped.Ecf.Enums</c>
-/// carregam <c>[SpedValor]</c>), então o teste monta seu próprio catálogo a partir de um registro
-/// sintético e o injeta via <see cref="ParserEcf(IRegistroSpedCatalogo)"/> — esse construtor passa
-/// pelo mesmo <see cref="ParserEcf.ResolveOptions"/> usado por <see cref="ParserEcf()"/>, então a
-/// política padrão (validação ligada) testada aqui é a mesma do construtor sem catálogo.
+/// Validação de domínio de enum no ECF. Os enums elegíveis ao setter estrito não vivem em
+/// <c>TecnoFisc.Sped.Ecf.Enums</c> e sim em <c>TecnoFisc.Sped.Txt.Engine.Enums</c>:
+/// <c>IndicadorMovimentoBloco</c> (campo <c>IND_DAD</c> dos 19 registros de abertura de bloco) e
+/// <c>CodigoNaturezaContaContabil</c> (campo <c>COD_NAT</c> de C050 e J050). Como o ECF usa
+/// <c>ValidarDominioDeEnum = true</c> por padrão, esses campos são caminho de produção.
 /// <para>
 /// Usa <see cref="ParserEcf.ReadStreamingAsync"/>, não <see cref="ParserEcf.ParseLinha"/>:
 /// <c>ParseLinha</c> é leniente por contrato — força <c>LenientFieldParsing</c> internamente e
@@ -102,6 +101,28 @@ public sealed class ValidacaoDominioEnumEcfTests
     public async Task DominioDeEnum_DentroDaFaixa_ContinuaSendoExcecao()
     {
         var act = async () => await LeiauteForaDaFaixaTests.ReadAsync(12, "|0001|9|");
+
+        await act.Should().ThrowAsync<ErroFormatoSpedException>();
+    }
+
+    // Nota: um teste "IndDad_ForaDoDominio_AbortaNoLeiauteConhecido" com IND_DAD = "Z" seria
+    // idêntico a FalhaDeConversaoDeCampo_DentroDaFaixa_ContinuaSendoExcecao acima (mesma
+    // chamada, mesma asserção) — omitido para não duplicar cobertura já existente.
+
+    [Fact]
+    public async Task IndDad_DentroDoDominio_EhLido()
+    {
+        var registros = await LeiauteForaDaFaixaTests.ReadAsync(12, "|0001|0|");
+
+        registros.Should().Contain(registro => registro.Codigo == "0001");
+    }
+
+    [Fact]
+    public async Task CodNat_ForaDoDominio_AbortaNoLeiauteConhecido()
+    {
+        // C050 traz COD_NAT; "99" não pertence a CodigoNaturezaContaContabil.
+        var act = async () => await LeiauteForaDaFaixaTests.ReadAsync(
+            12, "|C001|0|\r\n|C050|01012025|99|A|1|CTA001||CONTA TESTE|");
 
         await act.Should().ThrowAsync<ErroFormatoSpedException>();
     }

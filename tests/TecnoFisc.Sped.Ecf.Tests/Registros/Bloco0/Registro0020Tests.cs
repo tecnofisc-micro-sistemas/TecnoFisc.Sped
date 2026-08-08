@@ -30,23 +30,20 @@ public sealed class Registro0020Tests
         registro.IndQteScp.Should().Be(1);
         registro.IndAdmFunClu.Should().Be(IndicadorSimNao.Nao);
         registro.IndOpExt.Should().Be(IndicadorSimNao.Sim);
-        registro.PossuiCebras.Should().Be(IndicadorSimNao.Nao);
+        registro.IndicadorPosicao31.Should().Be(IndicadorSimNao.Nao);
         registro.Cebas.Should().BeNull();
         registro.ErrosDeFormato.Should().BeEmpty();
     }
 
     [Fact]
-    public void Campo31_PreservaPosicaoComAliasesSemanticosSemDuplicarMapeamento()
+    public void Campo31_MapeiaComoUnicaPortaPosicionalSemAliasesSemanticos()
     {
         var registro = new Registro0020
         {
             IndicadorPosicao31 = IndicadorSimNao.Sim,
         };
 
-        registro.IndPrTransf.Should().Be(IndicadorSimNao.Sim,
-            "essa é a semântica da posição 31 nos leiautes 10 e 11");
-        registro.PossuiCebras.Should().Be(IndicadorSimNao.Sim,
-            "essa é a semântica da mesma posição no leiaute 12");
+        registro.IndicadorPosicao31.Should().Be(IndicadorSimNao.Sim);
 
         var mapeamento = typeof(Registro0020).GetProperties()
             .Select(propriedade => (
@@ -56,19 +53,5 @@ public sealed class Registro0020Tests
         mapeamento.Propriedade.Name.Should().Be(nameof(Registro0020.IndicadorPosicao31));
         mapeamento.Campo!.Nome.Should().Be("POSSUI_CEBRAS");
         mapeamento.Campo.DesdeVersao.Should().Be(10);
-    }
-
-    [Fact]
-    public void AliasesDoCampo31_CompartilhamOMesmoValorPosicional()
-    {
-        var registro = new Registro0020
-        {
-            IndPrTransf = IndicadorSimNao.Nao,
-        };
-
-        registro.IndicadorPosicao31.Should().Be(IndicadorSimNao.Nao);
-        registro.PossuiCebras = IndicadorSimNao.Sim;
-        registro.IndicadorPosicao31.Should().Be(IndicadorSimNao.Sim);
-        registro.IndPrTransf.Should().Be(IndicadorSimNao.Sim);
     }
 }

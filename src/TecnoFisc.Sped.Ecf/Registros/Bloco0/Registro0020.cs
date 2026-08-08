@@ -135,28 +135,19 @@ public sealed partial class Registro0020 : RegistroSped
     public IndicadorSimNao IndDerex { get; set; }
 
     /// <summary>
-    /// Valor posicional do campo 31: <c>IND_PR_TRANSF</c> nos leiautes 10 e 11 e
-    /// <c>POSSUI_CEBRAS</c> no leiaute 12.
+    /// Valor posicional do campo 31, cuja semântica depende do <c>COD_VER</c> do arquivo:
+    /// <c>IND_PR_TRANSF</c> (opção pelas novas regras de preços de transferência) nos leiautes
+    /// 10 e 11, e <c>POSSUI_CEBRAS</c> (posse de certificado Cebas) no leiaute 12. Não há como o
+    /// registro saber qual das duas é a sua sem a versão do arquivo — consulte o <c>COD_VER</c>
+    /// do <c>0000</c> antes de interpretar este valor. O rótulo do atributo (<c>Nome</c>)
+    /// permanece <c>POSSUI_CEBRAS</c> porque o manifesto do leiaute 12 — a verdade sobre o
+    /// leiaute vigente, contra a qual <c>ManifestoCatalogoTests</c> compara o catálogo campo a
+    /// campo — descreve o campo 31 assim; um rótulo composto (<c>"IND_PR_TRANSF/POSSUI_CEBRAS"</c>)
+    /// além de divergir do manifesto também não passaria em <c>CatalogoBuilder.IsFieldNameValid</c>
+    /// (a barra não é caractere válido em nome de campo).
     /// </summary>
     [CampoSped(Ordem = 31, Tamanho = 1, Obrigatorio = true, DesdeVersao = (int)LayoutEcf.V010, Nome = "POSSUI_CEBRAS")]
     public IndicadorSimNao IndicadorPosicao31 { get; set; }
-
-    /// <summary>
-    /// Semântica do campo 31 nos leiautes 10 e 11: indicador de opção pelas novas regras de
-    /// preços de transferência.
-    /// </summary>
-    public IndicadorSimNao IndPrTransf
-    {
-        get => IndicadorPosicao31;
-        set => IndicadorPosicao31 = value;
-    }
-
-    /// <summary>Semântica do campo 31 no leiaute 12: indicador de posse de certificado Cebas.</summary>
-    public IndicadorSimNao PossuiCebras
-    {
-        get => IndicadorPosicao31;
-        set => IndicadorPosicao31 = value;
-    }
 
     /// <summary>Número do Cebas, condicionado ao indicador de posse.</summary>
     [CampoSped(Ordem = 32, Tamanho = 255, DesdeVersao = (int)LayoutEcf.V012, Nome = "CEBAS")]

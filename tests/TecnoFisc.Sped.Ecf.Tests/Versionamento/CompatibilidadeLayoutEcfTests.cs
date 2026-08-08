@@ -127,8 +127,6 @@ public sealed class CompatibilidadeLayoutEcfTests
 
         registro.IndicadorPosicao31.Should().Be(
             posicao31Ativa ? IndicadorSimNao.Sim : IndicadorSimNao.Nao);
-        registro.IndPrTransf.Should().Be(registro.IndicadorPosicao31);
-        registro.PossuiCebras.Should().Be(registro.IndicadorPosicao31);
         registro.Cebas.Should().Be(cebasEsperado);
     }
 

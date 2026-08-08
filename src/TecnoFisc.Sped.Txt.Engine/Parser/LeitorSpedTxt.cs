@@ -73,6 +73,8 @@ public sealed class LeitorSpedTxt : ILeitorSped
 
         // Estado de descarte (ReadingOptions). nivelCorteSubarvore >= 0 indica que estamos dentro
         // da subárvore de um registro ignorado por código; sobrevive entre iterações de ReadAsync.
+        // nivelCorteVigencia é o equivalente para o corte por vigência: cortes independentes,
+        // um por gate, para que um não zere a subárvore aberta pelo outro.
         bool hasFilter = _opcoes.HasFilter;
         int nivelCorteSubarvore = -1;
         int nivelCorteVigencia = -1;
@@ -236,21 +238,21 @@ public sealed class LeitorSpedTxt : ILeitorSped
     private static bool ShouldIgnoreByVersion(
         MetadadosRegistro? metadados,
         int versaoLeiaute,
-        ref int nivelCorteSubarvore)
+        ref int nivelCorteVigencia)
     {
         if (metadados is null)
             return false;
 
-        if (nivelCorteSubarvore >= 0)
+        if (nivelCorteVigencia >= 0)
         {
-            if (metadados.Nivel > nivelCorteSubarvore)
+            if (metadados.Nivel > nivelCorteVigencia)
                 return true;
-            nivelCorteSubarvore = -1;
+            nivelCorteVigencia = -1;
         }
 
         if (metadados.IntroduzidoEm > 0 && metadados.IntroduzidoEm > versaoLeiaute)
         {
-            nivelCorteSubarvore = metadados.Nivel;
+            nivelCorteVigencia = metadados.Nivel;
             return true;
         }
 

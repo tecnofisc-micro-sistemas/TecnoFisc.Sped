@@ -24,8 +24,9 @@ public sealed class LeiauteForaDaFaixaTests
         var registros = await ReadAsync(13, "|0001|0|");
 
         var zero = registros.OfType<Registro0000>().Single();
-        zero.ErrosDeFormato.Should().ContainSingle()
-            .Which.Mensagem.Should().Contain("fora da faixa");
+        var erro = zero.ErrosDeFormato.Should().ContainSingle().Which;
+        erro.Mensagem.Should().Contain("fora da faixa");
+        erro.ValorBruto.Should().Be("0013");
         registros.Should().Contain(registro => registro.Codigo == "0001");
     }
 
@@ -63,7 +64,8 @@ public sealed class LeiauteForaDaFaixaTests
             "|9999|3|\r\n";
         var registros = new List<RegistroSped>();
         await using var stream = new MemoryStream(Encoding.Latin1.GetBytes(arquivo));
-        await foreach (var registro in new ParserEcf().ReadStreamingAsync(stream))
+        await foreach (var registro in new ParserEcf().ReadStreamingAsync(
+            stream, TestContext.Current.CancellationToken))
             registros.Add(registro);
         return registros;
     }

@@ -65,10 +65,34 @@ public sealed class ValidacaoDominioEnumEcfTests
     }
 
     [Fact]
+    public async Task FalhaDeConversaoDeCampo_ForaDaFaixaDeLeiautes_ViraDiagnosticoEmVezDeExcecao()
+    {
+        // IND_DAD = "Z" nem chega a ser um int válido: falha no próprio int.Parse, antes de
+        // qualquer checagem de domínio (setter estrito e permissivo compartilham o parse).
+        // Exercita o alargamento de LenientFieldParsing (lenienteCampo), não a validação de
+        // domínio — ver DominioDeEnum_* abaixo para o caso que de fato exercita domínio.
+        var registros = await LeiauteForaDaFaixaTests.ReadAsync(13, "|0001|Z|");
+
+        var zero0001 = registros.Single(registro => registro.Codigo == "0001");
+        zero0001.ErrosDeFormato.Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task FalhaDeConversaoDeCampo_DentroDaFaixa_ContinuaSendoExcecao()
+    {
+        var act = async () => await LeiauteForaDaFaixaTests.ReadAsync(12, "|0001|Z|");
+
+        await act.Should().ThrowAsync<ErroFormatoSpedException>();
+    }
+
+    [Fact]
     public async Task DominioDeEnum_ForaDaFaixaDeLeiautes_ViraDiagnosticoEmVezDeExcecao()
     {
-        // IND_DAD = "Z" não pertence a IndicadorMovimentoBloco.
-        var registros = await LeiauteForaDaFaixaTests.ReadAsync(13, "|0001|Z|");
+        // IND_DAD = "9" é um int válido, mas fora do domínio de IndicadorMovimentoBloco
+        // (só define 0 e 1) — exercita de fato o setter estrito (Enum.IsDefined) e prova que a
+        // validação de domínio continua ligada fora da faixa conhecida: quem converte a
+        // exceção em diagnóstico é o lenienteCampo alargado, não o desligamento da validação.
+        var registros = await LeiauteForaDaFaixaTests.ReadAsync(13, "|0001|9|");
 
         var zero0001 = registros.Single(registro => registro.Codigo == "0001");
         zero0001.ErrosDeFormato.Should().ContainSingle();
@@ -77,7 +101,7 @@ public sealed class ValidacaoDominioEnumEcfTests
     [Fact]
     public async Task DominioDeEnum_DentroDaFaixa_ContinuaSendoExcecao()
     {
-        var act = async () => await LeiauteForaDaFaixaTests.ReadAsync(12, "|0001|Z|");
+        var act = async () => await LeiauteForaDaFaixaTests.ReadAsync(12, "|0001|9|");
 
         await act.Should().ThrowAsync<ErroFormatoSpedException>();
     }

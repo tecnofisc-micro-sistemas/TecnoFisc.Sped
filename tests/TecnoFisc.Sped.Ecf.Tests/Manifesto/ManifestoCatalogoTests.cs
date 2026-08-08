@@ -77,7 +77,14 @@ public sealed class ManifestoCatalogoTests
     public void Catalogo_CorrespondeExatamenteAos180RegistrosE17BlocosDoManifesto()
     {
         var manifesto = ManifestoEcf.Carregar();
-        MetadadosRegistro[] catalogo = new CatalogoSpedGerado().EnumerarRegistros().ToArray();
+        MetadadosRegistro[] catalogoCompleto = new CatalogoSpedGerado().EnumerarRegistros().ToArray();
+        // O manifesto descreve só o leiaute 12 vigente: os sete registros removidos no leiaute 11
+        // (DescontinuadoEm != 0) ficam de fora desta comparação de 1:1 — ver
+        // Catalogo_SoDivergeDoManifestoNosSeteRemovidosNoLeiaute11 para a asserção que trava o
+        // conjunto exato da divergência.
+        MetadadosRegistro[] catalogo = catalogoCompleto
+            .Where(registro => registro.DescontinuadoEm == 0)
+            .ToArray();
 
         manifesto.Registros.Should().HaveCount(180).And.OnlyContain(registro => registro.Reviewed);
         catalogo.Should().HaveCount(180);
@@ -87,6 +94,18 @@ public sealed class ManifestoCatalogoTests
             .Should().Equal("0", "C", "E", "J", "K", "L", "M", "N", "P", "Q", "T", "U", "V", "W", "X", "Y", "9");
 
         AssertRegistroEcf.CatalogMatchesManifest();
+    }
+
+    [Fact]
+    public void Catalogo_SoDivergeDoManifestoNosSeteRemovidosNoLeiaute11()
+    {
+        var manifesto = ManifestoEcf.Carregar().CodigosCanonicos.ToHashSet(StringComparer.Ordinal);
+        var catalogo = new CatalogoSpedGerado().EnumerarRegistros()
+            .Select(registro => registro.Codigo).ToHashSet(StringComparer.Ordinal);
+
+        catalogo.Except(manifesto).Should().BeEquivalentTo(
+            ["X291", "X300", "X305", "X310", "X320", "X325", "X330"]);
+        manifesto.Except(catalogo).Should().BeEmpty();
     }
 
     [Fact]

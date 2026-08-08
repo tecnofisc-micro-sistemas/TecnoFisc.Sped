@@ -20,7 +20,13 @@ internal static partial class AssertRegistroEcf
 
         var manifesto = _manifesto.Value;
         var codigosManifesto = manifesto.CodigosCanonicos.ToHashSet(StringComparer.Ordinal);
+        // Registros descontinuados (DescontinuadoEm != 0) existem no catálogo para leitura de
+        // arquivos históricos, mas o manifesto descreve só o leiaute 12 vigente — não fazem parte
+        // desta comparação catálogo × manifesto, nem como "extras" nem como candidatos a
+        // "ausentes". Ver Catalogo_SoDivergeDoManifestoNosSeteRemovidosNoLeiaute11, que trava que
+        // a divergência fica restrita a esse conjunto.
         var codigosCatalogo = _catalogo.EnumerarRegistros()
+            .Where(registro => registro.DescontinuadoEm == 0)
             .Select(registro => registro.Codigo)
             .ToHashSet(StringComparer.Ordinal);
 
@@ -59,7 +65,11 @@ internal static partial class AssertRegistroEcf
         ArgumentNullException.ThrowIfNull(catalogo);
 
         var manifesto = _manifesto.Value;
-        MetadadosRegistro[] metadadosCatalogo = catalogo.ToArray();
+        // Mesma exclusão de CodesAreImplemented: descontinuados não fazem parte da comparação
+        // catálogo × manifesto (o manifesto só descreve o leiaute 12 vigente).
+        MetadadosRegistro[] metadadosCatalogo = catalogo
+            .Where(registro => registro.DescontinuadoEm == 0)
+            .ToArray();
         string[] codigosManifesto = manifesto.Registros.Select(registro => registro.Code).ToArray();
         string[] codigosCatalogo = metadadosCatalogo.Select(registro => registro.Codigo).ToArray();
         var conjuntoManifesto = codigosManifesto.ToHashSet(StringComparer.Ordinal);

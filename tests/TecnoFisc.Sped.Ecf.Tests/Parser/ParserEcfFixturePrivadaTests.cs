@@ -58,8 +58,12 @@ public sealed partial class ParserEcfFixturePrivadaTests
         linhas.Should().ContainSingle(linha => linha.StartsWith("|0000|", StringComparison.Ordinal));
         linhas[^1].Should().StartWith("|9999|");
         linhas.Select(ObterBloco).Distinct().Should().Equal(BlocosCanonicos);
+        // A fixture pública representa o leiaute 12 vigente: os sete registros removidos no
+        // leiaute 11 (DescontinuadoEm != 0) não aparecem nela, então saem também da comparação.
         linhas.Select(ObterCodigo).Distinct().Should().Equal(
-            new Generated.CatalogoSpedGerado().EnumerarRegistros().Select(registro => registro.Codigo));
+            new Generated.CatalogoSpedGerado().EnumerarRegistros()
+                .Where(registro => registro.DescontinuadoEm == 0)
+                .Select(registro => registro.Codigo));
     }
 
     [Theory]

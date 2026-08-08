@@ -17,7 +17,12 @@ public sealed partial class EcfReleaseGateTests
     public void CatalogoTemExatamenteOs180RegistrosDoManifesto()
     {
         var manifesto = ManifestoEcf.Carregar();
-        var catalogo = new CatalogoSpedGerado().EnumerarRegistros().ToArray();
+        // O manifesto descreve só o leiaute 12 vigente: os sete registros removidos no leiaute 11
+        // (DescontinuadoEm != 0) ficam de fora desta comparação de 1:1 — ver
+        // ManifestoCatalogoTests.Catalogo_SoDivergeDoManifestoNosSeteRemovidosNoLeiaute11.
+        var catalogo = new CatalogoSpedGerado().EnumerarRegistros()
+            .Where(registro => registro.DescontinuadoEm == 0)
+            .ToArray();
 
         manifesto.Registros.Should().HaveCount(180).And.OnlyContain(registro => registro.Reviewed);
         catalogo.Should().HaveCount(180);

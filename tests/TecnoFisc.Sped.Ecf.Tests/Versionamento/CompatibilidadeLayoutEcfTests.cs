@@ -163,14 +163,16 @@ public sealed class CompatibilidadeLayoutEcfTests
     }
 
     [Fact]
-    public void CatalogoAtual_NaoReintroduzRegistrosRemovidosNoLeiaute11()
+    public void CatalogoAtual_ReconheceRegistrosRemovidosNoLeiaute11SemModelarCampos()
     {
         string[] removidos = ["X291", "X300", "X305", "X310", "X320", "X325", "X330"];
-        var codigos = new CatalogoSpedGerado().EnumerarRegistros()
-            .Select(registro => registro.Codigo)
-            .ToHashSet(StringComparer.Ordinal);
+        var catalogo = new CatalogoSpedGerado();
 
-        codigos.Should().NotContain(removidos);
+        foreach (var codigo in removidos)
+        {
+            catalogo.TentarObter(codigo, out var metadados).Should().BeTrue();
+            metadados!.DescontinuadoEm.Should().Be(11);
+        }
     }
 
     [Fact]

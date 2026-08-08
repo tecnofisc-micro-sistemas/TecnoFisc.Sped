@@ -14,22 +14,27 @@ public sealed partial class Registro0000 : RegistroSped
     /// <inheritdoc />
     public override string Codigo => "0000";
 
-    /// <inheritdoc />
-    public override int VersaoLeiaute => CodVer switch
-    {
-        "0008" => 8,
-        "0009" => 9,
-        "0010" => 10,
-        "0011" => 11,
-        "0012" => 12,
-        _ => 0,
-    };
+    /// <summary>
+    /// Versão declarada em <see cref="CodVer"/>, convertida em número. Devolve o valor mesmo
+    /// fora da faixa que a biblioteca conhece (ver <c>LayoutEcf</c>): descartar o número
+    /// desligaria o gate de vigência e faria o arquivo ser lido como se fosse leiaute 12. Um
+    /// leiaute fora da faixa conhecida é sinalizado à parte, não por zero.
+    /// Zero significa apenas <c>COD_VER</c> não numérico — arquivo inválido, não leiaute novo.
+    /// </summary>
+    public override int VersaoLeiaute =>
+        int.TryParse(CodVer, System.Globalization.NumberStyles.None,
+                     System.Globalization.CultureInfo.InvariantCulture, out int versao)
+            ? versao
+            : 0;
 
     /// <summary>Identificador fixo do tipo de escrituração: <c>LECF</c>.</summary>
     [CampoSped(Ordem = 2, Tamanho = 4, Obrigatorio = true, Nome = "NOME_ESC")]
     public string? NomeEsc { get; set; } = "LECF";
 
-    /// <summary>Código declarado da versão do leiaute, de <c>0008</c> a <c>0012</c>.</summary>
+    /// <summary>
+    /// Código declarado da versão do leiaute. A biblioteca modela <c>0008</c> a <c>0012</c>;
+    /// valores fora dessa faixa são lidos em modo tolerante (sinalizados à parte, não por zero).
+    /// </summary>
     [CampoSped(Ordem = 3, Tamanho = 4, Obrigatorio = true, Nome = "COD_VER")]
     public string? CodVer { get; set; }
 

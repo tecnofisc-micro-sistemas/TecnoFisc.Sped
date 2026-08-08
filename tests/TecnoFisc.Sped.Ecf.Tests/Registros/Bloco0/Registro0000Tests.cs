@@ -54,9 +54,6 @@ public sealed class Registro0000Tests
     [InlineData(null, 0)]
     [InlineData("", 0)]
     [InlineData(" ", 0)]
-    [InlineData("0007", 0)]
-    [InlineData("0013", 0)]
-    [InlineData("012", 0)]
     [InlineData("ABCD", 0)]
     public void VersaoLeiaute_ConverteCodVer(string? codVer, int esperado)
     {
@@ -64,6 +61,23 @@ public sealed class Registro0000Tests
 
         registro.VersaoLeiaute.Should().Be(esperado);
     }
+
+    [Theory]
+    [InlineData("0008", 8)]
+    [InlineData("0012", 12)]
+    [InlineData("0013", 13)]
+    [InlineData("0007", 7)]
+    [InlineData("0100", 100)]
+    public void VersaoLeiaute_ParseiaCodVerNumericamente(string codVer, int esperado)
+        => new Registro0000 { CodVer = codVer }.VersaoLeiaute.Should().Be(esperado);
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("ABCD")]
+    [InlineData("00 1")]
+    public void VersaoLeiaute_EhZeroQuandoCodVerNaoEhNumerico(string? codVer)
+        => new Registro0000 { CodVer = codVer }.VersaoLeiaute.Should().Be(0);
 
     [Fact]
     public void ParserPadrao_CatalogoGeradoResolve0000()

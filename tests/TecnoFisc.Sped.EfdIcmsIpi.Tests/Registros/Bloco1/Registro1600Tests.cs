@@ -135,6 +135,20 @@ public sealed class Registro1600Tests
         meta!.DescontinuadoEm.Should().Be((int)LayoutEfdIcmsIpi.V016);
     }
 
+    /// <summary>
+    /// Mesma asserção de <see cref="Catalogo_Registro1600_ExpoeDescontinuadoEm16"/>, mas contra o
+    /// catálogo gerado em compile-time (<c>CatalogoSpedGerado</c>) — o que <c>ParserEfdIcmsIpi</c>
+    /// realmente usa em produção, e não o catálogo reflexivo (<see cref="_catalogo"/>) usado só em
+    /// teste. Cobre a lacuna do <c>RegistroSpedCatalogoGenerator</c> que deixava
+    /// <c>DescontinuadoEm</c> zerado no catálogo gerado (PR 531, achado de follow-up).
+    /// </summary>
+    [Fact]
+    public void CatalogoGerado_Registro1600_ExpoeDescontinuadoEm16()
+    {
+        new CatalogoSpedGerado().TentarObter("1600".AsSpan(), out var meta).Should().BeTrue();
+        meta!.DescontinuadoEm.Should().Be((int)LayoutEfdIcmsIpi.V016);
+    }
+
     [Fact]
     public async Task Parser_Registro1600_EmArquivoV015_Aceito()
     {

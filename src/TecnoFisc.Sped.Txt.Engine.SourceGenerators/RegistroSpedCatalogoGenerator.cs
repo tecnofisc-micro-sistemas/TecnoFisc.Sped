@@ -25,6 +25,7 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
     private const string AttributeCampo = "TecnoFisc.Sped.Txt.Engine.Atributos.CampoSpedAttribute";
     private const string AttributeSpedValor = "TecnoFisc.Sped.Txt.Engine.Atributos.SpedValorAttribute";
     private const string AttributeFlags = "System.FlagsAttribute";
+    private const string AttributeDescontinuado = "TecnoFisc.Sped.Core.Atributos.DescontinuadoAttribute";
 
     private static readonly DiagnosticDescriptor InvalidFieldNameDiagnostic = new(
         id: "TFSPED001",
@@ -227,6 +228,7 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
             return null;
 
         FieldCollectionResult fieldsResult = ColetarCampos(tipo);
+        int descontinuadoEm = ExtrairDescontinuadoEm(tipo);
 
         string tipoFq = tipo.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
         return new InfoRegistro(
@@ -236,8 +238,32 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
             bloco!,
             fieldsResult.Fields,
             introduzidoEm,
+            descontinuadoEm,
             tokenFimArquivo,
             fieldsResult.Errors);
+    }
+
+    /// <summary>
+    /// Espelha <c>CatalogoBuilder.ConstruirMetadados</c> (reflexivo): lê <c>[Descontinuado]</c>
+    /// diretamente na classe (<c>inherit: false</c> equivalente — <c>GetAttributes()</c> não
+    /// sobe a hierarquia) e devolve <c>EmVersao</c>, ou <c>0</c> quando ausente. Sem isso o
+    /// catálogo gerado em compile-time (o que os parsers realmente usam por padrão) divergia do
+    /// catálogo reflexivo: a anotação existia na classe mas nunca chegava ao
+    /// <c>MetadadosRegistro.DescontinuadoEm</c>.
+    /// </summary>
+    private static int ExtrairDescontinuadoEm(INamedTypeSymbol tipo)
+    {
+        AttributeData? descontinuado = tipo.GetAttributes()
+            .FirstOrDefault(a => a.AttributeClass?.ToDisplayString() == AttributeDescontinuado);
+        if (descontinuado is null)
+            return 0;
+
+        foreach (KeyValuePair<string, TypedConstant> arg in descontinuado.NamedArguments)
+        {
+            if (arg.Key == "EmVersao" && arg.Value.Value is int emVersao)
+                return emVersao;
+        }
+        return 0;
     }
 
     private static FieldCollectionResult ColetarCampos(INamedTypeSymbol tipoRegistro)
@@ -604,6 +630,11 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
         {
             sb.Append(',').AppendLine();
             sb.Append("            introduzidoEm: ").Append(reg.IntroduzidoEm.ToString(CultureInfo.InvariantCulture));
+        }
+        if (reg.DescontinuadoEm != 0)
+        {
+            sb.Append(',').AppendLine();
+            sb.Append("            descontinuadoEm: ").Append(reg.DescontinuadoEm.ToString(CultureInfo.InvariantCulture));
         }
         if (reg.TokenFimArquivo is not null)
         {
@@ -1150,6 +1181,7 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
         string Bloco,
         ImmutableArray<InfoCampo> Campos,
         int IntroduzidoEm,
+        int DescontinuadoEm,
         string? TokenFimArquivo,
         ImmutableArray<FieldError> Errors);
 

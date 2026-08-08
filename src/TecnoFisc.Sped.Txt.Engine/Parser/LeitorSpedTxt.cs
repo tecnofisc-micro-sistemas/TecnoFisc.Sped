@@ -553,7 +553,11 @@ public sealed class LeitorSpedTxt : ILeitorSped
         // remove pipes inicial e final; o conteúdo restante é separado por '|'.
         var conteudo = linha[1..^1];
 
-        bool lenienteCampo = forcarLenienteCampo ?? _opcoes.LenientFieldParsing;
+        // Fora da faixa de leiautes conhecida, um campo que falha a conversão (formato
+        // primitivo ou domínio de enum, ver Definir abaixo) pode só ter mudado de
+        // significado; degrada para diagnóstico em vez de abortar, mesma regra do código de
+        // registro desconhecido logo abaixo.
+        bool lenienteCampo = (forcarLenienteCampo ?? _opcoes.LenientFieldParsing) || !leiauteConhecido;
         // Fora da faixa de leiautes conhecida, um código que o catálogo não tem é evolução
         // esperada do leiaute, não corrupção: degrada para sentinela mesmo em modo estrito.
         bool lenienteLayout = (forcarLenienteLayout ?? _opcoes.LenientLayout) || !leiauteConhecido;
@@ -567,7 +571,10 @@ public sealed class LeitorSpedTxt : ILeitorSped
         {
             try
             {
-                campo.Definidor(registro!, valor, _validarDominioDeEnum);
+                // Fora da faixa de leiautes conhecida, um valor fora do domínio pode ser
+                // código novo da RFB: degrada para diagnóstico, mesma regra do código de
+                // registro desconhecido. Dentro da faixa, é dado inválido e continua fatal.
+                campo.Definidor(registro!, valor, _validarDominioDeEnum && leiauteConhecido);
             }
             catch (Exception ex) when (ex is FormatException or ArgumentException or OverflowException)
             {

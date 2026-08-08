@@ -1,6 +1,7 @@
 using TecnoFisc.Sped.Core.Erros;
 using TecnoFisc.Sped.Ecf.Parser;
 using TecnoFisc.Sped.Ecf.Tests._Sintetico;
+using TecnoFisc.Sped.Ecf.Tests.Versionamento;
 using TecnoFisc.Sped.Txt.Engine.Abstracoes;
 using TecnoFisc.Sped.Txt.Engine.Catalogo;
 using TecnoFisc.Sped.Txt.Engine.Parser;
@@ -61,5 +62,23 @@ public sealed class ValidacaoDominioEnumEcfTests
 
         var registroA200 = registros.OfType<RegistroEnumDominioSinteticoEcf>().Single();
         ((int)registroA200.TipoItem).Should().Be(12);
+    }
+
+    [Fact]
+    public async Task DominioDeEnum_ForaDaFaixaDeLeiautes_ViraDiagnosticoEmVezDeExcecao()
+    {
+        // IND_DAD = "Z" não pertence a IndicadorMovimentoBloco.
+        var registros = await LeiauteForaDaFaixaTests.ReadAsync(13, "|0001|Z|");
+
+        var zero0001 = registros.Single(registro => registro.Codigo == "0001");
+        zero0001.ErrosDeFormato.Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task DominioDeEnum_DentroDaFaixa_ContinuaSendoExcecao()
+    {
+        var act = async () => await LeiauteForaDaFaixaTests.ReadAsync(12, "|0001|Z|");
+
+        await act.Should().ThrowAsync<ErroFormatoSpedException>();
     }
 }

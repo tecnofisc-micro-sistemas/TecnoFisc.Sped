@@ -62,7 +62,7 @@ Resultado: **um mecanismo novo** (`ColunasNaoModeladas`) e correções pontuais.
 
 | PR | Achados | Natureza |
 |---|---|---|
-| A — dentro do #531 | 1, 3, 4, 5, 6, 7 + parked 2 | O código mente ou aborta. Sem API nova no núcleo. |
+| A — dentro do #531 | 1, 3, 4, 5, 6, 7 + parked 2 | O código mente ou aborta. Toca o núcleo só no `IsLeiauteConhecido` (aditivo, default preserva o comportamento atual). |
 | B — após merge | 2, 8, 9 | Contrato de diagnóstico. Muda `RegistroSped`, afeta os quatro leiautes. |
 | C — após merge | 10 + parked 1, 3 | Limpeza. Sem mudança de comportamento. |
 
@@ -95,13 +95,43 @@ Impacto em testes que hoje fixam o oposto:
 
 ### Achado 3 — COD_VER fora de 0008–0012 desliga o gate de vigência
 
-`Registro0000` do ECF registra um `ErroFormato` quando `COD_VER` não pertence a
-`LayoutEcf`. No modo estrito (default) isso aborta a leitura; com `LenientLayout = true`
-fica como diagnóstico e a vigência permanece desligada.
+O defeito de raiz é que `VersaoLeiaute` **descarta informação presente no arquivo**:
+`COD_VER = "0013"` vira `0`, e `0` significa "vigência não se aplica". Mas 13 é um número
+conhecido — o que é desconhecido é o *leiaute*, não a *versão*.
 
-Abortar é deliberado: um leiaute desconhecido não tem mapeamento de colunas confiável, e
-o reúso da posição 31 no `0020` prova isso. Custo aceito: um ECF de leiaute 13 deixa de
-ser lido até a biblioteca ser atualizada; o consumidor destrava via modo leniente.
+**Parse numérico.** `Registro0000.VersaoLeiaute` passa a converter `COD_VER` em número,
+em vez de consultar uma tabela de cinco casos. Com isso o gate de vigência que já existe
+trata futuro e passado com o mesmo mecanismo, sem caso especial:
+
+| Arquivo | `versaoLeiaute` | Comportamento do gate |
+|---|---|---|
+| Leiaute 9 | 9 | Poda o introduzido em 10, 11, 12 → sentinela por vigência |
+| Leiaute 12 | 12 | Tudo ativo |
+| Leiaute 13 | 13 | Tudo que a biblioteca conhece fica ativo; o que o 13 acrescentou às colunas cai em `ColunasNaoModeladas` (PR B) |
+
+`COD_VER` não numérico (lixo, arquivo truncado) continua sendo `ErroFormato` que aborta no
+modo estrito — isso não é leiaute desconhecido, é arquivo inválido.
+
+**Faixa conhecida.** `RegistroSped` ganha `virtual bool IsLeiauteConhecido => true`,
+sobrescrito no `Registro0000` de cada módulo para comparar `VersaoLeiaute` com a faixa do
+seu enum `LayoutXxx` (ECF: 8–12). O leitor já consulta o `0000` para obter a versão;
+passa a consultar também isso. Não exige opção nova em `ReadingOptions` nem conhecimento
+de leiaute dentro do engine.
+
+Fora da faixa conhecida (maior que o último ou menor que o primeiro), duas coisas mudam:
+
+1. **Código desconhecido degrada para sentinela**, independente de `LenientLayout` — um
+   registro que o leiaute 13 acrescentou é esperado, não corrupção. Dentro da faixa
+   conhecida, código desconhecido continua sendo erro. A tolerância fica condicionada ao
+   que o próprio arquivo declara, não a uma flag global.
+2. **Diagnóstico não fatal no `0000`**, informando que o leiaute declarado está fora do
+   conhecido e que campos podem ter mudado de significado.
+
+**O que isso não resolve, e é irredutível.** Reúso posicional. Se o leiaute 13
+reaproveitar a posição 31 do `0020` para uma terceira coisa — exatamente o que ocorreu
+entre o 11 e o 12 — a biblioteca lê o valor e o chama pelo nome errado, sem ter como
+saber. Nenhum design detecta isso; só a atualização da biblioteca resolve. O diagnóstico
+do item 2 existe para que não aconteça em silêncio.
 
 ### Achado 4 — aliases do 0020 trocam de semântica por leiaute
 
@@ -131,8 +161,16 @@ cobertura sobre campos reais: `IND_DAD` num registro de abertura de bloco e `COD
 C050/J050, com valor fora do domínio.
 
 Manter `ValidarDominioDeEnum = true` como default do ECF, coerente com "falha explícita,
-nunca perda silenciosa". Custo aceito: um código novo da RFB derruba a leitura até a
-biblioteca acompanhar; o escape é o consumidor passar `false`.
+nunca perda silenciosa" — **mas sujeito à mesma faixa conhecida do achado 3**: num
+arquivo cujo leiaute está fora da faixa (`IsLeiauteConhecido == false`), um valor fora do
+domínio vira diagnóstico em vez de exceção. Na prática, `validarDominio` passa a ser
+`_validarDominio && leiauteConhecido` no ponto que chama
+`MetadadosCampo.Definidor(registro, valor, validarDominio)`.
+
+Mesmo princípio do achado 3: a biblioteca não derruba a leitura por não conhecer o
+leiaute. Dentro da faixa conhecida, um valor fora do domínio continua sendo exceção,
+porque aí é dado inválido e não evolução do leiaute. O escape geral segue sendo o
+consumidor passar `false`.
 
 ### Parked 2 — nivelCorteVigencia
 
@@ -237,6 +275,11 @@ Três premissas do design não estão verificadas no código e precisam ser conf
 3. **Herança em pacotes publicados (PR C).** `ArquivoEcd`, `ArquivoEfdContribuicoes` e
    `ArquivoEfdIcmsIpi` passam a herdar de código novo. O critério de aceite — suíte verde
    sem alterar teste — é o que detecta regressão aqui.
+
+Sobre o alcance do `IsLeiauteConhecido`: o default `true` em `RegistroSped` preserva o
+comportamento atual de ECD, EFD Contribuições e EFD ICMS-IPI. O PR A sobrescreve apenas
+o `Registro0000` do ECF. Estender aos demais módulos é trabalho posterior e opcional —
+cada um tem seu enum `LayoutXxx` e sua faixa, e a mudança lá é do mesmo formato.
 
 ## Conventional Commits
 

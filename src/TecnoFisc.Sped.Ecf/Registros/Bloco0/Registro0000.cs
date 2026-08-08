@@ -1,6 +1,7 @@
 using System.Globalization;
 
 using TecnoFisc.Sped.Core.ValueObjects;
+using TecnoFisc.Sped.Ecf.Versionamento;
 using TecnoFisc.Sped.Txt.Engine.Abstracoes;
 using TecnoFisc.Sped.Txt.Engine.Atributos;
 
@@ -18,9 +19,10 @@ public sealed partial class Registro0000 : RegistroSped
 
     /// <summary>
     /// Versão declarada em <see cref="CodVer"/>, convertida em número. Devolve o valor mesmo
-    /// fora da faixa que a biblioteca conhece (ver <c>LayoutEcf</c>): descartar o número
+    /// fora da faixa que a biblioteca conhece (ver <see cref="LayoutEcf"/>): descartar o número
     /// desligaria o gate de vigência e faria o arquivo ser lido como se fosse leiaute 12. Um
-    /// leiaute fora da faixa conhecida é sinalizado à parte, não por zero.
+    /// leiaute fora da faixa conhecida é sinalizado à parte, por <see cref="IsLeiauteConhecido"/>,
+    /// não por zero.
     /// Zero significa apenas <c>COD_VER</c> ausente, de comprimento diferente de 4 ou não
     /// numérico — arquivo inválido, não leiaute novo.
     /// </summary>
@@ -30,13 +32,18 @@ public sealed partial class Registro0000 : RegistroSped
             ? versao
             : 0;
 
+    /// <inheritdoc />
+    public override bool IsLeiauteConhecido =>
+        VersaoLeiaute >= (int)LayoutEcf.V008 && VersaoLeiaute <= (int)LayoutEcf.V012;
+
     /// <summary>Identificador fixo do tipo de escrituração: <c>LECF</c>.</summary>
     [CampoSped(Ordem = 2, Tamanho = 4, Obrigatorio = true, Nome = "NOME_ESC")]
     public string? NomeEsc { get; set; } = "LECF";
 
     /// <summary>
     /// Código declarado da versão do leiaute. A biblioteca modela <c>0008</c> a <c>0012</c>;
-    /// um valor fora dessa faixa é lido pelo número declarado, sem tratamento especial ainda.
+    /// um valor fora dessa faixa é lido pelo número declarado e sinalizado por
+    /// <see cref="IsLeiauteConhecido"/>, que passa a <c>false</c>.
     /// </summary>
     [CampoSped(Ordem = 3, Tamanho = 4, Obrigatorio = true, Nome = "COD_VER")]
     public string? CodVer { get; set; }

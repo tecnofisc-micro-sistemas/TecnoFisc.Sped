@@ -70,6 +70,7 @@ public sealed class LeitorSpedTxt : ILeitorSped
         long numeroLinha = 0;
         bool encerrado = false;
         int versaoLeiaute = 0;
+        bool leiauteConhecido = true;
 
         // Estado de descarte (ReadingOptions). nivelCorteSubarvore >= 0 indica que estamos dentro
         // da subárvore de um registro ignorado por código; sobrevive entre iterações de ReadAsync.
@@ -137,7 +138,16 @@ public sealed class LeitorSpedTxt : ILeitorSped
                     {
                         // Captura a versão do leiaute assim que o Registro0000 é processado.
                         if (versaoLeiaute == 0 && registro.VersaoLeiaute > 0)
+                        {
                             versaoLeiaute = registro.VersaoLeiaute;
+                            leiauteConhecido = registro.IsLeiauteConhecido;
+                            if (!leiauteConhecido)
+                                registro.RegistrarErroDeFormato(new ErroFormato(
+                                    linhaRegistro, registro.Codigo, "COD_VER",
+                                    $"Leiaute {versaoLeiaute} está fora da faixa conhecida por esta " +
+                                    "versão da biblioteca; a leitura segue em modo tolerante e campos " +
+                                    "podem ter mudado de significado."));
+                        }
 
                         yield return registro;
                         if (registro.Codigo == CodigoEncerramentoArquivo)

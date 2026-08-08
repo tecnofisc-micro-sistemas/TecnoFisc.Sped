@@ -35,6 +35,15 @@ public abstract class RegistroSped
     /// </summary>
     public virtual int VersaoLeiaute => 0;
 
+    /// <summary>
+    /// Indica se a versão declarada por este registro pertence à faixa de leiautes que o módulo
+    /// modela. Só o registro de abertura (<c>0000</c>) de cada módulo tem essa informação; os
+    /// demais herdam <c>true</c>, que preserva o comportamento estrito. Quando <c>false</c>, o
+    /// leitor degrada para diagnóstico em vez de exceção: um arquivo de leiaute que a biblioteca
+    /// ainda não conhece deve ser legível, não fatal.
+    /// </summary>
+    public virtual bool IsLeiauteConhecido => true;
+
     /// <summary>Registro pai na hierarquia, ou <c>null</c> se este é o raiz.</summary>
     public RegistroSped? Pai { get; internal set; }
 

@@ -1,5 +1,6 @@
 using System.Text;
 
+using TecnoFisc.Sped.Core.Erros;
 using TecnoFisc.Sped.Ecf.Parser;
 using TecnoFisc.Sped.Ecf.Registros.Bloco0;
 using TecnoFisc.Sped.Txt.Engine.Abstracoes;
@@ -34,6 +35,24 @@ public sealed class LeiauteForaDaFaixaTests
         var registros = await ReadAsync(12, "|0001|0|");
 
         registros.OfType<Registro0000>().Single().ErrosDeFormato.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Leitura_DeLeiaute13ComRegistroNovo_ViraSentinelaEmVezDeAbortar()
+    {
+        var registros = await ReadAsync(13, "|X999|conteudo novo|");
+
+        var sentinela = registros.OfType<RegistroNaoReconhecido>().Should().ContainSingle().Subject;
+        sentinela.Codigo.Should().Be("X999");
+        sentinela.LinhaCrua.Should().Be("|X999|conteudo novo|");
+    }
+
+    [Fact]
+    public async Task Leitura_DeLeiauteConhecidoComCodigoDesconhecido_ContinuaAbortando()
+    {
+        var act = async () => await ReadAsync(12, "|X999|conteudo novo|");
+
+        await act.Should().ThrowAsync<ErroLayoutSpedException>();
     }
 
     internal static async Task<List<RegistroSped>> ReadAsync(int versao, string linha)

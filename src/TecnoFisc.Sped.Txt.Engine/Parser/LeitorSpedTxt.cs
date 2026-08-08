@@ -133,7 +133,8 @@ public sealed class LeitorSpedTxt : ILeitorSped
                         continue;
                     }
 
-                    var registro = ProcessarLinha(in registroBytes, linhaRegistro, pilha, versaoLeiaute, metadados);
+                    var registro = ProcessarLinha(in registroBytes, linhaRegistro, pilha,
+                                                  versaoLeiaute, leiauteConhecido, metadados);
                     if (registro is not null)
                     {
                         // Captura a versão do leiaute assim que o Registro0000 é processado.
@@ -196,7 +197,8 @@ public sealed class LeitorSpedTxt : ILeitorSped
 
         var pilha = new PilhaHierarquica();   // descartável: ParseLinha não constrói hierarquia
         var registro = InterpretarLinha(linha, numeroLinha, pilha, versaoLeiaute: 0,
-            metadadosResolvido: null, forcarLenienteCampo: true, forcarLenienteLayout: true);
+            leiauteConhecido: true, metadadosResolvido: null,
+            forcarLenienteCampo: true, forcarLenienteLayout: true);
 
         if (registro is RegistroNaoReconhecido sentinela)
             return ResultadoParse<RegistroSped>.Falhar(
@@ -497,6 +499,7 @@ public sealed class LeitorSpedTxt : ILeitorSped
         long numeroLinha,
         PilhaHierarquica pilha,
         int versaoLeiaute,
+        bool leiauteConhecido,
         MetadadosRegistro? metadadosResolvido)
     {
         int comprimento = checked((int)linha.Length);
@@ -515,7 +518,8 @@ public sealed class LeitorSpedTxt : ILeitorSped
             var chars = charsAlugados.AsSpan(0, qtdChar);
             int gravados = EncodingSped.Latin1.GetChars(bytes, chars);
 
-            return InterpretarLinha(chars[..gravados], numeroLinha, pilha, versaoLeiaute, metadadosResolvido);
+            return InterpretarLinha(chars[..gravados], numeroLinha, pilha,
+                                    versaoLeiaute, leiauteConhecido, metadadosResolvido);
         }
         finally
         {
@@ -530,6 +534,7 @@ public sealed class LeitorSpedTxt : ILeitorSped
         long numeroLinha,
         PilhaHierarquica pilha,
         int versaoLeiaute,
+        bool leiauteConhecido,
         MetadadosRegistro? metadadosResolvido,
         bool? forcarLenienteCampo = null,
         bool? forcarLenienteLayout = null)
@@ -549,7 +554,9 @@ public sealed class LeitorSpedTxt : ILeitorSped
         var conteudo = linha[1..^1];
 
         bool lenienteCampo = forcarLenienteCampo ?? _opcoes.LenientFieldParsing;
-        bool lenienteLayout = forcarLenienteLayout ?? _opcoes.LenientLayout;
+        // Fora da faixa de leiautes conhecida, um código que o catálogo não tem é evolução
+        // esperada do leiaute, não corrupção: degrada para sentinela mesmo em modo estrito.
+        bool lenienteLayout = (forcarLenienteLayout ?? _opcoes.LenientLayout) || !leiauteConhecido;
 
         MetadadosRegistro? metadados = null;
         RegistroSped? registro = null;

@@ -89,6 +89,17 @@ public sealed class EscritorSpedTxt : IEscritorSped
                 $"Registro com código '{registro.Codigo}' não encontrado no catálogo. " +
                 "O escritor só conhece tipos catalogados pela especialização do formato.");
 
+        // Registros descontinuados são catalogados sem campos modelados para que a leitura de
+        // arquivos históricos não aborte (ver DescontinuadoAttribute) — mas escrevê-los emitiria
+        // só "|CODIGO|", perdendo todo o conteúdo original em silêncio. Falhar alto aqui em vez
+        // de produzir uma linha mutilada.
+        if (metadados.Campos.Count == 0)
+            throw new InvalidOperationException(
+                $"Registro com código '{registro.Codigo}' não tem campos modelados no catálogo. " +
+                "Escrevê-lo produziria uma linha só com o código, sem os dados originais — não " +
+                "suportado. Registros sem campos modelados (tipicamente descontinuados) só são " +
+                "suportados para leitura.");
+
         var construtor = new StringBuilder(capacity: 128);
         construtor.Append('|').Append(metadados.Codigo).Append('|');
         foreach (var campo in metadados.Campos)

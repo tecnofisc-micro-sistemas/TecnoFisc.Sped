@@ -1,9 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>Pacote guarda-chuva da família TecnoFisc.Sped. Nesta etapa agrega os leiautes SPED textuais via TecnoFisc.Sped.Txt; o guarda-chuva XML será incorporado após o CT-e.</Description>
+    <Description>Pacote guarda-chuva da família TecnoFisc.Sped. Agrega EFD Contribuições, EFD ICMS-IPI, ECD e ECF via TecnoFisc.Sped.Txt; o guarda-chuva XML será incorporado após o CT-e.</Description>
     <PackageId>TecnoFisc.Sped</PackageId>
-    <PackageTags>sped;fiscal;brasil;tecnofisc;efd-contribuicoes;efd-icms-ipi;ecd</PackageTags>
+    <PackageTags>sped;fiscal;brasil;tecnofisc;efd-contribuicoes;efd-icms-ipi;ecd;ecf</PackageTags>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <!-- Metapacote sem código: não há .pdb, então não gerar .snupkg (o symbol server rejeita pacote vazio com 400). -->

@@ -1,12 +1,19 @@
+using System.Reflection;
+
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+
 using TecnoFisc.Sped.Core.ValueObjects;
+using TecnoFisc.Sped.Txt.Engine.Abstracoes;
 using TecnoFisc.Sped.Txt.Engine.Catalogo;
+using TecnoFisc.Sped.Txt.Engine.Parser;
 using TecnoFisc.Sped.Txt.Engine.Tests._Sintetico;
 
 namespace TecnoFisc.Sped.Txt.Engine.Tests.Catalogo;
 
 public sealed class CatalogoBuilderTests
 {
-    private static readonly System.Reflection.Assembly _assembly = typeof(Registro0000Sintetico).Assembly;
+    private static readonly Assembly _assembly = typeof(Registro0000Sintetico).Assembly;
 
     [Fact]
     public void BuildFromAssembly_DescobreTodosRegistrosMarcados()
@@ -111,6 +118,123 @@ public sealed class CatalogoBuilderTests
 
         registro.CodPart.Should().Be(0);
         registro.VlDoc.Should().Be(0m);
+    }
+
+    [Fact]
+    public void ParseLinha_EnumNumericoFechadoIndefinido_AceitaComoCastPermissivo()
+    {
+        // O leitor ainda não liga ReadingOptions.ValidarDominioDeEnum (isso é Task 4); por ora
+        // MetadadosCampo.Definidor(registro, valor) — a sobrecarga de dois argumentos que
+        // LeitorSpedTxt chama — é sempre o caminho permissivo. Código fora do domínio declarado
+        // do enum fechado é aceito via cast, preservando o comportamento já publicado nos três
+        // pacotes (EFD Contribuições, EFD ICMS-IPI, ECD).
+        var catalogo = CatalogoBuilder.BuildFromAssembly(_assembly);
+        var leitor = new LeitorSpedTxt(catalogo);
+
+        var resultado = leitor.ParseLinha("|E100|06|03|".AsSpan());
+
+        resultado.Sucesso.Should().BeTrue();
+        var registro = resultado.Valor.Should().BeOfType<RegistroE100Sintetico>().Which;
+        registro.Situacao.Should().Be((SituacaoSintetica)6);
+        registro.Permissoes.Should().Be(PermissoesSinteticas.Leitura | PermissoesSinteticas.Escrita);
+        registro.ErrosDeFormato.Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("01", SituacaoSintetica.Ativa)]
+    [InlineData("2", SituacaoSintetica.Inativa)]
+    public void ParseLinha_EnumNumericoFechadoDefinido_AtribuiValor(
+        string valorSped,
+        SituacaoSintetica esperado)
+    {
+        var catalogo = CatalogoBuilder.BuildFromAssembly(_assembly);
+        var leitor = new LeitorSpedTxt(catalogo);
+
+        var resultado = leitor.ParseLinha($"|E100|{valorSped}||".AsSpan());
+
+        resultado.Sucesso.Should().BeTrue();
+        var registro = resultado.Valor.Should().BeOfType<RegistroE100Sintetico>().Which;
+        registro.Situacao.Should().Be(esperado);
+        registro.Permissoes.Should().BeNull();
+        registro.ErrosDeFormato.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ParseLinha_EnumNumericoNullableVazio_MantemNullSemErro()
+    {
+        var leitor = new LeitorSpedTxt(CatalogoBuilder.BuildFromAssembly(_assembly));
+
+        var resultado = leitor.ParseLinha("|E100|||".AsSpan());
+
+        resultado.Sucesso.Should().BeTrue();
+        var registro = resultado.Valor.Should().BeOfType<RegistroE100Sintetico>().Which;
+        registro.Situacao.Should().BeNull();
+        registro.Permissoes.Should().BeNull();
+        registro.ErrosDeFormato.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ParseLinha_EnumsNumericosDeTodosTiposIntegrais_RespeitaRepresentacoesELimites()
+    {
+        var leitor = new LeitorSpedTxt(CatalogoBuilder.BuildFromAssembly(_assembly));
+
+        var resultado = leitor.ParseLinha(
+            "|E200|255| -128 |+00001|65535|-2147483648|4294967295|" +
+            "-9223372036854775808|18446744073709551615|");
+
+        resultado.Sucesso.Should().BeTrue();
+        var registro = resultado.Valor.Should().BeOfType<RegistroE200Sintetico>().Which;
+        registro.ValorByte.Should().Be(EnumByteSintetico.Maximo);
+        registro.ValorSByte.Should().Be(EnumSByteSintetico.Minimo);
+        registro.ValorInt16.Should().Be(EnumInt16Sintetico.Um);
+        registro.ValorUInt16.Should().Be(EnumUInt16Sintetico.Maximo);
+        registro.ValorInt32.Should().Be(EnumInt32Sintetico.Minimo);
+        registro.ValorUInt32.Should().Be(EnumUInt32Sintetico.Maximo);
+        registro.ValorInt64.Should().Be(EnumInt64Sintetico.Minimo);
+        registro.ValorUInt64.Should().Be(EnumUInt64Sintetico.Maximo);
+        registro.ErrosDeFormato.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ParseLinha_EnumsNumericosDeTodosTiposIntegrais_OverflowMantemNullableVazio()
+    {
+        var leitor = new LeitorSpedTxt(CatalogoBuilder.BuildFromAssembly(_assembly));
+
+        var resultado = leitor.ParseLinha(
+            "|E200|256|-129|-32769|-1|2147483648|-1|" +
+            "9223372036854775808|-1|");
+
+        resultado.Sucesso.Should().BeTrue();
+        var registro = resultado.Valor.Should().BeOfType<RegistroE200Sintetico>().Which;
+        registro.ValorByte.Should().BeNull();
+        registro.ValorSByte.Should().BeNull();
+        registro.ValorInt16.Should().BeNull();
+        registro.ValorUInt16.Should().BeNull();
+        registro.ValorInt32.Should().BeNull();
+        registro.ValorUInt32.Should().BeNull();
+        registro.ValorInt64.Should().BeNull();
+        registro.ValorUInt64.Should().BeNull();
+        registro.ErrosDeFormato.Should().HaveCount(8);
+    }
+
+    [Theory]
+    [InlineData("S", IndicadorTextualSintetico.Sim, false)]
+    [InlineData("Sim", null, true)]
+    [InlineData("s", null, true)]
+    [InlineData("", null, false)]
+    public void ParseLinha_EnumComSpedValor_AceitaSomenteCodigoTextual(
+        string valorBruto,
+        IndicadorTextualSintetico? esperado,
+        bool esperaErro)
+    {
+        var leitor = new LeitorSpedTxt(CatalogoBuilder.BuildFromAssembly(_assembly));
+
+        var resultado = leitor.ParseLinha($"|E300|{valorBruto}|");
+
+        resultado.Sucesso.Should().BeTrue();
+        var registro = resultado.Valor.Should().BeOfType<RegistroE300Sintetico>().Which;
+        registro.Indicador.Should().Be(esperado);
+        registro.ErrosDeFormato.Should().HaveCount(esperaErro ? 1 : 0);
     }
 
     [Fact]
@@ -226,5 +350,69 @@ public sealed class CatalogoBuilderTests
         meta!.TokenFimArquivo.Should().BeNull();
         meta.EhMultilinha.Should().BeFalse();
         meta.Campos.Should().OnlyContain(c => !c.CampoArquivo);
+    }
+
+    /// <summary>
+    /// A mensagem de <c>ValidarVigenciaCrescente</c> precisa nomear a <b>posição</b> do campo
+    /// (achado 10 do follow-up do PR 531) — o dado necessário para corrigir o registro. O tipo de
+    /// fixture com <c>DesdeVersao</c> decrescente é compilado num assembly isolado via Roslyn
+    /// (mesma técnica de <see cref="RegistroSpedCatalogoGeneratorVigenciaTests"/>), em vez de
+    /// declarado solto neste assembly de teste: <c>CatalogoBuilder.BuildFromAssembly</c> varre o
+    /// assembly inteiro via <c>Assembly.GetTypes()</c> (que inclui tipos aninhados privados), então
+    /// um tipo assim quebraria <see cref="BuildFromAssembly_DescobreTodosRegistrosMarcados"/> e
+    /// todo outro teste desta classe que reusa <see cref="_assembly"/>.
+    /// </summary>
+    [Fact]
+    public void ValidarVigenciaCrescente_NomeiaRegistroCampoEPosicao()
+    {
+        Assembly assembly = CompilarAssemblyIsolada("""
+            [CampoSped(Ordem = 2, DesdeVersao = 12, Nome = "TARDIO")] public string? Tardio { get; set; }
+            [CampoSped(Ordem = 3, Nome = "SEMPRE")] public string? Sempre { get; set; }
+            """);
+
+        var act = () => CatalogoBuilder.BuildFromAssembly(assembly);
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*SEMPRE*").And.Message.Should().Contain("posição 3");
+    }
+
+    private static Assembly CompilarAssemblyIsolada(string campos)
+    {
+        string nomeAssembly = "VigenciaIsolada" + Guid.NewGuid().ToString("N");
+        string fonte = $$"""
+            using TecnoFisc.Sped.Txt.Engine.Abstracoes;
+            using TecnoFisc.Sped.Txt.Engine.Atributos;
+
+            namespace VigenciaIsolada;
+
+            [RegistroSped(Codigo = "TST1", Nivel = 1, Bloco = "0")]
+            public sealed class RegistroTst1 : RegistroSped
+            {
+                public override string Codigo => "TST1";
+                {{campos}}
+            }
+            """;
+
+        var syntaxTree = CSharpSyntaxTree.ParseText(fonte, new CSharpParseOptions(LanguageVersion.Preview));
+        var compilation = CSharpCompilation.Create(
+            nomeAssembly,
+            [syntaxTree],
+            ReferenciasDeCompilacao(),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        using var stream = new MemoryStream();
+        var emit = compilation.Emit(stream);
+        emit.Diagnostics.Should().NotContain(diagnostico => diagnostico.Severity == DiagnosticSeverity.Error);
+        emit.Success.Should().BeTrue();
+        return Assembly.Load(stream.ToArray());
+    }
+
+    private static IEnumerable<MetadataReference> ReferenciasDeCompilacao()
+    {
+        string trusted = (string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!;
+        foreach (string caminho in trusted.Split(Path.PathSeparator))
+            yield return MetadataReference.CreateFromFile(caminho);
+
+        yield return MetadataReference.CreateFromFile(typeof(RegistroSped).Assembly.Location);
     }
 }

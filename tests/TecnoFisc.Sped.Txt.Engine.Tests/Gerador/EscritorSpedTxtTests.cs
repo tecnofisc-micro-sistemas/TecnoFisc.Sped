@@ -139,6 +139,19 @@ public sealed class EscritorSpedTxtTests
     }
 
     [Fact]
+    public async Task EscreverAsync_RegistroSemCamposModelados_LancaInvalidOperationException()
+    {
+        var escritor = new EscritorSpedTxt(_catalogo);
+        using var fluxo = new MemoryStream();
+        var registro = new RegistroZ900SemCamposSintetico();
+
+        var act = async () => await escritor.WriteAsync(fluxo, new RegistroSped[] { registro });
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*Z900*não tem campos modelados*");
+    }
+
+    [Fact]
     public async Task EscreverAsync_QuandoStreamNulo_LancaArgumentNullException()
     {
         var escritor = new EscritorSpedTxt(_catalogo);

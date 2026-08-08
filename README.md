@@ -6,8 +6,12 @@ publicados pelos projetos do **SPED — Sistema Público de Escrituração Digit
 
 > Status atual: **0.9.0** publicado. Cobre EFD Contribuições V006 (leitura + geração,
 > round-trip validado), EFD ICMS-IPI baseline V015 + incrementos V016 → V020 (leiaute
-> vigente em 2026, **read-only**) e **ECD** leiaute 9 (Sped Contábil, vigente a partir do
-> ano-calendário 2020, **read-only** — parser e modelo tipado, sem geração). Os números
+> vigente em 2026, **read-only**) e **ECD** leiaute 9 (**read-only**). Na árvore de
+> desenvolvimento ainda não publicada, a **ECF** entrega um modelo tipado único do
+> leiaute 12 com leitura dos leiautes 8 a 12 — os registros e as colunas exclusivos dos
+> leiautes 8 a 10 são **reconhecidos, não tipados** (o leitor não aborta, mas o conteúdo
+> deles não é materializado) —, também em modo **read-only** (parser e modelo tipado, sem
+> geração). Os números
 > `006` (EFD Contribuições) e `015`–`020` (EFD ICMS-IPI) são o `COD_VER` do registro `0000`
 > de cada leiaute (não devem ser confundidos com a versão do Guia Prático); a ECD informa a
 > versão do leiaute em `I010.COD_VER_LC`, não no `0000`. A `0.7.x` é **breaking** em relação à
@@ -17,11 +21,19 @@ publicados pelos projetos do **SPED — Sistema Público de Escrituração Digit
 > de identificação de documento por mundo (Stage 12). Estreia ainda, em **preview**, o pacote
 > XML `TecnoFisc.Sped.NFeNFCe` — cobertura atual limitada a **NF-e modelo 55 parcial** (NFC-e 65,
 > eventos e os grupos transp/cobr/pag/protNFe ainda em desenvolvimento). Próximos passos
-> rastreados no `ARCHITECTURE.md` — todos read-only, na ordem **CT-e → ECF**. A `0.8.0`
+> rastreados no `ARCHITECTURE.md`; o CT-e permanece planejado como read-only. A `0.8.0`
 > adiciona o sniffer fiscal TXT opt-in para extrair CNPJ e período do registro `0000`. A `0.9.0`
 > adiciona **parsing tolerante opt-in** no leitor TXT (`ReadingOptions.LenientFieldParsing` e
 > `LenientLayout`, mais `LeitorSpedTxt.ParseLinha`): campo falho ou registro desconhecido deixam
-> de abortar a leitura quando o consumidor optar por isso. Veja o `CHANGELOG.md` para detalhes.
+> de abortar a leitura quando o consumidor optar por isso. Na árvore de desenvolvimento ainda não
+> publicada, a ECF introduz mais duas flags `bool?` em `ReadingOptions`:
+> `RespeitarVigenciaDoLeiaute` (omite registro/campo anterior à vigência declarada no `0000`) e
+> `ValidarDominioDeEnum` (rejeita código fora do domínio de um enum fechado em vez de aceitar por
+> cast permissivo). `null` delega a decisão ao parser do leiaute — a ECF liga as duas, os leiautes
+> já publicados mantêm o comportamento atual. Na mesma árvore, `LenientFieldParsing` e
+> `LenientLayout` viram **catraca de mão única**: sob arquivo cujo leiaute está fora da faixa
+> conhecida pelo módulo, o leitor força as duas para `true` e não há como pedir fail-fast.
+> Veja o `CHANGELOG.md` para detalhes.
 
 ## Visão geral
 
@@ -41,15 +53,15 @@ pacote afetado é versionado.
 | ECD | `TecnoFisc.Sped.Ecd` | **0.9.0** — baseline leiaute 9 completo (vigente), **read-only** |
 | NF-e / NFC-e | `TecnoFisc.Sped.NFeNFCe` | **0.9.0 preview** — só NF-e modelo 55 parcial (XML, read-only); NFC-e 65 e eventos em desenvolvimento |
 | CT-e | `TecnoFisc.Sped.CTe` | planejado (XML, read-only) |
-| ECF | `TecnoFisc.Sped.Ecf` | planejado (read-only) |
-| Guarda-chuva TXT | `TecnoFisc.Sped.Txt` | **0.9.0** — agrega EFD Contribuições, EFD ICMS-IPI e ECD |
+| ECF | `TecnoFisc.Sped.Ecf` | **Não publicado** — modelo tipado do leiaute 12 com leitura dos leiautes 8 → 12 (registros e colunas exclusivos dos leiautes 8 a 10 são reconhecidos, não tipados), **read-only** |
+| Guarda-chuva TXT | `TecnoFisc.Sped.Txt` | **Não publicado** — agrega EFD Contribuições, EFD ICMS-IPI, ECD e ECF |
 | Guarda-chuva geral | `TecnoFisc.Sped` | **0.9.0** — agrega `TecnoFisc.Sped.Txt`; passará a agregar XML após CT-e |
 | Guarda-chuva XML | `TecnoFisc.Sped.Xml` | planejado após CT-e — agregará NFe/NFC-e e CT-e |
 
 > **Modo de operação.** O único pacote com geração de arquivo confirmada é
 > `TecnoFisc.Sped.EfdContribuicoes` (leitura + escrita, round-trip simétrico). Todos
-> os demais — EFD ICMS-IPI e ECD (implementados), NFeNFCe (preview, NF-e 55 parcial),
-> mais CT-e e ECF (planejados, nesta ordem) — são **read-only** (parser + modelo tipado). Promoção para
+> os demais — EFD ICMS-IPI, ECD e ECF (implementados), NFeNFCe (preview, NF-e 55 parcial)
+> e CT-e (planejado) — são **read-only** (parser + modelo tipado). Promoção para
 > read+write em qualquer um deles depende de confirmação externa e entra como stage
 > dedicada (`ARCHITECTURE.md` §2.5).
 
@@ -71,6 +83,43 @@ implementados — ver `ARCHITECTURE.md` §3 para a tabela autoritativa.
 ```powershell
 dotnet add package TecnoFisc.Sped.EfdContribuicoes
 ```
+
+Para ler ECF diretamente, instale o pacote específico (ou use o guarda-chuva
+`TecnoFisc.Sped.Txt`):
+
+```powershell
+dotnet add package TecnoFisc.Sped.Ecf
+```
+
+```csharp
+using TecnoFisc.Sped.Ecf.Parser;
+
+var parser = new ParserEcf();
+await using var entrada = File.OpenRead("escrituracao.ecf");
+
+await foreach (var registro in parser.ReadStreamingAsync(entrada))
+{
+    // Leiautes 8, 9, 10, 11 e 12 usam o mesmo modelo tipado do leiaute 12.
+}
+```
+
+> **Alcance da leitura dos leiautes 8 a 12.** Existe **um único modelo tipado**, o do
+> leiaute 12. Os registros e as colunas que existiam nos leiautes 8 a 10 e saíram no 11
+> são **reconhecidos, não tipados**: o catálogo os conhece (por isso a leitura de um
+> arquivo histórico não aborta nem degrada a linha para `RegistroNaoReconhecido`), mas o
+> conteúdo das colunas **não é materializado** nesta versão — os sete registros
+> descontinuados (`X291`, `X300`, `X305`, `X310`, `X320`, `X325`, `X330`) chegam ao
+> consumidor sem nenhuma propriedade preenchida — eles já declaram `[Descontinuado]`; o
+> que falta é declarar as colunas com `[CampoSped]`. Modelar esses campos é evolução
+> planejada e puramente aditiva: quem lê hoje continua lendo igual quando ela chegar. Um arquivo de leiaute **fora da faixa 8–12** (menor que
+> 8 ou maior que 12) também é lido, em **modo tolerante**: o `0000` recebe um aviso não
+> fatal em `ErrosDeFormato`, código de registro desconhecido vira `RegistroNaoReconhecido`
+> em vez de abortar e falha de conversão de campo vira diagnóstico em vez de exceção.
+> Dentro da faixa 8–12 o rigor permanece o mesmo de sempre.
+
+O parser valida formato, tipos e hierarquia sintática. Obrigatoriedade tributária
+condicional, regras `REGRA_*`, cruzamentos, reconciliações e cálculos de IRPJ/CSLL
+continuam sob responsabilidade do consumidor e do PGE.
 
 ### Leitura buffered (modelo completo em memória)
 
@@ -218,7 +267,7 @@ e `9999` (contagem global) — basta entregar a árvore de registros.
 - **Round-trip simétrico onde há geração.** Nos pacotes read+write (hoje apenas
   `EfdContribuicoes`), ler → gerar → ler precisa devolver o mesmo arquivo (modulo
   normalizações deliberadas). Invariante coberta por testes. Nos pacotes read-only
-  (EFD ICMS-IPI e ECD implementados; NFeNFCe em preview; CT-e/ECF planejados), a invariante é apenas leitura
+  (EFD ICMS-IPI, ECD e ECF implementados; NFeNFCe em preview; CT-e planejado), a invariante é apenas leitura
   estável: a mesma entrada sempre produz o mesmo modelo tipado.
 
 ## Arquivos assinados pelo PVA
@@ -286,7 +335,7 @@ manualmente o workflow `Release` com `dry_run=true`.
 TecnoFisc.Sped/
 ├── src/
 │   ├── TecnoFisc.Sped/                       # Guarda-chuva geral (Txt agora; Xml após CT-e)
-│   ├── TecnoFisc.Sped.Txt/                   # Guarda-chuva textual (EFD Contribuições, EFD ICMS-IPI, ECD)
+│   ├── TecnoFisc.Sped.Txt/                   # Guarda-chuva textual (EFD Contribuições, EFD ICMS-IPI, ECD, ECF)
 │   ├── TecnoFisc.Sped.Core/                  # Value objects fiscais universais
 │   ├── TecnoFisc.Sped.Txt.Engine/            # Motor .txt + catálogo + parser/gerador + sniffer TXT
 │   ├── TecnoFisc.Sped.Txt.Engine.SourceGenerators/ # Source generator do catálogo TXT (analyzer)
@@ -294,8 +343,9 @@ TecnoFisc.Sped/
 │   ├── TecnoFisc.Sped.EfdContribuicoes/      # Leiaute EFD Contribuições V006
 │   ├── TecnoFisc.Sped.EfdIcmsIpi/            # Leiaute EFD ICMS-IPI baseline V015 + V016-V020 (read-only)
 │   ├── TecnoFisc.Sped.Ecd/                   # Leiaute ECD 9 (Sped Contábil, read-only)
+│   ├── TecnoFisc.Sped.Ecf/                   # ECF: modelo do leiaute 12, leitura 8–12 (read-only)
 │   └── TecnoFisc.Sped.NFeNFCe/               # NF-e/NFC-e 4.00 (XML, read-only)
-│   # Stages futuros (planejados): CTe, Ecf, TecnoFisc.Sped.Xml
+│   # Stages futuros (planejados): CTe, TecnoFisc.Sped.Xml
 ├── tests/
 │   ├── TecnoFisc.Sped.Core.Tests/
 │   ├── TecnoFisc.Sped.EfdContribuicoes.Tests/

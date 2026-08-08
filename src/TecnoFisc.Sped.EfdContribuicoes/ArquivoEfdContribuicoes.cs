@@ -19,6 +19,7 @@ public sealed class ArquivoEfdContribuicoes : IArquivoSped
         ["0", "A", "C", "D", "F", "I", "M", "P", "1", "9"];
 
     private readonly Dictionary<string, BlocoEfdContribuicoes> _blocos;
+    private readonly List<RegistroNaoReconhecido> _naoReconhecidos = [];
 
     public ArquivoEfdContribuicoes()
     {
@@ -38,6 +39,13 @@ public sealed class ArquivoEfdContribuicoes : IArquivoSped
     public BlocoEfdContribuicoes Bloco1 => _blocos["1"];
     public BlocoEfdContribuicoes Bloco9 => _blocos["9"];
 
+    /// <summary>
+    /// Registros que o leitor não conseguiu classificar — código desconhecido pelo catálogo ou
+    /// descartado por vigência. Só é populado sob <c>LenientLayout</c> ou vigência ligada; sob
+    /// leitura estrita o parser já teria abortado antes.
+    /// </summary>
+    public IReadOnlyList<RegistroNaoReconhecido> RegistrosNaoReconhecidos => _naoReconhecidos;
+
     /// <inheritdoc />
     public IEnumerable<IBlocoSped> EnumerarBlocos()
     {
@@ -55,12 +63,21 @@ public sealed class ArquivoEfdContribuicoes : IArquivoSped
 
     /// <summary>
     /// Adiciona um registro ao bloco correspondente conforme a primeira posição do código
-    /// (convenção do leiaute: o caractere inicial identifica o bloco). Códigos fora dos dez
-    /// blocos conhecidos lançam exceção — o leiaute não tem outros.
+    /// (convenção do leiaute: o caractere inicial identifica o bloco).
+    /// <see cref="RegistroNaoReconhecido"/> desvia para <see cref="RegistrosNaoReconhecidos"/>
+    /// em vez de ser roteado por código — nunca lança. Qualquer outro registro cujo bloco não
+    /// exista lança <see cref="InvalidOperationException"/>: é erro de uso da API (registro
+    /// tipado de um bloco que a EFD Contribuições não tem), não dado ruim de arquivo.
     /// </summary>
     public void Adicionar(RegistroSped registro)
     {
         ArgumentNullException.ThrowIfNull(registro);
+
+        if (registro is RegistroNaoReconhecido naoReconhecido)
+        {
+            _naoReconhecidos.Add(naoReconhecido);
+            return;
+        }
 
         var codigo = registro.Codigo;
         if (string.IsNullOrEmpty(codigo))

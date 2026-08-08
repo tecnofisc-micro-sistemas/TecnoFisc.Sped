@@ -5,6 +5,9 @@ namespace TecnoFisc.Sped.Txt.Engine.Tests.Parser;
 
 public sealed class SnifferSpedFiscalTests
 {
+    private const string LinhaEcfCompleta =
+        "|0000|LECF|0011|11111111000191|EMPRESA TESTE|0|0|||01012025|31122025|N||0||";
+
     [Fact]
     public void MetadadosFiscaisArquivoSped_ArmazenaIdentificacaoECamposFiscais()
     {
@@ -74,6 +77,39 @@ public sealed class SnifferSpedFiscalTests
         metadados.Cnpj.Should().Be(Cnpj.Create("11222333000181"));
         metadados.DataInicial.Should().Be(new DateOnly(2023, 1, 1));
         metadados.DataFinal.Should().Be(new DateOnly(2023, 12, 31));
+        stream.Position.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task IdentificarAsync_Lecf_RetornaEcfVersaoCnpjEPeriodo()
+    {
+        await using var stream = Sped(LinhaEcfCompleta + "\r\n|0001|0|\r\n");
+
+        var metadados = await SnifferSpedFiscal.IdentificarAsync(stream, TestContext.Current.CancellationToken);
+
+        metadados.Projeto.Should().Be(ProjetoSped.Ecf);
+        metadados.VersaoLeiaute.Should().Be(11);
+        metadados.CodigoVersaoDeclarado.Should().Be("0011");
+        metadados.Cnpj.Should().Be(Cnpj.Create("11111111000191"));
+        metadados.DataInicial.Should().Be(new DateOnly(2025, 1, 1));
+        metadados.DataFinal.Should().Be(new DateOnly(2025, 12, 31));
+        stream.Position.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task IdentificarAsync_LecfComCnpjEDatasInvalidos_MantemProjetoESemDadosFiscais()
+    {
+        const string linha =
+            "|0000|LECF|0012|00000000000000|EMPRESA TESTE|0|0|||99022025|31022025|N||0||";
+        await using var stream = Sped(linha);
+
+        var metadados = await SnifferSpedFiscal.IdentificarAsync(stream, TestContext.Current.CancellationToken);
+
+        metadados.Projeto.Should().Be(ProjetoSped.Ecf);
+        metadados.VersaoLeiaute.Should().Be(12);
+        metadados.Cnpj.Should().BeNull();
+        metadados.DataInicial.Should().BeNull();
+        metadados.DataFinal.Should().BeNull();
         stream.Position.Should().Be(0);
     }
 

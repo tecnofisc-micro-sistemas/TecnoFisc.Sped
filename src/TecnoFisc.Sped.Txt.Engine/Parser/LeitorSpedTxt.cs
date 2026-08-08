@@ -1,4 +1,5 @@
 using System.Buffers;
+using System.Globalization;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 
@@ -40,6 +41,8 @@ public sealed class LeitorSpedTxt : ILeitorSped
 
     private readonly IRegistroSpedCatalogo _catalogo;
     private readonly ReadingOptions _opcoes;
+    private readonly bool _respeitarVigencia;
+    private readonly bool _validarDominioDeEnum;
 
     public LeitorSpedTxt(IRegistroSpedCatalogo catalogo)
         : this(catalogo, ReadingOptions.Default)
@@ -52,6 +55,9 @@ public sealed class LeitorSpedTxt : ILeitorSped
         ArgumentNullException.ThrowIfNull(opcoes);
         _catalogo = catalogo;
         _opcoes = opcoes;
+        // Resolvido uma única vez no construtor: evita Nullable<bool> no hot path de parsing.
+        _respeitarVigencia = opcoes.RespeitarVigenciaDoLeiaute ?? false;
+        _validarDominioDeEnum = opcoes.ValidarDominioDeEnum ?? false;
     }
 
     public async IAsyncEnumerable<RegistroSped> ReadStreamingAsync(
@@ -65,11 +71,16 @@ public sealed class LeitorSpedTxt : ILeitorSped
         long numeroLinha = 0;
         bool encerrado = false;
         int versaoLeiaute = 0;
+        bool leiauteConhecido = true;
+        bool versaoAvaliada = false;
 
         // Estado de descarte (ReadingOptions). nivelCorteSubarvore >= 0 indica que estamos dentro
         // da subárvore de um registro ignorado por código; sobrevive entre iterações de ReadAsync.
+        // nivelCorteVigencia é o equivalente para o corte por vigência: cortes independentes,
+        // um por gate, para que um não zere a subárvore aberta pelo outro.
         bool hasFilter = _opcoes.HasFilter;
         int nivelCorteSubarvore = -1;
+        int nivelCorteVigencia = -1;
 
         try
         {
@@ -87,7 +98,11 @@ public sealed class LeitorSpedTxt : ILeitorSped
                     numeroLinha += linhasFisicas;
 
                     // Descarte antes de materializar: registro ignorado não é decodificado (multi-linha
-                    // não paga o custo dos 30 MB do ARQ_RTF) nem entra na hierarquia/stream.
+                    // não paga o custo dos 30 MB do ARQ_RTF) nem entra na hierarquia/stream. Roda antes
+                    // do gate de vigência: um registro que o chamador mandou descartar não pode ser
+                    // decodificado nem devolvido como sentinela só porque também está fora de vigência
+                    // (achado A do review final do PR 531) — o corte de subárvore do filtro é pelo
+                    // menos tão amplo quanto o de vigência que ele preemptaria.
                     if (hasFilter && ShouldIgnore(metadados, ref nivelCorteSubarvore))
                     {
                         if (metadados is not null && metadados.Codigo == CodigoEncerramentoArquivo)
@@ -99,12 +114,69 @@ public sealed class LeitorSpedTxt : ILeitorSped
                         continue;
                     }
 
-                    var registro = ProcessarLinha(in registroBytes, linhaRegistro, pilha, versaoLeiaute, metadados);
+                    if (_respeitarVigencia && versaoLeiaute > 0 &&
+                        ShouldIgnoreByVersion(metadados, versaoLeiaute, ref nivelCorteVigencia))
+                    {
+                        // Descarte por vigência nunca é silencioso: o consumidor recebe a linha
+                        // crua e o motivo, e decide se filtra ou se trata como erro. A decodificação
+                        // só acontece aqui dentro (linha efetivamente descartada) — o caminho comum,
+                        // sem vigência ligada, não paga esse custo.
+                        string linhaCrua = registroBytes.IsSingleSegment
+                            ? EncodingSped.Latin1.GetString(registroBytes.FirstSpan)
+                            : EncodingSped.Latin1.GetString(registroBytes.ToArray());
+                        string codigo = metadados!.Codigo;
+                        yield return new RegistroNaoReconhecido(
+                            codigo,
+                            linhaCrua,
+                            new ErroLayout(
+                                linhaRegistro,
+                                codigo,
+                                $"Registro posterior à versão declarada no 0000 ({versaoLeiaute})."));
+                        continue;
+                    }
+
+                    var registro = ProcessarLinha(in registroBytes, linhaRegistro, pilha,
+                                                  versaoLeiaute, leiauteConhecido, metadados);
                     if (registro is not null)
                     {
-                        // Captura a versão do leiaute assim que o Registro0000 é processado.
-                        if (versaoLeiaute == 0 && registro.VersaoLeiaute > 0)
+                        // Captura a versão do leiaute no primeiro registro que a carrega — na
+                        // prática o 0000. Portador é todo registro que declara uma versão
+                        // (VersaoLeiaute > 0) ou que sabe dizer que a versão declarada está fora
+                        // da faixa modelada (IsLeiauteConhecido == false, que só o 0000 de um
+                        // módulo sobrescreve). Avaliado uma única vez: o restante do arquivo não
+                        // repete a decisão nem paga o custo dela.
+                        if (!versaoAvaliada && (registro.VersaoLeiaute > 0 || !registro.IsLeiauteConhecido))
+                        {
+                            versaoAvaliada = true;
                             versaoLeiaute = registro.VersaoLeiaute;
+                            if (versaoLeiaute > 0)
+                            {
+                                leiauteConhecido = registro.IsLeiauteConhecido;
+                                if (!leiauteConhecido)
+                                    registro.RegistrarErroDeFormato(new ErroFormato(
+                                        linhaRegistro, registro.Codigo, "COD_VER",
+                                        $"Leiaute {versaoLeiaute} está fora da faixa conhecida por esta " +
+                                        "versão da biblioteca; a leitura segue em modo tolerante e campos " +
+                                        "podem ter mudado de significado.")
+                                    {
+                                        ValorBruto = versaoLeiaute.ToString("0000", CultureInfo.InvariantCulture)
+                                    });
+                            }
+                            else
+                            {
+                                // Versão zero num registro que sabe classificar a faixa significa
+                                // COD_VER ilegível (ausente, com comprimento errado ou não
+                                // numérico): arquivo inválido, não leiaute novo. Não é motivo para
+                                // afrouxar nada — o modo estrito continua valendo (leiauteConhecido
+                                // permanece true) —, mas também não pode ser silencioso: sem versão
+                                // não há gate de vigência, e o consumidor precisa saber disso.
+                                registro.RegistrarErroDeFormato(new ErroFormato(
+                                    linhaRegistro, registro.Codigo, "COD_VER",
+                                    "COD_VER ilegível (ausente, com comprimento inesperado ou não " +
+                                    "numérico): a vigência do leiaute não será aplicada e a leitura " +
+                                    "segue em modo estrito."));
+                            }
+                        }
 
                         yield return registro;
                         if (registro.Codigo == CodigoEncerramentoArquivo)
@@ -139,8 +211,25 @@ public sealed class LeitorSpedTxt : ILeitorSped
     /// traz os campos conversíveis preenchidos e os que falharam no valor default, com os erros em
     /// <see cref="Abstracoes.RegistroSped.ErrosDeFormato"/>. Devolve falha apenas quando nenhum
     /// registro pôde ser produzido (linha sem '|' nas pontas ou código desconhecido pelo catálogo).
+    /// <para>
+    /// <paramref name="versaoLeiaute"/> controla a vigência sintática exatamente como em
+    /// <c>ReadStreamingAsync</c>, nos dois níveis: um registro cujo <c>IntroduzidoEm</c> é
+    /// posterior à versão informada devolve falha com a mesma mensagem que o streaming usa, e um
+    /// campo cujo <c>DesdeVersao</c> é posterior não recebe valor. O default <c>0</c> significa
+    /// "sem vigência" — todo o catálogo é aceito, inclusive registros e campos introduzidos em
+    /// versões posteriores. Informe a versão para que a validação linha a linha concorde com a
+    /// leitura do arquivo inteiro. Em linha isolada não há subárvore a cortar: a decisão vale só
+    /// para a própria linha.
+    /// </para>
+    /// <para>
+    /// A linha é sempre tratada como dentro da faixa de leiautes conhecida
+    /// (<c>leiauteConhecido: true</c>): decidir a faixa exige o <c>COD_VER</c> do registro
+    /// <c>0000</c>, que não existe quando se interpreta uma linha isolada — este método é
+    /// deliberadamente "sem hierarquia".
+    /// </para>
     /// </summary>
-    public ResultadoParse<RegistroSped> ParseLinha(ReadOnlySpan<char> linha, long numeroLinha = 0)
+    public ResultadoParse<RegistroSped> ParseLinha(
+        ReadOnlySpan<char> linha, long numeroLinha = 0, int versaoLeiaute = 0)
     {
         // Duplica-se o guard de pipes aqui: ParseLinha devolve Falha (nunca lança),
         // enquanto InterpretarLinha lança ErroFormatoSpedException — contratos divergem.
@@ -151,9 +240,29 @@ public sealed class LeitorSpedTxt : ILeitorSped
                     ValorBruto = linha.IsEmpty ? null : linha.ToString()
                 });
 
+        // Resolve o código uma única vez e repassa: serve ao gate de vigência abaixo e chega a
+        // InterpretarLinha pelo parâmetro metadadosResolvido, que existe justamente para não
+        // repetir a busca no catálogo (este é um método público, chamável em laço). null — código
+        // desconhecido ou linha degenerada — mantém o caminho de sempre: InterpretarLinha faz a
+        // própria busca e produz a sentinela.
+        var metadadosDaLinha = ResolverMetadados(linha);
+
+        // Vigência de registro, espelhando ShouldIgnoreByVersion do streaming. Sem hierarquia não
+        // há subárvore a cortar — só a decisão sobre a própria linha. O streaming devolve a
+        // sentinela RegistroNaoReconhecido; aqui o formato equivalente é a falha, que é como
+        // ParseLinha já converte qualquer sentinela logo abaixo.
+        if (_respeitarVigencia && versaoLeiaute > 0 && metadadosDaLinha is { IntroduzidoEm: > 0 } &&
+            metadadosDaLinha.IntroduzidoEm > versaoLeiaute)
+        {
+            return ResultadoParse<RegistroSped>.Falhar(new ErroFormato(
+                numeroLinha, metadadosDaLinha.Codigo, null,
+                $"Registro posterior à versão declarada no 0000 ({versaoLeiaute})."));
+        }
+
         var pilha = new PilhaHierarquica();   // descartável: ParseLinha não constrói hierarquia
-        var registro = InterpretarLinha(linha, numeroLinha, pilha, versaoLeiaute: 0,
-            metadadosResolvido: null, forcarLenienteCampo: true, forcarLenienteLayout: true);
+        var registro = InterpretarLinha(linha, numeroLinha, pilha, versaoLeiaute,
+            leiauteConhecido: true, metadadosResolvido: metadadosDaLinha,
+            forcarLenienteCampo: true, forcarLenienteLayout: true);
 
         if (registro is RegistroNaoReconhecido sentinela)
             return ResultadoParse<RegistroSped>.Falhar(
@@ -196,6 +305,30 @@ public sealed class LeitorSpedTxt : ILeitorSped
         if (_opcoes.RegistrosIgnorados.Contains(metadados.Codigo))
         {
             nivelCorteSubarvore = metadados.Nivel;
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool ShouldIgnoreByVersion(
+        MetadadosRegistro? metadados,
+        int versaoLeiaute,
+        ref int nivelCorteVigencia)
+    {
+        if (metadados is null)
+            return false;
+
+        if (nivelCorteVigencia >= 0)
+        {
+            if (metadados.Nivel > nivelCorteVigencia)
+                return true;
+            nivelCorteVigencia = -1;
+        }
+
+        if (metadados.IntroduzidoEm > 0 && metadados.IntroduzidoEm > versaoLeiaute)
+        {
+            nivelCorteVigencia = metadados.Nivel;
             return true;
         }
 
@@ -399,6 +532,23 @@ public sealed class LeitorSpedTxt : ILeitorSped
         return _catalogo.TentarObter(chars[..qtd], out var metadados) ? metadados : null;
     }
 
+    /// <summary>
+    /// Resolve os metadados do registro a partir do código de uma linha já decodificada
+    /// (<c>|REG|...|</c>), sem alocar string. Devolve <c>null</c> para linha degenerada, código
+    /// vazio ou código desconhecido pelo catálogo.
+    /// </summary>
+    private MetadadosRegistro? ResolverMetadados(ReadOnlySpan<char> linha)
+    {
+        if (linha.Length < 2)
+            return null;
+
+        var conteudo = linha[1..^1];
+        int fimCodigo = conteudo.IndexOf('|');
+        var codigo = fimCodigo < 0 ? conteudo : conteudo[..fimCodigo];
+
+        return !codigo.IsEmpty && _catalogo.TentarObter(codigo, out var metadados) ? metadados : null;
+    }
+
     private static ReadOnlySequence<byte> AparaCrFinal(in ReadOnlySequence<byte> linha)
     {
         if (!linha.IsEmpty && UltimoByte(in linha) == EncodingSped.CrAscii)
@@ -430,6 +580,7 @@ public sealed class LeitorSpedTxt : ILeitorSped
         long numeroLinha,
         PilhaHierarquica pilha,
         int versaoLeiaute,
+        bool leiauteConhecido,
         MetadadosRegistro? metadadosResolvido)
     {
         int comprimento = checked((int)linha.Length);
@@ -448,7 +599,8 @@ public sealed class LeitorSpedTxt : ILeitorSped
             var chars = charsAlugados.AsSpan(0, qtdChar);
             int gravados = EncodingSped.Latin1.GetChars(bytes, chars);
 
-            return InterpretarLinha(chars[..gravados], numeroLinha, pilha, versaoLeiaute, metadadosResolvido);
+            return InterpretarLinha(chars[..gravados], numeroLinha, pilha,
+                                    versaoLeiaute, leiauteConhecido, metadadosResolvido);
         }
         finally
         {
@@ -463,6 +615,7 @@ public sealed class LeitorSpedTxt : ILeitorSped
         long numeroLinha,
         PilhaHierarquica pilha,
         int versaoLeiaute,
+        bool leiauteConhecido,
         MetadadosRegistro? metadadosResolvido,
         bool? forcarLenienteCampo = null,
         bool? forcarLenienteLayout = null)
@@ -481,8 +634,14 @@ public sealed class LeitorSpedTxt : ILeitorSped
         // remove pipes inicial e final; o conteúdo restante é separado por '|'.
         var conteudo = linha[1..^1];
 
-        bool lenienteCampo = forcarLenienteCampo ?? _opcoes.LenientFieldParsing;
-        bool lenienteLayout = forcarLenienteLayout ?? _opcoes.LenientLayout;
+        // Fora da faixa de leiautes conhecida, um campo que falha a conversão (formato
+        // primitivo ou domínio de enum, ver Definir abaixo) pode só ter mudado de
+        // significado; degrada para diagnóstico em vez de abortar, mesma regra do código de
+        // registro desconhecido logo abaixo.
+        bool lenienteCampo = (forcarLenienteCampo ?? _opcoes.LenientFieldParsing) || !leiauteConhecido;
+        // Fora da faixa de leiautes conhecida, um código que o catálogo não tem é evolução
+        // esperada do leiaute, não corrupção: degrada para sentinela mesmo em modo estrito.
+        bool lenienteLayout = (forcarLenienteLayout ?? _opcoes.LenientLayout) || !leiauteConhecido;
 
         MetadadosRegistro? metadados = null;
         RegistroSped? registro = null;
@@ -493,7 +652,12 @@ public sealed class LeitorSpedTxt : ILeitorSped
         {
             try
             {
-                campo.Definidor(registro!, valor);
+                // A validação de domínio em si não é afetada por leiauteConhecido: desligá-la
+                // faria um código fora do domínio ser aceito em silêncio (cast permissivo, sem
+                // exceção, sem diagnóstico) — o oposto de "degrada para diagnóstico". É o
+                // catch abaixo, sob lenienteCampo já alargado (ver acima), que converte a
+                // FormatException do setter estrito em ErroFormato em vez de abortar.
+                campo.Definidor(registro!, valor, _validarDominioDeEnum);
             }
             catch (Exception ex) when (ex is FormatException or ArgumentException or OverflowException)
             {
@@ -539,8 +703,12 @@ public sealed class LeitorSpedTxt : ILeitorSped
             }
             else if (metadados is not null && registro is not null)
             {
+                // A coluna é sempre consumida pela posição; um campo que ainda não vigorava
+                // na versão declarada no 0000 simplesmente não recebe o valor. Nenhum dos
+                // registros reais do catálogo tem campo versionado fora do fim do layout —
+                // o índice posicional é auto-corretivo e não precisa de cursor sequencial.
                 int indice = posicaoCampo - 2;
-                if (indice < metadados.Campos.Count)
+                if (indice < metadados.Campos.Count && CampoAtivo(metadados.Campos[indice], versaoLeiaute))
                 {
                     var campo = metadados.Campos[indice];
                     if (campo.CapturaTudo)
@@ -563,8 +731,11 @@ public sealed class LeitorSpedTxt : ILeitorSped
                             break;
                         }
                         Definir(campo, resto[..idxSep]);
-                        if (indice + 1 < metadados.Campos.Count)
+                        if (indice + 1 < metadados.Campos.Count &&
+                            CampoAtivo(metadados.Campos[indice + 1], versaoLeiaute))
+                        {
                             Definir(metadados.Campos[indice + 1], resto[(idxSep + 1)..]);
+                        }
                         break;
                     }
                     Definir(campo, fatia);
@@ -583,5 +754,9 @@ public sealed class LeitorSpedTxt : ILeitorSped
         var pai = pilha.Empilhar(registro, metadados.Nivel);
         pai?.AdicionarFilho(registro);
         return registro;
+
+        bool CampoAtivo(MetadadosCampo campo, int versao)
+            => !_respeitarVigencia || versao <= 0 ||
+               campo.DesdeVersao <= 0 || campo.DesdeVersao <= versao;
     }
 }

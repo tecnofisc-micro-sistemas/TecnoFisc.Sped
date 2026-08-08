@@ -19,6 +19,9 @@
 # SPED .txt fixtures: byte-exact, no normalization
 tests/**/Fixtures/**/*.txt -text
 
+# Anonymized ECF fixtures intentionally retain CRLF bytes; treat CR as part of EOL in diffs.
+tests/TecnoFisc.Sped.Ecf.Tests/Fixtures/Layout*/ecf-layout-*.txt -text whitespace=cr-at-eol
+
 # Binaries
 *.pdf  binary
 *.png  binary

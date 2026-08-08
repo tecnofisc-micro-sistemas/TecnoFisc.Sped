@@ -4,8 +4,8 @@ namespace TecnoFisc.Sped.Txt.Engine.Catalogo;
 
 /// <summary>
 /// Descreve um campo de um registro SPED — posição, tipo, restrições e como aplicá-lo
-/// a uma instância. <see cref="Definidor"/> é o ponto que lê a propriedade durante o
-/// parsing; <see cref="Serializar"/> é o ponto que a lê de volta para texto SPED durante
+/// a uma instância. <see cref="Definidor(RegistroSped, ReadOnlySpan{char})"/> é o ponto que lê a
+/// propriedade durante o parsing; <see cref="Serializar"/> é o ponto que a lê de volta para texto SPED durante
 /// a geração.
 /// </summary>
 /// <remarks>
@@ -21,6 +21,7 @@ namespace TecnoFisc.Sped.Txt.Engine.Catalogo;
 public sealed class MetadadosCampo
 {
     private readonly Action<RegistroSped, ReadOnlySpan<char>> _definidor;
+    private readonly Action<RegistroSped, ReadOnlySpan<char>>? _definidorEstrito;
     private readonly Func<RegistroSped, string> _serializador;
 
     public MetadadosCampo(
@@ -35,7 +36,8 @@ public sealed class MetadadosCampo
         Func<RegistroSped, string> serializador,
         int desdeVersao = 0,
         bool capturaTudo = false,
-        bool campoArquivo = false)
+        bool campoArquivo = false,
+        Action<RegistroSped, ReadOnlySpan<char>>? definidorEstrito = null)
     {
         ArgumentNullException.ThrowIfNull(nome);
         ArgumentNullException.ThrowIfNull(tipo);
@@ -54,6 +56,7 @@ public sealed class MetadadosCampo
         CampoArquivo = campoArquivo;
         _definidor = definidor;
         _serializador = serializador;
+        _definidorEstrito = definidorEstrito;
     }
 
     public string Nome { get; }
@@ -68,6 +71,19 @@ public sealed class MetadadosCampo
     /// Primeira versão de leiaute em que o campo passa a existir. <c>0</c> = sempre presente.
     /// Origem em <see cref="Atributos.CampoSpedAttribute.DesdeVersao"/>.
     /// </summary>
+    /// <remarks>
+    /// Invariante: ao longo da posição dos campos de um mesmo registro, <c>DesdeVersao</c> precisa
+    /// ser não-decrescente — é do que o mapeamento posicional do leitor
+    /// (<c>LeitorSpedTxt.InterpretarLinha</c>, <c>indice = posicaoCampo - 2</c>) depende para não
+    /// desalinhar as colunas seguintes quando uma anterior está fora de vigência. Os dois caminhos
+    /// que constroem catálogo a partir de atributos (<see cref="CatalogoBuilder"/>, via
+    /// <c>ValidarVigenciaCrescente</c>, e <c>RegistroSpedCatalogoGenerator</c>, via diagnóstico
+    /// <c>TFSPED003</c> em tempo de compilação) validam essa invariante automaticamente. Este
+    /// construtor não a valida: <see cref="IRegistroSpedCatalogo"/> é pública e um catálogo
+    /// montado à mão (chamando este construtor diretamente, fora dos dois caminhos acima) escapa da
+    /// checagem — a invariante vira contrato de quem constrói o catálogo, não algo o tipo garante
+    /// por si só.
+    /// </remarks>
     public int DesdeVersao { get; }
 
     /// <summary>
@@ -88,9 +104,23 @@ public sealed class MetadadosCampo
     /// <summary>
     /// Aplica o valor textual ao registro. Recebe o conteúdo do campo entre pipes (sem
     /// delimitadores). Vazio é interpretado conforme a nullabilidade do tipo de destino.
+    /// Equivale a <c>Definidor(registro, valor, validarDominio: false)</c>.
     /// </summary>
     public void Definidor(RegistroSped registro, ReadOnlySpan<char> valor)
         => _definidor(registro, valor);
+
+    /// <summary>
+    /// Aplica o valor textual ao registro. Quando <paramref name="validarDominio"/> é
+    /// <c>true</c> e o campo é um enum fechado, um código fora do domínio declarado vira
+    /// <see cref="FormatException"/> em vez de cast permissivo.
+    /// </summary>
+    public void Definidor(RegistroSped registro, ReadOnlySpan<char> valor, bool validarDominio)
+    {
+        if (validarDominio && _definidorEstrito is not null)
+            _definidorEstrito(registro, valor);
+        else
+            _definidor(registro, valor);
+    }
 
     /// <summary>
     /// Lê o valor da propriedade no registro e devolve a representação canônica SPED.

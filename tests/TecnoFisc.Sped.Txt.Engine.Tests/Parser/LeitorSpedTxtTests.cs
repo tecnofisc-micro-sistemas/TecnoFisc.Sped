@@ -71,6 +71,92 @@ public sealed class LeitorSpedTxtTests
     }
 
     [Fact]
+    public async Task LerStreamingAsync_VigenciaDesativada_MantemMetadadosInformacionais()
+    {
+        const string sped =
+            "|0000|309|01012025|31012025|EMPRESA|11222333000181|\r\n" +
+            "|C001|0|\r\n" +
+            "|Z100|BASE|FUTURO|\r\n" +
+            "|9999|4|\r\n";
+
+        var registros = await LerTodosAsync(sped);
+
+        registros.OfType<RegistroZ100Sintetico>().Single().IndComplemento.Should().Be("FUTURO");
+    }
+
+    [Fact]
+    public async Task LerStreamingAsync_VigenciaAtivada_SinalizaRegistroAntesDaIntroducaoComoSentinela()
+    {
+        // Achado 2 do PR 531: descarte por vigência deixa de ser mudo. Z100 (IntroduzidoEm = 310)
+        // e a subárvore que ele corta (C170, nível maior) viram RegistroNaoReconhecido em vez de
+        // simplesmente sumir do stream — ver SentinelaVigenciaTests para os cenários dedicados.
+        const string sped =
+            "|0000|309|01012025|31012025|EMPRESA|11222333000181|\r\n" +
+            "|C001|0|\r\n" +
+            "|Z100|BASE|\r\n" +
+            "|C170|1|ITEM|1|1,00|\r\n" +
+            "|9999|5|\r\n";
+        var opcoes = new ReadingOptions { RespeitarVigenciaDoLeiaute = true };
+
+        var registros = await LerComOpcoesAsync(sped, opcoes);
+
+        registros.Select(registro => registro.Codigo).Should().Equal("0000", "C001", "Z100", "C170", "9999");
+        registros.OfType<RegistroNaoReconhecido>().Select(registro => registro.Codigo)
+            .Should().BeEquivalentTo(["Z100", "C170"]);
+        registros.OfType<RegistroZ100Sintetico>().Should().BeEmpty();
+        registros.OfType<RegistroC170Sintetico>().Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("310", null)]
+    [InlineData("311", null)]
+    [InlineData("312", "FUTURO")]
+    public async Task LerStreamingAsync_VigenciaAtivada_AtribuiCampoSomenteDesdeSuaVersao(
+        string versao,
+        string? complementoEsperado)
+    {
+        string sped =
+            $"|0000|{versao}|01012025|31012025|EMPRESA|11222333000181|\r\n" +
+            "|C001|0|\r\n" +
+            "|Z100|BASE|FUTURO|\r\n" +
+            "|9999|4|\r\n";
+        var opcoes = new ReadingOptions { RespeitarVigenciaDoLeiaute = true };
+
+        var registros = await LerComOpcoesAsync(sped, opcoes);
+
+        var registro = registros.OfType<RegistroZ100Sintetico>().Single();
+        registro.CodConf.Should().Be("BASE");
+        registro.IndComplemento.Should().Be(complementoEsperado);
+    }
+
+    [Fact]
+    public async Task LerStreamingAsync_VigenciaAtivada_IndexaPelosCamposAtivos()
+    {
+        // Z200 encadeia dois campos versionados no fim do registro (Futuro desde 312, Depois
+        // desde 400) — é a única forma que CatalogoBuilder.ValidarVigenciaCrescente aceita hoje
+        // (DesdeVersao não-decrescente ao longo da posição; um campo versionado só pode ficar no
+        // fim, nunca seguido por um sempre-presente ou por um de versão anterior). No arquivo de
+        // versão 312, Futuro já vigora mas Depois ainda não — mesmo com a coluna de Depois
+        // fisicamente preenchida (não vazia, para provar que é a guarda de vigência CampoAtivo,
+        // e não a coincidência de string vazia → null, que bloqueia a atribuição). Prova que o
+        // mapeamento posicional (indice = posicaoCampo - 2) indexa dois portões de vigência
+        // independentes no mesmo registro sem misturar as colunas.
+        const string sped =
+            "|0000|312|01012025|31012025|EMPRESA|11222333000181|\r\n" +
+            "|C001|0|\r\n" +
+            "|Z200|ANTES|FUTURO|DEPOIS|\r\n" +
+            "|9999|4|\r\n";
+        var opcoes = new ReadingOptions { RespeitarVigenciaDoLeiaute = true };
+
+        var registro = (await LerComOpcoesAsync(sped, opcoes))
+            .OfType<RegistroZ200Sintetico>().Single();
+
+        registro.Antes.Should().Be("ANTES");
+        registro.Futuro.Should().Be("FUTURO");
+        registro.Depois.Should().BeNull();
+    }
+
+    [Fact]
     public async Task LerStreamingAsync_RegistroMultilinhaIgnorado_NaoMaterializa()
     {
         // Y800 (multi-linha) ignorado: o leitor localiza o terminador e avança sem decodificar o

@@ -15,6 +15,7 @@
 - Spec: `docs/superpowers/specs/2026-08-08-pr531-achados-followup-design.md`.
 - Zero dependências externas em runtime. Streams in, streams out.
 - Projetos de leiaute nunca referenciam uns aos outros; o que é transversal vive em `TecnoFisc.Sped.Core` ou `TecnoFisc.Sped.Txt.Engine`.
+- Duplicação é correta **no nível do registro** (CLAUDE.md hard rule 2): cada registro é uma classe própria por design, mesmo quando várias ficam idênticas. Não fatorar registros numa base comum nem gerar classes de registro por macro/template.
 - Sem reflection em hot path de parsing.
 - Nomenclatura: substantivos SPED em português; verbos, factories e predicados booleanos em inglês (`IsLeiauteConhecido`, `ShouldIgnore`, `Create`). Nunca misturar os dois idiomas dentro de um mesmo identificador, exceto no padrão `Is`+substantivo já consagrado no repo (`Cfop.IsEntrada`).
 - Encoding dos `.txt` SPED: `Latin1`.

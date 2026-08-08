@@ -109,9 +109,9 @@ await foreach (var registro in parser.ReadStreamingAsync(entrada))
 > arquivo histórico não aborta nem degrada a linha para `RegistroNaoReconhecido`), mas o
 > conteúdo das colunas **não é materializado** nesta versão — os sete registros
 > descontinuados (`X291`, `X300`, `X305`, `X310`, `X320`, `X325`, `X330`) chegam ao
-> consumidor sem nenhuma propriedade preenchida. Modelar esses campos via
-> `[Descontinuado]` é evolução planejada e puramente aditiva: quem lê hoje continua
-> lendo igual quando ela chegar. Um arquivo de leiaute **fora da faixa 8–12** (menor que
+> consumidor sem nenhuma propriedade preenchida — eles já declaram `[Descontinuado]`; o
+> que falta é declarar as colunas com `[CampoSped]`. Modelar esses campos é evolução
+> planejada e puramente aditiva: quem lê hoje continua lendo igual quando ela chegar. Um arquivo de leiaute **fora da faixa 8–12** (menor que
 > 8 ou maior que 12) também é lido, em **modo tolerante**: o `0000` recebe um aviso não
 > fatal em `ErrosDeFormato`, código de registro desconhecido vira `RegistroNaoReconhecido`
 > em vez de abortar e falha de conversão de campo vira diagnóstico em vez de exceção.

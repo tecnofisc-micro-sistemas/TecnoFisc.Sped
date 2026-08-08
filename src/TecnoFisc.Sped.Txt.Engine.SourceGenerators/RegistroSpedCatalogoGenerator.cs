@@ -411,9 +411,10 @@ public sealed class RegistroSpedCatalogoGenerator : IIncrementalGenerator
                     FieldErrorKind.NonIncreasingVigencia,
                     location,
                     fullyQualifiedProperty,
-                    $"DesdeVersao={atual.DesdeVersao} vem depois de '{anterior.FieldName}' (DesdeVersao=" +
-                    $"{anterior.DesdeVersao}); campo versionado só pode ficar no fim do registro, senão o " +
-                    "mapeamento posicional do leitor desalinha silenciosamente."));
+                    $"'{anterior.FieldName}' (DesdeVersao={anterior.DesdeVersao}) vem antes dele " +
+                    $"(DesdeVersao={atual.DesdeVersao}); campo versionado só pode ficar no fim do registro, " +
+                    "senão o mapeamento posicional do leitor desalinha silenciosamente. Mova " +
+                    $"'{anterior.FieldName}' para o fim do registro ou remova o DesdeVersao dele."));
             }
         }
 

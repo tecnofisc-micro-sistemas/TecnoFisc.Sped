@@ -109,8 +109,12 @@ trata futuro e passado com o mesmo mecanismo, sem caso especial:
 | Leiaute 12 | 12 | Tudo ativo |
 | Leiaute 13 | 13 | Tudo que a biblioteca conhece fica ativo; o que o 13 acrescentou às colunas cai em `ColunasNaoModeladas` (PR B) |
 
-`COD_VER` não numérico (lixo, arquivo truncado) continua sendo `ErroFormato` que aborta no
-modo estrito — isso não é leiaute desconhecido, é arquivo inválido.
+`COD_VER` ilegível (ausente, com comprimento diferente de 4 ou não numérico) dá `VersaoLeiaute
+== 0` — isso não é leiaute desconhecido, é arquivo inválido. `Tamanho`/`Obrigatorio` são
+metadado puro e o read path não os consulta, então esse caso nunca abortou por si só; o que o
+leitor faz é registrar um `ErroFormato` não fatal em `COD_VER` no próprio `0000`, dizendo que a
+vigência não será aplicada, e **manter o modo estrito** (nada é afrouxado — a tolerância é
+reservada ao leiaute fora da faixa, que tem versão positiva).
 
 **Faixa conhecida.** `RegistroSped` ganha `virtual bool IsLeiauteConhecido => true`,
 sobrescrito no `Registro0000` de cada módulo para comparar `VersaoLeiaute` com a faixa do

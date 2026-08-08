@@ -76,7 +76,9 @@ public sealed class Registro0000Tests
     [InlineData("")]
     [InlineData("ABCD")]
     [InlineData("00 1")]
-    public void VersaoLeiaute_EhZeroQuandoCodVerNaoEhNumerico(string? codVer)
+    [InlineData("012")]
+    [InlineData("00123")]
+    public void VersaoLeiaute_EhZeroQuandoCodVerInvalido(string? codVer)
         => new Registro0000 { CodVer = codVer }.VersaoLeiaute.Should().Be(0);
 
     [Fact]

@@ -1,3 +1,5 @@
+using System.Globalization;
+
 using TecnoFisc.Sped.Core.ValueObjects;
 using TecnoFisc.Sped.Txt.Engine.Abstracoes;
 using TecnoFisc.Sped.Txt.Engine.Atributos;
@@ -19,11 +21,12 @@ public sealed partial class Registro0000 : RegistroSped
     /// fora da faixa que a biblioteca conhece (ver <c>LayoutEcf</c>): descartar o número
     /// desligaria o gate de vigência e faria o arquivo ser lido como se fosse leiaute 12. Um
     /// leiaute fora da faixa conhecida é sinalizado à parte, não por zero.
-    /// Zero significa apenas <c>COD_VER</c> não numérico — arquivo inválido, não leiaute novo.
+    /// Zero significa apenas <c>COD_VER</c> ausente, de comprimento diferente de 4 ou não
+    /// numérico — arquivo inválido, não leiaute novo.
     /// </summary>
     public override int VersaoLeiaute =>
-        int.TryParse(CodVer, System.Globalization.NumberStyles.None,
-                     System.Globalization.CultureInfo.InvariantCulture, out int versao)
+        CodVer is { Length: 4 } &&
+        int.TryParse(CodVer, NumberStyles.None, CultureInfo.InvariantCulture, out int versao)
             ? versao
             : 0;
 
@@ -33,7 +36,7 @@ public sealed partial class Registro0000 : RegistroSped
 
     /// <summary>
     /// Código declarado da versão do leiaute. A biblioteca modela <c>0008</c> a <c>0012</c>;
-    /// valores fora dessa faixa são lidos em modo tolerante (sinalizados à parte, não por zero).
+    /// um valor fora dessa faixa é lido pelo número declarado, sem tratamento especial ainda.
     /// </summary>
     [CampoSped(Ordem = 3, Tamanho = 4, Obrigatorio = true, Nome = "COD_VER")]
     public string? CodVer { get; set; }

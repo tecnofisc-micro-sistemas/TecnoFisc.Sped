@@ -163,9 +163,17 @@ C050/J050, com valor fora do domínio.
 Manter `ValidarDominioDeEnum = true` como default do ECF, coerente com "falha explícita,
 nunca perda silenciosa" — **mas sujeito à mesma faixa conhecida do achado 3**: num
 arquivo cujo leiaute está fora da faixa (`IsLeiauteConhecido == false`), um valor fora do
-domínio vira diagnóstico em vez de exceção. Na prática, `validarDominio` passa a ser
-`_validarDominio && leiauteConhecido` no ponto que chama
-`MetadadosCampo.Definidor(registro, valor, validarDominio)`.
+domínio vira diagnóstico em vez de exceção.
+
+**Atenção:** a validação de domínio em si (o `validarDominio` passado a
+`MetadadosCampo.Definidor(registro, valor, validarDominio)`) **não** deve ser desligada por
+`leiauteConhecido`. Desligá-la troca o setter estrito pelo permissivo, que faz apenas o cast
+— sem lançar exceção nenhuma para um valor fora do domínio, logo sem diagnóstico algum: o
+valor é aceito em silêncio, o oposto do requisito. Quem converte a `FormatException` do
+setter estrito em diagnóstico (`ErrosDeFormato`) em vez de abortar é o alargamento de
+`LenientFieldParsing` (`lenienteCampo = (forcarLenienteCampo ?? _opcoes.LenientFieldParsing)
+|| !leiauteConhecido`) — o mesmo mecanismo do achado 3, já aplicado ao catch genérico de
+`Definir`. `validarDominio` permanece `_validarDominioDeEnum`, sem o `&& leiauteConhecido`.
 
 Mesmo princípio do achado 3: a biblioteca não derruba a leitura por não conhecer o
 leiaute. Dentro da faixa conhecida, um valor fora do domínio continua sendo exceção,

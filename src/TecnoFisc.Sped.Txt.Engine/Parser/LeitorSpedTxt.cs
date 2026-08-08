@@ -1,4 +1,5 @@
 using System.Buffers;
+using System.Globalization;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 
@@ -147,7 +148,10 @@ public sealed class LeitorSpedTxt : ILeitorSped
                                     linhaRegistro, registro.Codigo, "COD_VER",
                                     $"Leiaute {versaoLeiaute} está fora da faixa conhecida por esta " +
                                     "versão da biblioteca; a leitura segue em modo tolerante e campos " +
-                                    "podem ter mudado de significado."));
+                                    "podem ter mudado de significado.")
+                                {
+                                    ValorBruto = versaoLeiaute.ToString("0000", CultureInfo.InvariantCulture)
+                                });
                         }
 
                         yield return registro;
@@ -571,10 +575,12 @@ public sealed class LeitorSpedTxt : ILeitorSped
         {
             try
             {
-                // Fora da faixa de leiautes conhecida, um valor fora do domínio pode ser
-                // código novo da RFB: degrada para diagnóstico, mesma regra do código de
-                // registro desconhecido. Dentro da faixa, é dado inválido e continua fatal.
-                campo.Definidor(registro!, valor, _validarDominioDeEnum && leiauteConhecido);
+                // A validação de domínio em si não é afetada por leiauteConhecido: desligá-la
+                // faria um código fora do domínio ser aceito em silêncio (cast permissivo, sem
+                // exceção, sem diagnóstico) — o oposto de "degrada para diagnóstico". É o
+                // catch abaixo, sob lenienteCampo já alargado (ver acima), que converte a
+                // FormatException do setter estrito em ErroFormato em vez de abortar.
+                campo.Definidor(registro!, valor, _validarDominioDeEnum);
             }
             catch (Exception ex) when (ex is FormatException or ArgumentException or OverflowException)
             {

@@ -296,10 +296,12 @@ public static class CatalogoBuilder
             var atual = lista[i].Campo;
             if (atual.DesdeVersao < anterior.DesdeVersao)
                 throw new InvalidOperationException(
-                    $"Campo {tipo.FullName}.{atual.Nome} (DesdeVersao={atual.DesdeVersao}) vem depois de " +
-                    $"{anterior.Nome} (DesdeVersao={anterior.DesdeVersao}); DesdeVersao precisa ser " +
-                    "não-decrescente ao longo da posição dos campos — campo versionado só pode ficar no " +
-                    "fim do registro, senão o mapeamento posicional do leitor desalinha silenciosamente.");
+                    $"Campo {tipo.FullName}.{atual.Nome} na posição {lista[i].Ordem} " +
+                    $"(DesdeVersao={atual.DesdeVersao}) vem depois de {anterior.Nome} na posição " +
+                    $"{lista[i - 1].Ordem} (DesdeVersao={anterior.DesdeVersao}); DesdeVersao precisa " +
+                    "ser não-decrescente ao longo da posição dos campos — campo versionado só pode " +
+                    "ficar no fim do registro, senão o mapeamento posicional do leitor desalinha " +
+                    "silenciosamente. Mova o campo para o fim do registro ou remova DesdeVersao.");
         }
     }
 

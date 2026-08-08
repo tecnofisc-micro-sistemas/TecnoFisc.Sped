@@ -1,4 +1,10 @@
+using System.Reflection;
+
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+
 using TecnoFisc.Sped.Core.ValueObjects;
+using TecnoFisc.Sped.Txt.Engine.Abstracoes;
 using TecnoFisc.Sped.Txt.Engine.Catalogo;
 using TecnoFisc.Sped.Txt.Engine.Parser;
 using TecnoFisc.Sped.Txt.Engine.Tests._Sintetico;
@@ -7,7 +13,7 @@ namespace TecnoFisc.Sped.Txt.Engine.Tests.Catalogo;
 
 public sealed class CatalogoBuilderTests
 {
-    private static readonly System.Reflection.Assembly _assembly = typeof(Registro0000Sintetico).Assembly;
+    private static readonly Assembly _assembly = typeof(Registro0000Sintetico).Assembly;
 
     [Fact]
     public void BuildFromAssembly_DescobreTodosRegistrosMarcados()
@@ -344,5 +350,69 @@ public sealed class CatalogoBuilderTests
         meta!.TokenFimArquivo.Should().BeNull();
         meta.EhMultilinha.Should().BeFalse();
         meta.Campos.Should().OnlyContain(c => !c.CampoArquivo);
+    }
+
+    /// <summary>
+    /// A mensagem de <c>ValidarVigenciaCrescente</c> precisa nomear a <b>posição</b> do campo
+    /// (achado 10 do follow-up do PR 531) — o dado necessário para corrigir o registro. O tipo de
+    /// fixture com <c>DesdeVersao</c> decrescente é compilado num assembly isolado via Roslyn
+    /// (mesma técnica de <see cref="RegistroSpedCatalogoGeneratorVigenciaTests"/>), em vez de
+    /// declarado solto neste assembly de teste: <c>CatalogoBuilder.BuildFromAssembly</c> varre o
+    /// assembly inteiro via <c>Assembly.GetTypes()</c> (que inclui tipos aninhados privados), então
+    /// um tipo assim quebraria <see cref="BuildFromAssembly_DescobreTodosRegistrosMarcados"/> e
+    /// todo outro teste desta classe que reusa <see cref="_assembly"/>.
+    /// </summary>
+    [Fact]
+    public void ValidarVigenciaCrescente_NomeiaRegistroCampoEPosicao()
+    {
+        Assembly assembly = CompilarAssemblyIsolada("""
+            [CampoSped(Ordem = 2, DesdeVersao = 12, Nome = "TARDIO")] public string? Tardio { get; set; }
+            [CampoSped(Ordem = 3, Nome = "SEMPRE")] public string? Sempre { get; set; }
+            """);
+
+        var act = () => CatalogoBuilder.BuildFromAssembly(assembly);
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*SEMPRE*").And.Message.Should().Contain("posição 3");
+    }
+
+    private static Assembly CompilarAssemblyIsolada(string campos)
+    {
+        string nomeAssembly = "VigenciaIsolada" + Guid.NewGuid().ToString("N");
+        string fonte = $$"""
+            using TecnoFisc.Sped.Txt.Engine.Abstracoes;
+            using TecnoFisc.Sped.Txt.Engine.Atributos;
+
+            namespace VigenciaIsolada;
+
+            [RegistroSped(Codigo = "TST1", Nivel = 1, Bloco = "0")]
+            public sealed class RegistroTst1 : RegistroSped
+            {
+                public override string Codigo => "TST1";
+                {{campos}}
+            }
+            """;
+
+        var syntaxTree = CSharpSyntaxTree.ParseText(fonte, new CSharpParseOptions(LanguageVersion.Preview));
+        var compilation = CSharpCompilation.Create(
+            nomeAssembly,
+            [syntaxTree],
+            ReferenciasDeCompilacao(),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        using var stream = new MemoryStream();
+        var emit = compilation.Emit(stream);
+        emit.Diagnostics.Should().NotContain(diagnostico => diagnostico.Severity == DiagnosticSeverity.Error);
+        emit.Success.Should().BeTrue();
+        return Assembly.Load(stream.ToArray());
+    }
+
+    private static IEnumerable<MetadataReference> ReferenciasDeCompilacao()
+    {
+        string trusted = (string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!;
+        foreach (string caminho in trusted.Split(Path.PathSeparator))
+            yield return MetadataReference.CreateFromFile(caminho);
+
+        yield return MetadataReference.CreateFromFile(typeof(RegistroSped).Assembly.Location);
     }
 }

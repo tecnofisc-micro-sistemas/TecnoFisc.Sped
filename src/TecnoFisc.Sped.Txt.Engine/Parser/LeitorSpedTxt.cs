@@ -131,7 +131,8 @@ public sealed class LeitorSpedTxt : ILeitorSped
                             new ErroLayout(
                                 linhaRegistro,
                                 codigo,
-                                $"Registro posterior à versão declarada no 0000 ({versaoLeiaute})."));
+                                $"Registro posterior à versão declarada no 0000 ({versaoLeiaute})."),
+                            MotivoNaoReconhecimento.PosteriorAVersaoDeclarada);
                         continue;
                     }
 
@@ -692,7 +693,9 @@ public sealed class LeitorSpedTxt : ILeitorSped
                         throw new ErroLayoutSpedException(erroLayout);
 
                     // Sentinela: pendura como folha no topo atual (sem empilhar, nunca vira pai).
-                    var sentinela = new RegistroNaoReconhecido(fatia.ToString(), linha.ToString(), erroLayout);
+                    var sentinela = new RegistroNaoReconhecido(
+                        fatia.ToString(), linha.ToString(), erroLayout,
+                        MotivoNaoReconhecimento.CodigoDesconhecido);
                     pilha.Topo?.AdicionarFilho(sentinela);
                     return sentinela;
                 }

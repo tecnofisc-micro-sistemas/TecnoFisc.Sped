@@ -24,6 +24,7 @@ public sealed class AtributosTests
             Decimais = 2,
             Obrigatorio = true,
             Formato = "ddMMyyyy",
+            Nome = "CODIGO",
         };
 
         atributo.Ordem.Should().Be(3);
@@ -31,6 +32,7 @@ public sealed class AtributosTests
         atributo.Decimais.Should().Be(2);
         atributo.Obrigatorio.Should().BeTrue();
         atributo.Formato.Should().Be("ddMMyyyy");
+        atributo.Nome.Should().Be("CODIGO");
     }
 
     [Fact]
@@ -42,6 +44,7 @@ public sealed class AtributosTests
         atributo.Decimais.Should().Be(0);
         atributo.Obrigatorio.Should().BeFalse();
         atributo.Formato.Should().BeNull();
+        atributo.Nome.Should().BeNull();
         atributo.DesdeVersao.Should().Be(0);
     }
 

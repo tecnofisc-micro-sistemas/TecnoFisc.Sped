@@ -1,0 +1,24 @@
+using TecnoFisc.Sped.Txt.Engine.Abstracoes;
+using TecnoFisc.Sped.Txt.Engine.Atributos;
+
+namespace TecnoFisc.Sped.Ecf.Registros.BlocoP;
+
+/// <summary>Registro P230 - isenção e redução do lucro presumido.</summary>
+[RegistroSped(Codigo = "P230", Nivel = 3, Bloco = "P")]
+public sealed partial class RegistroP230 : RegistroSped
+{
+    /// <inheritdoc />
+    public override string Codigo => "P230";
+
+    /// <summary>Código da linha na tabela dinâmica do Sped.</summary>
+    [CampoSped(Ordem = 2, Obrigatorio = true, Nome = "CODIGO")]
+    public string? CampoCodigo { get; set; }
+
+    /// <summary>Descrição da linha na tabela dinâmica.</summary>
+    [CampoSped(Ordem = 3, Nome = "DESCRICAO")]
+    public string? Descricao { get; set; }
+
+    /// <summary>Valor na representação textual da tabela dinâmica.</summary>
+    [CampoSped(Ordem = 4, Nome = "VALOR")]
+    public string? Valor { get; set; }
+}

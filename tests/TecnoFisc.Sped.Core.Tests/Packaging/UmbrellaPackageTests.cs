@@ -14,6 +14,7 @@ public sealed class UmbrellaPackageTests
                 @"..\TecnoFisc.Sped.EfdContribuicoes\TecnoFisc.Sped.EfdContribuicoes.csproj",
                 @"..\TecnoFisc.Sped.EfdIcmsIpi\TecnoFisc.Sped.EfdIcmsIpi.csproj",
                 @"..\TecnoFisc.Sped.Ecd\TecnoFisc.Sped.Ecd.csproj",
+                @"..\TecnoFisc.Sped.Ecf\TecnoFisc.Sped.Ecf.csproj",
             ]);
 
         PackageReferences(project).Should().BeEmpty("guarda-chuva local deve agregar projetos do repositorio");

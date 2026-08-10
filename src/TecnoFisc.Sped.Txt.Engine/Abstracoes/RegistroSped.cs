@@ -11,6 +11,7 @@ public abstract class RegistroSped
 {
     private readonly List<RegistroSped> _filhos = [];
     private List<ErroFormato>? _errosDeFormato;
+    private List<ColunaNaoModelada>? _colunasNaoModeladas;
 
     /// <summary>
     /// Erros de conversão de campo capturados em modo leniente (ver
@@ -23,6 +24,21 @@ public abstract class RegistroSped
 
     internal void RegistrarErroDeFormato(ErroFormato erro) => (_errosDeFormato ??= []).Add(erro);
 
+    /// <summary>
+    /// Colunas presentes na linha que o modelo tipado não representa — coluna além do último
+    /// campo declarado, ou campo cuja vigência é posterior ao <c>COD_VER</c> do arquivo. Vazia no
+    /// caso comum, que é o de um arquivo do leiaute modelado. O valor fica em bruto: nada do
+    /// arquivo se perde em silêncio, mesmo onde a biblioteca não sabe interpretar. Em leitura
+    /// buffered (<c>LoadAsync</c>) de um arquivo fora de conformidade com muitas colunas além do
+    /// modelo, esses valores ficam retidos em memória junto com o restante do arquivo; em
+    /// streaming (<c>ReadStreamingAsync</c>) o custo fica limitado ao registro sendo lido.
+    /// </summary>
+    public IReadOnlyList<ColunaNaoModelada> ColunasNaoModeladas
+        => _colunasNaoModeladas ?? (IReadOnlyList<ColunaNaoModelada>)[];
+
+    internal void RegistrarColunaNaoModelada(ColunaNaoModelada coluna)
+        => (_colunasNaoModeladas ??= []).Add(coluna);
+
     /// <summary>Código do registro como aparece no arquivo SPED (ex.: "0000", "C100").</summary>
     public abstract string Codigo { get; }
 
@@ -30,10 +46,41 @@ public abstract class RegistroSped
     /// Versão do leiaute declarada no arquivo, extraída do campo <c>COD_VER</c> do
     /// <c>Registro0000</c>. Retorna <c>0</c> para todos os demais registros; o
     /// <c>Registro0000</c> de cada módulo faz override retornando o valor numérico real.
-    /// Exposto ao consumidor para que decida regras próprias por versão; em pacotes
-    /// read-only o parser não usa este valor para filtrar registros (ARCHITECTURE §4.7).
+    /// Exposto ao consumidor e, quando o parser especializado habilita vigência sintática,
+    /// usado para aplicar <c>IntroduzidoEm</c>/<c>DesdeVersao</c> (ARCHITECTURE §4.7).
     /// </summary>
     public virtual int VersaoLeiaute => 0;
+
+    /// <summary>
+    /// Versão do leiaute declarada no <c>0000</c> do arquivo em que este registro foi lido, ou
+    /// <c>0</c> quando o registro não veio de uma leitura de arquivo (construído à mão, ou lido
+    /// por <see cref="Parser.LeitorSpedTxt.ParseLinha"/> sem versão informada). Distinto de
+    /// <see cref="VersaoLeiaute"/>, que é a versão que o próprio registro declara e só o
+    /// <c>0000</c> conhece. Serve ao registro que precisa saber em que leiaute foi lido para
+    /// interpretar uma posição cuja semântica mudou entre versões.
+    /// </summary>
+    public int VersaoDoArquivo { get; internal set; }
+
+    /// <summary>
+    /// Indica se a versão declarada por este registro pertence à faixa de leiautes que o módulo
+    /// modela. Só o registro de abertura (<c>0000</c>) de cada módulo tem essa informação; os
+    /// demais herdam <c>true</c>, que preserva o comportamento estrito. Quando <c>false</c>, o
+    /// leitor separa dois casos pelo valor de <see cref="VersaoLeiaute"/>: positivo significa
+    /// leiaute novo ou antigo demais e o leitor degrada para diagnóstico em vez de exceção — um
+    /// arquivo de leiaute que a biblioteca ainda não conhece deve ser legível, não fatal; zero
+    /// significa versão ilegível no arquivo, e aí o leitor registra o diagnóstico mas <b>mantém o
+    /// modo estrito</b>, porque dado corrompido não é evolução de leiaute.
+    /// <para>
+    /// Ressalva: o próprio <c>0000</c> é interpretado <b>antes</b> de o leitor conseguir
+    /// consultar esta propriedade — ele precisa terminar de montar o registro para então ler
+    /// <see cref="VersaoLeiaute"/> e <c>IsLeiauteConhecido</c>. Se um leiaute desconhecido
+    /// mudar o formato de um campo do próprio <c>0000</c> (posição, tipo, domínio), a leitura
+    /// desse registro específico ainda ocorre em modo estrito e pode abortar antes que a
+    /// biblioteca saiba que está diante de um leiaute que não conhece. O modo tolerante só se
+    /// aplica aos registros <b>seguintes</b> ao <c>0000</c>.
+    /// </para>
+    /// </summary>
+    public virtual bool IsLeiauteConhecido => true;
 
     /// <summary>Registro pai na hierarquia, ou <c>null</c> se este é o raiz.</summary>
     public RegistroSped? Pai { get; internal set; }

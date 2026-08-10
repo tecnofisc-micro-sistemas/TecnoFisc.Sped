@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Implementação .NET da ECF (Escrituração Contábil Fiscal) — modelo tipado único do leiaute 12 publicado pela Receita Federal, com leitura dos leiautes 8 a 12: os registros e as colunas exclusivos dos leiautes 8 a 10 são reconhecidos, não tipados (o leitor não aborta; o conteúdo chega em bruto via ColunasNaoModeladas). Leiautes fora da faixa 8 a 12 são lidos em modo tolerante, com aviso no registro 0000. Pacote read-only: expõe parser + modelo tipado, sem gerador.</Description>
+    <PackageId>TecnoFisc.Sped.Ecf</PackageId>
+    <PackageTags>sped;ecf;escrituracao-contabil-fiscal;contabil;fiscal;brasil;tecnofisc</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TecnoFisc.Sped.Core\TecnoFisc.Sped.Core.csproj" />
+    <ProjectReference Include="..\TecnoFisc.Sped.Txt.Engine\TecnoFisc.Sped.Txt.Engine.csproj" />
+
+    <!-- Source generator referenciado como Analyzer: emite o catálogo estático em compile-time
+         e não embarca no runtime do consumidor (ReferenceOutputAssembly=false). -->
+    <ProjectReference Include="..\TecnoFisc.Sped.Txt.Engine.SourceGenerators\TecnoFisc.Sped.Txt.Engine.SourceGenerators.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="TecnoFisc.Sped.Ecf.Tests" />
+  </ItemGroup>
+
+</Project>

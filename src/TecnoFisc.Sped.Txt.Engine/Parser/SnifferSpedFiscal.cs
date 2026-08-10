@@ -33,6 +33,7 @@ public static class SnifferSpedFiscal
             ProjetoSped.EfdContribuicoes => (6, 7, 9),
             ProjetoSped.EfdIcmsIpi => (4, 5, 7),
             ProjetoSped.Ecd => (3, 4, 6),
+            ProjetoSped.Ecf => (10, 11, 4),
             _ => (-1, -1, -1),
         };
 

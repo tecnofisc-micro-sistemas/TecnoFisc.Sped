@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="JsonSchema.Net" />
+    <PackageReference Include="coverlet.collector">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\TecnoFisc.Sped.Ecf\TecnoFisc.Sped.Ecf.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\sped\ecf\layout-12-manifest.json"
+          Link="Manifesto\layout-12-manifest.json"
+          CopyToOutputDirectory="Always" />
+    <None Include="..\..\sped\ecf\layout-12-manifest.schema.json"
+          Link="Manifesto\layout-12-manifest.schema.json"
+          CopyToOutputDirectory="Always" />
+    <None Update="Fixtures\**\*.txt"
+          CopyToOutputDirectory="Always" />
+
+    <EmbeddedResource Include="..\..\sped\ecf\layout-12-manifest.json"
+                      LogicalName="TecnoFisc.Sped.Ecf.Tests.Source.layout-12-manifest.json" />
+    <EmbeddedResource Include="..\..\sped\ecf\layout-12-manifest.schema.json"
+                      LogicalName="TecnoFisc.Sped.Ecf.Tests.Source.layout-12-manifest.schema.json" />
+    <EmbeddedResource Include="Fixtures\Sinteticas\minimo.txt"
+                      LogicalName="TecnoFisc.Sped.Ecf.Tests.Source.minimo.txt" />
+  </ItemGroup>
+
+</Project>

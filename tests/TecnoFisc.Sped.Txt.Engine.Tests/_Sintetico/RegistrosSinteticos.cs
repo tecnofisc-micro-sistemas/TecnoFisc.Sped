@@ -15,6 +15,9 @@ public sealed class Registro0000Sintetico : RegistroSped
 {
     public override string Codigo => "0000";
 
+    public override int VersaoLeiaute
+        => int.TryParse(CodVer, out int versao) ? versao : 0;
+
     [CampoSped(Ordem = 2, Tamanho = 4, Obrigatorio = true)]
     public string? CodVer { get; set; }
 
@@ -76,6 +79,119 @@ public sealed class RegistroC170Sintetico : RegistroSped
     public decimal VlItem { get; set; }
 }
 
+public enum SituacaoSintetica
+{
+    Ativa = 1,
+    Inativa = 2,
+}
+
+[Flags]
+public enum PermissoesSinteticas
+{
+    Leitura = 1,
+    Escrita = 2,
+}
+
+[RegistroSped(Codigo = "E100", Nivel = 1, Bloco = "E")]
+public sealed class RegistroE100Sintetico : RegistroSped
+{
+    public override string Codigo => "E100";
+
+    [CampoSped(Ordem = 2, Tamanho = 2)]
+    public SituacaoSintetica? Situacao { get; set; }
+
+    [CampoSped(Ordem = 3, Tamanho = 2)]
+    public PermissoesSinteticas? Permissoes { get; set; }
+}
+
+public enum EnumByteSintetico : byte
+{
+    Maximo = byte.MaxValue,
+}
+
+public enum EnumSByteSintetico : sbyte
+{
+    Minimo = sbyte.MinValue,
+}
+
+public enum EnumInt16Sintetico : short
+{
+    Um = 1,
+}
+
+public enum EnumUInt16Sintetico : ushort
+{
+    Maximo = ushort.MaxValue,
+}
+
+public enum EnumInt32Sintetico : int
+{
+    Minimo = int.MinValue,
+}
+
+public enum EnumUInt32Sintetico : uint
+{
+    Maximo = uint.MaxValue,
+}
+
+public enum EnumInt64Sintetico : long
+{
+    Minimo = long.MinValue,
+}
+
+public enum EnumUInt64Sintetico : ulong
+{
+    Maximo = ulong.MaxValue,
+}
+
+[RegistroSped(Codigo = "E200", Nivel = 1, Bloco = "E")]
+public sealed class RegistroE200Sintetico : RegistroSped
+{
+    public override string Codigo => "E200";
+
+    [CampoSped(Ordem = 2)]
+    public EnumByteSintetico? ValorByte { get; set; }
+
+    [CampoSped(Ordem = 3)]
+    public EnumSByteSintetico? ValorSByte { get; set; }
+
+    [CampoSped(Ordem = 4)]
+    public EnumInt16Sintetico? ValorInt16 { get; set; }
+
+    [CampoSped(Ordem = 5)]
+    public EnumUInt16Sintetico? ValorUInt16 { get; set; }
+
+    [CampoSped(Ordem = 6)]
+    public EnumInt32Sintetico? ValorInt32 { get; set; }
+
+    [CampoSped(Ordem = 7)]
+    public EnumUInt32Sintetico? ValorUInt32 { get; set; }
+
+    [CampoSped(Ordem = 8)]
+    public EnumInt64Sintetico? ValorInt64 { get; set; }
+
+    [CampoSped(Ordem = 9)]
+    public EnumUInt64Sintetico? ValorUInt64 { get; set; }
+}
+
+public enum IndicadorTextualSintetico
+{
+    [SpedValor("N")]
+    Nao,
+
+    [SpedValor("S")]
+    Sim,
+}
+
+[RegistroSped(Codigo = "E300", Nivel = 1, Bloco = "E")]
+public sealed class RegistroE300Sintetico : RegistroSped
+{
+    public override string Codigo => "E300";
+
+    [CampoSped(Ordem = 2)]
+    public IndicadorTextualSintetico? Indicador { get; set; }
+}
+
 /// <summary>
 /// Registro sintético com campo-arquivo embutido — espelha a forma de J800/J801 da ECD
 /// (TIPO_DOC, DESC_RTF, HASH_RTF, ARQ_RTF, IND_FIM_RTF). <c>ArqRtf</c> é o campo-arquivo
@@ -132,6 +248,30 @@ public sealed class Registro9999Sintetico : RegistroSped
 }
 
 /// <summary>
+/// Registro sem nenhum <see cref="CampoSpedAttribute"/> modelado — espelha o padrão dos
+/// registros descontinuados do ECF (ex.: X291/X300, ver <c>RegistroX300</c>), que existem no
+/// catálogo só para que arquivos históricos sejam lidos sem abortar; o conteúdo das colunas
+/// não vira propriedade tipada, mas chega em bruto em
+/// <see cref="RegistroSped.ColunasNaoModeladas"/>. Usado para provar que
+/// <c>EscritorSpedTxt</c> recusa a escrita em vez de emitir uma linha mutilada (só "|CODIGO|").
+/// </summary>
+[RegistroSped(Codigo = "Z900", Nivel = 2, Bloco = "Z")]
+public sealed class RegistroZ900SemCamposSintetico : RegistroSped
+{
+    public override string Codigo => "Z900";
+}
+
+/// <summary>Registro que prova alias normativo distinto do membro CLR.</summary>
+[RegistroSped(Codigo = "A100", Nivel = 1, Bloco = "A")]
+public sealed class RegistroA100AliasSintetico : RegistroSped
+{
+    public override string Codigo => "A100";
+
+    [CampoSped(Ordem = 2, Nome = "CODIGO")]
+    public int CampoCodigo { get; set; }
+}
+
+/// <summary>
 /// Registro sintético versionado: introduzido na versão 310 do leiaute, com campo que só
 /// passa a existir a partir da versão 312. Exercita <c>IntroduzidoEm</c> no atributo do
 /// registro e <c>DesdeVersao</c> no atributo de campo.
@@ -146,4 +286,28 @@ public sealed class RegistroZ100Sintetico : RegistroSped
 
     [CampoSped(Ordem = 3, DesdeVersao = 312)]
     public string? IndComplemento { get; set; }
+}
+
+/// <summary>
+/// Cadeia de dois campos versionados no fim do registro, com limiares crescentes (312, depois
+/// 400) — a única forma que <c>CatalogoBuilder</c> aceita hoje
+/// (<c>DesdeVersao</c> não-decrescente ao longo da posição; ver
+/// <c>CatalogoBuilder.ValidarVigenciaCrescente</c>). Exercita o mapeamento posicional do leitor
+/// (<c>indice = posicaoCampo - 2</c>) indexando dois portões de vigência independentes no mesmo
+/// registro, sem depender de um campo sempre presente vir depois de um versionado (esse desenho
+/// é rejeitado na construção do catálogo — ver <c>RegistroSpedCatalogoGeneratorVigenciaTests</c>).
+/// </summary>
+[RegistroSped(Codigo = "Z200", Nivel = 2, Bloco = "Z", IntroduzidoEm = 310)]
+public sealed class RegistroZ200Sintetico : RegistroSped
+{
+    public override string Codigo => "Z200";
+
+    [CampoSped(Ordem = 2)]
+    public string? Antes { get; set; }
+
+    [CampoSped(Ordem = 3, DesdeVersao = 312)]
+    public string? Futuro { get; set; }
+
+    [CampoSped(Ordem = 4, DesdeVersao = 400)]
+    public string? Depois { get; set; }
 }

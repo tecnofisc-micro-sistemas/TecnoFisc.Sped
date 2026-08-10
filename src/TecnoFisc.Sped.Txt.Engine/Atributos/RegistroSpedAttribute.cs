@@ -21,8 +21,8 @@ public sealed class RegistroSpedAttribute : Attribute
     /// Versão do leiaute em que o registro foi introduzido. Convenção idêntica à de
     /// <see cref="CampoSpedAttribute.DesdeVersao"/>: valor numérico do enum <c>LayoutXxx</c>
     /// do módulo (ex.: <c>(int)LayoutEfdIcmsIpi.V015</c> = 15). <c>0</c> (default) significa
-    /// "presente em todas as versões". O parser ignora o registro quando a versão do arquivo
-    /// for menor; o gerador recusa emitir o registro nessa situação.
+    /// "presente em todas as versões". Parsers que habilitam vigência sintática omitem o
+    /// registro quando a versão do arquivo for menor; o gerador recusa emiti-lo nessa situação.
     /// </summary>
     public int IntroduzidoEm { get; init; }
 

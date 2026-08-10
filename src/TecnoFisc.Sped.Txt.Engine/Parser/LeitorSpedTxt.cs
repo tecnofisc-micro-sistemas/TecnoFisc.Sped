@@ -132,7 +132,10 @@ public sealed class LeitorSpedTxt : ILeitorSped
                                 linhaRegistro,
                                 codigo,
                                 $"Registro posterior à versão declarada no 0000 ({versaoLeiaute})."),
-                            MotivoNaoReconhecimento.PosteriorAVersaoDeclarada);
+                            MotivoNaoReconhecimento.PosteriorAVersaoDeclarada)
+                        {
+                            VersaoDoArquivo = versaoLeiaute
+                        };
                         continue;
                     }
 
@@ -150,6 +153,11 @@ public sealed class LeitorSpedTxt : ILeitorSped
                         {
                             versaoAvaliada = true;
                             versaoLeiaute = registro.VersaoLeiaute;
+                            // The version carrier (in practice the 0000) is interpreted before
+                            // its version is known, so the assignment in InterpretarLinha left it
+                            // at zero: fix it here, so the 0000 itself answers like the rest of
+                            // the file.
+                            registro.VersaoDoArquivo = versaoLeiaute;
                             if (versaoLeiaute > 0)
                             {
                                 leiauteConhecido = registro.IsLeiauteConhecido;
@@ -695,7 +703,10 @@ public sealed class LeitorSpedTxt : ILeitorSped
                     // Sentinela: pendura como folha no topo atual (sem empilhar, nunca vira pai).
                     var sentinela = new RegistroNaoReconhecido(
                         fatia.ToString(), linha.ToString(), erroLayout,
-                        MotivoNaoReconhecimento.CodigoDesconhecido);
+                        MotivoNaoReconhecimento.CodigoDesconhecido)
+                    {
+                        VersaoDoArquivo = versaoLeiaute
+                    };
                     pilha.Topo?.AdicionarFilho(sentinela);
                     return sentinela;
                 }
@@ -703,6 +714,7 @@ public sealed class LeitorSpedTxt : ILeitorSped
                 // [Descontinuado] é informacional no read path (ARCHITECTURE §4.7 read-only):
                 // arquivos históricos ainda contêm o registro e precisam ser parseáveis.
                 registro = metadados.Fabrica();
+                registro.VersaoDoArquivo = versaoLeiaute;
             }
             else if (metadados is not null && registro is not null)
             {

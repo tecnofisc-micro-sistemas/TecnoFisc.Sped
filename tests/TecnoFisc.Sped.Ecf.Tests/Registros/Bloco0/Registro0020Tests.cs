@@ -3,6 +3,7 @@ using System.Reflection;
 using TecnoFisc.Sped.Ecf.Parser;
 using TecnoFisc.Sped.Ecf.Registros.Bloco0;
 using TecnoFisc.Sped.Ecf.Tests.Manifesto;
+using TecnoFisc.Sped.Ecf.Tests.Versionamento;
 using TecnoFisc.Sped.Txt.Engine.Atributos;
 using TecnoFisc.Sped.Txt.Engine.Enums;
 
@@ -53,5 +54,47 @@ public sealed class Registro0020Tests
         mapeamento.Propriedade.Name.Should().Be(nameof(Registro0020.IndicadorPosicao31));
         mapeamento.Campo!.Nome.Should().Be("POSSUI_CEBRAS");
         mapeamento.Campo.DesdeVersao.Should().Be(10);
+    }
+
+    [Theory]
+    [InlineData(10)]
+    [InlineData(11)]
+    public async Task IndPrTransf_RespondeSomenteNosLeiautes10E11(int versao)
+    {
+        var registro = await Ler0020(versao);
+
+        registro.IndPrTransf.Should().Be(registro.IndicadorPosicao31);
+        registro.PossuiCebras.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task PossuiCebras_RespondeSomenteDoLeiaute12EmDiante()
+    {
+        var registro = await Ler0020(12);
+
+        registro.PossuiCebras.Should().Be(registro.IndicadorPosicao31);
+        registro.IndPrTransf.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task VersaoDoArquivo_EhPropagadaParaTodoRegistroLido_InclusiveO0000()
+    {
+        var registros = await FixtureEcf.ReadAsync(11, "|0001|0|");
+
+        registros.Should().NotBeEmpty();
+        registros.Should().OnlyContain(registro => registro.VersaoDoArquivo == 11);
+    }
+
+    /// <summary>
+    /// Monta um 0020 com as 30 primeiras colunas de dado (Ordem 2..31), a última sendo o campo
+    /// posicional 31 — ativo a partir do leiaute 10.
+    /// </summary>
+    private static async Task<Registro0020> Ler0020(int versao)
+    {
+        var valores = new List<string> { "1", "1" };
+        valores.AddRange(Enumerable.Repeat("N", 27));
+        valores.Add("S");
+        string linha = "|0020|" + string.Join('|', valores) + "|";
+        return (await FixtureEcf.ReadAsync(versao, linha)).OfType<Registro0020>().Single();
     }
 }

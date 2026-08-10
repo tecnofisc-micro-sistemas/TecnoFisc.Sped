@@ -625,7 +625,13 @@ Em `tests/TecnoFisc.Sped.Ecf.Tests/Registros/Bloco0/Registro0020Tests.cs` (se o 
     }
 ```
 
-E descomentar o `VersaoDoArquivo_EhZeroQuandoORegistroNaoVeioDeLeitura` deixado na Task 1.
+E acrescentar, em `tests/TecnoFisc.Sped.Txt.Engine.Tests/Abstracoes/RegistroSpedTests.cs`, o caso do default no registro que não veio de leitura:
+
+```csharp
+    [Fact]
+    public void VersaoDoArquivo_EhZeroQuandoORegistroNaoVeioDeLeitura()
+        => new RegistroDeTeste().VersaoDoArquivo.Should().Be(0);
+```
 
 - [ ] **Step 2: Rodar e confirmar que falha**
 
@@ -659,9 +665,10 @@ Em `src/TecnoFisc.Sped.Txt.Engine/Abstracoes/RegistroSped.cs`, logo abaixo de `V
 **(b)** Em `ReadStreamingAsync`, dentro do bloco que avalia a versão uma única vez, logo depois de `versaoLeiaute = registro.VersaoLeiaute;` (linha 151):
 
 ```csharp
-                            // O portador da versão (na prática o 0000) é interpretado antes de a
-                            // versão ser conhecida, então (a) o deixou em zero: corrige aqui, para
-                            // que o próprio 0000 responda como o resto do arquivo.
+                            // The version carrier (in practice the 0000) is interpreted before
+                            // its version is known, so the assignment in InterpretarLinha left it
+                            // at zero: fix it here, so the 0000 itself answers like the rest of
+                            // the file.
                             registro.VersaoDoArquivo = versaoLeiaute;
 ```
 

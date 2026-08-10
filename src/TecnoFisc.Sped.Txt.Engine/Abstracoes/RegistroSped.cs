@@ -49,6 +49,16 @@ public abstract class RegistroSped
     public virtual int VersaoLeiaute => 0;
 
     /// <summary>
+    /// Versão do leiaute declarada no <c>0000</c> do arquivo em que este registro foi lido, ou
+    /// <c>0</c> quando o registro não veio de uma leitura de arquivo (construído à mão, ou lido
+    /// por <see cref="Parser.LeitorSpedTxt.ParseLinha"/> sem versão informada). Distinto de
+    /// <see cref="VersaoLeiaute"/>, que é a versão que o próprio registro declara e só o
+    /// <c>0000</c> conhece. Serve ao registro que precisa saber em que leiaute foi lido para
+    /// interpretar uma posição cuja semântica mudou entre versões.
+    /// </summary>
+    public int VersaoDoArquivo { get; internal set; }
+
+    /// <summary>
     /// Indica se a versão declarada por este registro pertence à faixa de leiautes que o módulo
     /// modela. Só o registro de abertura (<c>0000</c>) de cada módulo tem essa informação; os
     /// demais herdam <c>true</c>, que preserva o comportamento estrito. Quando <c>false</c>, o

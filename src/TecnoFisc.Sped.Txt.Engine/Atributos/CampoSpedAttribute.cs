@@ -9,6 +9,18 @@ namespace TecnoFisc.Sped.Txt.Engine.Atributos;
 public sealed class CampoSpedAttribute : Attribute
 {
     /// <summary>
+    /// Nome normativo opcional do campo no leiaute. Quando nulo ou vazio, o catálogo mantém o
+    /// nome da propriedade CLR. Use o alias somente quando o nome normativo colidir com um
+    /// membro do modelo, por exemplo <c>CampoCodigo</c> com <c>Nome = "CODIGO"</c>.
+    /// </summary>
+    /// <remarks>
+    /// Um alias não vazio deve ser um identificador Latino-1 sem espaços: letra ou sublinhado no
+    /// início, seguido apenas de letras Latino-1, dígitos ASCII ou sublinhados. Whitespace,
+    /// caracteres combinantes e caracteres fora do Latino-1 são inválidos.
+    /// </remarks>
+    public string? Nome { get; init; }
+
+    /// <summary>
     /// Posição do campo no layout, idêntica à coluna "Nº" do Guia Prático. REG ocupa a
     /// posição 1 (implícita); o primeiro campo declarado em código começa em 2.
     /// </summary>
@@ -31,9 +43,9 @@ public sealed class CampoSpedAttribute : Attribute
 
     /// <summary>
     /// Versão do leiaute em que o campo passou a existir. Convenção: valor numérico do enum
-    /// <c>LayoutXxx</c> do módulo (ex.: <c>(int)LayoutEfdIcmsIpi.V015</c> = 15). O parser/gerador
-    /// usa este valor para incluir o campo somente quando a versão lida do <c>Registro0000</c>
-    /// for maior ou igual. <c>0</c> (default) significa "presente em todas as versões".
+    /// <c>LayoutXxx</c> do módulo (ex.: <c>(int)LayoutEfdIcmsIpi.V015</c> = 15). O gerador e os
+    /// parsers que habilitam vigência sintática incluem o campo somente quando a versão lida do
+    /// <c>Registro0000</c> for maior ou igual. <c>0</c> (default) significa "presente em todas as versões".
     /// </summary>
     /// <remarks>
     /// Como SPED é strict-incremental por convenção da Receita, não há contraparte

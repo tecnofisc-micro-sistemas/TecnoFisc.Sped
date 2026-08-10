@@ -182,6 +182,7 @@ public static class CatalogoBuilder
     {
         var lista = new List<(int Ordem, MetadadosCampo Campo)>();
         var ordensVistas = new HashSet<int>();
+        var fieldNames = new HashSet<string>(StringComparer.Ordinal);
 
         foreach (var propriedade in tipo.GetProperties(BindingFlags.Public | BindingFlags.Instance))
         {
@@ -193,24 +194,31 @@ public static class CatalogoBuilder
                 throw new InvalidOperationException(
                     $"Ordem duplicada {atributo.Ordem} em {tipo.FullName}.{propriedade.Name}.");
 
+            string fieldName = ResolveFieldName(tipo, propriedade, atributo);
+            if (!fieldNames.Add(fieldName))
+                throw new InvalidOperationException(
+                    $"Nome de campo duplicado '{fieldName}' em {tipo.FullName}.{propriedade.Name}.");
+
             if (propriedade.SetMethod is null)
                 throw new InvalidOperationException(
                     $"Propriedade {tipo.FullName}.{propriedade.Name} precisa de setter para receber valor SPED.");
 
-            var conversor = ConstruirConversor(propriedade.PropertyType, atributo);
-            var setter = ConstruirSetter(propriedade);
-            var getter = ConstruirGetter(propriedade);
-            var serializador = ConstruirSerializador(propriedade.PropertyType, atributo);
-
             // Compõe a nova API zero-alloc-no-chamador a partir dos delegates intermediários:
             // o caminho reflexivo continua boxando (string + object) por dentro, mas o consumidor
-            // só vê os dois delegates da API pública de MetadadosCampo.
-            Action<RegistroSped, ReadOnlySpan<char>> definidor = (registro, valor) =>
-            {
-                string texto = valor.IsEmpty ? string.Empty : valor.ToString();
-                object? convertido = conversor(texto);
-                setter(registro, convertido);
-            };
+            // só vê os dois delegates da API pública de MetadadosCampo. O definidor padrão é
+            // sempre o permissivo (validarDominio: false) — preserva o comportamento já publicado
+            // nos três pacotes. O estrito só é construído quando há política de domínio a aplicar
+            // (enum fechado sem [SpedValor]); os demais campos recebem null e a leitura em tempo
+            // de parsing cai de volta no permissivo (ver MetadadosCampo.Definidor).
+            Action<RegistroSped, ReadOnlySpan<char>> definidor =
+                ComporDefinidor(propriedade, atributo, validarDominio: false);
+            Action<RegistroSped, ReadOnlySpan<char>>? definidorEstrito =
+                RequiresStrictSetter(propriedade.PropertyType, atributo)
+                    ? ComporDefinidor(propriedade, atributo, validarDominio: true)
+                    : null;
+
+            var getter = ConstruirGetter(propriedade);
+            var serializador = ConstruirSerializador(propriedade.PropertyType, atributo);
 
             Func<RegistroSped, string> serializadorComposto = registro =>
             {
@@ -219,7 +227,7 @@ public static class CatalogoBuilder
             };
 
             lista.Add((atributo.Ordem, new MetadadosCampo(
-                propriedade.Name,
+                fieldName,
                 atributo.Ordem,
                 propriedade.PropertyType,
                 atributo.Tamanho,
@@ -230,7 +238,8 @@ public static class CatalogoBuilder
                 serializadorComposto,
                 atributo.DesdeVersao,
                 atributo.CapturaTudo,
-                atributo.CampoArquivo)));
+                atributo.CampoArquivo,
+                definidorEstrito)));
         }
 
         lista.Sort(static (a, b) => a.Ordem.CompareTo(b.Ordem));
@@ -260,10 +269,99 @@ public static class CatalogoBuilder
                     $"CapturaTudo em {tipo.FullName}.{campo.Nome} requer tipo string (nullable ou não).");
         }
 
+        ValidarVigenciaCrescente(tipo, lista);
+
         return lista.Count == 0
             ? Array.Empty<MetadadosCampo>()
             : lista.ConvertAll(static x => x.Campo);
     }
+
+    /// <summary>
+    /// Exige que <see cref="CampoSpedAttribute.DesdeVersao"/> seja não-decrescente ao longo da
+    /// posição dos campos (tratando <c>0</c> — "sempre presente" — como o mínimo possível). É a
+    /// invariante da qual o mapeamento posicional do leitor depende
+    /// (<c>LeitorSpedTxt.InterpretarLinha</c>, <c>indice = posicaoCampo - 2</c>): um campo
+    /// versionado só pode aparecer no <b>fim</b> do registro, nunca seguido por um campo sempre
+    /// presente ou por um campo de versão anterior. Um arquivo SPED real nunca reordena colunas —
+    /// o Guia Prático só acrescenta campos novos ao final numa revisão — então uma sequência
+    /// decrescente indicaria erro de modelagem, não um leiaute real. Espelha
+    /// <c>RegistroSpedCatalogoGenerator</c> (diagnóstico em tempo de compilação), para que o
+    /// catálogo reflexivo e o gerado concordem sobre o que é um registro válido.
+    /// </summary>
+    private static void ValidarVigenciaCrescente(Type tipo, List<(int Ordem, MetadadosCampo Campo)> lista)
+    {
+        for (int i = 1; i < lista.Count; i++)
+        {
+            var anterior = lista[i - 1].Campo;
+            var atual = lista[i].Campo;
+            if (atual.DesdeVersao < anterior.DesdeVersao)
+                throw new InvalidOperationException(
+                    $"Campo {tipo.FullName}.{anterior.Nome} na posição {lista[i - 1].Ordem} " +
+                    $"(DesdeVersao={anterior.DesdeVersao}) vem antes de {atual.Nome} na posição " +
+                    $"{lista[i].Ordem} (DesdeVersao={atual.DesdeVersao}); DesdeVersao precisa " +
+                    "ser não-decrescente ao longo da posição dos campos — campo versionado só pode " +
+                    "ficar no fim do registro, senão o mapeamento posicional do leitor desalinha " +
+                    $"silenciosamente. Mova {anterior.Nome} para o fim do registro ou remova o " +
+                    $"DesdeVersao dele.");
+        }
+    }
+
+    /// <summary>
+    /// Divergência intencional vs. <c>RegistroSpedCatalogoGenerator</c> (compile-time): aqui não
+    /// existe canal de diagnóstico, então lançar é o próprio diagnóstico — nenhum catálogo é
+    /// construído para o tipo com alias inválido. O gerador, que tem <c>TFSPED001</c> como
+    /// diagnóstico de build, reporta o erro e cai para o nome CLR da propriedade em vez de
+    /// lançar, para não suprimir o resto do catálogo gerado do assembly (achado 6 do PR 531). Os
+    /// dois caminhos só produzem resultado diferente para o mesmo tipo se <c>TFSPED001</c> for
+    /// suprimido via <c>#pragma</c>/<c>.editorconfig</c> — nesse cenário artificial o catálogo
+    /// gerado teria o nome CLR onde este método continuaria lançando.
+    /// </summary>
+    private static string ResolveFieldName(
+        Type type,
+        PropertyInfo property,
+        CampoSpedAttribute attribute)
+    {
+        string? alias = attribute.Nome;
+        if (string.IsNullOrEmpty(alias))
+            return property.Name;
+
+        if (!IsFieldNameValid(alias))
+        {
+            throw new InvalidOperationException(
+                $"Nome de campo SPED inválido '{EscapeFieldName(alias)}' em " +
+                $"{type.FullName}.{property.Name}.");
+        }
+
+        return alias;
+    }
+
+    private static bool IsFieldNameValid(string name)
+    {
+        if (name.Length == 0 || !IsFieldNameStart(name[0]))
+            return false;
+
+        for (int i = 1; i < name.Length; i++)
+        {
+            char character = name[i];
+            if (!IsFieldNameStart(character) && (character < '0' || character > '9'))
+                return false;
+        }
+
+        return true;
+    }
+
+    private static bool IsFieldNameStart(char character)
+        => character == '_' ||
+           (character >= 'A' && character <= 'Z') ||
+           (character >= 'a' && character <= 'z') ||
+           (character >= '\u00C0' && character <= '\u00FF' && char.IsLetter(character));
+
+    private static string EscapeFieldName(string name)
+        => name
+            .Replace("\\", "\\\\", StringComparison.Ordinal)
+            .Replace("\t", "\\t", StringComparison.Ordinal)
+            .Replace("\r", "\\r", StringComparison.Ordinal)
+            .Replace("\n", "\\n", StringComparison.Ordinal);
 
     private static Action<RegistroSped, object?> ConstruirSetter(PropertyInfo propriedade)
     {
@@ -292,13 +390,52 @@ public static class CatalogoBuilder
         return Expression.Lambda<Func<RegistroSped, object?>>(boxed, paramRegistro).Compile();
     }
 
-    private static Func<string, object?> ConstruirConversor(Type tipo, CampoSpedAttribute atributo)
+    /// <summary>
+    /// Compõe o delegate público <see cref="MetadadosCampo.Definidor(RegistroSped, ReadOnlySpan{char})"/>
+    /// a partir da propriedade e do atributo: parse do texto (via conversor) + atribuição (via setter).
+    /// <paramref name="validarDominio"/> escolhe a política de conversão de enum fechado, repassada a
+    /// <see cref="ConstruirConversor"/> — é o único ponto de diferença entre o definidor permissivo
+    /// (o padrão, preservado byte a byte dos três pacotes já publicados) e o estrito.
+    /// </summary>
+    private static Action<RegistroSped, ReadOnlySpan<char>> ComporDefinidor(
+        PropertyInfo propriedade, CampoSpedAttribute atributo, bool validarDominio)
+    {
+        var conversor = ConstruirConversor(propriedade.PropertyType, atributo, validarDominio);
+        var setter = ConstruirSetter(propriedade);
+        return (registro, valor) =>
+        {
+            string texto = valor.IsEmpty ? string.Empty : valor.ToString();
+            object? convertido = conversor(texto);
+            setter(registro, convertido);
+        };
+    }
+
+    /// <summary>
+    /// Só enum fechado sem <c>[SpedValor]</c> e sem <c>[Flags]</c> tem política de domínio: os
+    /// enums textuais já rejeitam token desconhecido no caminho permissivo, e um <c>[Flags]</c>
+    /// não tem domínio fechado a validar (combinações de bits são válidas mesmo sem membro
+    /// nomeado) — construir um definidor estrito para ele faria bypass do <c>Enum.Parse</c>
+    /// usado pelo permissivo, perdendo o parsing por nome de membro e a forma separada por
+    /// vírgula. Espelha <c>RegistroSpedCatalogoGenerator.RequiresStrictSetter</c>, para que o
+    /// catálogo reflexivo e o gerado concordem.
+    /// </summary>
+    private static bool RequiresStrictSetter(Type tipo, CampoSpedAttribute atributo)
+    {
+        Type alvo = Nullable.GetUnderlyingType(tipo) ?? tipo;
+        if (!alvo.IsEnum || alvo.IsDefined(typeof(FlagsAttribute), inherit: false))
+            return false;
+
+        return !alvo.GetFields(BindingFlags.Public | BindingFlags.Static)
+            .Any(campo => campo.IsDefined(typeof(SpedValorAttribute), inherit: false));
+    }
+
+    private static Func<string, object?> ConstruirConversor(Type tipo, CampoSpedAttribute atributo, bool validarDominio)
     {
         var subjacente = Nullable.GetUnderlyingType(tipo);
         bool ehNulavel = subjacente is not null;
         var alvo = subjacente ?? tipo;
 
-        Func<string, object?> conversorAlvo = SelecionarConversor(alvo, atributo);
+        Func<string, object?> conversorAlvo = SelecionarConversor(alvo, atributo, validarDominio);
 
         if (ehNulavel || !alvo.IsValueType)
         {
@@ -310,7 +447,7 @@ public static class CatalogoBuilder
         return s => string.IsNullOrEmpty(s) ? valorPadrao : conversorAlvo(s);
     }
 
-    private static Func<string, object?> SelecionarConversor(Type alvo, CampoSpedAttribute atributo)
+    private static Func<string, object?> SelecionarConversor(Type alvo, CampoSpedAttribute atributo, bool validarDominio)
     {
         if (alvo == typeof(string))
             return static s => s;
@@ -342,7 +479,7 @@ public static class CatalogoBuilder
                 : throw new FormatException($"Esperado 1 caractere, recebeu '{s}'.");
 
         if (alvo.IsEnum)
-            return ConstruirConversorEnum(alvo);
+            return ConstruirConversorEnum(alvo, atributo, validarDominio);
 
         if (ConversoresPrimitivosCatalogo.TentarObter(alvo, out var registrado))
             return registrado;
@@ -398,7 +535,23 @@ public static class CatalogoBuilder
         return static v => v.ToString() ?? string.Empty;
     }
 
-    private static Func<string, object?> ConstruirConversorEnum(Type alvo)
+    /// <summary>
+    /// Conversor de enum a partir do texto SPED. Quando o enum tem membros <c>[SpedValor]</c>, o
+    /// mapeamento textual é a única política — sempre estrito por natureza (token desconhecido já
+    /// não tem entrada no dicionário). Quando é um enum numérico fechado sem <c>[SpedValor]</c>,
+    /// <paramref name="validarDominio"/> escolhe entre o permissivo (o padrão histórico dos três
+    /// pacotes já publicados: <see cref="Enum.Parse(Type, string, bool)"/> aceita código fora do
+    /// domínio via cast e nome de membro) e o estrito (valida <see cref="Enum.IsDefined"/>).
+    /// <paramref name="validarDominio"/> só chega <c>true</c> aqui quando
+    /// <see cref="RequiresStrictSetter"/> mandou construir o definidor estrito, e esse
+    /// predicado já exclui enums <see cref="FlagsAttribute"/> — não têm domínio fechado a validar
+    /// e o caminho estrito, ao pular <c>Enum.Parse</c>, perderia o parsing por nome/combinação
+    /// separada por vírgula.
+    /// </summary>
+    private static Func<string, object> ConstruirConversorEnum(
+        Type alvo,
+        CampoSpedAttribute atributo,
+        bool validarDominio)
     {
         var porValorSped = alvo
             .GetFields(BindingFlags.Public | BindingFlags.Static)
@@ -411,11 +564,46 @@ public static class CatalogoBuilder
             .ToDictionary(item => item.Valor!, item => item.Enum, StringComparer.Ordinal);
 
         if (porValorSped.Count == 0)
-            return s => Enum.Parse(alvo, s, ignoreCase: false);
+        {
+            if (!validarDominio)
+                return s => Enum.Parse(alvo, s, ignoreCase: false);
+
+            Func<string, object> conversorSubjacente =
+                ConstruirConversorIntegral(Enum.GetUnderlyingType(alvo));
+            return s =>
+            {
+                object valor = Enum.ToObject(alvo, conversorSubjacente(s));
+                if (!Enum.IsDefined(alvo, valor))
+                    throw new FormatException($"Valor '{s}' não é válido para {alvo.Name}.");
+                return valor;
+            };
+        }
 
         return s => porValorSped.TryGetValue(s, out var valor)
-            ? valor
+            ? valor!
             : throw new FormatException($"Valor '{s}' não é válido para {alvo.Name}.");
+    }
+
+    private static Func<string, object> ConstruirConversorIntegral(Type tipo)
+    {
+        if (tipo == typeof(byte))
+            return static s => byte.Parse(s, NumberStyles.Integer, CultureInfo.InvariantCulture);
+        if (tipo == typeof(sbyte))
+            return static s => sbyte.Parse(s, NumberStyles.Integer, CultureInfo.InvariantCulture);
+        if (tipo == typeof(short))
+            return static s => short.Parse(s, NumberStyles.Integer, CultureInfo.InvariantCulture);
+        if (tipo == typeof(ushort))
+            return static s => ushort.Parse(s, NumberStyles.Integer, CultureInfo.InvariantCulture);
+        if (tipo == typeof(int))
+            return static s => int.Parse(s, NumberStyles.Integer, CultureInfo.InvariantCulture);
+        if (tipo == typeof(uint))
+            return static s => uint.Parse(s, NumberStyles.Integer, CultureInfo.InvariantCulture);
+        if (tipo == typeof(long))
+            return static s => long.Parse(s, NumberStyles.Integer, CultureInfo.InvariantCulture);
+        if (tipo == typeof(ulong))
+            return static s => ulong.Parse(s, NumberStyles.Integer, CultureInfo.InvariantCulture);
+
+        throw new NotSupportedException($"Tipo integral de enum não suportado: {tipo.FullName}.");
     }
 
     private static Func<object, string> ConstruirSerializadorEnum(Type alvo, CampoSpedAttribute atributo)

@@ -13,6 +13,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
     <PackageReference Include="coverlet.collector">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
@@ -22,6 +23,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\TecnoFisc.Sped.Core\TecnoFisc.Sped.Core.csproj" />
     <ProjectReference Include="..\..\src\TecnoFisc.Sped.Txt.Engine\TecnoFisc.Sped.Txt.Engine.csproj" />
+    <ProjectReference Include="..\..\src\TecnoFisc.Sped.Txt.Engine.SourceGenerators\TecnoFisc.Sped.Txt.Engine.SourceGenerators.csproj" />
   </ItemGroup>
 
 </Project>

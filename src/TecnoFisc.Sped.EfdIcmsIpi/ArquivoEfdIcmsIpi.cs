@@ -18,6 +18,7 @@ public sealed class ArquivoEfdIcmsIpi : IArquivoSped
         ["0", "B", "C", "D", "E", "G", "H", "K", "1", "9"];
 
     private readonly Dictionary<string, BlocoEfdIcmsIpi> _blocos;
+    private readonly List<RegistroNaoReconhecido> _naoReconhecidos = [];
 
     public ArquivoEfdIcmsIpi()
     {
@@ -37,6 +38,13 @@ public sealed class ArquivoEfdIcmsIpi : IArquivoSped
     public BlocoEfdIcmsIpi Bloco1 => _blocos["1"];
     public BlocoEfdIcmsIpi Bloco9 => _blocos["9"];
 
+    /// <summary>
+    /// Registros que o leitor não conseguiu classificar — código desconhecido pelo catálogo ou
+    /// descartado por vigência. Só é populado sob <c>LenientLayout</c> ou vigência ligada; sob
+    /// leitura estrita o parser já teria abortado antes.
+    /// </summary>
+    public IReadOnlyList<RegistroNaoReconhecido> RegistrosNaoReconhecidos => _naoReconhecidos;
+
     /// <inheritdoc />
     public IEnumerable<IBlocoSped> EnumerarBlocos()
     {
@@ -54,11 +62,20 @@ public sealed class ArquivoEfdIcmsIpi : IArquivoSped
 
     /// <summary>
     /// Adiciona um registro ao bloco correspondente conforme a primeira posição do código.
-    /// Códigos fora dos dez blocos conhecidos lançam exceção.
+    /// <see cref="RegistroNaoReconhecido"/> desvia para <see cref="RegistrosNaoReconhecidos"/>
+    /// em vez de ser roteado por código — nunca lança. Qualquer outro registro cujo bloco não
+    /// exista lança <see cref="InvalidOperationException"/>: é erro de uso da API (registro
+    /// tipado de um bloco que a EFD ICMS-IPI não tem), não dado ruim de arquivo.
     /// </summary>
     public void Adicionar(RegistroSped registro)
     {
         ArgumentNullException.ThrowIfNull(registro);
+
+        if (registro is RegistroNaoReconhecido naoReconhecido)
+        {
+            _naoReconhecidos.Add(naoReconhecido);
+            return;
+        }
 
         var codigo = registro.Codigo;
         if (string.IsNullOrEmpty(codigo))

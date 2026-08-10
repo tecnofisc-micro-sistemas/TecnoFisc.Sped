@@ -18,6 +18,7 @@ public sealed class ArquivoEcd : IArquivoSped
         ["0", "C", "I", "J", "K", "9"];
 
     private readonly Dictionary<string, BlocoEcd> _blocos;
+    private readonly List<RegistroNaoReconhecido> _naoReconhecidos = [];
 
     public ArquivoEcd()
     {
@@ -32,6 +33,13 @@ public sealed class ArquivoEcd : IArquivoSped
     public BlocoEcd BlocoJ => _blocos["J"];
     public BlocoEcd BlocoK => _blocos["K"];
     public BlocoEcd Bloco9 => _blocos["9"];
+
+    /// <summary>
+    /// Registros que o leitor não conseguiu classificar — código desconhecido pelo catálogo ou
+    /// descartado por vigência. Só é populado sob <c>LenientLayout</c> ou vigência ligada; sob
+    /// leitura estrita o parser já teria abortado antes.
+    /// </summary>
+    public IReadOnlyList<RegistroNaoReconhecido> RegistrosNaoReconhecidos => _naoReconhecidos;
 
     /// <inheritdoc />
     public IEnumerable<IBlocoSped> EnumerarBlocos()
@@ -50,11 +58,20 @@ public sealed class ArquivoEcd : IArquivoSped
 
     /// <summary>
     /// Adiciona um registro ao bloco correspondente conforme a primeira posição do código.
-    /// Códigos fora dos seis blocos conhecidos lançam exceção.
+    /// <see cref="RegistroNaoReconhecido"/> desvia para <see cref="RegistrosNaoReconhecidos"/>
+    /// em vez de ser roteado por código — nunca lança. Qualquer outro registro cujo bloco não
+    /// exista lança <see cref="InvalidOperationException"/>: é erro de uso da API (registro
+    /// tipado de um bloco que a ECD não tem), não dado ruim de arquivo.
     /// </summary>
     public void Adicionar(RegistroSped registro)
     {
         ArgumentNullException.ThrowIfNull(registro);
+
+        if (registro is RegistroNaoReconhecido naoReconhecido)
+        {
+            _naoReconhecidos.Add(naoReconhecido);
+            return;
+        }
 
         var codigo = registro.Codigo;
         if (string.IsNullOrEmpty(codigo))

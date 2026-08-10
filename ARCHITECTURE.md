@@ -99,7 +99,7 @@ Nem todos os pacotes precisam de gerador. A decisão é por caso de uso real:
 | `TecnoFisc.Sped.EfdIcmsIpi` | ✅ | ❌ | Uso é ingestão para análise; não há emissão. |
 | `TecnoFisc.Sped.Ecd` | ✅ | ⏸️ | Parser implementado (0.6.0). Gerador depende de confirmação externa — entra em stage dedicada quando demanda confirmada. |
 | `TecnoFisc.Sped.NFeNFCe` / `CTe` | ✅ | ⏸️ | Caso de uso confirmado é ingestão dos XMLs já emitidos (validação de assinatura, leitura tipada). Geração/emissão para SEFAZ depende de confirmação externa não controlada só pelo usuário — entra em stage dedicada quando confirmada. |
-| `TecnoFisc.Sped.Ecf` | ✅ | ⏸️ | Mesma regra do ECD. Último leiaute textual planejado (depois dos pacotes XML). |
+| `TecnoFisc.Sped.Ecf` | ✅ | ⏸️ | Stage 17 concluída: modelo tipado único do leiaute 12, com leitura dos leiautes 8–12 (registros e colunas exclusivos dos leiautes 8–10 são reconhecidos, não tipados). Gerador depende de confirmação externa. |
 
 **Implicações dos pacotes read-only:**
 
@@ -137,7 +137,7 @@ Além desses, pacotes transversais completam a família, organizados em camadas 
 
 **Guarda-chuvas (bundles, só `<PackageReference>`, zero código):**
 
-- `TecnoFisc.Sped.Txt` — agrega os leiautes textuais disponíveis agora (`EfdContribuicoes`, `EfdIcmsIpi`, `Ecd`); `Ecf` entra na Stage 17.
+- `TecnoFisc.Sped.Txt` — agrega os leiautes textuais disponíveis (`EfdContribuicoes`, `EfdIcmsIpi`, `Ecd`, `Ecf`).
 - `TecnoFisc.Sped.Xml` — planejado após CT-e; agregará os leiautes XML (`NFeNFCe`, `CTe`).
 - `TecnoFisc.Sped` — agrega `Txt` agora; agregará `Txt` + `Xml` quando o guarda-chuva XML existir. Ver Stage 13.
 
@@ -214,9 +214,10 @@ SPED projects publish new layouts approximately yearly. A estratégia depende do
 
 - Existe **uma única modelagem** correspondente ao **leiaute mais recente** dentro da janela fiscal de 5 anos.
 - Sem subclasses por versão. Sem catálogo polimórfico por versão. `Dictionary<string, MetadadosRegistro>` 1:1 permanece.
-- `LayoutXxx` enum existe apenas para representar o `COD_VER` lido do `Registro0000` e expô-lo ao consumidor; **não** filtra propriedades nem registros durante o parse.
-- `[CampoSped(DesdeVersao = V0XX)]` e `[RegistroSped(IntroduzidoEm = V0XX)]` viram **informacionais** (doc/auditoria) — campos novos em arquivos antigos ficam vazios (`null`/`default`), registros novos não aparecem.
-- `[Descontinuado(EmVersao = V0XX)]` vira informacional **no read path** — registros descontinuados continuam sendo reconhecidos pelo parser porque ainda aparecem em arquivos históricos.
+- `LayoutXxx` enum representa o `COD_VER` lido do `Registro0000` e o expõe ao consumidor. Por padrão não filtra propriedades nem registros durante o parse; um parser especializado pode habilitar vigência sintática quando os deltas oficiais da sua janela forem integralmente comprovados.
+- `[CampoSped(DesdeVersao = V0XX)]` e `[RegistroSped(IntroduzidoEm = V0XX)]` são **informacionais** (doc/auditoria) por padrão. A ECF habilita a aplicação no read path para os leiautes 8–12: campos posteriores ficam vazios (`null`/`default`) e registros posteriores são omitidos com sua subárvore.
+- **Leiaute fora da faixa modelada** (na ECF, `COD_VER` menor que 8 ou maior que 12) não aborta a leitura: o `0000` recebe um aviso não fatal em `ErrosDeFormato` (via `RegistroSped.IsLeiauteConhecido`), código de registro desconhecido degrada para `RegistroNaoReconhecido` e falha de conversão de campo vira diagnóstico em vez de exceção. É uma **catraca de mão única** — o leitor força `LenientFieldParsing` e `LenientLayout` para `true` nesse cenário, independentemente do que o chamador configurou. `ValidarDominioDeEnum` **não** é afetada. Dentro da faixa modelada o rigor permanece o de sempre.
+- `[Descontinuado(EmVersao = V0XX)]` vira informacional **no read path** — registros descontinuados continuam sendo reconhecidos pelo parser porque ainda aparecem em arquivos históricos. "Reconhecido" não implica "tipado": um registro descontinuado pode entrar no catálogo **sem nenhum `[CampoSped]`**, o que basta para a leitura não abortar, mas deixa o conteúdo das colunas não materializado. Modelar esses campos depois é puramente aditivo. Contrapartida: `EscritorSpedTxt` lança `InvalidOperationException` ao receber um registro sem campos modelados, em vez de emitir uma linha só com o código.
 - Campos com **regressão de tipo** (raríssimo — texto → numérico ou vice-versa entre versões dentro da janela) são modelados como `string` lazy; o consumidor converte se precisar. Justificativa: mantém compatibilidade com arquivos de qualquer versão dentro da janela ao custo de tipagem fraca no campo regredido.
 - Migrar pacote para read+write no futuro = reativar a estratégia padrão (subclasses + catálogo polimórfico + atributos com efeito real).
 
@@ -280,7 +281,7 @@ A implementação desta reorganização é a Stage 18 (§12), sequenciada de bai
 TecnoFisc.Sped/
 ├── src/
 │   ├── TecnoFisc.Sped/                               # Guarda-chuva geral (Txt agora; Xml após CT-e)
-│   ├── TecnoFisc.Sped.Txt/                           # Guarda-chuva textual (EFD Contribuições, EFD ICMS-IPI, ECD)
+│   ├── TecnoFisc.Sped.Txt/                           # Guarda-chuva textual (EFD Contribuições, EFD ICMS-IPI, ECD, ECF)
 │   ├── TecnoFisc.Sped.Xml/                           # Planejado após CT-e — guarda-chuva XML (NFeNFCe/CTe)
 │   ├── TecnoFisc.Sped.Core/                          # Camada 1 — primitivos fiscais universais
 │   ├── TecnoFisc.Sped.Txt.Engine/                    # Camada 2 — motor .txt + sniffer da 1ª linha
@@ -328,7 +329,7 @@ TecnoFisc.Sped.NFeNFCe                   ← Core, Xml.Engine  (+ Xml.Engine.Sou
 TecnoFisc.Sped.CTe                       ← Core, Xml.Engine  (+ Xml.Engine.SourceGenerators quando existir)
 
 # Camada 4 — guarda-chuvas (só PackageReference, zero código)
-TecnoFisc.Sped.Txt                       ← EfdContribuicoes, EfdIcmsIpi, Ecd (Ecf na Stage 17)
+TecnoFisc.Sped.Txt                       ← EfdContribuicoes, EfdIcmsIpi, Ecd, Ecf
 TecnoFisc.Sped.Xml                       ← planejado após CT-e: NFeNFCe, CTe
 TecnoFisc.Sped                           ← Txt agora; Txt + Xml após CT-e
 ```
@@ -741,7 +742,7 @@ Tests por mundo cobrem todos os leiautes/tipos suportados + documento malformado
 
 Pacotes agregadores que referenciam leiautes em uma única dependência NuGet. Úteis para consumidores que querem suporte abrangente sem listar cada pacote no `csproj`. Originalmente um único metapacote `TecnoFisc.Sped`; com a reorganização em camadas (§4.9) passam a ser três guarda-chuvas:
 
-- `TecnoFisc.Sped.Txt` → `EfdContribuicoes`, `EfdIcmsIpi`, `Ecd` agora; `Ecf` entra na Stage 17.
+- `TecnoFisc.Sped.Txt` → `EfdContribuicoes`, `EfdIcmsIpi`, `Ecd`, `Ecf`.
 - `TecnoFisc.Sped.Xml` → `NFeNFCe`, `CTe` depois da Stage 16 (adiado enquanto só existe `NFeNFCe`).
 - `TecnoFisc.Sped` → `Txt` agora; `Txt` + `Xml` quando o guarda-chuva XML existir.
 
@@ -750,7 +751,7 @@ Pacotes agregadores que referenciam leiautes em uma única dependência NuGet. �
 - README orienta o consumidor a usar os guarda-chuvas disponiveis agora (`TecnoFisc.Sped.Txt` para TXT; `TecnoFisc.Sped` para bundles disponiveis) e documenta `TecnoFisc.Sped.Xml` como futuro apos CT-e.
 - **Sequenciamento:** o `TecnoFisc.Sped.Xml` só passa a fazer sentido quando houver ≥2 pacotes XML (i.e., após o CT-e — Stage 16); antes disso ele embrulharia só o `NFeNFCe`. Os guarda-chuvas `Txt` e `Sped` valem assim que há ≥2 leiautes textuais.
 
-Publica agora porque ja ha tres leiautes textuais em uso (EFD Contribuições + EFD ICMS-IPI + ECD). `Ecf` sera adicionado ao `TecnoFisc.Sped.Txt` na Stage 17; `TecnoFisc.Sped.Xml` e a perna XML do pacote geral entram depois do CT-e.
+O guarda-chuva textual inclui EFD Contribuições, EFD ICMS-IPI, ECD e ECF. `TecnoFisc.Sped.Xml` e a perna XML do pacote geral entram depois do CT-e.
 
 ### Stage 14 — TecnoFisc.Sped.NFeNFCe (XML, **read-only**)
 
@@ -773,9 +774,9 @@ O antigo Stage 15 (NFC-e como pacote separado) foi **absorvido pelo Stage 14** (
 
 Estrutura idêntica a Stage 14, schema CT-e (Conhecimento de Transporte Eletrônico, modelo 57). Validação de assinatura digital igual a NFe/NFCe. Específico do transporte: modais, carga, valores prestados. Modo read-only (§2.5) — sem `GeradorCTe`. É aqui que a repetição de parsing XML entre NF-e e CT-e pode justificar criar o `Xml.Engine.SourceGenerators` (§7.7) — avaliar ao iniciar a stage.
 
-### Stage 17 — TecnoFisc.Sped.Ecf (baseline + incrementos, read-only inicial)
+### Stage 17 — TecnoFisc.Sped.Ecf (✅ concluída, read-only)
 
-Pacote para ECF (Escrituração Contábil Fiscal). Padrão `.txt` igual EFD/ECD. Read-only inicialmente (§2.5) — gerador depende de confirmação externa. Baseline = leiaute vigente quando a stage começar; incrementos seguem o mesmo modelo read-only de Stage 9 (constantes no enum `LayoutEcf`, tracking files por leiaute, minor bumps por versão).
+Pacote para ECF (Escrituração Contábil Fiscal), concluído com **modelo tipado único do leiaute 12** e leitura dos leiautes 8 a 12. O catálogo reconhece **187** registros: os 180 do leiaute 12 nos 17 blocos, conferidos campo a campo pelo manifesto e por fixtures sintéticas e anonimizadas, mais os **7 registros removidos no leiaute 11** (`X291`, `X300`, `X305`, `X310`, `X320`, `X325`, `X330`). Esses sete são **reconhecidos, não tipados**: entram no catálogo com `[Descontinuado(EmVersao = V011)]` e **zero `[CampoSped]`**, o que impede a leitura de um arquivo histórico (leiautes 8 a 10) de abortar ou degradar a linha para `RegistroNaoReconhecido`, mas deixa o conteúdo das colunas **não materializado** nesta versão — o manifesto continua descrevendo os 180 do leiaute 12, e o teste de paridade catálogo × manifesto exclui os descontinuados. Modelar os campos deles — o atributo `[Descontinuado]` já está declarado; o que falta é declarar as colunas com `[CampoSped]` — é evolução planejada e puramente aditiva. Leiautes fora da faixa 8–12 são lidos em modo tolerante, com aviso não fatal no `0000` (§4.7). Padrão `.txt` Latin1/Windows-1252 igual EFD/ECD. A política permanece read-only (§2.5): não há `GeradorEcf`, e eventual geração depende de confirmação externa e de uma stage dedicada.
 
 ### Stage 18 — Reorganização em camadas (Core universal + engines Txt/Xml)
 

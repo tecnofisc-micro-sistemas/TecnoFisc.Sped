@@ -3,9 +3,9 @@ namespace TecnoFisc.Sped.Txt.Engine.Abstracoes;
 /// <summary>
 /// Modelo raiz comum aos leiautes: agrupa registros em blocos na ordem canônica, roteia
 /// <see cref="RegistroNaoReconhecido"/> para uma coleção à parte e enumera blocos e registros.
-/// Each concrete layout supplies its block order, its block factory, and how to add to a block —
-/// the last one because each block's <c>Adicionar</c> is internal to its layout assembly,
-/// deliberately outside the read-only model's public API.
+/// Cada leiaute concreto fornece sua ordem de blocos, sua fábrica de blocos e como adicionar a
+/// um bloco — este último porque o <c>Adicionar</c> de cada bloco é <c>internal</c> ao assembly
+/// do próprio leiaute, deliberadamente fora da API pública do modelo somente leitura.
 /// </summary>
 /// <typeparam name="TBloco">Tipo de bloco do leiaute.</typeparam>
 public abstract class ArquivoSpedBase<TBloco> : IArquivoSped
@@ -31,8 +31,8 @@ public abstract class ArquivoSpedBase<TBloco> : IArquivoSped
     protected abstract string NomeDoLeiaute { get; }
 
     /// <summary>
-    /// Adds to the block. Implemented per layout because each block's <c>Adicionar</c> is
-    /// internal to its own assembly.
+    /// Adiciona ao bloco. Implementado por leiaute porque o <c>Adicionar</c> de cada bloco é
+    /// <c>internal</c> ao seu próprio assembly.
     /// </summary>
     protected abstract void AdicionarAoBloco(TBloco bloco, RegistroSped registro);
 

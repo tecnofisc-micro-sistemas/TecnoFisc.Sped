@@ -28,7 +28,10 @@ public abstract class RegistroSped
     /// Colunas presentes na linha que o modelo tipado não representa — coluna além do último
     /// campo declarado, ou campo cuja vigência é posterior ao <c>COD_VER</c> do arquivo. Vazia no
     /// caso comum, que é o de um arquivo do leiaute modelado. O valor fica em bruto: nada do
-    /// arquivo se perde em silêncio, mesmo onde a biblioteca não sabe interpretar.
+    /// arquivo se perde em silêncio, mesmo onde a biblioteca não sabe interpretar. Em leitura
+    /// buffered (<c>LoadAsync</c>) de um arquivo fora de conformidade com muitas colunas além do
+    /// modelo, esses valores ficam retidos em memória junto com o restante do arquivo; em
+    /// streaming (<c>ReadStreamingAsync</c>) o custo fica limitado ao registro sendo lido.
     /// </summary>
     public IReadOnlyList<ColunaNaoModelada> ColunasNaoModeladas
         => _colunasNaoModeladas ?? (IReadOnlyList<ColunaNaoModelada>)[];

@@ -6,13 +6,12 @@ using TecnoFisc.Sped.Txt.Engine.Parser;
 namespace TecnoFisc.Sped.Benchmarks;
 
 /// <summary>
-/// Regression guard for the <c>ColunasNaoModeladas</c> capture (findings 2 and 8, PR #531). The
-/// point is the baseline: <see cref="SemColunaExcedente"/> is the production path for all four
-/// layouts — a file of the modeled layout, no column left over — and it must not pay anything for
-/// the capture, because the <c>if</c> condition was already evaluated before; only the empty
-/// branch changed. <see cref="ComColunaExcedente"/> measures the cost when there is something to
-/// preserve: one list per record plus one <c>string</c> per column, proportional to the data that
-/// used to be discarded.
+/// Guarda de regressão de performance para a captura de <c>ColunasNaoModeladas</c> (achados 2 e 8,
+/// PR #531). O ponto é a baseline: <see cref="SemColunaExcedente"/> é o caminho de produção dos
+/// quatro leiautes — um arquivo do leiaute modelado, sem coluna excedente — e não pode pagar nada
+/// pela captura, porque a condição <c>if</c> já era avaliada antes; só o ramo vazio mudou.
+/// <see cref="ComColunaExcedente"/> mede o custo quando há algo a preservar: uma lista por
+/// registro mais um <c>string</c> por coluna, proporcional ao dado que antes era descartado.
 /// </summary>
 [MemoryDiagnoser]
 public class ColunasNaoModeladasBenchmark

@@ -2,6 +2,19 @@ using TecnoFisc.Sped.Core.Erros;
 
 namespace TecnoFisc.Sped.Txt.Engine.Abstracoes;
 
+/// <summary>Origem de um <see cref="RegistroNaoReconhecido"/>.</summary>
+public enum MotivoNaoReconhecimento
+{
+    /// <summary>Código de registro que o catálogo do módulo não conhece.</summary>
+    CodigoDesconhecido = 0,
+
+    /// <summary>
+    /// Registro conhecido pelo catálogo, descartado por ter <c>IntroduzidoEm</c> posterior à
+    /// versão declarada no <c>0000</c> do arquivo.
+    /// </summary>
+    PosteriorAVersaoDeclarada = 1,
+}
+
 /// <summary>
 /// Registro emitido pelo leitor quando uma linha não pôde ser materializada como o tipo forte do
 /// catálogo, em duas origens distintas — ambas preservam a linha crua completa e o
@@ -14,11 +27,13 @@ namespace TecnoFisc.Sped.Txt.Engine.Abstracoes;
 ///   (<c>IntroduzidoEm</c> posterior à versão do arquivo) — aqui <see cref="Codigo"/> é o código
 ///   normativo do registro, não um código desconhecido.</item>
 /// </list>
-/// É sempre folha na hierarquia (nunca recebe filhos).
+/// Use <see cref="Motivo"/> para distinguir as duas origens. É sempre folha na hierarquia (nunca
+/// recebe filhos).
 /// </summary>
 public sealed class RegistroNaoReconhecido : RegistroSped
 {
-    public RegistroNaoReconhecido(string codigo, string linhaCrua, ErroLayout erro)
+    public RegistroNaoReconhecido(
+        string codigo, string linhaCrua, ErroLayout erro, MotivoNaoReconhecimento motivo)
     {
         ArgumentNullException.ThrowIfNull(codigo);
         ArgumentNullException.ThrowIfNull(linhaCrua);
@@ -26,6 +41,7 @@ public sealed class RegistroNaoReconhecido : RegistroSped
         _codigo = codigo;
         LinhaCrua = linhaCrua;
         Erro = erro;
+        Motivo = motivo;
     }
 
     private readonly string _codigo;
@@ -34,7 +50,7 @@ public sealed class RegistroNaoReconhecido : RegistroSped
     /// Código cru lido na posição 1 da linha. Desconhecido pelo catálogo na origem
     /// <see cref="Parser.ReadingOptions.LenientLayout"/>; código normativo válido (só fora de
     /// vigência) na origem <see cref="Parser.ReadingOptions.RespeitarVigenciaDoLeiaute"/> — ver
-    /// <see cref="Erro"/> para distinguir as duas.
+    /// <see cref="Motivo"/> para distinguir as duas.
     /// </summary>
     public override string Codigo => _codigo;
 
@@ -43,4 +59,10 @@ public sealed class RegistroNaoReconhecido : RegistroSped
 
     /// <summary>Diagnóstico de layout associado.</summary>
     public ErroLayout Erro { get; }
+
+    /// <summary>
+    /// Origem desta sentinela. Prefira este discriminador a inspecionar <see cref="Erro"/>:
+    /// a mensagem é texto livre, em português, e pode ser reescrita sem aviso.
+    /// </summary>
+    public MotivoNaoReconhecimento Motivo { get; }
 }

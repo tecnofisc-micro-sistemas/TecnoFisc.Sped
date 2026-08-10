@@ -152,4 +152,23 @@ public sealed partial class Registro0020 : RegistroSped
     /// <summary>Número do Cebas, condicionado ao indicador de posse.</summary>
     [CampoSped(Ordem = 32, Tamanho = 255, DesdeVersao = (int)LayoutEcf.V012, Nome = "CEBAS")]
     public string? Cebas { get; set; }
+
+    /// <summary>
+    /// Semântica do campo 31 nos leiautes 10 e 11: opção pelas novas regras de preços de
+    /// transferência (<c>IND_PR_TRANSF</c>). <c>null</c> em qualquer outro leiaute, onde a posição
+    /// significa outra coisa — ver <see cref="IndicadorPosicao31"/>. Propriedade calculada: não é
+    /// campo do catálogo, e depende de <see cref="RegistroSped.VersaoDoArquivo"/>, que só é
+    /// preenchida em registro vindo de leitura de arquivo.
+    /// </summary>
+    public IndicadorSimNao? IndPrTransf
+        => VersaoDoArquivo is 10 or 11 ? IndicadorPosicao31 : null;
+
+    /// <summary>
+    /// Semântica do campo 31 a partir do leiaute 12: posse de certificado Cebas
+    /// (<c>POSSUI_CEBRAS</c>). <c>null</c> nos leiautes anteriores — ver
+    /// <see cref="IndicadorPosicao31"/>. Responde também em leiaute posterior ao 12, ainda não
+    /// modelado: enquanto a Receita não reaproveitar a posição de novo, a leitura vigente é essa.
+    /// </summary>
+    public IndicadorSimNao? PossuiCebras
+        => VersaoDoArquivo >= 12 ? IndicadorPosicao31 : null;
 }

@@ -4,7 +4,7 @@ Status: concluída — 180/180 registros do leiaute 12, 17/17 blocos, e leitura 
 
 Alcance real da leitura 8–12 (a tabela abaixo cobre só os 180 registros do leiaute 12, que são os tipados):
 
-- O modelo tipado é **único**, o do leiaute 12. Os registros e as colunas exclusivos dos leiautes 8 a 10 são **reconhecidos, não tipados**: a leitura de um arquivo histórico não aborta nem degrada a linha para `RegistroNaoReconhecido`, mas o conteúdo dessas colunas **não é materializado** nesta versão.
+- O modelo tipado é **único**, o do leiaute 12. Os registros e as colunas exclusivos dos leiautes 8 a 10 são **reconhecidos, não tipados**: a leitura de um arquivo histórico não aborta nem degrada a linha para `RegistroNaoReconhecido`, e o conteúdo dessas colunas chega ao consumidor em bruto em `RegistroSped.ColunasNaoModeladas`, com a posição e o motivo — o que não é materializado **como propriedade tipada** nesta versão.
 - Os sete registros removidos no leiaute 11 — `X291`, `X300`, `X305`, `X310`, `X320`, `X325`, `X330` — entram no catálogo com `[Descontinuado(EmVersao = (int)LayoutEcf.V011)]` e zero `[CampoSped]`. O catálogo tem, portanto, **187** registros (180 + 7); o manifesto continua descrevendo os 180 do leiaute 12 e o teste de paridade exclui os descontinuados. Modelar os campos deles é evolução planejada e puramente aditiva.
 - Leiaute fora da faixa 8–12 (`COD_VER` menor que 8 ou maior que 12) é lido em **modo tolerante**, com aviso não fatal no `0000`; dentro da faixa o rigor é o de sempre.
 

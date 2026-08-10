@@ -11,6 +11,7 @@ public abstract class RegistroSped
 {
     private readonly List<RegistroSped> _filhos = [];
     private List<ErroFormato>? _errosDeFormato;
+    private List<ColunaNaoModelada>? _colunasNaoModeladas;
 
     /// <summary>
     /// Erros de conversão de campo capturados em modo leniente (ver
@@ -23,6 +24,18 @@ public abstract class RegistroSped
 
     internal void RegistrarErroDeFormato(ErroFormato erro) => (_errosDeFormato ??= []).Add(erro);
 
+    /// <summary>
+    /// Colunas presentes na linha que o modelo tipado não representa — coluna além do último
+    /// campo declarado, ou campo cuja vigência é posterior ao <c>COD_VER</c> do arquivo. Vazia no
+    /// caso comum, que é o de um arquivo do leiaute modelado. O valor fica em bruto: nada do
+    /// arquivo se perde em silêncio, mesmo onde a biblioteca não sabe interpretar.
+    /// </summary>
+    public IReadOnlyList<ColunaNaoModelada> ColunasNaoModeladas
+        => _colunasNaoModeladas ?? (IReadOnlyList<ColunaNaoModelada>)[];
+
+    internal void RegistrarColunaNaoModelada(ColunaNaoModelada coluna)
+        => (_colunasNaoModeladas ??= []).Add(coluna);
+
     /// <summary>Código do registro como aparece no arquivo SPED (ex.: "0000", "C100").</summary>
     public abstract string Codigo { get; }
 
@@ -34,6 +47,16 @@ public abstract class RegistroSped
     /// usado para aplicar <c>IntroduzidoEm</c>/<c>DesdeVersao</c> (ARCHITECTURE §4.7).
     /// </summary>
     public virtual int VersaoLeiaute => 0;
+
+    /// <summary>
+    /// Versão do leiaute declarada no <c>0000</c> do arquivo em que este registro foi lido, ou
+    /// <c>0</c> quando o registro não veio de uma leitura de arquivo (construído à mão, ou lido
+    /// por <see cref="Parser.LeitorSpedTxt.ParseLinha"/> sem versão informada). Distinto de
+    /// <see cref="VersaoLeiaute"/>, que é a versão que o próprio registro declara e só o
+    /// <c>0000</c> conhece. Serve ao registro que precisa saber em que leiaute foi lido para
+    /// interpretar uma posição cuja semântica mudou entre versões.
+    /// </summary>
+    public int VersaoDoArquivo { get; internal set; }
 
     /// <summary>
     /// Indica se a versão declarada por este registro pertence à faixa de leiautes que o módulo

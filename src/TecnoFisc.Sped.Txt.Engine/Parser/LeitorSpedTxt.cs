@@ -131,7 +131,11 @@ public sealed class LeitorSpedTxt : ILeitorSped
                             new ErroLayout(
                                 linhaRegistro,
                                 codigo,
-                                $"Registro posterior à versão declarada no 0000 ({versaoLeiaute})."));
+                                $"Registro posterior à versão declarada no 0000 ({versaoLeiaute})."),
+                            MotivoNaoReconhecimento.PosteriorAVersaoDeclarada)
+                        {
+                            VersaoDoArquivo = versaoLeiaute
+                        };
                         continue;
                     }
 
@@ -149,6 +153,11 @@ public sealed class LeitorSpedTxt : ILeitorSped
                         {
                             versaoAvaliada = true;
                             versaoLeiaute = registro.VersaoLeiaute;
+                            // The version carrier (in practice the 0000) is interpreted before
+                            // its version is known, so the assignment in InterpretarLinha left it
+                            // at zero: fix it here, so the 0000 itself answers like the rest of
+                            // the file.
+                            registro.VersaoDoArquivo = versaoLeiaute;
                             if (versaoLeiaute > 0)
                             {
                                 leiauteConhecido = registro.IsLeiauteConhecido;
@@ -692,7 +701,12 @@ public sealed class LeitorSpedTxt : ILeitorSped
                         throw new ErroLayoutSpedException(erroLayout);
 
                     // Sentinela: pendura como folha no topo atual (sem empilhar, nunca vira pai).
-                    var sentinela = new RegistroNaoReconhecido(fatia.ToString(), linha.ToString(), erroLayout);
+                    var sentinela = new RegistroNaoReconhecido(
+                        fatia.ToString(), linha.ToString(), erroLayout,
+                        MotivoNaoReconhecimento.CodigoDesconhecido)
+                    {
+                        VersaoDoArquivo = versaoLeiaute
+                    };
                     pilha.Topo?.AdicionarFilho(sentinela);
                     return sentinela;
                 }
@@ -700,6 +714,7 @@ public sealed class LeitorSpedTxt : ILeitorSped
                 // [Descontinuado] é informacional no read path (ARCHITECTURE §4.7 read-only):
                 // arquivos históricos ainda contêm o registro e precisam ser parseáveis.
                 registro = metadados.Fabrica();
+                registro.VersaoDoArquivo = versaoLeiaute;
             }
             else if (metadados is not null && registro is not null)
             {
@@ -740,8 +755,21 @@ public sealed class LeitorSpedTxt : ILeitorSped
                     }
                     Definir(campo, fatia);
                 }
-                // Campos posteriores ao último declarado são ignorados — layouts novos
-                // podem adicionar colunas no fim sem quebrar leitores antigos.
+                else
+                {
+                    // Nada do arquivo se perde em silêncio: a coluna existe na linha e não tem
+                    // propriedade que a receba. Ou vem depois do último campo declarado — leiaute
+                    // mais novo que o modelado, ou registro reconhecido sem campos modelados
+                    // (ARCHITECTURE §4.7) —, ou o campo só vigora a partir de versão posterior à
+                    // declarada no 0000.
+                    // Zero cost on the happy path: the condition was already evaluated; only the
+                    // branch that did nothing now does something.
+                    var motivo = indice < metadados.Campos.Count
+                        ? MotivoColunaNaoModelada.PosteriorAVersaoDeclarada
+                        : MotivoColunaNaoModelada.AlemDoModelo;
+                    registro.RegistrarColunaNaoModelada(
+                        new ColunaNaoModelada(posicaoCampo, fatia.ToString(), motivo));
+                }
             }
 
             posicaoCampo++;

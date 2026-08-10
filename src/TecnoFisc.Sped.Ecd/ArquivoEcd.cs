@@ -38,6 +38,8 @@ public sealed class ArquivoEcd : IArquivoSped
     /// Registros que o leitor não conseguiu classificar — código desconhecido pelo catálogo ou
     /// descartado por vigência. Só é populado sob <c>LenientLayout</c> ou vigência ligada; sob
     /// leitura estrita o parser já teria abortado antes.
+    /// Use <see cref="RegistroNaoReconhecido.Motivo"/> para separar as duas origens — a mensagem
+    /// de <see cref="RegistroNaoReconhecido.Erro"/> é texto livre e não é contrato.
     /// </summary>
     public IReadOnlyList<RegistroNaoReconhecido> RegistrosNaoReconhecidos => _naoReconhecidos;
 

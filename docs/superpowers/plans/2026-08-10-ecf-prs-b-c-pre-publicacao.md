@@ -285,8 +285,9 @@ Substituir o comentário por um `else` real:
                     // propriedade que a receba. Ou vem depois do último campo declarado — leiaute
                     // mais novo que o modelado, ou registro reconhecido sem campos modelados
                     // (ARCHITECTURE §4.7) —, ou o campo só vigora a partir de versão posterior à
-                    // declarada no 0000. Custo zero no caminho feliz: a condição do if já era
-                    // avaliada; só o ramo que não fazia nada passa a fazer.
+                    // declarada no 0000.
+                    // Zero cost on the happy path: the condition was already evaluated; only the
+                    // branch that did nothing now does something.
                     var motivo = indice < metadados.Campos.Count
                         ? MotivoColunaNaoModelada.PosteriorAVersaoDeclarada
                         : MotivoColunaNaoModelada.AlemDoModelo;

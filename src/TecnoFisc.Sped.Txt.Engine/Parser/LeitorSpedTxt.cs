@@ -740,8 +740,21 @@ public sealed class LeitorSpedTxt : ILeitorSped
                     }
                     Definir(campo, fatia);
                 }
-                // Campos posteriores ao último declarado são ignorados — layouts novos
-                // podem adicionar colunas no fim sem quebrar leitores antigos.
+                else
+                {
+                    // Nada do arquivo se perde em silêncio: a coluna existe na linha e não tem
+                    // propriedade que a receba. Ou vem depois do último campo declarado — leiaute
+                    // mais novo que o modelado, ou registro reconhecido sem campos modelados
+                    // (ARCHITECTURE §4.7) —, ou o campo só vigora a partir de versão posterior à
+                    // declarada no 0000.
+                    // Zero cost on the happy path: the condition was already evaluated; only the
+                    // branch that did nothing now does something.
+                    var motivo = indice < metadados.Campos.Count
+                        ? MotivoColunaNaoModelada.PosteriorAVersaoDeclarada
+                        : MotivoColunaNaoModelada.AlemDoModelo;
+                    registro.RegistrarColunaNaoModelada(
+                        new ColunaNaoModelada(posicaoCampo, fatia.ToString(), motivo));
+                }
             }
 
             posicaoCampo++;

@@ -68,4 +68,21 @@ public sealed class VigenciaComFiltroTests
         lidos.Select(r => r.Codigo).Should().NotContain("A400");
         lidos.Select(r => r.Codigo).Should().NotContain("A410");
     }
+
+    [Fact]
+    public async Task RegistroIgnoradoPorCodigo_CortaSubarvore_MesmoQuandoTambemEstaForaDeVigencia()
+    {
+        // O filtro por código preempta o gate de vigência: nem o A400 nem o filho A410 saem —
+        // nem materializados, nem como sentinela de vigência.
+        var opcoes = new ReadingOptions
+        {
+            RespeitarVigenciaDoLeiaute = true,
+            RegistrosIgnorados = new HashSet<string>(StringComparer.Ordinal) { "A400" },
+        };
+
+        var lidos = await ReadAsync(ArquivoSinteticoComRegistroFuturoEFilho, opcoes);
+
+        lidos.Select(r => r.Codigo).Should().Equal("0000", "9999");
+        lidos.OfType<RegistroNaoReconhecido>().Should().BeEmpty();
+    }
 }

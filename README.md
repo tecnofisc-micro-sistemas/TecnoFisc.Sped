@@ -4,11 +4,11 @@ Família de bibliotecas .NET para leitura, geração e manipulação tipada de a
 publicados pelos projetos do **SPED — Sistema Público de Escrituração Digital**
 (Receita Federal do Brasil).
 
-> Status atual: **0.9.0** publicado. Cobre EFD Contribuições V006 (leitura + geração,
+> Status atual: **1.0.0** publicado. Cobre EFD Contribuições V006 (leitura + geração,
 > round-trip validado), EFD ICMS-IPI baseline V015 + incrementos V016 → V020 (leiaute
-> vigente em 2026, **read-only**) e **ECD** leiaute 9 (**read-only**). Na árvore de
-> desenvolvimento ainda não publicada, a **ECF** entrega um modelo tipado único do
-> leiaute 12 com leitura dos leiautes 8 a 12 — os registros e as colunas exclusivos dos
+> vigente em 2026, **read-only**), **ECD** leiaute 9 (**read-only**) e, estreando na
+> `1.0.0`, a **ECF** com modelo tipado único do
+> leiaute 12 e leitura dos leiautes 8 a 12 — os registros e as colunas exclusivos dos
 > leiautes 8 a 10 são **reconhecidos, não tipados**: o leitor não aborta, e o conteúdo
 > deles chega ao consumidor em bruto em `RegistroSped.ColunasNaoModeladas`, com a posição
 > e o motivo — o que não existe é propriedade tipada para eles —, também em modo
@@ -26,14 +26,18 @@ publicados pelos projetos do **SPED — Sistema Público de Escrituração Digit
 > adiciona o sniffer fiscal TXT opt-in para extrair CNPJ e período do registro `0000`. A `0.9.0`
 > adiciona **parsing tolerante opt-in** no leitor TXT (`ReadingOptions.LenientFieldParsing` e
 > `LenientLayout`, mais `LeitorSpedTxt.ParseLinha`): campo falho ou registro desconhecido deixam
-> de abortar a leitura quando o consumidor optar por isso. Na árvore de desenvolvimento ainda não
-> publicada, a ECF introduz mais duas flags `bool?` em `ReadingOptions`:
+> de abortar a leitura quando o consumidor optar por isso. A `1.0.0` estreia a **ECF** e, com ela,
+> mais duas flags `bool?` em `ReadingOptions`:
 > `RespeitarVigenciaDoLeiaute` (omite registro/campo anterior à vigência declarada no `0000`) e
 > `ValidarDominioDeEnum` (rejeita código fora do domínio de um enum fechado em vez de aceitar por
-> cast permissivo). `null` delega a decisão ao parser do leiaute — a ECF liga as duas, os leiautes
-> já publicados mantêm o comportamento atual. Na mesma árvore, `LenientFieldParsing` e
+> cast permissivo). `null` delega a decisão ao parser do leiaute — a ECF liga as duas, os demais
+> leiautes mantêm o comportamento anterior. Ainda na `1.0.0`, `LenientFieldParsing` e
 > `LenientLayout` viram **catraca de mão única**: sob arquivo cujo leiaute está fora da faixa
 > conhecida pelo módulo, o leitor força as duas para `true` e não há como pedir fail-fast.
+> A `1.0.0` é **breaking** em relação à `0.9.0` em dois pontos: os enums
+> `IndicadorDebitoCredito`/`IndicadorTipoConta` saem de `TecnoFisc.Sped.Ecd.Enums` para
+> `TecnoFisc.Sped.Txt.Engine.Enums` (trocar o `using`) e o construtor de `RegistroNaoReconhecido`
+> passa a exigir um quarto parâmetro, `MotivoNaoReconhecimento`.
 > Veja o `CHANGELOG.md` para detalhes.
 
 ## Visão geral
@@ -49,14 +53,14 @@ pacote afetado é versionado.
 
 | Projeto SPED | Pacote NuGet | Status |
 | --- | --- | --- |
-| EFD Contribuições | `TecnoFisc.Sped.EfdContribuicoes` | **0.9.0** — leiaute V006 completo (leitura + geração) |
-| EFD ICMS-IPI | `TecnoFisc.Sped.EfdIcmsIpi` | **0.9.0** — baseline V015 + incrementos V016 → V020 (vigente), **read-only** |
-| ECD | `TecnoFisc.Sped.Ecd` | **0.9.0** — baseline leiaute 9 completo (vigente), **read-only** |
-| NF-e / NFC-e | `TecnoFisc.Sped.NFeNFCe` | **0.9.0 preview** — só NF-e modelo 55 parcial (XML, read-only); NFC-e 65 e eventos em desenvolvimento |
+| EFD Contribuições | `TecnoFisc.Sped.EfdContribuicoes` | **1.0.0** — leiaute V006 completo (leitura + geração) |
+| EFD ICMS-IPI | `TecnoFisc.Sped.EfdIcmsIpi` | **1.0.0** — baseline V015 + incrementos V016 → V020 (vigente), **read-only** |
+| ECD | `TecnoFisc.Sped.Ecd` | **1.0.0** — baseline leiaute 9 completo (vigente), **read-only** |
+| NF-e / NFC-e | `TecnoFisc.Sped.NFeNFCe` | **1.0.0 preview** — só NF-e modelo 55 parcial (XML, read-only); NFC-e 65 e eventos em desenvolvimento |
 | CT-e | `TecnoFisc.Sped.CTe` | planejado (XML, read-only) |
-| ECF | `TecnoFisc.Sped.Ecf` | **Não publicado** — modelo tipado do leiaute 12 com leitura dos leiautes 8 → 12 (registros e colunas exclusivos dos leiautes 8 a 10 são reconhecidos, não tipados: sem propriedade tipada, conteúdo bruto em `ColunasNaoModeladas`), **read-only** |
-| Guarda-chuva TXT | `TecnoFisc.Sped.Txt` | **Não publicado** — agrega EFD Contribuições, EFD ICMS-IPI, ECD e ECF |
-| Guarda-chuva geral | `TecnoFisc.Sped` | **0.9.0** — agrega `TecnoFisc.Sped.Txt`; passará a agregar XML após CT-e |
+| ECF | `TecnoFisc.Sped.Ecf` | **1.0.0** (estreia) — modelo tipado do leiaute 12 com leitura dos leiautes 8 → 12 (registros e colunas exclusivos dos leiautes 8 a 10 são reconhecidos, não tipados: sem propriedade tipada, conteúdo bruto em `ColunasNaoModeladas`), **read-only** |
+| Guarda-chuva TXT | `TecnoFisc.Sped.Txt` | **1.0.0** — agrega EFD Contribuições, EFD ICMS-IPI, ECD e ECF |
+| Guarda-chuva geral | `TecnoFisc.Sped` | **1.0.0** — agrega `TecnoFisc.Sped.Txt`; passará a agregar XML após CT-e |
 | Guarda-chuva XML | `TecnoFisc.Sped.Xml` | planejado após CT-e — agregará NFe/NFC-e e CT-e |
 
 > **Modo de operação.** O único pacote com geração de arquivo confirmada é

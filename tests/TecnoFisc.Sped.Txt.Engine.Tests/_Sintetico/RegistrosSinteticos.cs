@@ -250,9 +250,10 @@ public sealed class Registro9999Sintetico : RegistroSped
 /// <summary>
 /// Registro sem nenhum <see cref="CampoSpedAttribute"/> modelado — espelha o padrão dos
 /// registros descontinuados do ECF (ex.: X291/X300, ver <c>RegistroX300</c>), que existem no
-/// catálogo só para que arquivos históricos sejam lidos sem abortar, mas cujo conteúdo de
-/// colunas não é materializado. Usado para provar que <c>EscritorSpedTxt</c> recusa a
-/// escrita em vez de emitir uma linha mutilada (só "|CODIGO|").
+/// catálogo só para que arquivos históricos sejam lidos sem abortar; o conteúdo das colunas
+/// não vira propriedade tipada, mas chega em bruto em
+/// <see cref="RegistroSped.ColunasNaoModeladas"/>. Usado para provar que
+/// <c>EscritorSpedTxt</c> recusa a escrita em vez de emitir uma linha mutilada (só "|CODIGO|").
 /// </summary>
 [RegistroSped(Codigo = "Z900", Nivel = 2, Bloco = "Z")]
 public sealed class RegistroZ900SemCamposSintetico : RegistroSped

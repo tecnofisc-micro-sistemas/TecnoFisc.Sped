@@ -9,9 +9,10 @@ publicados pelos projetos do **SPED — Sistema Público de Escrituração Digit
 > vigente em 2026, **read-only**) e **ECD** leiaute 9 (**read-only**). Na árvore de
 > desenvolvimento ainda não publicada, a **ECF** entrega um modelo tipado único do
 > leiaute 12 com leitura dos leiautes 8 a 12 — os registros e as colunas exclusivos dos
-> leiautes 8 a 10 são **reconhecidos, não tipados** (o leitor não aborta, mas o conteúdo
-> deles não é materializado) —, também em modo **read-only** (parser e modelo tipado, sem
-> geração). Os números
+> leiautes 8 a 10 são **reconhecidos, não tipados**: o leitor não aborta, e o conteúdo
+> deles chega ao consumidor em bruto em `RegistroSped.ColunasNaoModeladas`, com a posição
+> e o motivo — o que não existe é propriedade tipada para eles —, também em modo
+> **read-only** (parser e modelo tipado, sem geração). Os números
 > `006` (EFD Contribuições) e `015`–`020` (EFD ICMS-IPI) são o `COD_VER` do registro `0000`
 > de cada leiaute (não devem ser confundidos com a versão do Guia Prático); a ECD informa a
 > versão do leiaute em `I010.COD_VER_LC`, não no `0000`. A `0.7.x` é **breaking** em relação à
@@ -53,7 +54,7 @@ pacote afetado é versionado.
 | ECD | `TecnoFisc.Sped.Ecd` | **0.9.0** — baseline leiaute 9 completo (vigente), **read-only** |
 | NF-e / NFC-e | `TecnoFisc.Sped.NFeNFCe` | **0.9.0 preview** — só NF-e modelo 55 parcial (XML, read-only); NFC-e 65 e eventos em desenvolvimento |
 | CT-e | `TecnoFisc.Sped.CTe` | planejado (XML, read-only) |
-| ECF | `TecnoFisc.Sped.Ecf` | **Não publicado** — modelo tipado do leiaute 12 com leitura dos leiautes 8 → 12 (registros e colunas exclusivos dos leiautes 8 a 10 são reconhecidos, não tipados), **read-only** |
+| ECF | `TecnoFisc.Sped.Ecf` | **Não publicado** — modelo tipado do leiaute 12 com leitura dos leiautes 8 → 12 (registros e colunas exclusivos dos leiautes 8 a 10 são reconhecidos, não tipados: sem propriedade tipada, conteúdo bruto em `ColunasNaoModeladas`), **read-only** |
 | Guarda-chuva TXT | `TecnoFisc.Sped.Txt` | **Não publicado** — agrega EFD Contribuições, EFD ICMS-IPI, ECD e ECF |
 | Guarda-chuva geral | `TecnoFisc.Sped` | **0.9.0** — agrega `TecnoFisc.Sped.Txt`; passará a agregar XML após CT-e |
 | Guarda-chuva XML | `TecnoFisc.Sped.Xml` | planejado após CT-e — agregará NFe/NFC-e e CT-e |
@@ -107,10 +108,12 @@ await foreach (var registro in parser.ReadStreamingAsync(entrada))
 > leiaute 12. Os registros e as colunas que existiam nos leiautes 8 a 10 e saíram no 11
 > são **reconhecidos, não tipados**: o catálogo os conhece (por isso a leitura de um
 > arquivo histórico não aborta nem degrada a linha para `RegistroNaoReconhecido`), mas o
-> conteúdo das colunas **não é materializado** nesta versão — os sete registros
-> descontinuados (`X291`, `X300`, `X305`, `X310`, `X320`, `X325`, `X330`) chegam ao
-> consumidor sem nenhuma propriedade preenchida — eles já declaram `[Descontinuado]`; o
-> que falta é declarar as colunas com `[CampoSped]`. Modelar esses campos é evolução
+> conteúdo das colunas não é materializado **como propriedade tipada** nesta versão — os sete
+> registros descontinuados (`X291`, `X300`, `X305`, `X310`, `X320`, `X325`, `X330`) chegam ao
+> consumidor sem nenhuma propriedade preenchida, mas com o conteúdo bruto de cada coluna em
+> `RegistroSped.ColunasNaoModeladas` (posição na numeração do Guia Prático e motivo
+> `AlemDoModelo`) — eles já declaram `[Descontinuado]`; o que falta é declarar as colunas
+> com `[CampoSped]` para virarem propriedade tipada. Modelar esses campos é evolução
 > planejada e puramente aditiva: quem lê hoje continua lendo igual quando ela chegar. Um arquivo de leiaute **fora da faixa 8–12** (menor que
 > 8 ou maior que 12) também é lido, em **modo tolerante**: o `0000` recebe um aviso não
 > fatal em `ErrosDeFormato`, código de registro desconhecido vira `RegistroNaoReconhecido`

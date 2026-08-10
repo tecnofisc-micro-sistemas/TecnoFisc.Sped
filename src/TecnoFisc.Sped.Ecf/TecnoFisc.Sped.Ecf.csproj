@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>Implementação .NET da ECF (Escrituração Contábil Fiscal) — modelo tipado único do leiaute 12 publicado pela Receita Federal, com leitura dos leiautes 8 a 12: os registros e as colunas exclusivos dos leiautes 8 a 10 são reconhecidos, não tipados (o leitor não aborta, mas o conteúdo deles não é materializado). Leiautes fora da faixa 8 a 12 são lidos em modo tolerante, com aviso no registro 0000. Pacote read-only: expõe parser + modelo tipado, sem gerador.</Description>
+    <Description>Implementação .NET da ECF (Escrituração Contábil Fiscal) — modelo tipado único do leiaute 12 publicado pela Receita Federal, com leitura dos leiautes 8 a 12: os registros e as colunas exclusivos dos leiautes 8 a 10 são reconhecidos, não tipados (o leitor não aborta; o conteúdo chega em bruto via ColunasNaoModeladas). Leiautes fora da faixa 8 a 12 são lidos em modo tolerante, com aviso no registro 0000. Pacote read-only: expõe parser + modelo tipado, sem gerador.</Description>
     <PackageId>TecnoFisc.Sped.Ecf</PackageId>
     <PackageTags>sped;ecf;escrituracao-contabil-fiscal;contabil;fiscal;brasil;tecnofisc</PackageTags>
   </PropertyGroup>

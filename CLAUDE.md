@@ -112,6 +112,7 @@ Não criar tags manualmente: a tag é **saída** do workflow, não entrada. NuGe
 - `ARCHITECTURE.md` and other architecture docs: English (LLM consistency).
 - `README.md` for end users: Portuguese.
 - Code comments: Portuguese for fiscal/format explanations, English for technical notes.
+- XML doc comments (`///`) are **always Portuguese**, regardless of subject matter — they ship in the package's `.xml` documentation file (`GenerateDocumentationFile`, `Directory.Build.props`), so a Brazilian consumer sees them in their IDE. Only inline `//` notes follow the fiscal-vs-technical split above.
 
 ## When the architecture doc and reality disagree
 

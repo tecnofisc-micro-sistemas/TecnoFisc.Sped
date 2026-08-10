@@ -9,7 +9,7 @@ namespace TecnoFisc.Sped.Ecf.Tests;
 /// código desconhecido pelo catálogo sob <see cref="ReadingOptions.LenientLayout"/>, e descarte
 /// por vigência sob <see cref="ReadingOptions.RespeitarVigenciaDoLeiaute"/> (que no ECF é
 /// <c>true</c> por padrão, ver <see cref="ParserEcf.ResolveOptions"/> — não é opt-in). Em ambos
-/// os casos <see cref="ArquivoEcf.Adicionar"/> estourava (ou, pior, misclassificava
+/// os casos <see cref="ArquivoSpedBase{TBloco}.Adicionar"/> estourava (ou, pior, misclassificava
 /// silenciosamente quando o primeiro caractere do código cru coincidia com um bloco real) ao
 /// tentar rotear a sentinela pelo primeiro caractere do seu código cru, anulando a leitura
 /// tolerante. Cobre a coleta da sentinela nas duas origens e confirma que registro tipado de

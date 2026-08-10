@@ -6,7 +6,7 @@ namespace TecnoFisc.Sped.EfdIcmsIpi.Tests;
 
 /// <summary>
 /// Achado 3 (PR #531): sob <see cref="ReadingOptions.LenientLayout"/> o leitor emite
-/// <see cref="RegistroNaoReconhecido"/> em vez de lançar — mas <see cref="ArquivoEfdIcmsIpi.Adicionar"/>
+/// <see cref="RegistroNaoReconhecido"/> em vez de lançar — mas <see cref="ArquivoSpedBase{TBloco}.Adicionar"/>
 /// estourava (ou, neste leiaute, silenciosamente misclassificava — pois o bloco "1" existe
 /// aqui) ao tentar rotear a sentinela pelo primeiro caractere do seu código cru, anulando a
 /// leitura tolerante. Cobre a coleta da sentinela e confirma que registro tipado de bloco

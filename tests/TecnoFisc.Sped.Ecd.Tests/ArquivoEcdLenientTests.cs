@@ -6,7 +6,7 @@ namespace TecnoFisc.Sped.Ecd.Tests;
 
 /// <summary>
 /// Achado 3 (PR #531): sob <see cref="ReadingOptions.LenientLayout"/> o leitor emite
-/// <see cref="RegistroNaoReconhecido"/> em vez de lançar — mas <see cref="ArquivoEcd.Adicionar"/>
+/// <see cref="RegistroNaoReconhecido"/> em vez de lançar — mas <see cref="ArquivoSpedBase{TBloco}.Adicionar"/>
 /// estourava ao tentar rotear a sentinela pelo primeiro caractere do seu código cru,
 /// anulando a leitura tolerante. Cobre a coleta da sentinela e confirma que registro tipado
 /// de bloco inexistente (erro de programação, não dado ruim) continua lançando.

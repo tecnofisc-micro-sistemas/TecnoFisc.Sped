@@ -73,13 +73,21 @@ public sealed partial class ParserNFe
     {
         ArgumentNullException.ThrowIfNull(entrada);
         IDocumentoFiscalXml? result = null;
+        Evento? firstEvent = null;
+        int eventCount = 0;
         await foreach (var document in ReadDocumentsAsync(entrada, cancelamento).ConfigureAwait(false))
         {
+            if (document is Evento evt) { firstEvent ??= evt; eventCount++; continue; }
             if (result is not null) throw new FormatException("Múltiplos documentos: utilize ReadDocumentsAsync.");
             result = document;
         }
-        return result ?? throw new FormatException("Nenhum documento fiscal encontrado no XML.");
+        return result ?? (eventCount == 1 ? firstEvent : null)
+            ?? throw new FormatException(eventCount > 1 ? "Múltiplos eventos: utilize ReadDocumentsAsync." : "Nenhum documento fiscal encontrado no XML.");
     }
+
+    public async Task<Evento> ReadEventoAsync(Stream entrada, CancellationToken cancelamento = default)
+        => await ReadAsync(entrada, cancelamento).ConfigureAwait(false) as Evento
+            ?? throw new FormatException("Documento não é um evento fiscal.");
 
     public async Task<NFCe> ReadNFCeAsync(Stream entrada, CancellationToken cancelamento = default)
         => await ReadAsync(entrada, cancelamento).ConfigureAwait(false) as NFCe

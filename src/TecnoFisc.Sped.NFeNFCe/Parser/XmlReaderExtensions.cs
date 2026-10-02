@@ -55,7 +55,7 @@ internal static class XmlReaderExtensions
 
                 case XmlNodeType.Element:
                     string nome = reader.LocalName;
-                    if (await dispatch(nome).ConfigureAwait(false))
+                    if (DocumentoXmlReader.IsFiscal(reader) && await dispatch(nome).ConfigureAwait(false))
                         break; // dispatch já deixou o reader no nó seguinte
 
                     if (strict)

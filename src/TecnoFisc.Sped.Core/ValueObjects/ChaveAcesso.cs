@@ -37,8 +37,10 @@ public readonly struct ChaveAcesso : IEquatable<ChaveAcesso>
 
         // NT 2023.002: emitente pessoa física usa CPF preenchido à esquerda até 14 posições.
         var documento = digitos.Slice(6, 14);
-        if (!Cnpj.TentarCriar(documento, out _)
-            && !(PermiteCpf(digitos) && documento[..3].SequenceEqual("000") && Cpf.TentarCriar(documento[3..], out _)))
+        bool documentoValido = PermiteCpf(digitos)
+            ? documento[..3].SequenceEqual("000") && Cpf.TentarCriar(documento[3..], out _)
+            : Cnpj.TentarCriar(documento, out _);
+        if (!documentoValido)
         {
             chave = default;
             return false;
@@ -96,11 +98,13 @@ public readonly struct ChaveAcesso : IEquatable<ChaveAcesso>
 
     /// <summary>CNPJ do emitente (posições 6-19). Para pessoa física, consulte <see cref="CpfEmitente"/>.</summary>
     /// <exception cref="FormatException">A chave contém CPF em vez de CNPJ.</exception>
-    public Cnpj CnpjEmitente => _valor is null ? default : Cnpj.Create(_valor.AsSpan(6, 14));
+    public Cnpj CnpjEmitente => CpfEmitente is not null
+        ? throw new FormatException("Chave de acesso de emitente pessoa física.")
+        : _valor is null ? default : Cnpj.Create(_valor.AsSpan(6, 14));
 
     /// <summary>CPF do emitente quando a chave utiliza CPF com zeros à esquerda; null para CNPJ.</summary>
     public Cpf? CpfEmitente => _valor is not null && _valor.AsSpan(6, 3).SequenceEqual("000")
-        && !Cnpj.TentarCriar(_valor.AsSpan(6, 14), out _)
+        && PermiteCpf(_valor.AsSpan())
         && Cpf.TentarCriar(_valor.AsSpan(9, 11), out var cpf) ? cpf : null;
 
     /// <summary>Modelo do documento fiscal: 55 = NF-e, 65 = NFC-e, 57 = CT-e (posições 20-21).</summary>

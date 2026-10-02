@@ -18,6 +18,11 @@ internal static class ZipMetadataGuard
             { eocd = i; break; }
         if (eocd < 0)
             throw new InvalidDataException("Fim do diretório central ZIP inválido.");
+        // ZipArchive searches backwards for the signature, including inside comments.
+        // Reject any later candidate so it cannot select metadata we did not validate.
+        for (int i = eocd + 1; i <= tail.Length - 4; i++)
+            if (U32(tail, i) == 0x06054b50)
+                throw new InvalidDataException("Assinaturas de fim de diretório ZIP ambíguas.");
         if (U16(tail, eocd + 4) != 0 || U16(tail, eocd + 6) != 0 || U16(tail, eocd + 8) != U16(tail, eocd + 10))
             throw new InvalidDataException("ZIP multipart não suportado.");
         long count = U16(tail, eocd + 10), size = U32(tail, eocd + 12), start = U32(tail, eocd + 16);

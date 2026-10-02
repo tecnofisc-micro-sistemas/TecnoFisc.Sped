@@ -10,6 +10,19 @@ namespace TecnoFisc.Sped.NFeNFCe.Parser;
 /// </summary>
 internal static class XmlReaderExtensions
 {
+    internal static async Task SkipUnknownAsync(this XmlReader reader, bool strict)
+    {
+        bool signature = reader.LocalName == "Signature" && reader.NamespaceURI == "http://www.w3.org/2000/09/xmldsig#";
+        if (!signature)
+        {
+            if (strict)
+                throw new FormatException($"Elemento não mapeado '{reader.LocalName}' com ParserNFeOptions.Strict ativo.");
+            if (reader is IO.GuardedXmlReader guarded)
+                guarded.ReportIgnored();
+        }
+        await reader.SkipAsync().ConfigureAwait(false);
+    }
+
     /// <summary>
     /// Itera os elementos-filho diretos do elemento em que o <paramref name="reader"/> está
     /// posicionado, despachando cada um por <c>LocalName</c> para <paramref name="dispatch"/>.

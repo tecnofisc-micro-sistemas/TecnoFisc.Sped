@@ -15,8 +15,11 @@ internal sealed class DocumentoXmlReader(XmlReader reader, ParserNFeOptions opti
         int logDepth = -1, noteCount = 0;
         ChaveAcesso? contextKey = null;
         List<Evento>? pending = null;
-        while (await reader.ReadAsync().ConfigureAwait(false))
+        bool advance = true;
+        while (!reader.EOF)
         {
+            if (advance && !await reader.ReadAsync().ConfigureAwait(false)) break;
+            advance = true;
             ct.ThrowIfCancellationRequested();
             if (reader.NodeType == XmlNodeType.EndElement && reader.Depth == logDepth)
             {
@@ -39,6 +42,7 @@ internal sealed class DocumentoXmlReader(XmlReader reader, ParserNFeOptions opti
                 if (logDepth >= 0)
                     throw new FormatException("NFeLog aninhado não suportado.");
                 logDepth = reader.Depth;
+                continue;
             }
             if (IsFiscal(reader) && reader.LocalName is "procEventoNFe" or "evento" or "eventoNFe")
             {
@@ -67,7 +71,15 @@ internal sealed class DocumentoXmlReader(XmlReader reader, ParserNFeOptions opti
                     "65" => NFCe.FromNFe(note),
                     _ => throw new FormatException($"Modelo não suportado: {note.Ide.Mod.Codigo}."),
                 };
+                continue;
             }
+            if (IsFiscal(reader) && reader.LocalName is "nfeConsultaNFeLogResult" or "retConsNFeLog")
+                continue;
+            if (reader.NamespaceURI is "http://schemas.xmlsoap.org/soap/envelope/" or "http://www.w3.org/2003/05/soap-envelope"
+                && reader.LocalName is "Envelope" or "Body")
+                continue;
+            await reader.SkipUnknownAsync(options.Strict).ConfigureAwait(false);
+            advance = false;
         }
     }
 }

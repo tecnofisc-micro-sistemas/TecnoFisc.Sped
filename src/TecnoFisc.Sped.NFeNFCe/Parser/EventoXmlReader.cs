@@ -23,7 +23,7 @@ internal sealed class EventoXmlReader(XmlReader reader, ParserNFeOptions options
                 break;
             if (reader.NodeType == XmlNodeType.Element && !DocumentoXmlReader.IsFiscal(reader))
             {
-                await reader.SkipAsync().ConfigureAwait(false);
+                await reader.SkipUnknownAsync(options.Strict).ConfigureAwait(false);
                 continue;
             }
             if (reader.NodeType == XmlNodeType.Element && DocumentoXmlReader.IsFiscal(reader))
@@ -59,6 +59,11 @@ internal sealed class EventoXmlReader(XmlReader reader, ParserNFeOptions options
                             throw new FormatException("Múltiplas solicitações no evento.");
                         request = header;
                     }
+                    continue;
+                }
+                if (reader.LocalName is not ("evento" or "eventoNFe" or "retEvento" or "procEventoNFe"))
+                {
+                    await reader.SkipUnknownAsync(options.Strict).ConfigureAwait(false);
                     continue;
                 }
             }

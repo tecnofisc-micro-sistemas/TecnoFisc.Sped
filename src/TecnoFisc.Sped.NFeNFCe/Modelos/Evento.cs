@@ -19,9 +19,14 @@ public abstract record Evento : IDocumentoFiscalXml
     public string? CPF { get; init; }
     public string? DescEvento { get; init; }
     public RetornoEvento? Retorno { get; init; }
-    public virtual bool Equals(Evento? other) => other is not null && EqualityContract == other.EqualityContract
-        && ChaveAcesso == other.ChaveAcesso && TpEvento == other.TpEvento && NSeqEvento == other.NSeqEvento && Id == other.Id;
-    public override int GetHashCode() => HashCode.Combine(ChaveAcesso, TpEvento, NSeqEvento, Id);
+    /// <summary>Identidade completa usa chave/tipo/sequência; resumos sem sequência têm identidade por referência.</summary>
+    public virtual bool Equals(Evento? other) => ReferenceEquals(this, other)
+        || other is not null && EqualityContract == other.EqualityContract && NSeqEvento is not null
+        && ChaveAcesso != default && ChaveAcesso == other.ChaveAcesso
+        && TpEvento == other.TpEvento && NSeqEvento == other.NSeqEvento;
+    public override int GetHashCode() => NSeqEvento is not null && ChaveAcesso != default
+        ? HashCode.Combine(EqualityContract, ChaveAcesso, TpEvento, NSeqEvento)
+        : System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(this);
 }
 
 public sealed record EventoCancelamento : Evento

@@ -8,11 +8,13 @@ Medições locais em 02/10/2026, Windows 11 10.0.26300.9457, Intel Core i9-14900
 - 921 vetores lexicais executados em ordem canônica e reordenada/atributo como elemento; a versão externa do protocolo é coberta por teste da API pública.
 - 168 testes de ligação dos grupos ao modelo pai e 26 testes de repetição. As variantes de choice são isoladas nos testes de ligação.
 - Hashes dos arquivos XSD fixados, recomputação do inventário em CI, validação estrutural XSD de nota e solicitação de cancelamento nos testes. Assinaturas dessas fixtures são apenas estruturais, sem validade criptográfica.
-- Solução: **7.908 aprovados**, zero falhas e quatro skips preexistentes de fixtures privadas ECF. Sete testes Python aprovados. Exemplo compilado e executado: duas notas e dois eventos, sem gravação em banco.
+- Solução: **7.919 aprovados**, zero falhas e quatro skips preexistentes de fixtures privadas ECF. Sete testes Python aprovados. Exemplo compilado e executado: duas notas e dois eventos, sem gravação em banco. A revisão e as correções finais estão registradas em [encerramento](../superpowers/plans/2026-10-02-nfe-nfce-encerramento.md).
 
 ## Parser: antes e depois
 
 Mesma geração de XML, fora da medição; 1/50/500 itens ICMS60; memória de entrada já disponível. Baseline em `64c65f5` (parser parcial, apenas atualização de dependência de build em relação a `c894b80`). A medição inicial está em [nfe-baseline.md](nfe-baseline.md); a comparação abaixo usa a repetição com cinco warmups/cinco iterações, executada na mesma sessão.
+
+Os resultados de desempenho correspondem a `10e56ce`, antes das correções finais de interpretação do ZIP, identidade CPF/evento e política dos envelopes. Essas correções foram verificadas por testes; os benchmarks não foram repetidos depois delas.
 
 | Itens | Anterior, µs/nota | Completo, µs/nota | Variação de tempo | Alocação anterior | Alocação completa |
 | ---: | ---: | ---: | ---: | ---: | ---: |

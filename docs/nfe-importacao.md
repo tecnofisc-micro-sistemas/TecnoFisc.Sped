@@ -48,6 +48,10 @@ As funções de registro/persistência acima pertencem à aplicação. O [exempl
 
 A biblioteca não deduplica nem impõe transações. FiscTax deve definir idempotência por chave da nota e por chave/tipo/sequência do evento, além de tratar eventos posteriores à nota. Nomes duplicados em ZIP geram resultados distintos; `Origem.Arquivo` e `Origem.EntradaZip` identificam a origem disponível. A ordem de conclusão entre arquivos não é garantida.
 
+`Evento.Equals` usa chave/tipo/sequência quando a identidade está completa, independentemente do `Id` opcional. Eventos sem sequência ou chave têm igualdade por referência: dois resumos importados separadamente permanecem distintos, mesmo com o mesmo conteúdo. O consumidor decide como reconciliá-los.
+
+Os envelopes reconhecidos são SOAP 1.1/1.2 (`Envelope`/`Body`), `nfeConsultaNFeLogResult`, `retConsNFeLog` e `NFeLog`, além das unidades fiscais. Elementos desconhecidos são ignorados como subárvore com diagnóstico, ou rejeitados com `Strict=true`; a mesma política vale fora de `infNFe`. A assinatura XMLDSIG continua dispensada de mapeamento.
+
 ## Memória, concorrência e ZIP
 
 O caminho de produção usa `XmlReader` forward-only, sem DOM, reflexão ou desserialização intermediária. Cada trabalhador materializa uma unidade documental. Dois canais limitados controlam caminhos pendentes e resultados; um consumidor lento suspende os trabalhadores e, depois, a descoberta de arquivos. `break`, descarte e cancelamento encerram e aguardam produtor/trabalhadores.

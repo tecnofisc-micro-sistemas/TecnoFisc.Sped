@@ -6,8 +6,8 @@ Unknown processor
   [Host]   : .NET 10.0.10 (10.0.1026.32716), X64 RyuJIT AVX2
   ShortRun : .NET 10.0.10 (10.0.1026.32716), X64 RyuJIT AVX2
 
-Job=ShortRun  IterationCount=3  LaunchCount=1  
-WarmupCount=3  
+Job=ShortRun  IterationCount=3  LaunchCount=1
+WarmupCount=3
 
 ```
 | Method                       | QtdItens | Mean        | Error      | StdDev    | Ratio | RatioSD | Gen0    | Gen1   | Allocated  | Alloc Ratio |

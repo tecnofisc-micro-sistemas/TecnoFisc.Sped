@@ -1,6 +1,6 @@
 # NF-e/NFC-e completa e importação em streaming — Implementation Plan
 
-> Execução: tarefas 1–10 implementadas na branch `feat/nfe-importacao-completa`, com verificações consolidadas em `docs/performance/nfe-importacao.md`. A referência reconciliada é PL_010f_v1.04. Os nomes de testes propostos abaixo foram consolidados em testes de folhas/grupos/repetições derivados do inventário e testes de integração/adversariais; as listas abaixo preservam o planejamento original, não são uma lista atual de pendências. Revisão final independente: próxima etapa.
+> Execução: tarefas 1–10 implementadas na branch `feat/nfe-importacao-completa`, com verificações consolidadas em `docs/performance/nfe-importacao.md`. A referência reconciliada é PL_010f_v1.04. Os nomes de testes propostos abaixo foram consolidados em testes de folhas/grupos/repetições derivados do inventário e testes de integração/adversariais; as listas abaixo preservam o planejamento original, não são uma lista atual de pendências. Revisão final independente concluída; quatro achados corrigidos e verificados. Veja [encerramento](2026-10-02-nfe-nfce-encerramento.md).
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 

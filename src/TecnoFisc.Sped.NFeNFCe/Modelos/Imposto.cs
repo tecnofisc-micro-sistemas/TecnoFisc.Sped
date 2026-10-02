@@ -3,7 +3,7 @@ namespace TecnoFisc.Sped.NFeNFCe;
 /// <summary>
 /// Grupo <c>imposto</c> — tributos de um item.
 /// </summary>
-public sealed record Imposto
+public sealed partial record Imposto
 {
     /// <summary>Grupo <c>ICMS</c> — variante de ICMS do item (nula quando ausente).</summary>
     public Icms? Icms { get; init; }

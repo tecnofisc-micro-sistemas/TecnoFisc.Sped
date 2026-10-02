@@ -11,13 +11,13 @@ namespace TecnoFisc.Sped.NFeNFCe;
 /// <remarks>
 /// Identidade de domínio = <see cref="ChaveAcesso"/> (override manual de
 /// <see cref="Equals(NFe)"/>/<see cref="GetHashCode"/>); ver <c>sped/STAGE_14_NFE_NFCE.md</c> §4.
-/// Escopo da slice 14.3 (piloto): <c>ide</c>, <c>emit</c>, <c>dest</c>, <c>total</c> e os
-/// <c>det</c>/<c>prod</c> com ICMS60. Demais grupos (<c>transp</c>, <c>cobr</c>, <c>pag</c>,
-/// impostos completos, etc.) entram nas slices 14.4–14.6.
+/// Cobertura fiscal vinculada ao pacote PL_010f_v1.04; ver sped/nfe/field-bindings.json.
 /// </remarks>
-public sealed record NFe : IDocumentoFiscalXml
+public sealed partial record NFe : IDocumentoFiscalXml
 {
-    /// <summary>Chave de acesso de 44 dígitos (do atributo/elemento <c>Id</c> de <c>infNFe</c>).</summary>
+    public InformacaoSuplementar? InfNFeSupl { get; init; }
+    public bool IsAutorizacaoEfetiva => Protocolo?.IsAutorizada == true;
+    /// <summary>Chave de acesso de 44 caracteres (do atributo/elemento <c>Id</c> de <c>infNFe</c>).</summary>
     public required ChaveAcesso ChaveAcesso { get; init; }
 
     /// <summary>Versão do leiaute (atributo/elemento <c>versao</c> de <c>infNFe</c>), ex.: "4.00".</summary>

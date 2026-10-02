@@ -9,6 +9,12 @@ namespace TecnoFisc.Sped.NFeNFCe;
 /// </summary>
 public sealed record Protocolo
 {
+    public string? Versao { get; init; }
+    public string? Id { get; init; }
+    /// <summary>Códigos das mensagens complementares; a posição corresponde a <see cref="XMsg"/>.</summary>
+    public IReadOnlyList<string> CMsg { get; init; } = [];
+    /// <summary>Textos das mensagens complementares, preservados na ordem das ocorrências.</summary>
+    public IReadOnlyList<string> XMsg { get; init; } = [];
     /// <summary><c>tpAmb</c> — ambiente em que a nota foi autorizada.</summary>
     public required TipoAmbiente TpAmb { get; init; }
 

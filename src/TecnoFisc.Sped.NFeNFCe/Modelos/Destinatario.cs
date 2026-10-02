@@ -6,7 +6,7 @@ namespace TecnoFisc.Sped.NFeNFCe;
 /// Grupo <c>dest</c> — destinatário. Identifica-se por <c>CNPJ</c>, <c>CPF</c> ou
 /// <c>idEstrangeiro</c> (operação com estrangeiro). Opcional na NFC-e (modelo 65).
 /// </summary>
-public sealed record Destinatario
+public sealed partial record Destinatario
 {
     /// <summary><c>CNPJ</c> do destinatário.</summary>
     public Cnpj? CNPJ { get; init; }

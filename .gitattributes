@@ -33,3 +33,7 @@ tests/TecnoFisc.Sped.Ecf.Tests/Fixtures/Layout*/ecf-layout-*.txt -text whitespac
 *.exe  binary
 *.snk  binary
 *.pfx  binary
+
+# Official schemas: retain exact bytes for SHA-256 provenance.
+sped/nfe/schemas/*.xsd -text whitespace=-blank-at-eol,-blank-at-eof,-space-before-tab
+sped/nfe/schemas-eventos/*.xsd -text whitespace=-blank-at-eol,-blank-at-eof,-space-before-tab

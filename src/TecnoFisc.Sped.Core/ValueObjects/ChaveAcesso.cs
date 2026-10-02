@@ -1,7 +1,7 @@
 namespace TecnoFisc.Sped.Core.ValueObjects;
 
 /// <summary>
-/// Chave de Acesso de DF-e (NF-e, NFC-e, CT-e). 44 dígitos com DV módulo 11.
+/// Chave de Acesso de DF-e (NF-e, NFC-e, CT-e). 44 caracteres com DV módulo 11 (ASCII menos 48).
 /// Estrutura: cUF(2) AAMM(4) CNPJ(14) mod(2) serie(3) nNF(9) tpEmis(1) cNF(8) cDV(1).
 /// </summary>
 public readonly struct ChaveAcesso : IEquatable<ChaveAcesso>
@@ -23,7 +23,7 @@ public readonly struct ChaveAcesso : IEquatable<ChaveAcesso>
     public static bool TentarCriar(ReadOnlySpan<char> valor, out ChaveAcesso chave)
     {
         Span<char> digitos = stackalloc char[Tamanho];
-        if (!DigitosSomenteHelper.TentarExtrair(valor, digitos))
+        if (!IdentificadorAlfanumericoHelper.TentarExtrair(valor, digitos, 6, 12))
         {
             chave = default;
             return false;
@@ -35,8 +35,12 @@ public readonly struct ChaveAcesso : IEquatable<ChaveAcesso>
             return false;
         }
 
-        // CNPJ embutido (posições 6..19) também precisa ter DV módulo 11 válido.
-        if (!Cnpj.TentarCriar(digitos.Slice(6, 14), out _))
+        // NT 2023.002: emitente pessoa física usa CPF preenchido à esquerda até 14 posições.
+        var documento = digitos.Slice(6, 14);
+        bool documentoValido = PermiteCpf(digitos)
+            ? documento[..3].SequenceEqual("000") && Cpf.TentarCriar(documento[3..], out _)
+            : Cnpj.TentarCriar(documento, out _);
+        if (!documentoValido)
         {
             chave = default;
             return false;
@@ -70,6 +74,17 @@ public readonly struct ChaveAcesso : IEquatable<ChaveAcesso>
         return dv == digitos[43] - '0';
     }
 
+    // NT 2023.002, C02a-10: evita interpretar CNPJ inválido como CPF em uma série comum.
+    private static bool PermiteCpf(ReadOnlySpan<char> chave)
+    {
+        int modelo = (chave[20] - '0') * 10 + chave[21] - '0';
+        if (modelo is not (55 or 65)) return false;
+        int serie = (chave[22] - '0') * 100 + (chave[23] - '0') * 10 + chave[24] - '0';
+        // NT 2021.002: na NFF o quinto dígito de nNF identifica CPF (2).
+        if (chave[34] == '3') return chave[29] == '2';
+        return serie is >= 890 and <= 899 or >= 910 and <= 969;
+    }
+
     public ReadOnlySpan<char> AsSpan() => _valor.AsSpan();
 
     /// <summary>Código IBGE da UF do emitente (posições 0-1).</summary>
@@ -81,8 +96,16 @@ public readonly struct ChaveAcesso : IEquatable<ChaveAcesso>
     /// <summary>Mês da emissão (posições 4-5).</summary>
     public int Mes => _valor is null ? 0 : (_valor[4] - '0') * 10 + (_valor[5] - '0');
 
-    /// <summary>CNPJ do emitente (posições 6-19).</summary>
-    public Cnpj CnpjEmitente => _valor is null ? default : Cnpj.Create(_valor.AsSpan(6, 14));
+    /// <summary>CNPJ do emitente (posições 6-19). Para pessoa física, consulte <see cref="CpfEmitente"/>.</summary>
+    /// <exception cref="FormatException">A chave contém CPF em vez de CNPJ.</exception>
+    public Cnpj CnpjEmitente => CpfEmitente is not null
+        ? throw new FormatException("Chave de acesso de emitente pessoa física.")
+        : _valor is null ? default : Cnpj.Create(_valor.AsSpan(6, 14));
+
+    /// <summary>CPF do emitente quando a chave utiliza CPF com zeros à esquerda; null para CNPJ.</summary>
+    public Cpf? CpfEmitente => _valor is not null && _valor.AsSpan(6, 3).SequenceEqual("000")
+        && PermiteCpf(_valor.AsSpan())
+        && Cpf.TentarCriar(_valor.AsSpan(9, 11), out var cpf) ? cpf : null;
 
     /// <summary>Modelo do documento fiscal: 55 = NF-e, 65 = NFC-e, 57 = CT-e (posições 20-21).</summary>
     public int Modelo => _valor is null ? 0 : (_valor[20] - '0') * 10 + (_valor[21] - '0');

@@ -10,6 +10,19 @@ namespace TecnoFisc.Sped.NFeNFCe.Parser;
 /// </summary>
 internal static class XmlReaderExtensions
 {
+    internal static async Task SkipUnknownAsync(this XmlReader reader, bool strict)
+    {
+        bool signature = reader.LocalName == "Signature" && reader.NamespaceURI == "http://www.w3.org/2000/09/xmldsig#";
+        if (!signature)
+        {
+            if (strict)
+                throw new FormatException($"Elemento não mapeado '{reader.LocalName}' com ParserNFeOptions.Strict ativo.");
+            if (reader is IO.GuardedXmlReader guarded)
+                guarded.ReportIgnored();
+        }
+        await reader.SkipAsync().ConfigureAwait(false);
+    }
+
     /// <summary>
     /// Itera os elementos-filho diretos do elemento em que o <paramref name="reader"/> está
     /// posicionado, despachando cada um por <c>LocalName</c> para <paramref name="dispatch"/>.
@@ -55,12 +68,15 @@ internal static class XmlReaderExtensions
 
                 case XmlNodeType.Element:
                     string nome = reader.LocalName;
-                    if (await dispatch(nome).ConfigureAwait(false))
+                    if (DocumentoXmlReader.IsFiscal(reader) && await dispatch(nome).ConfigureAwait(false))
                         break; // dispatch já deixou o reader no nó seguinte
 
                     if (strict)
                         throw new FormatException(
                             $"Elemento não mapeado '{nome}' com ParserNFeOptions.Strict ativo.");
+
+                    if (reader is IO.GuardedXmlReader guarded)
+                        guarded.ReportIgnored();
 
                     await reader.SkipAsync().ConfigureAwait(false); // ignora a subárvore → nó seguinte
                     break;
@@ -80,5 +96,35 @@ internal static class XmlReaderExtensions
     /// <see cref="ConsumeChildrenAsync"/>.
     /// </summary>
     public static async ValueTask<string> ReadTextAsync(this XmlReader reader)
-        => (await reader.ReadElementContentAsStringAsync().ConfigureAwait(false)).Trim();
+    {
+        if (reader.IsEmptyElement)
+        {
+            await reader.ReadAsync().ConfigureAwait(false);
+            return string.Empty;
+        }
+        int depth = reader.Depth;
+        string? value = null;
+        System.Text.StringBuilder? fragments = null;
+        while (await reader.ReadAsync().ConfigureAwait(false))
+        {
+            switch (reader.NodeType)
+            {
+                case XmlNodeType.EndElement when reader.Depth == depth:
+                    await reader.ReadAsync().ConfigureAwait(false);
+                    return (fragments?.ToString() ?? value ?? string.Empty).Trim();
+                case XmlNodeType.Text:
+                case XmlNodeType.CDATA:
+                case XmlNodeType.Whitespace:
+                case XmlNodeType.SignificantWhitespace:
+                    if (value is null)
+                        value = reader.Value;
+                    else
+                        (fragments ??= new System.Text.StringBuilder(value)).Append(reader.Value);
+                    break;
+                case XmlNodeType.Element:
+                    throw new XmlException("Elemento complexo em campo escalar.");
+            }
+        }
+        throw new XmlException("Campo escalar XML truncado.");
+    }
 }

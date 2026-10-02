@@ -57,12 +57,8 @@ public sealed partial class ParserNFe
     /// <exception cref="FormatException">Quando o documento não contém um grupo <c>infNFe</c>.</exception>
     public async Task<NFe> ReadNFeAsync(Stream entrada, CancellationToken cancelamento = default)
     {
-        ArgumentNullException.ThrowIfNull(entrada);
-
-        using var limited = new LimitedReadStream(entrada, Options.MaxXmlBytes, true, cancelamento);
-        using var reader = new GuardedXmlReader(XmlReader.Create(limited, Settings), Options, cancelamento);
-        var leitor = new NFeXmlReader(reader, Options);
-        return await leitor.ReadAsync(cancelamento).ConfigureAwait(false);
+        var documento = await ReadAsync(entrada, cancelamento).ConfigureAwait(false);
+        return documento as NFe ?? throw new FormatException("Documento não é NF-e modelo 55.");
     }
 
     /// <summary>
@@ -74,5 +70,28 @@ public sealed partial class ParserNFe
     /// <param name="cancelamento">Token de cancelamento.</param>
     /// <remarks>Na slice 14.3 o fluxo genérico resolve para <see cref="ReadNFeAsync"/> (NF-e 55).</remarks>
     public async Task<IDocumentoFiscalXml> ReadAsync(Stream entrada, CancellationToken cancelamento = default)
-        => await ReadNFeAsync(entrada, cancelamento).ConfigureAwait(false);
+    {
+        ArgumentNullException.ThrowIfNull(entrada);
+        IDocumentoFiscalXml? result = null;
+        await foreach (var document in ReadDocumentsAsync(entrada, cancelamento).ConfigureAwait(false))
+        {
+            if (result is not null) throw new FormatException("Múltiplos documentos: utilize ReadDocumentsAsync.");
+            result = document;
+        }
+        return result ?? throw new FormatException("Nenhum documento fiscal encontrado no XML.");
+    }
+
+    public async Task<NFCe> ReadNFCeAsync(Stream entrada, CancellationToken cancelamento = default)
+        => await ReadAsync(entrada, cancelamento).ConfigureAwait(false) as NFCe
+            ?? throw new FormatException("Documento não é NFC-e modelo 65.");
+
+    public async IAsyncEnumerable<IDocumentoFiscalXml> ReadDocumentsAsync(
+        Stream entrada, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancelamento = default)
+    {
+        ArgumentNullException.ThrowIfNull(entrada);
+        using var limited = new LimitedReadStream(entrada, Options.MaxXmlBytes, true, cancelamento);
+        using var reader = new GuardedXmlReader(XmlReader.Create(limited, Settings), Options, cancelamento);
+        var router = new DocumentoXmlReader(reader, Options);
+        await foreach (var document in router.ReadAsync(cancelamento).ConfigureAwait(false)) yield return document;
+    }
 }

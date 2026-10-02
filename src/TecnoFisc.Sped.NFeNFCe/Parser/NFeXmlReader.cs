@@ -95,14 +95,14 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
                     if (core is null)
                         core = await ReadInfNFeAsync(cancellationToken).ConfigureAwait(false);
                     else
-                        await _r.SkipAsync().ConfigureAwait(false);
+                        throw new FormatException("Múltiplos grupos infNFe na mesma unidade documental.");
                     break; // leitor/Skip já deixou o reader no nó seguinte
 
                 case "infProt":
                     if (protocolo is null)
                         protocolo = await ReadInfProtAsync(cancellationToken).ConfigureAwait(false);
                     else
-                        await _r.SkipAsync().ConfigureAwait(false);
+                        throw new FormatException("Múltiplos protocolos na mesma unidade documental.");
                     break;
 
                 default:
@@ -117,6 +117,13 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
     done:
         if (core is null)
             throw new FormatException("Nenhum grupo infNFe encontrado no documento.");
+
+        if (protocolo is not null && protocolo.ChNFe != core.Chave)
+            throw new FormatException("Protocolo pertence a outra chave de acesso.");
+        if (core.Versao.Length != 0 && core.Versao != "4.00")
+            throw new FormatException($"Versão não suportada: {core.Versao}.");
+        if (!core.Chave.ToString().AsSpan(20, 2).SequenceEqual(core.Ide.Mod.Codigo.AsSpan()))
+            throw new FormatException("Modelo da chave difere do grupo ide.");
 
         return new NFe
         {
@@ -719,3 +726,4 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
     private static T ParseEnum<T>(string s) where T : struct, Enum
         => (T)Enum.ToObject(typeof(T), ParseInt(s));
 }
+

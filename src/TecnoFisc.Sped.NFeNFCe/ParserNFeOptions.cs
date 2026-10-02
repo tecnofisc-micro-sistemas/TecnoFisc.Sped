@@ -6,6 +6,30 @@ namespace TecnoFisc.Sped.NFeNFCe;
 /// </summary>
 public sealed class ParserNFeOptions
 {
+    public int BufferCapacity { get; init; } = 64;
+    public long MaxXmlBytes { get; init; } = 64L * 1024 * 1024;
+    public int MaxXmlDepth { get; init; } = 128;
+    public int MaxZipEntries { get; init; } = 100_000;
+    public long MaxZipEntryBytes { get; init; } = 64L * 1024 * 1024;
+    public long MaxZipUncompressedBytes { get; init; } = 100L * 1024 * 1024 * 1024;
+    public long MaxZipSpoolBytes { get; init; } = 20L * 1024 * 1024 * 1024;
+    public long MaxZipCentralDirectoryBytes { get; init; } = 64L * 1024 * 1024;
+    public string? TemporaryDirectory { get; init; }
+    /// <summary>Recebe metadados de campos ignorados; pode ser chamado concorrentemente. Exceções propagam.</summary>
+    public Action<CampoXmlIgnorado>? OnIgnoredElement { get; init; }
+
+    internal void Validate()
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(BufferCapacity, 1);
+        ArgumentOutOfRangeException.ThrowIfLessThan(MaxXmlBytes, 1);
+        ArgumentOutOfRangeException.ThrowIfLessThan(MaxXmlDepth, 1);
+        ArgumentOutOfRangeException.ThrowIfLessThan(MaxZipEntries, 1);
+        ArgumentOutOfRangeException.ThrowIfLessThan(MaxZipEntryBytes, 1);
+        ArgumentOutOfRangeException.ThrowIfLessThan(MaxZipUncompressedBytes, 1);
+        ArgumentOutOfRangeException.ThrowIfLessThan(MaxZipSpoolBytes, 1);
+        ArgumentOutOfRangeException.ThrowIfLessThan(MaxZipCentralDirectoryBytes, 1);
+    }
+
     private readonly int _parallelism = Environment.ProcessorCount;
 
     /// <summary>Instância padrão (todos os defaults).</summary>

@@ -2,6 +2,7 @@ using System.Xml;
 
 using TecnoFisc.Sped.Xml.Engine;
 using TecnoFisc.Sped.NFeNFCe.Parser;
+using TecnoFisc.Sped.NFeNFCe.IO;
 
 namespace TecnoFisc.Sped.NFeNFCe;
 
@@ -16,7 +17,7 @@ namespace TecnoFisc.Sped.NFeNFCe;
 /// o desembrulho do envelope SERPRO de documento único. NFC-e (65) e eventos chegam nas slices
 /// 14.6/14.7; <c>ReadDirectoryAsync</c> na 14.8.
 /// </remarks>
-public sealed class ParserNFe
+public sealed partial class ParserNFe
 {
     private static readonly XmlReaderSettings Settings = new()
     {
@@ -37,6 +38,7 @@ public sealed class ParserNFe
     public ParserNFe(ParserNFeOptions opcoes)
     {
         ArgumentNullException.ThrowIfNull(opcoes);
+        opcoes.Validate();
         Options = opcoes;
     }
 
@@ -57,7 +59,8 @@ public sealed class ParserNFe
     {
         ArgumentNullException.ThrowIfNull(entrada);
 
-        using var reader = XmlReader.Create(entrada, Settings);
+        using var limited = new LimitedReadStream(entrada, Options.MaxXmlBytes, true, cancelamento);
+        using var reader = new GuardedXmlReader(XmlReader.Create(limited, Settings), Options, cancelamento);
         var leitor = new NFeXmlReader(reader, Options);
         return await leitor.ReadAsync(cancelamento).ConfigureAwait(false);
     }

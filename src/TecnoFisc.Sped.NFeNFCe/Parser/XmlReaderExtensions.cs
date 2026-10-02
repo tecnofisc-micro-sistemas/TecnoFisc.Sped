@@ -62,6 +62,8 @@ internal static class XmlReaderExtensions
                         throw new FormatException(
                             $"Elemento não mapeado '{nome}' com ParserNFeOptions.Strict ativo.");
 
+                    if (reader is IO.GuardedXmlReader guarded) guarded.ReportIgnored();
+
                     await reader.SkipAsync().ConfigureAwait(false); // ignora a subárvore → nó seguinte
                     break;
 

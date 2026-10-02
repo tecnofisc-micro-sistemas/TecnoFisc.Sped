@@ -61,7 +61,7 @@ public sealed partial class ParserNFe
         {
             await foreach (string path in input.Reader.ReadAllAsync(stop.Token).ConfigureAwait(false))
             {
-                if (!IsExtension(path, ".xml"))
+                if (!IsExtension(path, ".xml") && !IsExtension(path, ".zip"))
                 {
                     var error = new FormatException($"Extensão não suportada: {Path.GetExtension(path)}.");
                     if (Options.FailFast) throw error;
@@ -69,7 +69,8 @@ public sealed partial class ParserNFe
                     continue;
                 }
                 await using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 65536, FileOptions.Asynchronous | FileOptions.SequentialScan);
-                await foreach (var result in ReadXmlResultsAsync(stream, new(path), stop.Token).ConfigureAwait(false))
+                var results = IsExtension(path, ".zip") ? ReadZipAsync(stream, path, stop.Token) : ReadXmlResultsAsync(stream, new(path), stop.Token);
+                await foreach (var result in results.ConfigureAwait(false))
                     await output.Writer.WriteAsync(result, stop.Token).ConfigureAwait(false);
             }
         }

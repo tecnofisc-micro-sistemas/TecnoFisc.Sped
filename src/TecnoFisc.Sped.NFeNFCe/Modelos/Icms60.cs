@@ -6,7 +6,7 @@ namespace TecnoFisc.Sped.NFeNFCe;
 /// Variante <c>ICMS60</c> — ICMS cobrado anteriormente por substituição tributária (CST 60).
 /// Os campos do ICMS efetivo (<c>pRedBCEfet</c>…<c>vICMSEfet</c>) são opcionais no leiaute.
 /// </summary>
-public sealed record Icms60 : Icms
+public sealed partial record Icms60 : Icms
 {
     /// <summary><c>CST</c> — situação tributária do ICMS (sempre "60" nesta variante).</summary>
     public Cst CST { get; init; }

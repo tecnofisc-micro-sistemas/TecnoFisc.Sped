@@ -4,7 +4,7 @@ namespace TecnoFisc.Sped.NFeNFCe;
 /// Grupo <c>ICMSTot</c> — totalizadores de ICMS e da nota (leiaute 4.00). Todos os valores são
 /// monetários em reais. Campos ausentes no XML ficam em <c>0</c> (o leiaute exige a maioria deles).
 /// </summary>
-public sealed record TotalIcms
+public sealed partial record TotalIcms
 {
     /// <summary><c>vBC</c> — base de cálculo do ICMS.</summary>
     public decimal VBC { get; init; }

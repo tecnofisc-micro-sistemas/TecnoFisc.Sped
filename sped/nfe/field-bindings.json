@@ -1,0 +1,6452 @@
+[
+  {
+    "path": "TNFe/infNFe/ide/cUF",
+    "model": "Identificacao",
+    "property": "CUF",
+    "reader": "ReadIdeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/cNF",
+    "model": "Identificacao",
+    "property": "CNF",
+    "reader": "ReadIdeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/natOp",
+    "model": "Identificacao",
+    "property": "NatOp",
+    "reader": "ReadIdeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/mod",
+    "model": "Identificacao",
+    "property": "Mod",
+    "reader": "ReadIdeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/serie",
+    "model": "Identificacao",
+    "property": "Serie",
+    "reader": "ReadIdeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/nNF",
+    "model": "Identificacao",
+    "property": "NNF",
+    "reader": "ReadIdeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/dhEmi",
+    "model": "Identificacao",
+    "property": "DhEmi",
+    "reader": "ReadIdeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/dhSaiEnt",
+    "model": "Identificacao",
+    "property": "DhSaiEnt",
+    "reader": "ReadIdeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/dPrevEntrega",
+    "model": "Identificacao",
+    "property": "DPrevEntrega",
+    "reader": "ReadIdeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/tpNF",
+    "model": "Identificacao",
+    "property": "TpNF",
+    "reader": "ReadIdeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/idDest",
+    "model": "Identificacao",
+    "property": "IdDest",
+    "reader": "ReadIdeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/cMunFG",
+    "model": "Identificacao",
+    "property": "CMunFG",
+    "reader": "ReadIdeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/cMunFGIBS",
+    "model": "Identificacao",
+    "property": "CMunFGIBS",
+    "reader": "ReadIdeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/tpImp",
+    "model": "Identificacao",
+    "property": "TpImp",
+    "reader": "ReadIdeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/tpEmis",
+    "model": "Identificacao",
+    "property": "TpEmis",
+    "reader": "ReadIdeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/cDV",
+    "model": "Identificacao",
+    "property": "CDV",
+    "reader": "ReadIdeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/tpAmb",
+    "model": "Identificacao",
+    "property": "TpAmb",
+    "reader": "ReadIdeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/finNFe",
+    "model": "Identificacao",
+    "property": "FinNFe",
+    "reader": "ReadIdeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/tpNFDebito",
+    "model": "Identificacao",
+    "property": "TpNFDebito",
+    "reader": "ReadIdeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/tpNFCredito",
+    "model": "Identificacao",
+    "property": "TpNFCredito",
+    "reader": "ReadIdeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/indFinal",
+    "model": "Identificacao",
+    "property": "IndFinal",
+    "reader": "ReadIdeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/indPres",
+    "model": "Identificacao",
+    "property": "IndPres",
+    "reader": "ReadIdeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/indIntermed",
+    "model": "Identificacao",
+    "property": "IndIntermed",
+    "reader": "ReadIdeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/cIndOp",
+    "model": "Identificacao",
+    "property": "CIndOp",
+    "reader": "ReadIdeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/procEmi",
+    "model": "Identificacao",
+    "property": "ProcEmi",
+    "reader": "ReadIdeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/verProc",
+    "model": "Identificacao",
+    "property": "VerProc",
+    "reader": "ReadIdeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/dhCont",
+    "model": "Identificacao",
+    "property": "DhCont",
+    "reader": "ReadIdeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/xJust",
+    "model": "Identificacao",
+    "property": "XJust",
+    "reader": "ReadIdeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/NFref/refNF/cUF",
+    "model": "ReferenciaNotaRefNF",
+    "property": "CUF",
+    "reader": "ReadReferenciaNotaRefNFAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/NFref/refNF/AAMM",
+    "model": "ReferenciaNotaRefNF",
+    "property": "AAMM",
+    "reader": "ReadReferenciaNotaRefNFAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/NFref/refNF/CNPJ",
+    "model": "ReferenciaNotaRefNF",
+    "property": "CNPJ",
+    "reader": "ReadReferenciaNotaRefNFAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/NFref/refNF/mod",
+    "model": "ReferenciaNotaRefNF",
+    "property": "Mod",
+    "reader": "ReadReferenciaNotaRefNFAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/NFref/refNF/serie",
+    "model": "ReferenciaNotaRefNF",
+    "property": "Serie",
+    "reader": "ReadReferenciaNotaRefNFAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/NFref/refNF/nNF",
+    "model": "ReferenciaNotaRefNF",
+    "property": "NNF",
+    "reader": "ReadReferenciaNotaRefNFAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/NFref/refNFP/cUF",
+    "model": "ReferenciaNotaRefNFP",
+    "property": "CUF",
+    "reader": "ReadReferenciaNotaRefNFPAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/NFref/refNFP/AAMM",
+    "model": "ReferenciaNotaRefNFP",
+    "property": "AAMM",
+    "reader": "ReadReferenciaNotaRefNFPAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/NFref/refNFP/CNPJ",
+    "model": "ReferenciaNotaRefNFP",
+    "property": "CNPJ",
+    "reader": "ReadReferenciaNotaRefNFPAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/NFref/refNFP/CPF",
+    "model": "ReferenciaNotaRefNFP",
+    "property": "CPF",
+    "reader": "ReadReferenciaNotaRefNFPAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/NFref/refNFP/IE",
+    "model": "ReferenciaNotaRefNFP",
+    "property": "IE",
+    "reader": "ReadReferenciaNotaRefNFPAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/NFref/refNFP/mod",
+    "model": "ReferenciaNotaRefNFP",
+    "property": "Mod",
+    "reader": "ReadReferenciaNotaRefNFPAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/NFref/refNFP/serie",
+    "model": "ReferenciaNotaRefNFP",
+    "property": "Serie",
+    "reader": "ReadReferenciaNotaRefNFPAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/NFref/refNFP/nNF",
+    "model": "ReferenciaNotaRefNFP",
+    "property": "NNF",
+    "reader": "ReadReferenciaNotaRefNFPAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/NFref/refECF/mod",
+    "model": "ReferenciaNotaRefECF",
+    "property": "Mod",
+    "reader": "ReadReferenciaNotaRefECFAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/NFref/refECF/nECF",
+    "model": "ReferenciaNotaRefECF",
+    "property": "NECF",
+    "reader": "ReadReferenciaNotaRefECFAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/NFref/refECF/nCOO",
+    "model": "ReferenciaNotaRefECF",
+    "property": "NCOO",
+    "reader": "ReadReferenciaNotaRefECFAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/NFref/refNFe",
+    "model": "ReferenciaNota",
+    "property": "RefNFe",
+    "reader": "ReadReferenciaNotaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/NFref/refNFeSig",
+    "model": "ReferenciaNota",
+    "property": "RefNFeSig",
+    "reader": "ReadReferenciaNotaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/NFref/refNF",
+    "model": "ReferenciaNota",
+    "property": "RefNF",
+    "reader": "ReadReferenciaNotaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/NFref/refNFP",
+    "model": "ReferenciaNota",
+    "property": "RefNFP",
+    "reader": "ReadReferenciaNotaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/NFref/refCTe",
+    "model": "ReferenciaNota",
+    "property": "RefCTe",
+    "reader": "ReadReferenciaNotaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/NFref/refECF",
+    "model": "ReferenciaNota",
+    "property": "RefECF",
+    "reader": "ReadReferenciaNotaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/NFref",
+    "model": "Identificacao",
+    "property": "NFref",
+    "reader": "ReadIdeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/gCompraGov/tpEnteGov",
+    "model": "IdentificacaoGCompraGov",
+    "property": "TpEnteGov",
+    "reader": "ReadIdentificacaoGCompraGovAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/gCompraGov/pRedutor",
+    "model": "IdentificacaoGCompraGov",
+    "property": "PRedutor",
+    "reader": "ReadIdentificacaoGCompraGovAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/gCompraGov/tpOperGov",
+    "model": "IdentificacaoGCompraGov",
+    "property": "TpOperGov",
+    "reader": "ReadIdentificacaoGCompraGovAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/gCompraGov/refDFeAnt",
+    "model": "IdentificacaoGCompraGov",
+    "property": "RefDFeAnt",
+    "reader": "ReadIdentificacaoGCompraGovAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/gCompraGov",
+    "model": "Identificacao",
+    "property": "GCompraGov",
+    "reader": "ReadIdeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/gPagAntecipado/refNFe",
+    "model": "IdentificacaoGPagAntecipado",
+    "property": "RefNFe",
+    "reader": "ReadIdentificacaoGPagAntecipadoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide/gPagAntecipado",
+    "model": "Identificacao",
+    "property": "GPagAntecipado",
+    "reader": "ReadIdeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/ide",
+    "model": "InfNFe",
+    "property": "Ide",
+    "reader": "ReadInfNFeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/emit/CNPJ",
+    "model": "Emitente",
+    "property": "CNPJ",
+    "reader": "ReadEmitenteAsync"
+  },
+  {
+    "path": "TNFe/infNFe/emit/CPF",
+    "model": "Emitente",
+    "property": "CPF",
+    "reader": "ReadEmitenteAsync"
+  },
+  {
+    "path": "TNFe/infNFe/emit/xNome",
+    "model": "Emitente",
+    "property": "XNome",
+    "reader": "ReadEmitenteAsync"
+  },
+  {
+    "path": "TNFe/infNFe/emit/xFant",
+    "model": "Emitente",
+    "property": "XFant",
+    "reader": "ReadEmitenteAsync"
+  },
+  {
+    "path": "TNFe/infNFe/emit/enderEmit/xLgr",
+    "model": "Endereco",
+    "property": "XLgr",
+    "reader": "ReadEnderecoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/emit/enderEmit/nro",
+    "model": "Endereco",
+    "property": "Nro",
+    "reader": "ReadEnderecoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/emit/enderEmit/xCpl",
+    "model": "Endereco",
+    "property": "XCpl",
+    "reader": "ReadEnderecoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/emit/enderEmit/xBairro",
+    "model": "Endereco",
+    "property": "XBairro",
+    "reader": "ReadEnderecoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/emit/enderEmit/cMun",
+    "model": "Endereco",
+    "property": "CMun",
+    "reader": "ReadEnderecoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/emit/enderEmit/xMun",
+    "model": "Endereco",
+    "property": "XMun",
+    "reader": "ReadEnderecoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/emit/enderEmit/UF",
+    "model": "Endereco",
+    "property": "UF",
+    "reader": "ReadEnderecoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/emit/enderEmit/CEP",
+    "model": "Endereco",
+    "property": "CEP",
+    "reader": "ReadEnderecoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/emit/enderEmit/cPais",
+    "model": "Endereco",
+    "property": "CPais",
+    "reader": "ReadEnderecoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/emit/enderEmit/xPais",
+    "model": "Endereco",
+    "property": "XPais",
+    "reader": "ReadEnderecoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/emit/enderEmit/fone",
+    "model": "Endereco",
+    "property": "Fone",
+    "reader": "ReadEnderecoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/emit/enderEmit",
+    "model": "Emitente",
+    "property": "EnderEmit",
+    "reader": "ReadEmitenteAsync"
+  },
+  {
+    "path": "TNFe/infNFe/emit/IE",
+    "model": "Emitente",
+    "property": "IE",
+    "reader": "ReadEmitenteAsync"
+  },
+  {
+    "path": "TNFe/infNFe/emit/IEST",
+    "model": "Emitente",
+    "property": "IEST",
+    "reader": "ReadEmitenteAsync"
+  },
+  {
+    "path": "TNFe/infNFe/emit/IM",
+    "model": "Emitente",
+    "property": "IM",
+    "reader": "ReadEmitenteAsync"
+  },
+  {
+    "path": "TNFe/infNFe/emit/CNAE",
+    "model": "Emitente",
+    "property": "CNAE",
+    "reader": "ReadEmitenteAsync"
+  },
+  {
+    "path": "TNFe/infNFe/emit/CRT",
+    "model": "Emitente",
+    "property": "CRT",
+    "reader": "ReadEmitenteAsync"
+  },
+  {
+    "path": "TNFe/infNFe/emit/ISUFEmit",
+    "model": "Emitente",
+    "property": "ISUFEmit",
+    "reader": "ReadEmitenteAsync"
+  },
+  {
+    "path": "TNFe/infNFe/emit",
+    "model": "InfNFe",
+    "property": "Emit",
+    "reader": "ReadInfNFeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/avulsa/CNPJ",
+    "model": "InfNFeAvulsa",
+    "property": "CNPJ",
+    "reader": "ReadInfNFeAvulsaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/avulsa/xOrgao",
+    "model": "InfNFeAvulsa",
+    "property": "XOrgao",
+    "reader": "ReadInfNFeAvulsaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/avulsa/matr",
+    "model": "InfNFeAvulsa",
+    "property": "Matr",
+    "reader": "ReadInfNFeAvulsaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/avulsa/xAgente",
+    "model": "InfNFeAvulsa",
+    "property": "XAgente",
+    "reader": "ReadInfNFeAvulsaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/avulsa/fone",
+    "model": "InfNFeAvulsa",
+    "property": "Fone",
+    "reader": "ReadInfNFeAvulsaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/avulsa/UF",
+    "model": "InfNFeAvulsa",
+    "property": "UF",
+    "reader": "ReadInfNFeAvulsaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/avulsa/nDAR",
+    "model": "InfNFeAvulsa",
+    "property": "NDAR",
+    "reader": "ReadInfNFeAvulsaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/avulsa/dEmi",
+    "model": "InfNFeAvulsa",
+    "property": "DEmi",
+    "reader": "ReadInfNFeAvulsaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/avulsa/vDAR",
+    "model": "InfNFeAvulsa",
+    "property": "VDAR",
+    "reader": "ReadInfNFeAvulsaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/avulsa/repEmi",
+    "model": "InfNFeAvulsa",
+    "property": "RepEmi",
+    "reader": "ReadInfNFeAvulsaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/avulsa/dPag",
+    "model": "InfNFeAvulsa",
+    "property": "DPag",
+    "reader": "ReadInfNFeAvulsaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/avulsa",
+    "model": "InfNFe",
+    "property": "Avulsa",
+    "reader": "ReadInfNFeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/dest/CNPJ",
+    "model": "Destinatario",
+    "property": "CNPJ",
+    "reader": "ReadDestinatarioAsync"
+  },
+  {
+    "path": "TNFe/infNFe/dest/CPF",
+    "model": "Destinatario",
+    "property": "CPF",
+    "reader": "ReadDestinatarioAsync"
+  },
+  {
+    "path": "TNFe/infNFe/dest/idEstrangeiro",
+    "model": "Destinatario",
+    "property": "IdEstrangeiro",
+    "reader": "ReadDestinatarioAsync"
+  },
+  {
+    "path": "TNFe/infNFe/dest/xNome",
+    "model": "Destinatario",
+    "property": "XNome",
+    "reader": "ReadDestinatarioAsync"
+  },
+  {
+    "path": "TNFe/infNFe/dest/enderDest/xLgr",
+    "model": "Endereco",
+    "property": "XLgr",
+    "reader": "ReadEnderecoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/dest/enderDest/nro",
+    "model": "Endereco",
+    "property": "Nro",
+    "reader": "ReadEnderecoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/dest/enderDest/xCpl",
+    "model": "Endereco",
+    "property": "XCpl",
+    "reader": "ReadEnderecoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/dest/enderDest/xBairro",
+    "model": "Endereco",
+    "property": "XBairro",
+    "reader": "ReadEnderecoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/dest/enderDest/cMun",
+    "model": "Endereco",
+    "property": "CMun",
+    "reader": "ReadEnderecoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/dest/enderDest/xMun",
+    "model": "Endereco",
+    "property": "XMun",
+    "reader": "ReadEnderecoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/dest/enderDest/UF",
+    "model": "Endereco",
+    "property": "UF",
+    "reader": "ReadEnderecoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/dest/enderDest/CEP",
+    "model": "Endereco",
+    "property": "CEP",
+    "reader": "ReadEnderecoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/dest/enderDest/cPais",
+    "model": "Endereco",
+    "property": "CPais",
+    "reader": "ReadEnderecoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/dest/enderDest/xPais",
+    "model": "Endereco",
+    "property": "XPais",
+    "reader": "ReadEnderecoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/dest/enderDest/fone",
+    "model": "Endereco",
+    "property": "Fone",
+    "reader": "ReadEnderecoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/dest/enderDest",
+    "model": "Destinatario",
+    "property": "EnderDest",
+    "reader": "ReadDestinatarioAsync"
+  },
+  {
+    "path": "TNFe/infNFe/dest/indIEDest",
+    "model": "Destinatario",
+    "property": "IndIEDest",
+    "reader": "ReadDestinatarioAsync"
+  },
+  {
+    "path": "TNFe/infNFe/dest/IE",
+    "model": "Destinatario",
+    "property": "IE",
+    "reader": "ReadDestinatarioAsync"
+  },
+  {
+    "path": "TNFe/infNFe/dest/ISUF",
+    "model": "Destinatario",
+    "property": "ISUF",
+    "reader": "ReadDestinatarioAsync"
+  },
+  {
+    "path": "TNFe/infNFe/dest/IM",
+    "model": "Destinatario",
+    "property": "IM",
+    "reader": "ReadDestinatarioAsync"
+  },
+  {
+    "path": "TNFe/infNFe/dest/email",
+    "model": "Destinatario",
+    "property": "Email",
+    "reader": "ReadDestinatarioAsync"
+  },
+  {
+    "path": "TNFe/infNFe/dest",
+    "model": "InfNFe",
+    "property": "Dest",
+    "reader": "ReadInfNFeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/retirada/CNPJ",
+    "model": "LocalRetirada",
+    "property": "CNPJ",
+    "reader": "ReadLocalRetiradaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/retirada/CPF",
+    "model": "LocalRetirada",
+    "property": "CPF",
+    "reader": "ReadLocalRetiradaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/retirada/xNome",
+    "model": "LocalRetirada",
+    "property": "XNome",
+    "reader": "ReadLocalRetiradaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/retirada/xLgr",
+    "model": "LocalRetirada",
+    "property": "XLgr",
+    "reader": "ReadLocalRetiradaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/retirada/nro",
+    "model": "LocalRetirada",
+    "property": "Nro",
+    "reader": "ReadLocalRetiradaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/retirada/xCpl",
+    "model": "LocalRetirada",
+    "property": "XCpl",
+    "reader": "ReadLocalRetiradaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/retirada/xBairro",
+    "model": "LocalRetirada",
+    "property": "XBairro",
+    "reader": "ReadLocalRetiradaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/retirada/cMun",
+    "model": "LocalRetirada",
+    "property": "CMun",
+    "reader": "ReadLocalRetiradaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/retirada/xMun",
+    "model": "LocalRetirada",
+    "property": "XMun",
+    "reader": "ReadLocalRetiradaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/retirada/UF",
+    "model": "LocalRetirada",
+    "property": "UF",
+    "reader": "ReadLocalRetiradaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/retirada/CEP",
+    "model": "LocalRetirada",
+    "property": "CEP",
+    "reader": "ReadLocalRetiradaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/retirada/cPais",
+    "model": "LocalRetirada",
+    "property": "CPais",
+    "reader": "ReadLocalRetiradaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/retirada/xPais",
+    "model": "LocalRetirada",
+    "property": "XPais",
+    "reader": "ReadLocalRetiradaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/retirada/fone",
+    "model": "LocalRetirada",
+    "property": "Fone",
+    "reader": "ReadLocalRetiradaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/retirada/email",
+    "model": "LocalRetirada",
+    "property": "Email",
+    "reader": "ReadLocalRetiradaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/retirada/IE",
+    "model": "LocalRetirada",
+    "property": "IE",
+    "reader": "ReadLocalRetiradaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/retirada",
+    "model": "InfNFe",
+    "property": "Retirada",
+    "reader": "ReadInfNFeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/entrega/CNPJ",
+    "model": "LocalEntrega",
+    "property": "CNPJ",
+    "reader": "ReadLocalEntregaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/entrega/CPF",
+    "model": "LocalEntrega",
+    "property": "CPF",
+    "reader": "ReadLocalEntregaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/entrega/xNome",
+    "model": "LocalEntrega",
+    "property": "XNome",
+    "reader": "ReadLocalEntregaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/entrega/xLgr",
+    "model": "LocalEntrega",
+    "property": "XLgr",
+    "reader": "ReadLocalEntregaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/entrega/nro",
+    "model": "LocalEntrega",
+    "property": "Nro",
+    "reader": "ReadLocalEntregaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/entrega/xCpl",
+    "model": "LocalEntrega",
+    "property": "XCpl",
+    "reader": "ReadLocalEntregaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/entrega/xBairro",
+    "model": "LocalEntrega",
+    "property": "XBairro",
+    "reader": "ReadLocalEntregaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/entrega/cMun",
+    "model": "LocalEntrega",
+    "property": "CMun",
+    "reader": "ReadLocalEntregaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/entrega/xMun",
+    "model": "LocalEntrega",
+    "property": "XMun",
+    "reader": "ReadLocalEntregaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/entrega/UF",
+    "model": "LocalEntrega",
+    "property": "UF",
+    "reader": "ReadLocalEntregaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/entrega/CEP",
+    "model": "LocalEntrega",
+    "property": "CEP",
+    "reader": "ReadLocalEntregaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/entrega/cPais",
+    "model": "LocalEntrega",
+    "property": "CPais",
+    "reader": "ReadLocalEntregaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/entrega/xPais",
+    "model": "LocalEntrega",
+    "property": "XPais",
+    "reader": "ReadLocalEntregaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/entrega/fone",
+    "model": "LocalEntrega",
+    "property": "Fone",
+    "reader": "ReadLocalEntregaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/entrega/email",
+    "model": "LocalEntrega",
+    "property": "Email",
+    "reader": "ReadLocalEntregaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/entrega/IE",
+    "model": "LocalEntrega",
+    "property": "IE",
+    "reader": "ReadLocalEntregaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/entrega",
+    "model": "InfNFe",
+    "property": "Entrega",
+    "reader": "ReadInfNFeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/autXML/CNPJ",
+    "model": "AutorizadoXml",
+    "property": "CNPJ",
+    "reader": "ReadAutorizadoXmlAsync"
+  },
+  {
+    "path": "TNFe/infNFe/autXML/CPF",
+    "model": "AutorizadoXml",
+    "property": "CPF",
+    "reader": "ReadAutorizadoXmlAsync"
+  },
+  {
+    "path": "TNFe/infNFe/autXML",
+    "model": "InfNFe",
+    "property": "AutXML",
+    "reader": "ReadInfNFeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/cProd",
+    "model": "Produto",
+    "property": "CProd",
+    "reader": "ReadProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/cEAN",
+    "model": "Produto",
+    "property": "CEAN",
+    "reader": "ReadProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/cBarra",
+    "model": "Produto",
+    "property": "CBarra",
+    "reader": "ReadProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/xProd",
+    "model": "Produto",
+    "property": "XProd",
+    "reader": "ReadProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/NCM",
+    "model": "Produto",
+    "property": "NCM",
+    "reader": "ReadProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/NVE",
+    "model": "Produto",
+    "property": "NVE",
+    "reader": "ReadProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/CEST",
+    "model": "Produto",
+    "property": "CEST",
+    "reader": "ReadProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/indEscala",
+    "model": "Produto",
+    "property": "IndEscala",
+    "reader": "ReadProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/CNPJFab",
+    "model": "Produto",
+    "property": "CNPJFab",
+    "reader": "ReadProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/cBenef",
+    "model": "Produto",
+    "property": "CBenef",
+    "reader": "ReadProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/gCred/cCredPresumido",
+    "model": "ProdutoGCred",
+    "property": "CCredPresumido",
+    "reader": "ReadProdutoGCredAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/gCred/pCredPresumido",
+    "model": "ProdutoGCred",
+    "property": "PCredPresumido",
+    "reader": "ReadProdutoGCredAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/gCred/vCredPresumido",
+    "model": "ProdutoGCred",
+    "property": "VCredPresumido",
+    "reader": "ReadProdutoGCredAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/gCred",
+    "model": "Produto",
+    "property": "GCred",
+    "reader": "ReadProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/tpCredPresIBSZFM",
+    "model": "Produto",
+    "property": "TpCredPresIBSZFM",
+    "reader": "ReadProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/EXTIPI",
+    "model": "Produto",
+    "property": "EXTIPI",
+    "reader": "ReadProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/CFOP",
+    "model": "Produto",
+    "property": "CFOP",
+    "reader": "ReadProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/uCom",
+    "model": "Produto",
+    "property": "UCom",
+    "reader": "ReadProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/qCom",
+    "model": "Produto",
+    "property": "QCom",
+    "reader": "ReadProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/vUnCom",
+    "model": "Produto",
+    "property": "VUnCom",
+    "reader": "ReadProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/vProd",
+    "model": "Produto",
+    "property": "VProd",
+    "reader": "ReadProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/cEANTrib",
+    "model": "Produto",
+    "property": "CEANTrib",
+    "reader": "ReadProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/cBarraTrib",
+    "model": "Produto",
+    "property": "CBarraTrib",
+    "reader": "ReadProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/uTrib",
+    "model": "Produto",
+    "property": "UTrib",
+    "reader": "ReadProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/qTrib",
+    "model": "Produto",
+    "property": "QTrib",
+    "reader": "ReadProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/vUnTrib",
+    "model": "Produto",
+    "property": "VUnTrib",
+    "reader": "ReadProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/vFrete",
+    "model": "Produto",
+    "property": "VFrete",
+    "reader": "ReadProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/vSeg",
+    "model": "Produto",
+    "property": "VSeg",
+    "reader": "ReadProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/vDesc",
+    "model": "Produto",
+    "property": "VDesc",
+    "reader": "ReadProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/vOutro",
+    "model": "Produto",
+    "property": "VOutro",
+    "reader": "ReadProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/indTot",
+    "model": "Produto",
+    "property": "IndTot",
+    "reader": "ReadProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/indBemMovelUsado",
+    "model": "Produto",
+    "property": "IndBemMovelUsado",
+    "reader": "ReadProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/DI/adi/nAdicao",
+    "model": "DeclaracaoImportacaoAdi",
+    "property": "NAdicao",
+    "reader": "ReadDeclaracaoImportacaoAdiAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/DI/adi/nSeqAdic",
+    "model": "DeclaracaoImportacaoAdi",
+    "property": "NSeqAdic",
+    "reader": "ReadDeclaracaoImportacaoAdiAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/DI/adi/cFabricante",
+    "model": "DeclaracaoImportacaoAdi",
+    "property": "CFabricante",
+    "reader": "ReadDeclaracaoImportacaoAdiAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/DI/adi/vDescDI",
+    "model": "DeclaracaoImportacaoAdi",
+    "property": "VDescDI",
+    "reader": "ReadDeclaracaoImportacaoAdiAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/DI/adi/nDraw",
+    "model": "DeclaracaoImportacaoAdi",
+    "property": "NDraw",
+    "reader": "ReadDeclaracaoImportacaoAdiAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/DI/nDI",
+    "model": "DeclaracaoImportacao",
+    "property": "NDI",
+    "reader": "ReadDeclaracaoImportacaoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/DI/dDI",
+    "model": "DeclaracaoImportacao",
+    "property": "DDI",
+    "reader": "ReadDeclaracaoImportacaoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/DI/xLocDesemb",
+    "model": "DeclaracaoImportacao",
+    "property": "XLocDesemb",
+    "reader": "ReadDeclaracaoImportacaoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/DI/UFDesemb",
+    "model": "DeclaracaoImportacao",
+    "property": "UFDesemb",
+    "reader": "ReadDeclaracaoImportacaoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/DI/dDesemb",
+    "model": "DeclaracaoImportacao",
+    "property": "DDesemb",
+    "reader": "ReadDeclaracaoImportacaoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/DI/tpViaTransp",
+    "model": "DeclaracaoImportacao",
+    "property": "TpViaTransp",
+    "reader": "ReadDeclaracaoImportacaoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/DI/vAFRMM",
+    "model": "DeclaracaoImportacao",
+    "property": "VAFRMM",
+    "reader": "ReadDeclaracaoImportacaoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/DI/tpIntermedio",
+    "model": "DeclaracaoImportacao",
+    "property": "TpIntermedio",
+    "reader": "ReadDeclaracaoImportacaoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/DI/CNPJ",
+    "model": "DeclaracaoImportacao",
+    "property": "CNPJ",
+    "reader": "ReadDeclaracaoImportacaoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/DI/CPF",
+    "model": "DeclaracaoImportacao",
+    "property": "CPF",
+    "reader": "ReadDeclaracaoImportacaoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/DI/UFTerceiro",
+    "model": "DeclaracaoImportacao",
+    "property": "UFTerceiro",
+    "reader": "ReadDeclaracaoImportacaoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/DI/cExportador",
+    "model": "DeclaracaoImportacao",
+    "property": "CExportador",
+    "reader": "ReadDeclaracaoImportacaoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/DI/adi",
+    "model": "DeclaracaoImportacao",
+    "property": "Adi",
+    "reader": "ReadDeclaracaoImportacaoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/DI",
+    "model": "Produto",
+    "property": "DI",
+    "reader": "ReadProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/detExport/exportInd/nRE",
+    "model": "DetalheExportacaoExportInd",
+    "property": "NRE",
+    "reader": "ReadDetalheExportacaoExportIndAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/detExport/exportInd/chNFe",
+    "model": "DetalheExportacaoExportInd",
+    "property": "ChNFe",
+    "reader": "ReadDetalheExportacaoExportIndAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/detExport/exportInd/qExport",
+    "model": "DetalheExportacaoExportInd",
+    "property": "QExport",
+    "reader": "ReadDetalheExportacaoExportIndAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/detExport/nDraw",
+    "model": "DetalheExportacao",
+    "property": "NDraw",
+    "reader": "ReadDetalheExportacaoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/detExport/exportInd",
+    "model": "DetalheExportacao",
+    "property": "ExportInd",
+    "reader": "ReadDetalheExportacaoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/detExport",
+    "model": "Produto",
+    "property": "DetExport",
+    "reader": "ReadProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/xPed",
+    "model": "Produto",
+    "property": "XPed",
+    "reader": "ReadProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/nItemPed",
+    "model": "Produto",
+    "property": "NItemPed",
+    "reader": "ReadProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/nFCI",
+    "model": "Produto",
+    "property": "NFCI",
+    "reader": "ReadProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/rastro/nLote",
+    "model": "Rastreabilidade",
+    "property": "NLote",
+    "reader": "ReadRastreabilidadeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/rastro/qLote",
+    "model": "Rastreabilidade",
+    "property": "QLote",
+    "reader": "ReadRastreabilidadeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/rastro/dFab",
+    "model": "Rastreabilidade",
+    "property": "DFab",
+    "reader": "ReadRastreabilidadeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/rastro/dVal",
+    "model": "Rastreabilidade",
+    "property": "DVal",
+    "reader": "ReadRastreabilidadeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/rastro/cAgreg",
+    "model": "Rastreabilidade",
+    "property": "CAgreg",
+    "reader": "ReadRastreabilidadeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/rastro",
+    "model": "Produto",
+    "property": "Rastro",
+    "reader": "ReadProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/infProdNFF/cProdFisco",
+    "model": "ProdutoInfProdNFF",
+    "property": "CProdFisco",
+    "reader": "ReadProdutoInfProdNFFAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/infProdNFF/cOperNFF",
+    "model": "ProdutoInfProdNFF",
+    "property": "COperNFF",
+    "reader": "ReadProdutoInfProdNFFAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/infProdNFF",
+    "model": "Produto",
+    "property": "InfProdNFF",
+    "reader": "ReadProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/infProdEmb/xEmb",
+    "model": "ProdutoInfProdEmb",
+    "property": "XEmb",
+    "reader": "ReadProdutoInfProdEmbAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/infProdEmb/qVolEmb",
+    "model": "ProdutoInfProdEmb",
+    "property": "QVolEmb",
+    "reader": "ReadProdutoInfProdEmbAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/infProdEmb/uEmb",
+    "model": "ProdutoInfProdEmb",
+    "property": "UEmb",
+    "reader": "ReadProdutoInfProdEmbAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/infProdEmb",
+    "model": "Produto",
+    "property": "InfProdEmb",
+    "reader": "ReadProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/veicProd/tpOp",
+    "model": "VeiculoProduto",
+    "property": "TpOp",
+    "reader": "ReadVeiculoProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/veicProd/chassi",
+    "model": "VeiculoProduto",
+    "property": "Chassi",
+    "reader": "ReadVeiculoProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/veicProd/cCor",
+    "model": "VeiculoProduto",
+    "property": "CCor",
+    "reader": "ReadVeiculoProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/veicProd/xCor",
+    "model": "VeiculoProduto",
+    "property": "XCor",
+    "reader": "ReadVeiculoProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/veicProd/pot",
+    "model": "VeiculoProduto",
+    "property": "Pot",
+    "reader": "ReadVeiculoProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/veicProd/cilin",
+    "model": "VeiculoProduto",
+    "property": "Cilin",
+    "reader": "ReadVeiculoProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/veicProd/pesoL",
+    "model": "VeiculoProduto",
+    "property": "PesoL",
+    "reader": "ReadVeiculoProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/veicProd/pesoB",
+    "model": "VeiculoProduto",
+    "property": "PesoB",
+    "reader": "ReadVeiculoProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/veicProd/nSerie",
+    "model": "VeiculoProduto",
+    "property": "NSerie",
+    "reader": "ReadVeiculoProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/veicProd/tpComb",
+    "model": "VeiculoProduto",
+    "property": "TpComb",
+    "reader": "ReadVeiculoProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/veicProd/nMotor",
+    "model": "VeiculoProduto",
+    "property": "NMotor",
+    "reader": "ReadVeiculoProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/veicProd/CMT",
+    "model": "VeiculoProduto",
+    "property": "CMT",
+    "reader": "ReadVeiculoProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/veicProd/dist",
+    "model": "VeiculoProduto",
+    "property": "Dist",
+    "reader": "ReadVeiculoProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/veicProd/anoMod",
+    "model": "VeiculoProduto",
+    "property": "AnoMod",
+    "reader": "ReadVeiculoProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/veicProd/anoFab",
+    "model": "VeiculoProduto",
+    "property": "AnoFab",
+    "reader": "ReadVeiculoProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/veicProd/tpPint",
+    "model": "VeiculoProduto",
+    "property": "TpPint",
+    "reader": "ReadVeiculoProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/veicProd/tpVeic",
+    "model": "VeiculoProduto",
+    "property": "TpVeic",
+    "reader": "ReadVeiculoProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/veicProd/espVeic",
+    "model": "VeiculoProduto",
+    "property": "EspVeic",
+    "reader": "ReadVeiculoProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/veicProd/VIN",
+    "model": "VeiculoProduto",
+    "property": "VIN",
+    "reader": "ReadVeiculoProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/veicProd/condVeic",
+    "model": "VeiculoProduto",
+    "property": "CondVeic",
+    "reader": "ReadVeiculoProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/veicProd/cMod",
+    "model": "VeiculoProduto",
+    "property": "CMod",
+    "reader": "ReadVeiculoProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/veicProd/cCorDENATRAN",
+    "model": "VeiculoProduto",
+    "property": "CCorDENATRAN",
+    "reader": "ReadVeiculoProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/veicProd/lota",
+    "model": "VeiculoProduto",
+    "property": "Lota",
+    "reader": "ReadVeiculoProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/veicProd/tpRest",
+    "model": "VeiculoProduto",
+    "property": "TpRest",
+    "reader": "ReadVeiculoProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/veicProd",
+    "model": "Produto",
+    "property": "VeicProd",
+    "reader": "ReadProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/med/cProdANVISA",
+    "model": "Medicamento",
+    "property": "CProdANVISA",
+    "reader": "ReadMedicamentoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/med/xMotivoIsencao",
+    "model": "Medicamento",
+    "property": "XMotivoIsencao",
+    "reader": "ReadMedicamentoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/med/vPMC",
+    "model": "Medicamento",
+    "property": "VPMC",
+    "reader": "ReadMedicamentoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/med",
+    "model": "Produto",
+    "property": "Med",
+    "reader": "ReadProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/arma/tpArma",
+    "model": "Armamento",
+    "property": "TpArma",
+    "reader": "ReadArmamentoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/arma/nSerie",
+    "model": "Armamento",
+    "property": "NSerie",
+    "reader": "ReadArmamentoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/arma/nCano",
+    "model": "Armamento",
+    "property": "NCano",
+    "reader": "ReadArmamentoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/arma/descr",
+    "model": "Armamento",
+    "property": "Descr",
+    "reader": "ReadArmamentoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/arma",
+    "model": "Produto",
+    "property": "Arma",
+    "reader": "ReadProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/comb/CIDE/qBCProd",
+    "model": "CombustivelCIDE",
+    "property": "QBCProd",
+    "reader": "ReadCombustivelCIDEAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/comb/CIDE/vAliqProd",
+    "model": "CombustivelCIDE",
+    "property": "VAliqProd",
+    "reader": "ReadCombustivelCIDEAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/comb/CIDE/vCIDE",
+    "model": "CombustivelCIDE",
+    "property": "VCIDE",
+    "reader": "ReadCombustivelCIDEAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/comb/encerrante/nBico",
+    "model": "CombustivelEncerrante",
+    "property": "NBico",
+    "reader": "ReadCombustivelEncerranteAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/comb/encerrante/nBomba",
+    "model": "CombustivelEncerrante",
+    "property": "NBomba",
+    "reader": "ReadCombustivelEncerranteAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/comb/encerrante/nTanque",
+    "model": "CombustivelEncerrante",
+    "property": "NTanque",
+    "reader": "ReadCombustivelEncerranteAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/comb/encerrante/vEncIni",
+    "model": "CombustivelEncerrante",
+    "property": "VEncIni",
+    "reader": "ReadCombustivelEncerranteAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/comb/encerrante/vEncFin",
+    "model": "CombustivelEncerrante",
+    "property": "VEncFin",
+    "reader": "ReadCombustivelEncerranteAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/comb/origComb/indImport",
+    "model": "CombustivelOrigComb",
+    "property": "IndImport",
+    "reader": "ReadCombustivelOrigCombAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/comb/origComb/cUFOrig",
+    "model": "CombustivelOrigComb",
+    "property": "CUFOrig",
+    "reader": "ReadCombustivelOrigCombAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/comb/origComb/pOrig",
+    "model": "CombustivelOrigComb",
+    "property": "POrig",
+    "reader": "ReadCombustivelOrigCombAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/comb/cProdANP",
+    "model": "Combustivel",
+    "property": "CProdANP",
+    "reader": "ReadCombustivelAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/comb/descANP",
+    "model": "Combustivel",
+    "property": "DescANP",
+    "reader": "ReadCombustivelAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/comb/pGLP",
+    "model": "Combustivel",
+    "property": "PGLP",
+    "reader": "ReadCombustivelAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/comb/pGNn",
+    "model": "Combustivel",
+    "property": "PGNn",
+    "reader": "ReadCombustivelAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/comb/pGNi",
+    "model": "Combustivel",
+    "property": "PGNi",
+    "reader": "ReadCombustivelAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/comb/vPart",
+    "model": "Combustivel",
+    "property": "VPart",
+    "reader": "ReadCombustivelAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/comb/CODIF",
+    "model": "Combustivel",
+    "property": "CODIF",
+    "reader": "ReadCombustivelAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/comb/qTemp",
+    "model": "Combustivel",
+    "property": "QTemp",
+    "reader": "ReadCombustivelAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/comb/UFCons",
+    "model": "Combustivel",
+    "property": "UFCons",
+    "reader": "ReadCombustivelAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/comb/CIDE",
+    "model": "Combustivel",
+    "property": "CIDE",
+    "reader": "ReadCombustivelAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/comb/encerrante",
+    "model": "Combustivel",
+    "property": "Encerrante",
+    "reader": "ReadCombustivelAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/comb/pBio",
+    "model": "Combustivel",
+    "property": "PBio",
+    "reader": "ReadCombustivelAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/comb/origComb",
+    "model": "Combustivel",
+    "property": "OrigComb",
+    "reader": "ReadCombustivelAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/comb",
+    "model": "Produto",
+    "property": "Comb",
+    "reader": "ReadProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod/nRECOPI",
+    "model": "Produto",
+    "property": "NRECOPI",
+    "reader": "ReadProdutoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/prod",
+    "model": "Item",
+    "property": "Prod",
+    "reader": "ReadItemAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/vTotTrib",
+    "model": "Imposto",
+    "property": "VTotTrib",
+    "reader": "ReadImpostoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS00/orig",
+    "model": "Icms00",
+    "property": "Orig",
+    "reader": "ReadIcms00Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS00/CST",
+    "model": "Icms00",
+    "property": "CST",
+    "reader": "ReadIcms00Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS00/modBC",
+    "model": "Icms00",
+    "property": "ModBC",
+    "reader": "ReadIcms00Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS00/vBC",
+    "model": "Icms00",
+    "property": "VBC",
+    "reader": "ReadIcms00Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS00/pICMS",
+    "model": "Icms00",
+    "property": "PICMS",
+    "reader": "ReadIcms00Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS00/vICMS",
+    "model": "Icms00",
+    "property": "VICMS",
+    "reader": "ReadIcms00Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS00/pFCP",
+    "model": "Icms00",
+    "property": "PFCP",
+    "reader": "ReadIcms00Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS00/vFCP",
+    "model": "Icms00",
+    "property": "VFCP",
+    "reader": "ReadIcms00Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS00",
+    "model": "Icms",
+    "property": "ICMS00",
+    "reader": "ReadIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS02/orig",
+    "model": "Icms02",
+    "property": "Orig",
+    "reader": "ReadIcms02Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS02/CST",
+    "model": "Icms02",
+    "property": "CST",
+    "reader": "ReadIcms02Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS02/qBCMono",
+    "model": "Icms02",
+    "property": "QBCMono",
+    "reader": "ReadIcms02Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS02/adRemICMS",
+    "model": "Icms02",
+    "property": "AdRemICMS",
+    "reader": "ReadIcms02Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS02/vICMSMono",
+    "model": "Icms02",
+    "property": "VICMSMono",
+    "reader": "ReadIcms02Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS10/orig",
+    "model": "Icms10",
+    "property": "Orig",
+    "reader": "ReadIcms10Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS10/CST",
+    "model": "Icms10",
+    "property": "CST",
+    "reader": "ReadIcms10Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS10/modBC",
+    "model": "Icms10",
+    "property": "ModBC",
+    "reader": "ReadIcms10Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS10/vBC",
+    "model": "Icms10",
+    "property": "VBC",
+    "reader": "ReadIcms10Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS10/pICMS",
+    "model": "Icms10",
+    "property": "PICMS",
+    "reader": "ReadIcms10Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS10/vICMS",
+    "model": "Icms10",
+    "property": "VICMS",
+    "reader": "ReadIcms10Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS10/vBCFCP",
+    "model": "Icms10",
+    "property": "VBCFCP",
+    "reader": "ReadIcms10Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS10/pFCP",
+    "model": "Icms10",
+    "property": "PFCP",
+    "reader": "ReadIcms10Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS10/vFCP",
+    "model": "Icms10",
+    "property": "VFCP",
+    "reader": "ReadIcms10Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS10/modBCST",
+    "model": "Icms10",
+    "property": "ModBCST",
+    "reader": "ReadIcms10Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS10/pMVAST",
+    "model": "Icms10",
+    "property": "PMVAST",
+    "reader": "ReadIcms10Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS10/pRedBCST",
+    "model": "Icms10",
+    "property": "PRedBCST",
+    "reader": "ReadIcms10Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS10/vBCST",
+    "model": "Icms10",
+    "property": "VBCST",
+    "reader": "ReadIcms10Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS10/pICMSST",
+    "model": "Icms10",
+    "property": "PICMSST",
+    "reader": "ReadIcms10Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS10/vICMSST",
+    "model": "Icms10",
+    "property": "VICMSST",
+    "reader": "ReadIcms10Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS10/vBCFCPST",
+    "model": "Icms10",
+    "property": "VBCFCPST",
+    "reader": "ReadIcms10Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS10/pFCPST",
+    "model": "Icms10",
+    "property": "PFCPST",
+    "reader": "ReadIcms10Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS10/vFCPST",
+    "model": "Icms10",
+    "property": "VFCPST",
+    "reader": "ReadIcms10Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS10/vICMSSTDeson",
+    "model": "Icms10",
+    "property": "VICMSSTDeson",
+    "reader": "ReadIcms10Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS10/motDesICMSST",
+    "model": "Icms10",
+    "property": "MotDesICMSST",
+    "reader": "ReadIcms10Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS10",
+    "model": "Icms",
+    "property": "ICMS10",
+    "reader": "ReadIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS15/orig",
+    "model": "Icms15",
+    "property": "Orig",
+    "reader": "ReadIcms15Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS15/CST",
+    "model": "Icms15",
+    "property": "CST",
+    "reader": "ReadIcms15Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS15/qBCMono",
+    "model": "Icms15",
+    "property": "QBCMono",
+    "reader": "ReadIcms15Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS15/adRemICMS",
+    "model": "Icms15",
+    "property": "AdRemICMS",
+    "reader": "ReadIcms15Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS15/vICMSMono",
+    "model": "Icms15",
+    "property": "VICMSMono",
+    "reader": "ReadIcms15Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS15/qBCMonoReten",
+    "model": "Icms15",
+    "property": "QBCMonoReten",
+    "reader": "ReadIcms15Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS15/adRemICMSReten",
+    "model": "Icms15",
+    "property": "AdRemICMSReten",
+    "reader": "ReadIcms15Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS15/vICMSMonoReten",
+    "model": "Icms15",
+    "property": "VICMSMonoReten",
+    "reader": "ReadIcms15Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS15/pRedAdRem",
+    "model": "Icms15",
+    "property": "PRedAdRem",
+    "reader": "ReadIcms15Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS15/motRedAdRem",
+    "model": "Icms15",
+    "property": "MotRedAdRem",
+    "reader": "ReadIcms15Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS20/orig",
+    "model": "Icms20",
+    "property": "Orig",
+    "reader": "ReadIcms20Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS20/CST",
+    "model": "Icms20",
+    "property": "CST",
+    "reader": "ReadIcms20Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS20/modBC",
+    "model": "Icms20",
+    "property": "ModBC",
+    "reader": "ReadIcms20Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS20/pRedBC",
+    "model": "Icms20",
+    "property": "PRedBC",
+    "reader": "ReadIcms20Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS20/vBC",
+    "model": "Icms20",
+    "property": "VBC",
+    "reader": "ReadIcms20Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS20/pICMS",
+    "model": "Icms20",
+    "property": "PICMS",
+    "reader": "ReadIcms20Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS20/vICMS",
+    "model": "Icms20",
+    "property": "VICMS",
+    "reader": "ReadIcms20Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS20/vBCFCP",
+    "model": "Icms20",
+    "property": "VBCFCP",
+    "reader": "ReadIcms20Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS20/pFCP",
+    "model": "Icms20",
+    "property": "PFCP",
+    "reader": "ReadIcms20Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS20/vFCP",
+    "model": "Icms20",
+    "property": "VFCP",
+    "reader": "ReadIcms20Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS20/vICMSDeson",
+    "model": "Icms20",
+    "property": "VICMSDeson",
+    "reader": "ReadIcms20Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS20/motDesICMS",
+    "model": "Icms20",
+    "property": "MotDesICMS",
+    "reader": "ReadIcms20Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS20/indDeduzDeson",
+    "model": "Icms20",
+    "property": "IndDeduzDeson",
+    "reader": "ReadIcms20Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS20",
+    "model": "Icms",
+    "property": "ICMS20",
+    "reader": "ReadIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS30/orig",
+    "model": "Icms30",
+    "property": "Orig",
+    "reader": "ReadIcms30Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS30/CST",
+    "model": "Icms30",
+    "property": "CST",
+    "reader": "ReadIcms30Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS30/modBCST",
+    "model": "Icms30",
+    "property": "ModBCST",
+    "reader": "ReadIcms30Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS30/pMVAST",
+    "model": "Icms30",
+    "property": "PMVAST",
+    "reader": "ReadIcms30Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS30/pRedBCST",
+    "model": "Icms30",
+    "property": "PRedBCST",
+    "reader": "ReadIcms30Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS30/vBCST",
+    "model": "Icms30",
+    "property": "VBCST",
+    "reader": "ReadIcms30Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS30/pICMSST",
+    "model": "Icms30",
+    "property": "PICMSST",
+    "reader": "ReadIcms30Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS30/vICMSST",
+    "model": "Icms30",
+    "property": "VICMSST",
+    "reader": "ReadIcms30Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS30/vBCFCPST",
+    "model": "Icms30",
+    "property": "VBCFCPST",
+    "reader": "ReadIcms30Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS30/pFCPST",
+    "model": "Icms30",
+    "property": "PFCPST",
+    "reader": "ReadIcms30Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS30/vFCPST",
+    "model": "Icms30",
+    "property": "VFCPST",
+    "reader": "ReadIcms30Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS30/vICMSDeson",
+    "model": "Icms30",
+    "property": "VICMSDeson",
+    "reader": "ReadIcms30Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS30/motDesICMS",
+    "model": "Icms30",
+    "property": "MotDesICMS",
+    "reader": "ReadIcms30Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS30/indDeduzDeson",
+    "model": "Icms30",
+    "property": "IndDeduzDeson",
+    "reader": "ReadIcms30Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS30",
+    "model": "Icms",
+    "property": "ICMS30",
+    "reader": "ReadIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS40/orig",
+    "model": "Icms40",
+    "property": "Orig",
+    "reader": "ReadIcms40Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS40/CST",
+    "model": "Icms40",
+    "property": "CST",
+    "reader": "ReadIcms40Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS40/vICMSDeson",
+    "model": "Icms40",
+    "property": "VICMSDeson",
+    "reader": "ReadIcms40Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS40/motDesICMS",
+    "model": "Icms40",
+    "property": "MotDesICMS",
+    "reader": "ReadIcms40Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS40/indDeduzDeson",
+    "model": "Icms40",
+    "property": "IndDeduzDeson",
+    "reader": "ReadIcms40Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS40",
+    "model": "Icms",
+    "property": "ICMS40",
+    "reader": "ReadIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS51/orig",
+    "model": "Icms51",
+    "property": "Orig",
+    "reader": "ReadIcms51Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS51/CST",
+    "model": "Icms51",
+    "property": "CST",
+    "reader": "ReadIcms51Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS51/modBC",
+    "model": "Icms51",
+    "property": "ModBC",
+    "reader": "ReadIcms51Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS51/pRedBC",
+    "model": "Icms51",
+    "property": "PRedBC",
+    "reader": "ReadIcms51Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS51/cBenefRBC",
+    "model": "Icms51",
+    "property": "CBenefRBC",
+    "reader": "ReadIcms51Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS51/vBC",
+    "model": "Icms51",
+    "property": "VBC",
+    "reader": "ReadIcms51Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS51/pICMS",
+    "model": "Icms51",
+    "property": "PICMS",
+    "reader": "ReadIcms51Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS51/vICMSOp",
+    "model": "Icms51",
+    "property": "VICMSOp",
+    "reader": "ReadIcms51Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS51/pDif",
+    "model": "Icms51",
+    "property": "PDif",
+    "reader": "ReadIcms51Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS51/vICMSDif",
+    "model": "Icms51",
+    "property": "VICMSDif",
+    "reader": "ReadIcms51Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS51/vICMS",
+    "model": "Icms51",
+    "property": "VICMS",
+    "reader": "ReadIcms51Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS51/vBCFCP",
+    "model": "Icms51",
+    "property": "VBCFCP",
+    "reader": "ReadIcms51Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS51/pFCP",
+    "model": "Icms51",
+    "property": "PFCP",
+    "reader": "ReadIcms51Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS51/vFCP",
+    "model": "Icms51",
+    "property": "VFCP",
+    "reader": "ReadIcms51Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS51/pFCPDif",
+    "model": "Icms51",
+    "property": "PFCPDif",
+    "reader": "ReadIcms51Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS51/vFCPDif",
+    "model": "Icms51",
+    "property": "VFCPDif",
+    "reader": "ReadIcms51Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS51/vFCPEfet",
+    "model": "Icms51",
+    "property": "VFCPEfet",
+    "reader": "ReadIcms51Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS51",
+    "model": "Icms",
+    "property": "ICMS51",
+    "reader": "ReadIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS53/orig",
+    "model": "Icms53",
+    "property": "Orig",
+    "reader": "ReadIcms53Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS53/CST",
+    "model": "Icms53",
+    "property": "CST",
+    "reader": "ReadIcms53Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS53/qBCMono",
+    "model": "Icms53",
+    "property": "QBCMono",
+    "reader": "ReadIcms53Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS53/adRemICMS",
+    "model": "Icms53",
+    "property": "AdRemICMS",
+    "reader": "ReadIcms53Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS53/vICMSMonoOp",
+    "model": "Icms53",
+    "property": "VICMSMonoOp",
+    "reader": "ReadIcms53Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS53/pDif",
+    "model": "Icms53",
+    "property": "PDif",
+    "reader": "ReadIcms53Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS53/vICMSMonoDif",
+    "model": "Icms53",
+    "property": "VICMSMonoDif",
+    "reader": "ReadIcms53Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS53/vICMSMono",
+    "model": "Icms53",
+    "property": "VICMSMono",
+    "reader": "ReadIcms53Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS53/qBCMonoDif",
+    "model": "Icms53",
+    "property": "QBCMonoDif",
+    "reader": "ReadIcms53Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS53/adRemICMSDif",
+    "model": "Icms53",
+    "property": "AdRemICMSDif",
+    "reader": "ReadIcms53Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS60/orig",
+    "model": "Icms60",
+    "property": "Orig",
+    "reader": "ReadIcms60Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS60/CST",
+    "model": "Icms60",
+    "property": "CST",
+    "reader": "ReadIcms60Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS60/vBCSTRet",
+    "model": "Icms60",
+    "property": "VBCSTRet",
+    "reader": "ReadIcms60Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS60/pST",
+    "model": "Icms60",
+    "property": "PST",
+    "reader": "ReadIcms60Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS60/vICMSSubstituto",
+    "model": "Icms60",
+    "property": "VICMSSubstituto",
+    "reader": "ReadIcms60Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS60/vICMSSTRet",
+    "model": "Icms60",
+    "property": "VICMSSTRet",
+    "reader": "ReadIcms60Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS60/vBCFCPSTRet",
+    "model": "Icms60",
+    "property": "VBCFCPSTRet",
+    "reader": "ReadIcms60Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS60/pFCPSTRet",
+    "model": "Icms60",
+    "property": "PFCPSTRet",
+    "reader": "ReadIcms60Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS60/vFCPSTRet",
+    "model": "Icms60",
+    "property": "VFCPSTRet",
+    "reader": "ReadIcms60Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS60/pRedBCEfet",
+    "model": "Icms60",
+    "property": "PRedBCEfet",
+    "reader": "ReadIcms60Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS60/vBCEfet",
+    "model": "Icms60",
+    "property": "VBCEfet",
+    "reader": "ReadIcms60Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS60/pICMSEfet",
+    "model": "Icms60",
+    "property": "PICMSEfet",
+    "reader": "ReadIcms60Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS60/vICMSEfet",
+    "model": "Icms60",
+    "property": "VICMSEfet",
+    "reader": "ReadIcms60Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS60",
+    "model": "Icms",
+    "property": "ICMS60",
+    "reader": "ReadIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS61/orig",
+    "model": "Icms61",
+    "property": "Orig",
+    "reader": "ReadIcms61Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS61/CST",
+    "model": "Icms61",
+    "property": "CST",
+    "reader": "ReadIcms61Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS61/qBCMonoRet",
+    "model": "Icms61",
+    "property": "QBCMonoRet",
+    "reader": "ReadIcms61Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS61/adRemICMSRet",
+    "model": "Icms61",
+    "property": "AdRemICMSRet",
+    "reader": "ReadIcms61Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS61/vICMSMonoRet",
+    "model": "Icms61",
+    "property": "VICMSMonoRet",
+    "reader": "ReadIcms61Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS70/orig",
+    "model": "Icms70",
+    "property": "Orig",
+    "reader": "ReadIcms70Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS70/CST",
+    "model": "Icms70",
+    "property": "CST",
+    "reader": "ReadIcms70Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS70/modBC",
+    "model": "Icms70",
+    "property": "ModBC",
+    "reader": "ReadIcms70Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS70/pRedBC",
+    "model": "Icms70",
+    "property": "PRedBC",
+    "reader": "ReadIcms70Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS70/vBC",
+    "model": "Icms70",
+    "property": "VBC",
+    "reader": "ReadIcms70Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS70/pICMS",
+    "model": "Icms70",
+    "property": "PICMS",
+    "reader": "ReadIcms70Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS70/vICMS",
+    "model": "Icms70",
+    "property": "VICMS",
+    "reader": "ReadIcms70Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS70/vBCFCP",
+    "model": "Icms70",
+    "property": "VBCFCP",
+    "reader": "ReadIcms70Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS70/pFCP",
+    "model": "Icms70",
+    "property": "PFCP",
+    "reader": "ReadIcms70Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS70/vFCP",
+    "model": "Icms70",
+    "property": "VFCP",
+    "reader": "ReadIcms70Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS70/modBCST",
+    "model": "Icms70",
+    "property": "ModBCST",
+    "reader": "ReadIcms70Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS70/pMVAST",
+    "model": "Icms70",
+    "property": "PMVAST",
+    "reader": "ReadIcms70Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS70/pRedBCST",
+    "model": "Icms70",
+    "property": "PRedBCST",
+    "reader": "ReadIcms70Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS70/vBCST",
+    "model": "Icms70",
+    "property": "VBCST",
+    "reader": "ReadIcms70Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS70/pICMSST",
+    "model": "Icms70",
+    "property": "PICMSST",
+    "reader": "ReadIcms70Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS70/vICMSST",
+    "model": "Icms70",
+    "property": "VICMSST",
+    "reader": "ReadIcms70Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS70/vBCFCPST",
+    "model": "Icms70",
+    "property": "VBCFCPST",
+    "reader": "ReadIcms70Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS70/pFCPST",
+    "model": "Icms70",
+    "property": "PFCPST",
+    "reader": "ReadIcms70Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS70/vFCPST",
+    "model": "Icms70",
+    "property": "VFCPST",
+    "reader": "ReadIcms70Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS70/vICMSDeson",
+    "model": "Icms70",
+    "property": "VICMSDeson",
+    "reader": "ReadIcms70Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS70/motDesICMS",
+    "model": "Icms70",
+    "property": "MotDesICMS",
+    "reader": "ReadIcms70Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS70/indDeduzDeson",
+    "model": "Icms70",
+    "property": "IndDeduzDeson",
+    "reader": "ReadIcms70Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS70/vICMSSTDeson",
+    "model": "Icms70",
+    "property": "VICMSSTDeson",
+    "reader": "ReadIcms70Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS70/motDesICMSST",
+    "model": "Icms70",
+    "property": "MotDesICMSST",
+    "reader": "ReadIcms70Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS70",
+    "model": "Icms",
+    "property": "ICMS70",
+    "reader": "ReadIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS90/orig",
+    "model": "Icms90",
+    "property": "Orig",
+    "reader": "ReadIcms90Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS90/CST",
+    "model": "Icms90",
+    "property": "CST",
+    "reader": "ReadIcms90Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS90/modBC",
+    "model": "Icms90",
+    "property": "ModBC",
+    "reader": "ReadIcms90Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS90/vBC",
+    "model": "Icms90",
+    "property": "VBC",
+    "reader": "ReadIcms90Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS90/pRedBC",
+    "model": "Icms90",
+    "property": "PRedBC",
+    "reader": "ReadIcms90Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS90/cBenefRBC",
+    "model": "Icms90",
+    "property": "CBenefRBC",
+    "reader": "ReadIcms90Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS90/pICMS",
+    "model": "Icms90",
+    "property": "PICMS",
+    "reader": "ReadIcms90Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS90/vICMSOp",
+    "model": "Icms90",
+    "property": "VICMSOp",
+    "reader": "ReadIcms90Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS90/pDif",
+    "model": "Icms90",
+    "property": "PDif",
+    "reader": "ReadIcms90Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS90/vICMSDif",
+    "model": "Icms90",
+    "property": "VICMSDif",
+    "reader": "ReadIcms90Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS90/vICMS",
+    "model": "Icms90",
+    "property": "VICMS",
+    "reader": "ReadIcms90Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS90/vBCFCP",
+    "model": "Icms90",
+    "property": "VBCFCP",
+    "reader": "ReadIcms90Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS90/pFCP",
+    "model": "Icms90",
+    "property": "PFCP",
+    "reader": "ReadIcms90Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS90/vFCP",
+    "model": "Icms90",
+    "property": "VFCP",
+    "reader": "ReadIcms90Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS90/pFCPDif",
+    "model": "Icms90",
+    "property": "PFCPDif",
+    "reader": "ReadIcms90Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS90/vFCPDif",
+    "model": "Icms90",
+    "property": "VFCPDif",
+    "reader": "ReadIcms90Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS90/vFCPEfet",
+    "model": "Icms90",
+    "property": "VFCPEfet",
+    "reader": "ReadIcms90Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS90/modBCST",
+    "model": "Icms90",
+    "property": "ModBCST",
+    "reader": "ReadIcms90Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS90/pMVAST",
+    "model": "Icms90",
+    "property": "PMVAST",
+    "reader": "ReadIcms90Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS90/pRedBCST",
+    "model": "Icms90",
+    "property": "PRedBCST",
+    "reader": "ReadIcms90Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS90/vBCST",
+    "model": "Icms90",
+    "property": "VBCST",
+    "reader": "ReadIcms90Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS90/pICMSST",
+    "model": "Icms90",
+    "property": "PICMSST",
+    "reader": "ReadIcms90Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS90/vICMSST",
+    "model": "Icms90",
+    "property": "VICMSST",
+    "reader": "ReadIcms90Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS90/vBCFCPST",
+    "model": "Icms90",
+    "property": "VBCFCPST",
+    "reader": "ReadIcms90Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS90/pFCPST",
+    "model": "Icms90",
+    "property": "PFCPST",
+    "reader": "ReadIcms90Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS90/vFCPST",
+    "model": "Icms90",
+    "property": "VFCPST",
+    "reader": "ReadIcms90Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS90/vICMSDeson",
+    "model": "Icms90",
+    "property": "VICMSDeson",
+    "reader": "ReadIcms90Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS90/motDesICMS",
+    "model": "Icms90",
+    "property": "MotDesICMS",
+    "reader": "ReadIcms90Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS90/indDeduzDeson",
+    "model": "Icms90",
+    "property": "IndDeduzDeson",
+    "reader": "ReadIcms90Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS90/vICMSSTDeson",
+    "model": "Icms90",
+    "property": "VICMSSTDeson",
+    "reader": "ReadIcms90Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS90/motDesICMSST",
+    "model": "Icms90",
+    "property": "MotDesICMSST",
+    "reader": "ReadIcms90Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMS90",
+    "model": "Icms",
+    "property": "ICMS90",
+    "reader": "ReadIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSPart/orig",
+    "model": "IcmsPart",
+    "property": "Orig",
+    "reader": "ReadIcmsPartAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSPart/CST",
+    "model": "IcmsPart",
+    "property": "CST",
+    "reader": "ReadIcmsPartAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSPart/modBC",
+    "model": "IcmsPart",
+    "property": "ModBC",
+    "reader": "ReadIcmsPartAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSPart/vBC",
+    "model": "IcmsPart",
+    "property": "VBC",
+    "reader": "ReadIcmsPartAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSPart/pRedBC",
+    "model": "IcmsPart",
+    "property": "PRedBC",
+    "reader": "ReadIcmsPartAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSPart/pICMS",
+    "model": "IcmsPart",
+    "property": "PICMS",
+    "reader": "ReadIcmsPartAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSPart/vICMS",
+    "model": "IcmsPart",
+    "property": "VICMS",
+    "reader": "ReadIcmsPartAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSPart/modBCST",
+    "model": "IcmsPart",
+    "property": "ModBCST",
+    "reader": "ReadIcmsPartAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSPart/pMVAST",
+    "model": "IcmsPart",
+    "property": "PMVAST",
+    "reader": "ReadIcmsPartAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSPart/pRedBCST",
+    "model": "IcmsPart",
+    "property": "PRedBCST",
+    "reader": "ReadIcmsPartAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSPart/vBCST",
+    "model": "IcmsPart",
+    "property": "VBCST",
+    "reader": "ReadIcmsPartAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSPart/pICMSST",
+    "model": "IcmsPart",
+    "property": "PICMSST",
+    "reader": "ReadIcmsPartAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSPart/vICMSST",
+    "model": "IcmsPart",
+    "property": "VICMSST",
+    "reader": "ReadIcmsPartAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSPart/vBCFCPST",
+    "model": "IcmsPart",
+    "property": "VBCFCPST",
+    "reader": "ReadIcmsPartAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSPart/pFCPST",
+    "model": "IcmsPart",
+    "property": "PFCPST",
+    "reader": "ReadIcmsPartAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSPart/vFCPST",
+    "model": "IcmsPart",
+    "property": "VFCPST",
+    "reader": "ReadIcmsPartAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSPart/pBCOp",
+    "model": "IcmsPart",
+    "property": "PBCOp",
+    "reader": "ReadIcmsPartAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSPart/UFST",
+    "model": "IcmsPart",
+    "property": "UFST",
+    "reader": "ReadIcmsPartAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSPart/vICMSDeson",
+    "model": "IcmsPart",
+    "property": "VICMSDeson",
+    "reader": "ReadIcmsPartAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSPart/motDesICMS",
+    "model": "IcmsPart",
+    "property": "MotDesICMS",
+    "reader": "ReadIcmsPartAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSPart/indDeduzDeson",
+    "model": "IcmsPart",
+    "property": "IndDeduzDeson",
+    "reader": "ReadIcmsPartAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSPart",
+    "model": "Icms",
+    "property": "ICMSPart",
+    "reader": "ReadIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSST/orig",
+    "model": "IcmsST",
+    "property": "Orig",
+    "reader": "ReadIcmsSTAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSST/CST",
+    "model": "IcmsST",
+    "property": "CST",
+    "reader": "ReadIcmsSTAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSST/vBCSTRet",
+    "model": "IcmsST",
+    "property": "VBCSTRet",
+    "reader": "ReadIcmsSTAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSST/pST",
+    "model": "IcmsST",
+    "property": "PST",
+    "reader": "ReadIcmsSTAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSST/vICMSSubstituto",
+    "model": "IcmsST",
+    "property": "VICMSSubstituto",
+    "reader": "ReadIcmsSTAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSST/vICMSSTRet",
+    "model": "IcmsST",
+    "property": "VICMSSTRet",
+    "reader": "ReadIcmsSTAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSST/vBCFCPSTRet",
+    "model": "IcmsST",
+    "property": "VBCFCPSTRet",
+    "reader": "ReadIcmsSTAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSST/pFCPSTRet",
+    "model": "IcmsST",
+    "property": "PFCPSTRet",
+    "reader": "ReadIcmsSTAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSST/vFCPSTRet",
+    "model": "IcmsST",
+    "property": "VFCPSTRet",
+    "reader": "ReadIcmsSTAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSST/vBCSTDest",
+    "model": "IcmsST",
+    "property": "VBCSTDest",
+    "reader": "ReadIcmsSTAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSST/vICMSSTDest",
+    "model": "IcmsST",
+    "property": "VICMSSTDest",
+    "reader": "ReadIcmsSTAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSST/pRedBCEfet",
+    "model": "IcmsST",
+    "property": "PRedBCEfet",
+    "reader": "ReadIcmsSTAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSST/vBCEfet",
+    "model": "IcmsST",
+    "property": "VBCEfet",
+    "reader": "ReadIcmsSTAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSST/pICMSEfet",
+    "model": "IcmsST",
+    "property": "PICMSEfet",
+    "reader": "ReadIcmsSTAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSST/vICMSEfet",
+    "model": "IcmsST",
+    "property": "VICMSEfet",
+    "reader": "ReadIcmsSTAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSST",
+    "model": "Icms",
+    "property": "ICMSST",
+    "reader": "ReadIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN101/orig",
+    "model": "IcmsSN101",
+    "property": "Orig",
+    "reader": "ReadIcmsSN101Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN101/CSOSN",
+    "model": "IcmsSN101",
+    "property": "CSOSN",
+    "reader": "ReadIcmsSN101Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN101/pCredSN",
+    "model": "IcmsSN101",
+    "property": "PCredSN",
+    "reader": "ReadIcmsSN101Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN101/vCredICMSSN",
+    "model": "IcmsSN101",
+    "property": "VCredICMSSN",
+    "reader": "ReadIcmsSN101Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN101",
+    "model": "Icms",
+    "property": "ICMSSN101",
+    "reader": "ReadIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN102/orig",
+    "model": "IcmsSN102",
+    "property": "Orig",
+    "reader": "ReadIcmsSN102Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN102/CSOSN",
+    "model": "IcmsSN102",
+    "property": "CSOSN",
+    "reader": "ReadIcmsSN102Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN102",
+    "model": "Icms",
+    "property": "ICMSSN102",
+    "reader": "ReadIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN201/orig",
+    "model": "IcmsSN201",
+    "property": "Orig",
+    "reader": "ReadIcmsSN201Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN201/CSOSN",
+    "model": "IcmsSN201",
+    "property": "CSOSN",
+    "reader": "ReadIcmsSN201Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN201/modBCST",
+    "model": "IcmsSN201",
+    "property": "ModBCST",
+    "reader": "ReadIcmsSN201Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN201/pMVAST",
+    "model": "IcmsSN201",
+    "property": "PMVAST",
+    "reader": "ReadIcmsSN201Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN201/pRedBCST",
+    "model": "IcmsSN201",
+    "property": "PRedBCST",
+    "reader": "ReadIcmsSN201Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN201/vBCST",
+    "model": "IcmsSN201",
+    "property": "VBCST",
+    "reader": "ReadIcmsSN201Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN201/pICMSST",
+    "model": "IcmsSN201",
+    "property": "PICMSST",
+    "reader": "ReadIcmsSN201Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN201/vICMSST",
+    "model": "IcmsSN201",
+    "property": "VICMSST",
+    "reader": "ReadIcmsSN201Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN201/vBCFCPST",
+    "model": "IcmsSN201",
+    "property": "VBCFCPST",
+    "reader": "ReadIcmsSN201Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN201/pFCPST",
+    "model": "IcmsSN201",
+    "property": "PFCPST",
+    "reader": "ReadIcmsSN201Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN201/vFCPST",
+    "model": "IcmsSN201",
+    "property": "VFCPST",
+    "reader": "ReadIcmsSN201Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN201/pCredSN",
+    "model": "IcmsSN201",
+    "property": "PCredSN",
+    "reader": "ReadIcmsSN201Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN201/vCredICMSSN",
+    "model": "IcmsSN201",
+    "property": "VCredICMSSN",
+    "reader": "ReadIcmsSN201Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN201",
+    "model": "Icms",
+    "property": "ICMSSN201",
+    "reader": "ReadIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN202/orig",
+    "model": "IcmsSN202",
+    "property": "Orig",
+    "reader": "ReadIcmsSN202Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN202/CSOSN",
+    "model": "IcmsSN202",
+    "property": "CSOSN",
+    "reader": "ReadIcmsSN202Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN202/modBCST",
+    "model": "IcmsSN202",
+    "property": "ModBCST",
+    "reader": "ReadIcmsSN202Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN202/pMVAST",
+    "model": "IcmsSN202",
+    "property": "PMVAST",
+    "reader": "ReadIcmsSN202Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN202/pRedBCST",
+    "model": "IcmsSN202",
+    "property": "PRedBCST",
+    "reader": "ReadIcmsSN202Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN202/vBCST",
+    "model": "IcmsSN202",
+    "property": "VBCST",
+    "reader": "ReadIcmsSN202Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN202/pICMSST",
+    "model": "IcmsSN202",
+    "property": "PICMSST",
+    "reader": "ReadIcmsSN202Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN202/vICMSST",
+    "model": "IcmsSN202",
+    "property": "VICMSST",
+    "reader": "ReadIcmsSN202Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN202/vBCFCPST",
+    "model": "IcmsSN202",
+    "property": "VBCFCPST",
+    "reader": "ReadIcmsSN202Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN202/pFCPST",
+    "model": "IcmsSN202",
+    "property": "PFCPST",
+    "reader": "ReadIcmsSN202Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN202/vFCPST",
+    "model": "IcmsSN202",
+    "property": "VFCPST",
+    "reader": "ReadIcmsSN202Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN202",
+    "model": "Icms",
+    "property": "ICMSSN202",
+    "reader": "ReadIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN500/orig",
+    "model": "IcmsSN500",
+    "property": "Orig",
+    "reader": "ReadIcmsSN500Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN500/CSOSN",
+    "model": "IcmsSN500",
+    "property": "CSOSN",
+    "reader": "ReadIcmsSN500Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN500/vBCSTRet",
+    "model": "IcmsSN500",
+    "property": "VBCSTRet",
+    "reader": "ReadIcmsSN500Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN500/pST",
+    "model": "IcmsSN500",
+    "property": "PST",
+    "reader": "ReadIcmsSN500Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN500/vICMSSubstituto",
+    "model": "IcmsSN500",
+    "property": "VICMSSubstituto",
+    "reader": "ReadIcmsSN500Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN500/vICMSSTRet",
+    "model": "IcmsSN500",
+    "property": "VICMSSTRet",
+    "reader": "ReadIcmsSN500Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN500/vBCFCPSTRet",
+    "model": "IcmsSN500",
+    "property": "VBCFCPSTRet",
+    "reader": "ReadIcmsSN500Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN500/pFCPSTRet",
+    "model": "IcmsSN500",
+    "property": "PFCPSTRet",
+    "reader": "ReadIcmsSN500Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN500/vFCPSTRet",
+    "model": "IcmsSN500",
+    "property": "VFCPSTRet",
+    "reader": "ReadIcmsSN500Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN500/pRedBCEfet",
+    "model": "IcmsSN500",
+    "property": "PRedBCEfet",
+    "reader": "ReadIcmsSN500Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN500/vBCEfet",
+    "model": "IcmsSN500",
+    "property": "VBCEfet",
+    "reader": "ReadIcmsSN500Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN500/pICMSEfet",
+    "model": "IcmsSN500",
+    "property": "PICMSEfet",
+    "reader": "ReadIcmsSN500Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN500/vICMSEfet",
+    "model": "IcmsSN500",
+    "property": "VICMSEfet",
+    "reader": "ReadIcmsSN500Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN500",
+    "model": "Icms",
+    "property": "ICMSSN500",
+    "reader": "ReadIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN900/orig",
+    "model": "IcmsSN900",
+    "property": "Orig",
+    "reader": "ReadIcmsSN900Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN900/CSOSN",
+    "model": "IcmsSN900",
+    "property": "CSOSN",
+    "reader": "ReadIcmsSN900Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN900/modBC",
+    "model": "IcmsSN900",
+    "property": "ModBC",
+    "reader": "ReadIcmsSN900Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN900/vBC",
+    "model": "IcmsSN900",
+    "property": "VBC",
+    "reader": "ReadIcmsSN900Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN900/pRedBC",
+    "model": "IcmsSN900",
+    "property": "PRedBC",
+    "reader": "ReadIcmsSN900Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN900/pICMS",
+    "model": "IcmsSN900",
+    "property": "PICMS",
+    "reader": "ReadIcmsSN900Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN900/vICMS",
+    "model": "IcmsSN900",
+    "property": "VICMS",
+    "reader": "ReadIcmsSN900Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN900/modBCST",
+    "model": "IcmsSN900",
+    "property": "ModBCST",
+    "reader": "ReadIcmsSN900Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN900/pMVAST",
+    "model": "IcmsSN900",
+    "property": "PMVAST",
+    "reader": "ReadIcmsSN900Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN900/pRedBCST",
+    "model": "IcmsSN900",
+    "property": "PRedBCST",
+    "reader": "ReadIcmsSN900Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN900/vBCST",
+    "model": "IcmsSN900",
+    "property": "VBCST",
+    "reader": "ReadIcmsSN900Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN900/pICMSST",
+    "model": "IcmsSN900",
+    "property": "PICMSST",
+    "reader": "ReadIcmsSN900Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN900/vICMSST",
+    "model": "IcmsSN900",
+    "property": "VICMSST",
+    "reader": "ReadIcmsSN900Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN900/vBCFCPST",
+    "model": "IcmsSN900",
+    "property": "VBCFCPST",
+    "reader": "ReadIcmsSN900Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN900/pFCPST",
+    "model": "IcmsSN900",
+    "property": "PFCPST",
+    "reader": "ReadIcmsSN900Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN900/vFCPST",
+    "model": "IcmsSN900",
+    "property": "VFCPST",
+    "reader": "ReadIcmsSN900Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN900/pCredSN",
+    "model": "IcmsSN900",
+    "property": "PCredSN",
+    "reader": "ReadIcmsSN900Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN900/vCredICMSSN",
+    "model": "IcmsSN900",
+    "property": "VCredICMSSN",
+    "reader": "ReadIcmsSN900Async"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS/ICMSSN900",
+    "model": "Icms",
+    "property": "ICMSSN900",
+    "reader": "ReadIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMS",
+    "model": "Imposto",
+    "property": "ICMS",
+    "reader": "ReadImpostoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IPI/CNPJProd",
+    "model": "Ipi",
+    "property": "CNPJProd",
+    "reader": "ReadIpiAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IPI/cSelo",
+    "model": "Ipi",
+    "property": "CSelo",
+    "reader": "ReadIpiAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IPI/qSelo",
+    "model": "Ipi",
+    "property": "QSelo",
+    "reader": "ReadIpiAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IPI/cEnq",
+    "model": "Ipi",
+    "property": "CEnq",
+    "reader": "ReadIpiAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IPI/IPITrib/CST",
+    "model": "IpiTrib",
+    "property": "CST",
+    "reader": "ReadIpiTribAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IPI/IPITrib/vBC",
+    "model": "IpiTrib",
+    "property": "VBC",
+    "reader": "ReadIpiTribAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IPI/IPITrib/pIPI",
+    "model": "IpiTrib",
+    "property": "PIPI",
+    "reader": "ReadIpiTribAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IPI/IPITrib/qUnid",
+    "model": "IpiTrib",
+    "property": "QUnid",
+    "reader": "ReadIpiTribAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IPI/IPITrib/vUnid",
+    "model": "IpiTrib",
+    "property": "VUnid",
+    "reader": "ReadIpiTribAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IPI/IPITrib/vIPI",
+    "model": "IpiTrib",
+    "property": "VIPI",
+    "reader": "ReadIpiTribAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IPI/IPITrib",
+    "model": "Ipi",
+    "property": "IPITrib",
+    "reader": "ReadIpiAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IPI/IPINT/CST",
+    "model": "IpiNt",
+    "property": "CST",
+    "reader": "ReadIpiNtAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IPI/IPINT",
+    "model": "Ipi",
+    "property": "IPINT",
+    "reader": "ReadIpiAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IPI",
+    "model": "Imposto",
+    "property": "IPI",
+    "reader": "ReadImpostoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/II/vBC",
+    "model": "Ii",
+    "property": "VBC",
+    "reader": "ReadIiAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/II/vDespAdu",
+    "model": "Ii",
+    "property": "VDespAdu",
+    "reader": "ReadIiAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/II/vII",
+    "model": "Ii",
+    "property": "VII",
+    "reader": "ReadIiAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/II/vIOF",
+    "model": "Ii",
+    "property": "VIOF",
+    "reader": "ReadIiAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/II",
+    "model": "Imposto",
+    "property": "II",
+    "reader": "ReadImpostoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IPI",
+    "model": "Imposto",
+    "property": "IPI",
+    "reader": "ReadImpostoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ISSQN/vBC",
+    "model": "Issqn",
+    "property": "VBC",
+    "reader": "ReadIssqnAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ISSQN/vAliq",
+    "model": "Issqn",
+    "property": "VAliq",
+    "reader": "ReadIssqnAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ISSQN/vISSQN",
+    "model": "Issqn",
+    "property": "VISSQN",
+    "reader": "ReadIssqnAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ISSQN/cMunFG",
+    "model": "Issqn",
+    "property": "CMunFG",
+    "reader": "ReadIssqnAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ISSQN/cListServ",
+    "model": "Issqn",
+    "property": "CListServ",
+    "reader": "ReadIssqnAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ISSQN/vDeducao",
+    "model": "Issqn",
+    "property": "VDeducao",
+    "reader": "ReadIssqnAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ISSQN/vOutro",
+    "model": "Issqn",
+    "property": "VOutro",
+    "reader": "ReadIssqnAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ISSQN/vDescIncond",
+    "model": "Issqn",
+    "property": "VDescIncond",
+    "reader": "ReadIssqnAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ISSQN/vDescCond",
+    "model": "Issqn",
+    "property": "VDescCond",
+    "reader": "ReadIssqnAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ISSQN/vISSRet",
+    "model": "Issqn",
+    "property": "VISSRet",
+    "reader": "ReadIssqnAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ISSQN/indISS",
+    "model": "Issqn",
+    "property": "IndISS",
+    "reader": "ReadIssqnAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ISSQN/cServico",
+    "model": "Issqn",
+    "property": "CServico",
+    "reader": "ReadIssqnAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ISSQN/cMun",
+    "model": "Issqn",
+    "property": "CMun",
+    "reader": "ReadIssqnAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ISSQN/cPais",
+    "model": "Issqn",
+    "property": "CPais",
+    "reader": "ReadIssqnAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ISSQN/nProcesso",
+    "model": "Issqn",
+    "property": "NProcesso",
+    "reader": "ReadIssqnAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ISSQN/indIncentivo",
+    "model": "Issqn",
+    "property": "IndIncentivo",
+    "reader": "ReadIssqnAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ISSQN",
+    "model": "Imposto",
+    "property": "ISSQN",
+    "reader": "ReadImpostoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/PIS/PISAliq/CST",
+    "model": "PisAliq",
+    "property": "CST",
+    "reader": "ReadPisAliqAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/PIS/PISAliq/vBC",
+    "model": "PisAliq",
+    "property": "VBC",
+    "reader": "ReadPisAliqAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/PIS/PISAliq/pPIS",
+    "model": "PisAliq",
+    "property": "PPIS",
+    "reader": "ReadPisAliqAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/PIS/PISAliq/vPIS",
+    "model": "PisAliq",
+    "property": "VPIS",
+    "reader": "ReadPisAliqAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/PIS/PISAliq",
+    "model": "Pis",
+    "property": "PISAliq",
+    "reader": "ReadPisAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/PIS/PISQtde/CST",
+    "model": "PisQtde",
+    "property": "CST",
+    "reader": "ReadPisQtdeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/PIS/PISQtde/qBCProd",
+    "model": "PisQtde",
+    "property": "QBCProd",
+    "reader": "ReadPisQtdeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/PIS/PISQtde/vAliqProd",
+    "model": "PisQtde",
+    "property": "VAliqProd",
+    "reader": "ReadPisQtdeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/PIS/PISQtde/vPIS",
+    "model": "PisQtde",
+    "property": "VPIS",
+    "reader": "ReadPisQtdeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/PIS/PISQtde",
+    "model": "Pis",
+    "property": "PISQtde",
+    "reader": "ReadPisAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/PIS/PISNT/CST",
+    "model": "PisNt",
+    "property": "CST",
+    "reader": "ReadPisNtAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/PIS/PISNT",
+    "model": "Pis",
+    "property": "PISNT",
+    "reader": "ReadPisAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/PIS/PISOutr/CST",
+    "model": "PisOutr",
+    "property": "CST",
+    "reader": "ReadPisOutrAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/PIS/PISOutr/vBC",
+    "model": "PisOutr",
+    "property": "VBC",
+    "reader": "ReadPisOutrAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/PIS/PISOutr/pPIS",
+    "model": "PisOutr",
+    "property": "PPIS",
+    "reader": "ReadPisOutrAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/PIS/PISOutr/qBCProd",
+    "model": "PisOutr",
+    "property": "QBCProd",
+    "reader": "ReadPisOutrAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/PIS/PISOutr/vAliqProd",
+    "model": "PisOutr",
+    "property": "VAliqProd",
+    "reader": "ReadPisOutrAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/PIS/PISOutr/vPIS",
+    "model": "PisOutr",
+    "property": "VPIS",
+    "reader": "ReadPisOutrAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/PIS/PISOutr",
+    "model": "Pis",
+    "property": "PISOutr",
+    "reader": "ReadPisAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/PIS",
+    "model": "Imposto",
+    "property": "PIS",
+    "reader": "ReadImpostoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/PISST/vBC",
+    "model": "PisSt",
+    "property": "VBC",
+    "reader": "ReadPisStAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/PISST/pPIS",
+    "model": "PisSt",
+    "property": "PPIS",
+    "reader": "ReadPisStAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/PISST/qBCProd",
+    "model": "PisSt",
+    "property": "QBCProd",
+    "reader": "ReadPisStAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/PISST/vAliqProd",
+    "model": "PisSt",
+    "property": "VAliqProd",
+    "reader": "ReadPisStAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/PISST/vPIS",
+    "model": "PisSt",
+    "property": "VPIS",
+    "reader": "ReadPisStAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/PISST/indSomaPISST",
+    "model": "PisSt",
+    "property": "IndSomaPISST",
+    "reader": "ReadPisStAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/PISST",
+    "model": "Imposto",
+    "property": "PISST",
+    "reader": "ReadImpostoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/COFINS/COFINSAliq/CST",
+    "model": "CofinsAliq",
+    "property": "CST",
+    "reader": "ReadCofinsAliqAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/COFINS/COFINSAliq/vBC",
+    "model": "CofinsAliq",
+    "property": "VBC",
+    "reader": "ReadCofinsAliqAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/COFINS/COFINSAliq/pCOFINS",
+    "model": "CofinsAliq",
+    "property": "PCOFINS",
+    "reader": "ReadCofinsAliqAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/COFINS/COFINSAliq/vCOFINS",
+    "model": "CofinsAliq",
+    "property": "VCOFINS",
+    "reader": "ReadCofinsAliqAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/COFINS/COFINSAliq",
+    "model": "Cofins",
+    "property": "COFINSAliq",
+    "reader": "ReadCofinsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/COFINS/COFINSQtde/CST",
+    "model": "CofinsQtde",
+    "property": "CST",
+    "reader": "ReadCofinsQtdeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/COFINS/COFINSQtde/qBCProd",
+    "model": "CofinsQtde",
+    "property": "QBCProd",
+    "reader": "ReadCofinsQtdeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/COFINS/COFINSQtde/vAliqProd",
+    "model": "CofinsQtde",
+    "property": "VAliqProd",
+    "reader": "ReadCofinsQtdeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/COFINS/COFINSQtde/vCOFINS",
+    "model": "CofinsQtde",
+    "property": "VCOFINS",
+    "reader": "ReadCofinsQtdeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/COFINS/COFINSQtde",
+    "model": "Cofins",
+    "property": "COFINSQtde",
+    "reader": "ReadCofinsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/COFINS/COFINSNT/CST",
+    "model": "CofinsNt",
+    "property": "CST",
+    "reader": "ReadCofinsNtAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/COFINS/COFINSNT",
+    "model": "Cofins",
+    "property": "COFINSNT",
+    "reader": "ReadCofinsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/COFINS/COFINSOutr/CST",
+    "model": "CofinsOutr",
+    "property": "CST",
+    "reader": "ReadCofinsOutrAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/COFINS/COFINSOutr/vBC",
+    "model": "CofinsOutr",
+    "property": "VBC",
+    "reader": "ReadCofinsOutrAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/COFINS/COFINSOutr/pCOFINS",
+    "model": "CofinsOutr",
+    "property": "PCOFINS",
+    "reader": "ReadCofinsOutrAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/COFINS/COFINSOutr/qBCProd",
+    "model": "CofinsOutr",
+    "property": "QBCProd",
+    "reader": "ReadCofinsOutrAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/COFINS/COFINSOutr/vAliqProd",
+    "model": "CofinsOutr",
+    "property": "VAliqProd",
+    "reader": "ReadCofinsOutrAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/COFINS/COFINSOutr/vCOFINS",
+    "model": "CofinsOutr",
+    "property": "VCOFINS",
+    "reader": "ReadCofinsOutrAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/COFINS/COFINSOutr",
+    "model": "Cofins",
+    "property": "COFINSOutr",
+    "reader": "ReadCofinsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/COFINS",
+    "model": "Imposto",
+    "property": "COFINS",
+    "reader": "ReadImpostoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/COFINSST/vBC",
+    "model": "CofinsSt",
+    "property": "VBC",
+    "reader": "ReadCofinsStAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/COFINSST/pCOFINS",
+    "model": "CofinsSt",
+    "property": "PCOFINS",
+    "reader": "ReadCofinsStAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/COFINSST/qBCProd",
+    "model": "CofinsSt",
+    "property": "QBCProd",
+    "reader": "ReadCofinsStAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/COFINSST/vAliqProd",
+    "model": "CofinsSt",
+    "property": "VAliqProd",
+    "reader": "ReadCofinsStAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/COFINSST/vCOFINS",
+    "model": "CofinsSt",
+    "property": "VCOFINS",
+    "reader": "ReadCofinsStAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/COFINSST/indSomaCOFINSST",
+    "model": "CofinsSt",
+    "property": "IndSomaCOFINSST",
+    "reader": "ReadCofinsStAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/COFINSST",
+    "model": "Imposto",
+    "property": "COFINSST",
+    "reader": "ReadImpostoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMSUFDest/vBCUFDest",
+    "model": "IcmsUfDest",
+    "property": "VBCUFDest",
+    "reader": "ReadIcmsUfDestAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMSUFDest/vBCFCPUFDest",
+    "model": "IcmsUfDest",
+    "property": "VBCFCPUFDest",
+    "reader": "ReadIcmsUfDestAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMSUFDest/pFCPUFDest",
+    "model": "IcmsUfDest",
+    "property": "PFCPUFDest",
+    "reader": "ReadIcmsUfDestAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMSUFDest/pICMSUFDest",
+    "model": "IcmsUfDest",
+    "property": "PICMSUFDest",
+    "reader": "ReadIcmsUfDestAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMSUFDest/pICMSInter",
+    "model": "IcmsUfDest",
+    "property": "PICMSInter",
+    "reader": "ReadIcmsUfDestAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMSUFDest/pICMSInterPart",
+    "model": "IcmsUfDest",
+    "property": "PICMSInterPart",
+    "reader": "ReadIcmsUfDestAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMSUFDest/vFCPUFDest",
+    "model": "IcmsUfDest",
+    "property": "VFCPUFDest",
+    "reader": "ReadIcmsUfDestAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMSUFDest/vICMSUFDest",
+    "model": "IcmsUfDest",
+    "property": "VICMSUFDest",
+    "reader": "ReadIcmsUfDestAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMSUFDest/vICMSUFRemet",
+    "model": "IcmsUfDest",
+    "property": "VICMSUFRemet",
+    "reader": "ReadIcmsUfDestAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/ICMSUFDest",
+    "model": "Imposto",
+    "property": "ICMSUFDest",
+    "reader": "ReadImpostoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IS/CSTIS",
+    "model": "ImpostoSeletivo",
+    "property": "CSTIS",
+    "reader": "ReadImpostoSeletivoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IS/cClassTribIS",
+    "model": "ImpostoSeletivo",
+    "property": "CClassTribIS",
+    "reader": "ReadImpostoSeletivoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IS/vBCIS",
+    "model": "ImpostoSeletivo",
+    "property": "VBCIS",
+    "reader": "ReadImpostoSeletivoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IS/pIS",
+    "model": "ImpostoSeletivo",
+    "property": "PIS",
+    "reader": "ReadImpostoSeletivoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IS/adRemIS",
+    "model": "ImpostoSeletivo",
+    "property": "AdRemIS",
+    "reader": "ReadImpostoSeletivoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IS/uTrib",
+    "model": "ImpostoSeletivo",
+    "property": "UTrib",
+    "reader": "ReadImpostoSeletivoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IS/qTrib",
+    "model": "ImpostoSeletivo",
+    "property": "QTrib",
+    "reader": "ReadImpostoSeletivoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IS/vIS",
+    "model": "ImpostoSeletivo",
+    "property": "VIS",
+    "reader": "ReadImpostoSeletivoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IS",
+    "model": "Imposto",
+    "property": "IS",
+    "reader": "ReadImpostoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gIBSUF/gDif/pDif",
+    "model": "TributacaoIBSCBSGIBSCBSGIBSUFGDif",
+    "property": "PDif",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGIBSUFGDifAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gIBSUF/gDif/vDif",
+    "model": "TributacaoIBSCBSGIBSCBSGIBSUFGDif",
+    "property": "VDif",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGIBSUFGDifAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gIBSUF/gDevTrib/pDevTrib",
+    "model": "TributacaoIBSCBSGIBSCBSGIBSUFGDevTrib",
+    "property": "PDevTrib",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGIBSUFGDevTribAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gIBSUF/gDevTrib/vDevTrib",
+    "model": "TributacaoIBSCBSGIBSCBSGIBSUFGDevTrib",
+    "property": "VDevTrib",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGIBSUFGDevTribAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gIBSUF/gRed/pRedAliq",
+    "model": "TributacaoIBSCBSGIBSCBSGIBSUFGRed",
+    "property": "PRedAliq",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGIBSUFGRedAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gIBSUF/gRed/pAliqEfet",
+    "model": "TributacaoIBSCBSGIBSCBSGIBSUFGRed",
+    "property": "PAliqEfet",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGIBSUFGRedAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gIBSUF/pIBSUF",
+    "model": "TributacaoIBSCBSGIBSCBSGIBSUF",
+    "property": "PIBSUF",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGIBSUFAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gIBSUF/gDif",
+    "model": "TributacaoIBSCBSGIBSCBSGIBSUF",
+    "property": "GDif",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGIBSUFAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gIBSUF/gDevTrib",
+    "model": "TributacaoIBSCBSGIBSCBSGIBSUF",
+    "property": "GDevTrib",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGIBSUFAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gIBSUF/gRed",
+    "model": "TributacaoIBSCBSGIBSCBSGIBSUF",
+    "property": "GRed",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGIBSUFAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gIBSUF/vIBSUF",
+    "model": "TributacaoIBSCBSGIBSCBSGIBSUF",
+    "property": "VIBSUF",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGIBSUFAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gIBSMun/gDif/pDif",
+    "model": "TributacaoIBSCBSGIBSCBSGIBSMunGDif",
+    "property": "PDif",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGIBSMunGDifAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gIBSMun/gDif/vDif",
+    "model": "TributacaoIBSCBSGIBSCBSGIBSMunGDif",
+    "property": "VDif",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGIBSMunGDifAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gIBSMun/gDevTrib/pDevTrib",
+    "model": "TributacaoIBSCBSGIBSCBSGIBSMunGDevTrib",
+    "property": "PDevTrib",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGIBSMunGDevTribAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gIBSMun/gDevTrib/vDevTrib",
+    "model": "TributacaoIBSCBSGIBSCBSGIBSMunGDevTrib",
+    "property": "VDevTrib",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGIBSMunGDevTribAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gIBSMun/gRed/pRedAliq",
+    "model": "TributacaoIBSCBSGIBSCBSGIBSMunGRed",
+    "property": "PRedAliq",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGIBSMunGRedAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gIBSMun/gRed/pAliqEfet",
+    "model": "TributacaoIBSCBSGIBSCBSGIBSMunGRed",
+    "property": "PAliqEfet",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGIBSMunGRedAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gIBSMun/pIBSMun",
+    "model": "TributacaoIBSCBSGIBSCBSGIBSMun",
+    "property": "PIBSMun",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGIBSMunAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gIBSMun/gDif",
+    "model": "TributacaoIBSCBSGIBSCBSGIBSMun",
+    "property": "GDif",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGIBSMunAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gIBSMun/gDevTrib",
+    "model": "TributacaoIBSCBSGIBSCBSGIBSMun",
+    "property": "GDevTrib",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGIBSMunAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gIBSMun/gRed",
+    "model": "TributacaoIBSCBSGIBSCBSGIBSMun",
+    "property": "GRed",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGIBSMunAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gIBSMun/vIBSMun",
+    "model": "TributacaoIBSCBSGIBSCBSGIBSMun",
+    "property": "VIBSMun",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGIBSMunAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gCBS/gDif/pDif",
+    "model": "TributacaoIBSCBSGIBSCBSGCBSGDif",
+    "property": "PDif",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGCBSGDifAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gCBS/gDif/vDif",
+    "model": "TributacaoIBSCBSGIBSCBSGCBSGDif",
+    "property": "VDif",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGCBSGDifAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gCBS/gDevTrib/pDevTrib",
+    "model": "TributacaoIBSCBSGIBSCBSGCBSGDevTrib",
+    "property": "PDevTrib",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGCBSGDevTribAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gCBS/gDevTrib/vDevTrib",
+    "model": "TributacaoIBSCBSGIBSCBSGCBSGDevTrib",
+    "property": "VDevTrib",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGCBSGDevTribAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gCBS/gRed/pRedAliq",
+    "model": "TributacaoIBSCBSGIBSCBSGCBSGRed",
+    "property": "PRedAliq",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGCBSGRedAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gCBS/gRed/pAliqEfet",
+    "model": "TributacaoIBSCBSGIBSCBSGCBSGRed",
+    "property": "PAliqEfet",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGCBSGRedAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gCBS/gALCZFMCBS/tpALCZFMCBS",
+    "model": "TributacaoIBSCBSGIBSCBSGCBSGALCZFMCBS",
+    "property": "TpALCZFMCBS",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGCBSGALCZFMCBSAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gCBS/gALCZFMCBS/nProcSuframa",
+    "model": "TributacaoIBSCBSGIBSCBSGCBSGALCZFMCBS",
+    "property": "NProcSuframa",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGCBSGALCZFMCBSAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gCBS/gALCZFMCBS/pAliqEfetRegCBS",
+    "model": "TributacaoIBSCBSGIBSCBSGCBSGALCZFMCBS",
+    "property": "PAliqEfetRegCBS",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGCBSGALCZFMCBSAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gCBS/gALCZFMCBS/vTribRegCBS",
+    "model": "TributacaoIBSCBSGIBSCBSGCBSGALCZFMCBS",
+    "property": "VTribRegCBS",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGCBSGALCZFMCBSAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gCBS/pCBS",
+    "model": "TributacaoIBSCBSGIBSCBSGCBS",
+    "property": "PCBS",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGCBSAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gCBS/gDif",
+    "model": "TributacaoIBSCBSGIBSCBSGCBS",
+    "property": "GDif",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGCBSAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gCBS/gDevTrib",
+    "model": "TributacaoIBSCBSGIBSCBSGCBS",
+    "property": "GDevTrib",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGCBSAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gCBS/gRed",
+    "model": "TributacaoIBSCBSGIBSCBSGCBS",
+    "property": "GRed",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGCBSAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gCBS/gALCZFMCBS",
+    "model": "TributacaoIBSCBSGIBSCBSGCBS",
+    "property": "GALCZFMCBS",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGCBSAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gCBS/vCBS",
+    "model": "TributacaoIBSCBSGIBSCBSGCBS",
+    "property": "VCBS",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGCBSAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gTribRegular/CSTReg",
+    "model": "TributacaoIBSCBSGIBSCBSGTribRegular",
+    "property": "CSTReg",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGTribRegularAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gTribRegular/cClassTribReg",
+    "model": "TributacaoIBSCBSGIBSCBSGTribRegular",
+    "property": "CClassTribReg",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGTribRegularAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gTribRegular/pAliqEfetRegIBSUF",
+    "model": "TributacaoIBSCBSGIBSCBSGTribRegular",
+    "property": "PAliqEfetRegIBSUF",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGTribRegularAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gTribRegular/vTribRegIBSUF",
+    "model": "TributacaoIBSCBSGIBSCBSGTribRegular",
+    "property": "VTribRegIBSUF",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGTribRegularAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gTribRegular/pAliqEfetRegIBSMun",
+    "model": "TributacaoIBSCBSGIBSCBSGTribRegular",
+    "property": "PAliqEfetRegIBSMun",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGTribRegularAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gTribRegular/vTribRegIBSMun",
+    "model": "TributacaoIBSCBSGIBSCBSGTribRegular",
+    "property": "VTribRegIBSMun",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGTribRegularAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gTribRegular/pAliqEfetRegCBS",
+    "model": "TributacaoIBSCBSGIBSCBSGTribRegular",
+    "property": "PAliqEfetRegCBS",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGTribRegularAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gTribRegular/vTribRegCBS",
+    "model": "TributacaoIBSCBSGIBSCBSGTribRegular",
+    "property": "VTribRegCBS",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGTribRegularAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gTribCompraGov/pAliqIBSUF",
+    "model": "TributacaoIBSCBSGIBSCBSGTribCompraGov",
+    "property": "PAliqIBSUF",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGTribCompraGovAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gTribCompraGov/vTribIBSUF",
+    "model": "TributacaoIBSCBSGIBSCBSGTribCompraGov",
+    "property": "VTribIBSUF",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGTribCompraGovAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gTribCompraGov/pAliqIBSMun",
+    "model": "TributacaoIBSCBSGIBSCBSGTribCompraGov",
+    "property": "PAliqIBSMun",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGTribCompraGovAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gTribCompraGov/vTribIBSMun",
+    "model": "TributacaoIBSCBSGIBSCBSGTribCompraGov",
+    "property": "VTribIBSMun",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGTribCompraGovAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gTribCompraGov/pAliqCBS",
+    "model": "TributacaoIBSCBSGIBSCBSGTribCompraGov",
+    "property": "PAliqCBS",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGTribCompraGovAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gTribCompraGov/vTribCBS",
+    "model": "TributacaoIBSCBSGIBSCBSGTribCompraGov",
+    "property": "VTribCBS",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSGTribCompraGovAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/vBC",
+    "model": "TributacaoIBSCBSGIBSCBS",
+    "property": "VBC",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gIBSUF",
+    "model": "TributacaoIBSCBSGIBSCBS",
+    "property": "GIBSUF",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gIBSMun",
+    "model": "TributacaoIBSCBSGIBSCBS",
+    "property": "GIBSMun",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/vIBS",
+    "model": "TributacaoIBSCBSGIBSCBS",
+    "property": "VIBS",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gCBS",
+    "model": "TributacaoIBSCBSGIBSCBS",
+    "property": "GCBS",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gTribRegular",
+    "model": "TributacaoIBSCBSGIBSCBS",
+    "property": "GTribRegular",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS/gTribCompraGov",
+    "model": "TributacaoIBSCBSGIBSCBS",
+    "property": "GTribCompraGov",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gIBSMonoAdRem/gMonoPadrao/qBCMono",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGIBSMonoAdRemGMonoPadrao",
+    "property": "QBCMono",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGIBSMonoAdRemGMonoPadraoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gIBSMonoAdRem/gMonoPadrao/adRemIBS",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGIBSMonoAdRemGMonoPadrao",
+    "property": "AdRemIBS",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGIBSMonoAdRemGMonoPadraoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gIBSMonoAdRem/gMonoPadrao/vIBSMono",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGIBSMonoAdRemGMonoPadrao",
+    "property": "VIBSMono",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGIBSMonoAdRemGMonoPadraoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gIBSMonoAdRem/gMonoReten/qBCMonoReten",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGIBSMonoAdRemGMonoReten",
+    "property": "QBCMonoReten",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGIBSMonoAdRemGMonoRetenAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gIBSMonoAdRem/gMonoReten/adRemIBSReten",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGIBSMonoAdRemGMonoReten",
+    "property": "AdRemIBSReten",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGIBSMonoAdRemGMonoRetenAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gIBSMonoAdRem/gMonoReten/vIBSMonoReten",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGIBSMonoAdRemGMonoReten",
+    "property": "VIBSMonoReten",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGIBSMonoAdRemGMonoRetenAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gIBSMonoAdRem/gMonoRet/vIBSMonoRet",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGIBSMonoAdRemGMonoRet",
+    "property": "VIBSMonoRet",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGIBSMonoAdRemGMonoRetAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gIBSMonoAdRem/gpBioDiferenca/qBCBioComb",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGIBSMonoAdRemGpBioDiferenca",
+    "property": "QBCBioComb",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGIBSMonoAdRemGpBioDiferencaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gIBSMonoAdRem/gpBioDiferenca/vIBSDiferenca",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGIBSMonoAdRemGpBioDiferenca",
+    "property": "VIBSDiferenca",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGIBSMonoAdRemGpBioDiferencaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gIBSMonoAdRem/gMonoPadrao",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGIBSMonoAdRem",
+    "property": "GMonoPadrao",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGIBSMonoAdRemAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gIBSMonoAdRem/gMonoReten",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGIBSMonoAdRem",
+    "property": "GMonoReten",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGIBSMonoAdRemAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gIBSMonoAdRem/gMonoRet",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGIBSMonoAdRem",
+    "property": "GMonoRet",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGIBSMonoAdRemAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gIBSMonoAdRem/gpBioDiferenca",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGIBSMonoAdRem",
+    "property": "GpBioDiferenca",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGIBSMonoAdRemAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gIBSMonoAdValorem/gMonoPadrao/vBCMono",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGIBSMonoAdValoremGMonoPadrao",
+    "property": "VBCMono",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGIBSMonoAdValoremGMonoPadraoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gIBSMonoAdValorem/gMonoPadrao/pAliqMonoUF",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGIBSMonoAdValoremGMonoPadrao",
+    "property": "PAliqMonoUF",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGIBSMonoAdValoremGMonoPadraoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gIBSMonoAdValorem/gMonoPadrao/vIBSMonoUF",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGIBSMonoAdValoremGMonoPadrao",
+    "property": "VIBSMonoUF",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGIBSMonoAdValoremGMonoPadraoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gIBSMonoAdValorem/gMonoPadrao/pAliqMonoMun",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGIBSMonoAdValoremGMonoPadrao",
+    "property": "PAliqMonoMun",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGIBSMonoAdValoremGMonoPadraoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gIBSMonoAdValorem/gMonoPadrao/vIBSMonoMun",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGIBSMonoAdValoremGMonoPadrao",
+    "property": "VIBSMonoMun",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGIBSMonoAdValoremGMonoPadraoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gIBSMonoAdValorem/gMonoPadrao/vIBSMono",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGIBSMonoAdValoremGMonoPadrao",
+    "property": "VIBSMono",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGIBSMonoAdValoremGMonoPadraoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gIBSMonoAdValorem/gMonoReten/vBCMonoReten",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGIBSMonoAdValoremGMonoReten",
+    "property": "VBCMonoReten",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGIBSMonoAdValoremGMonoRetenAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gIBSMonoAdValorem/gMonoReten/pAliqMonoReten",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGIBSMonoAdValoremGMonoReten",
+    "property": "PAliqMonoReten",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGIBSMonoAdValoremGMonoRetenAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gIBSMonoAdValorem/gMonoReten/vIBSMonoReten",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGIBSMonoAdValoremGMonoReten",
+    "property": "VIBSMonoReten",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGIBSMonoAdValoremGMonoRetenAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gIBSMonoAdValorem/gMonoRet/vIBSMonoRet",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGIBSMonoAdValoremGMonoRet",
+    "property": "VIBSMonoRet",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGIBSMonoAdValoremGMonoRetAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gIBSMonoAdValorem/gpBioDiferenca/qBCBioComb",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGIBSMonoAdValoremGpBioDiferenca",
+    "property": "QBCBioComb",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGIBSMonoAdValoremGpBioDiferencaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gIBSMonoAdValorem/gpBioDiferenca/vIBSDiferenca",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGIBSMonoAdValoremGpBioDiferenca",
+    "property": "VIBSDiferenca",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGIBSMonoAdValoremGpBioDiferencaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gIBSMonoAdValorem/gMonoPadrao",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGIBSMonoAdValorem",
+    "property": "GMonoPadrao",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGIBSMonoAdValoremAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gIBSMonoAdValorem/gMonoReten",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGIBSMonoAdValorem",
+    "property": "GMonoReten",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGIBSMonoAdValoremAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gIBSMonoAdValorem/gMonoRet",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGIBSMonoAdValorem",
+    "property": "GMonoRet",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGIBSMonoAdValoremAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gIBSMonoAdValorem/gpBioDiferenca",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGIBSMonoAdValorem",
+    "property": "GpBioDiferenca",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGIBSMonoAdValoremAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gCBSMonoAdRem/gMonoPadrao/qBCMono",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGCBSMonoAdRemGMonoPadrao",
+    "property": "QBCMono",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGCBSMonoAdRemGMonoPadraoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gCBSMonoAdRem/gMonoPadrao/adRemCBS",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGCBSMonoAdRemGMonoPadrao",
+    "property": "AdRemCBS",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGCBSMonoAdRemGMonoPadraoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gCBSMonoAdRem/gMonoPadrao/vCBSMono",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGCBSMonoAdRemGMonoPadrao",
+    "property": "VCBSMono",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGCBSMonoAdRemGMonoPadraoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gCBSMonoAdRem/gMonoReten/qBCMonoReten",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGCBSMonoAdRemGMonoReten",
+    "property": "QBCMonoReten",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGCBSMonoAdRemGMonoRetenAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gCBSMonoAdRem/gMonoReten/adRemCBSReten",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGCBSMonoAdRemGMonoReten",
+    "property": "AdRemCBSReten",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGCBSMonoAdRemGMonoRetenAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gCBSMonoAdRem/gMonoReten/vCBSMonoReten",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGCBSMonoAdRemGMonoReten",
+    "property": "VCBSMonoReten",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGCBSMonoAdRemGMonoRetenAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gCBSMonoAdRem/gMonoRet/vCBSMonoRet",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGCBSMonoAdRemGMonoRet",
+    "property": "VCBSMonoRet",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGCBSMonoAdRemGMonoRetAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gCBSMonoAdRem/gpBioDiferenca/qBCBioComb",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGCBSMonoAdRemGpBioDiferenca",
+    "property": "QBCBioComb",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGCBSMonoAdRemGpBioDiferencaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gCBSMonoAdRem/gpBioDiferenca/vCBSDiferenca",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGCBSMonoAdRemGpBioDiferenca",
+    "property": "VCBSDiferenca",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGCBSMonoAdRemGpBioDiferencaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gCBSMonoAdRem/gMonoPadrao",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGCBSMonoAdRem",
+    "property": "GMonoPadrao",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGCBSMonoAdRemAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gCBSMonoAdRem/gMonoReten",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGCBSMonoAdRem",
+    "property": "GMonoReten",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGCBSMonoAdRemAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gCBSMonoAdRem/gMonoRet",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGCBSMonoAdRem",
+    "property": "GMonoRet",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGCBSMonoAdRemAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gCBSMonoAdRem/gpBioDiferenca",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGCBSMonoAdRem",
+    "property": "GpBioDiferenca",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGCBSMonoAdRemAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gCBSMonoAdValorem/gMonoPadrao/vBCMono",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGCBSMonoAdValoremGMonoPadrao",
+    "property": "VBCMono",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGCBSMonoAdValoremGMonoPadraoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gCBSMonoAdValorem/gMonoPadrao/pAliqMonoCBS",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGCBSMonoAdValoremGMonoPadrao",
+    "property": "PAliqMonoCBS",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGCBSMonoAdValoremGMonoPadraoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gCBSMonoAdValorem/gMonoPadrao/vCBSMono",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGCBSMonoAdValoremGMonoPadrao",
+    "property": "VCBSMono",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGCBSMonoAdValoremGMonoPadraoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gCBSMonoAdValorem/gMonoReten/vBCMonoReten",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGCBSMonoAdValoremGMonoReten",
+    "property": "VBCMonoReten",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGCBSMonoAdValoremGMonoRetenAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gCBSMonoAdValorem/gMonoReten/pAliqMonoReten",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGCBSMonoAdValoremGMonoReten",
+    "property": "PAliqMonoReten",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGCBSMonoAdValoremGMonoRetenAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gCBSMonoAdValorem/gMonoReten/vCBSMonoReten",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGCBSMonoAdValoremGMonoReten",
+    "property": "VCBSMonoReten",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGCBSMonoAdValoremGMonoRetenAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gCBSMonoAdValorem/gMonoRet/vCBSMonoRet",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGCBSMonoAdValoremGMonoRet",
+    "property": "VCBSMonoRet",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGCBSMonoAdValoremGMonoRetAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gCBSMonoAdValorem/gpBioDiferenca/qBCBioComb",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGCBSMonoAdValoremGpBioDiferenca",
+    "property": "QBCBioComb",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGCBSMonoAdValoremGpBioDiferencaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gCBSMonoAdValorem/gpBioDiferenca/vCBSDiferenca",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGCBSMonoAdValoremGpBioDiferenca",
+    "property": "VCBSDiferenca",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGCBSMonoAdValoremGpBioDiferencaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gCBSMonoAdValorem/gMonoPadrao",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGCBSMonoAdValorem",
+    "property": "GMonoPadrao",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGCBSMonoAdValoremAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gCBSMonoAdValorem/gMonoReten",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGCBSMonoAdValorem",
+    "property": "GMonoReten",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGCBSMonoAdValoremAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gCBSMonoAdValorem/gMonoRet",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGCBSMonoAdValorem",
+    "property": "GMonoRet",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGCBSMonoAdValoremAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gCBSMonoAdValorem/gpBioDiferenca",
+    "model": "TributacaoIBSCBSGIBSCBSMonoGCBSMonoAdValorem",
+    "property": "GpBioDiferenca",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoGCBSMonoAdValoremAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gIBSMonoAdRem",
+    "model": "TributacaoIBSCBSGIBSCBSMono",
+    "property": "GIBSMonoAdRem",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gIBSMonoAdValorem",
+    "model": "TributacaoIBSCBSGIBSCBSMono",
+    "property": "GIBSMonoAdValorem",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gCBSMonoAdRem",
+    "model": "TributacaoIBSCBSGIBSCBSMono",
+    "property": "GCBSMonoAdRem",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/gCBSMonoAdValorem",
+    "model": "TributacaoIBSCBSGIBSCBSMono",
+    "property": "GCBSMonoAdValorem",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/vTotIBSMonoItem",
+    "model": "TributacaoIBSCBSGIBSCBSMono",
+    "property": "VTotIBSMonoItem",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono/vTotCBSMonoItem",
+    "model": "TributacaoIBSCBSGIBSCBSMono",
+    "property": "VTotCBSMonoItem",
+    "reader": "ReadTributacaoIBSCBSGIBSCBSMonoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gTransfCred/vIBS",
+    "model": "TributacaoIBSCBSGTransfCred",
+    "property": "VIBS",
+    "reader": "ReadTributacaoIBSCBSGTransfCredAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gTransfCred/vCBS",
+    "model": "TributacaoIBSCBSGTransfCred",
+    "property": "VCBS",
+    "reader": "ReadTributacaoIBSCBSGTransfCredAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gAjusteCompet/competApur",
+    "model": "TributacaoIBSCBSGAjusteCompet",
+    "property": "CompetApur",
+    "reader": "ReadTributacaoIBSCBSGAjusteCompetAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gAjusteCompet/vIBS",
+    "model": "TributacaoIBSCBSGAjusteCompet",
+    "property": "VIBS",
+    "reader": "ReadTributacaoIBSCBSGAjusteCompetAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gAjusteCompet/vCBS",
+    "model": "TributacaoIBSCBSGAjusteCompet",
+    "property": "VCBS",
+    "reader": "ReadTributacaoIBSCBSGAjusteCompetAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gEstornoCred/vIBSEstCred",
+    "model": "TributacaoIBSCBSGEstornoCred",
+    "property": "VIBSEstCred",
+    "reader": "ReadTributacaoIBSCBSGEstornoCredAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gEstornoCred/vCBSEstCred",
+    "model": "TributacaoIBSCBSGEstornoCred",
+    "property": "VCBSEstCred",
+    "reader": "ReadTributacaoIBSCBSGEstornoCredAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gCredPresOper/gIBSCredPres/pCredPres",
+    "model": "TributacaoIBSCBSGCredPresOperGIBSCredPres",
+    "property": "PCredPres",
+    "reader": "ReadTributacaoIBSCBSGCredPresOperGIBSCredPresAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gCredPresOper/gIBSCredPres/vCredPres",
+    "model": "TributacaoIBSCBSGCredPresOperGIBSCredPres",
+    "property": "VCredPres",
+    "reader": "ReadTributacaoIBSCBSGCredPresOperGIBSCredPresAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gCredPresOper/gIBSCredPres/vCredPresCondSus",
+    "model": "TributacaoIBSCBSGCredPresOperGIBSCredPres",
+    "property": "VCredPresCondSus",
+    "reader": "ReadTributacaoIBSCBSGCredPresOperGIBSCredPresAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gCredPresOper/gCBSCredPres/pCredPres",
+    "model": "TributacaoIBSCBSGCredPresOperGCBSCredPres",
+    "property": "PCredPres",
+    "reader": "ReadTributacaoIBSCBSGCredPresOperGCBSCredPresAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gCredPresOper/gCBSCredPres/vCredPres",
+    "model": "TributacaoIBSCBSGCredPresOperGCBSCredPres",
+    "property": "VCredPres",
+    "reader": "ReadTributacaoIBSCBSGCredPresOperGCBSCredPresAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gCredPresOper/gCBSCredPres/vCredPresCondSus",
+    "model": "TributacaoIBSCBSGCredPresOperGCBSCredPres",
+    "property": "VCredPresCondSus",
+    "reader": "ReadTributacaoIBSCBSGCredPresOperGCBSCredPresAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gCredPresOper/vBCCredPres",
+    "model": "TributacaoIBSCBSGCredPresOper",
+    "property": "VBCCredPres",
+    "reader": "ReadTributacaoIBSCBSGCredPresOperAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gCredPresOper/cCredPres",
+    "model": "TributacaoIBSCBSGCredPresOper",
+    "property": "CCredPres",
+    "reader": "ReadTributacaoIBSCBSGCredPresOperAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gCredPresOper/gIBSCredPres",
+    "model": "TributacaoIBSCBSGCredPresOper",
+    "property": "GIBSCredPres",
+    "reader": "ReadTributacaoIBSCBSGCredPresOperAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gCredPresOper/gCBSCredPres",
+    "model": "TributacaoIBSCBSGCredPresOper",
+    "property": "GCBSCredPres",
+    "reader": "ReadTributacaoIBSCBSGCredPresOperAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gCredPresIBSZFM/competApur",
+    "model": "TributacaoIBSCBSGCredPresIBSZFM",
+    "property": "CompetApur",
+    "reader": "ReadTributacaoIBSCBSGCredPresIBSZFMAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gCredPresIBSZFM/tpCredPresIBSZFM",
+    "model": "TributacaoIBSCBSGCredPresIBSZFM",
+    "property": "TpCredPresIBSZFM",
+    "reader": "ReadTributacaoIBSCBSGCredPresIBSZFMAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gCredPresIBSZFM/vCredPresIBSZFM",
+    "model": "TributacaoIBSCBSGCredPresIBSZFM",
+    "property": "VCredPresIBSZFM",
+    "reader": "ReadTributacaoIBSCBSGCredPresIBSZFMAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/CST",
+    "model": "TributacaoIBSCBS",
+    "property": "CST",
+    "reader": "ReadTributacaoIBSCBSAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/cClassTrib",
+    "model": "TributacaoIBSCBS",
+    "property": "CClassTrib",
+    "reader": "ReadTributacaoIBSCBSAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/indDoacao",
+    "model": "TributacaoIBSCBS",
+    "property": "IndDoacao",
+    "reader": "ReadTributacaoIBSCBSAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBS",
+    "model": "TributacaoIBSCBS",
+    "property": "GIBSCBS",
+    "reader": "ReadTributacaoIBSCBSAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gIBSCBSMono",
+    "model": "TributacaoIBSCBS",
+    "property": "GIBSCBSMono",
+    "reader": "ReadTributacaoIBSCBSAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gTransfCred",
+    "model": "TributacaoIBSCBS",
+    "property": "GTransfCred",
+    "reader": "ReadTributacaoIBSCBSAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gAjusteCompet",
+    "model": "TributacaoIBSCBS",
+    "property": "GAjusteCompet",
+    "reader": "ReadTributacaoIBSCBSAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gEstornoCred",
+    "model": "TributacaoIBSCBS",
+    "property": "GEstornoCred",
+    "reader": "ReadTributacaoIBSCBSAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gCredPresOper",
+    "model": "TributacaoIBSCBS",
+    "property": "GCredPresOper",
+    "reader": "ReadTributacaoIBSCBSAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS/gCredPresIBSZFM",
+    "model": "TributacaoIBSCBS",
+    "property": "GCredPresIBSZFM",
+    "reader": "ReadTributacaoIBSCBSAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto/IBSCBS",
+    "model": "Imposto",
+    "property": "IBSCBS",
+    "reader": "ReadImpostoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/imposto",
+    "model": "Item",
+    "property": "Imposto",
+    "reader": "ReadItemAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/impostoDevol/IPI/vIPIDevol",
+    "model": "ItemImpostoDevolIPI",
+    "property": "VIPIDevol",
+    "reader": "ReadItemImpostoDevolIPIAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/impostoDevol/pDevol",
+    "model": "ItemImpostoDevol",
+    "property": "PDevol",
+    "reader": "ReadItemImpostoDevolAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/impostoDevol/IPI",
+    "model": "ItemImpostoDevol",
+    "property": "IPI",
+    "reader": "ReadItemImpostoDevolAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/impostoDevol",
+    "model": "Item",
+    "property": "ImpostoDevol",
+    "reader": "ReadItemAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/infAdProd",
+    "model": "Item",
+    "property": "InfAdProd",
+    "reader": "ReadItemAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/obsItem/obsCont/xTexto",
+    "model": "ItemObsItemObsCont",
+    "property": "XTexto",
+    "reader": "ReadItemObsItemObsContAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/obsItem/obsCont/@xCampo",
+    "model": "ItemObsItemObsCont",
+    "property": "XCampo",
+    "reader": "ReadItemObsItemObsContAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/obsItem/obsFisco/xTexto",
+    "model": "ItemObsItemObsFisco",
+    "property": "XTexto",
+    "reader": "ReadItemObsItemObsFiscoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/obsItem/obsFisco/@xCampo",
+    "model": "ItemObsItemObsFisco",
+    "property": "XCampo",
+    "reader": "ReadItemObsItemObsFiscoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/obsItem/obsCont",
+    "model": "ItemObsItem",
+    "property": "ObsCont",
+    "reader": "ReadItemObsItemAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/obsItem/obsFisco",
+    "model": "ItemObsItem",
+    "property": "ObsFisco",
+    "reader": "ReadItemObsItemAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/obsItem",
+    "model": "Item",
+    "property": "ObsItem",
+    "reader": "ReadItemAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/vItem",
+    "model": "Item",
+    "property": "VItem",
+    "reader": "ReadItemAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/DFeReferenciado/chaveAcesso",
+    "model": "ItemDFeReferenciado",
+    "property": "ChaveAcesso",
+    "reader": "ReadItemDFeReferenciadoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/DFeReferenciado/nItem",
+    "model": "ItemDFeReferenciado",
+    "property": "NItem",
+    "reader": "ReadItemDFeReferenciadoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/DFeReferenciado",
+    "model": "Item",
+    "property": "DFeReferenciado",
+    "reader": "ReadItemAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det/@nItem",
+    "model": "Item",
+    "property": "NItem",
+    "reader": "ReadItemAsync"
+  },
+  {
+    "path": "TNFe/infNFe/det",
+    "model": "InfNFe",
+    "property": "Det",
+    "reader": "ReadInfNFeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ICMSTot/vBC",
+    "model": "TotalIcms",
+    "property": "VBC",
+    "reader": "ReadTotalIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ICMSTot/vICMS",
+    "model": "TotalIcms",
+    "property": "VICMS",
+    "reader": "ReadTotalIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ICMSTot/vICMSDeson",
+    "model": "TotalIcms",
+    "property": "VICMSDeson",
+    "reader": "ReadTotalIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ICMSTot/vFCPUFDest",
+    "model": "TotalIcms",
+    "property": "VFCPUFDest",
+    "reader": "ReadTotalIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ICMSTot/vICMSUFDest",
+    "model": "TotalIcms",
+    "property": "VICMSUFDest",
+    "reader": "ReadTotalIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ICMSTot/vICMSUFRemet",
+    "model": "TotalIcms",
+    "property": "VICMSUFRemet",
+    "reader": "ReadTotalIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ICMSTot/vFCP",
+    "model": "TotalIcms",
+    "property": "VFCP",
+    "reader": "ReadTotalIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ICMSTot/vBCST",
+    "model": "TotalIcms",
+    "property": "VBCST",
+    "reader": "ReadTotalIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ICMSTot/vST",
+    "model": "TotalIcms",
+    "property": "VST",
+    "reader": "ReadTotalIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ICMSTot/vFCPST",
+    "model": "TotalIcms",
+    "property": "VFCPST",
+    "reader": "ReadTotalIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ICMSTot/vFCPSTRet",
+    "model": "TotalIcms",
+    "property": "VFCPSTRet",
+    "reader": "ReadTotalIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ICMSTot/qBCMono",
+    "model": "TotalIcms",
+    "property": "QBCMono",
+    "reader": "ReadTotalIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ICMSTot/vICMSMono",
+    "model": "TotalIcms",
+    "property": "VICMSMono",
+    "reader": "ReadTotalIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ICMSTot/qBCMonoReten",
+    "model": "TotalIcms",
+    "property": "QBCMonoReten",
+    "reader": "ReadTotalIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ICMSTot/vICMSMonoReten",
+    "model": "TotalIcms",
+    "property": "VICMSMonoReten",
+    "reader": "ReadTotalIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ICMSTot/qBCMonoRet",
+    "model": "TotalIcms",
+    "property": "QBCMonoRet",
+    "reader": "ReadTotalIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ICMSTot/vICMSMonoRet",
+    "model": "TotalIcms",
+    "property": "VICMSMonoRet",
+    "reader": "ReadTotalIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ICMSTot/vProd",
+    "model": "TotalIcms",
+    "property": "VProd",
+    "reader": "ReadTotalIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ICMSTot/vFrete",
+    "model": "TotalIcms",
+    "property": "VFrete",
+    "reader": "ReadTotalIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ICMSTot/vSeg",
+    "model": "TotalIcms",
+    "property": "VSeg",
+    "reader": "ReadTotalIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ICMSTot/vDesc",
+    "model": "TotalIcms",
+    "property": "VDesc",
+    "reader": "ReadTotalIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ICMSTot/vII",
+    "model": "TotalIcms",
+    "property": "VII",
+    "reader": "ReadTotalIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ICMSTot/vIPI",
+    "model": "TotalIcms",
+    "property": "VIPI",
+    "reader": "ReadTotalIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ICMSTot/vIPIDevol",
+    "model": "TotalIcms",
+    "property": "VIPIDevol",
+    "reader": "ReadTotalIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ICMSTot/vPIS",
+    "model": "TotalIcms",
+    "property": "VPIS",
+    "reader": "ReadTotalIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ICMSTot/vCOFINS",
+    "model": "TotalIcms",
+    "property": "VCOFINS",
+    "reader": "ReadTotalIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ICMSTot/vOutro",
+    "model": "TotalIcms",
+    "property": "VOutro",
+    "reader": "ReadTotalIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ICMSTot/vNF",
+    "model": "TotalIcms",
+    "property": "VNF",
+    "reader": "ReadTotalIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ICMSTot/vTotTrib",
+    "model": "TotalIcms",
+    "property": "VTotTrib",
+    "reader": "ReadTotalIcmsAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ICMSTot",
+    "model": "Total",
+    "property": "ICMSTot",
+    "reader": "ReadTotalAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ISSQNtot/vServ",
+    "model": "TotalIssqn",
+    "property": "VServ",
+    "reader": "ReadTotalIssqnAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ISSQNtot/vBC",
+    "model": "TotalIssqn",
+    "property": "VBC",
+    "reader": "ReadTotalIssqnAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ISSQNtot/vISS",
+    "model": "TotalIssqn",
+    "property": "VISS",
+    "reader": "ReadTotalIssqnAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ISSQNtot/vPIS",
+    "model": "TotalIssqn",
+    "property": "VPIS",
+    "reader": "ReadTotalIssqnAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ISSQNtot/vCOFINS",
+    "model": "TotalIssqn",
+    "property": "VCOFINS",
+    "reader": "ReadTotalIssqnAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ISSQNtot/dCompet",
+    "model": "TotalIssqn",
+    "property": "DCompet",
+    "reader": "ReadTotalIssqnAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ISSQNtot/vDeducao",
+    "model": "TotalIssqn",
+    "property": "VDeducao",
+    "reader": "ReadTotalIssqnAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ISSQNtot/vOutro",
+    "model": "TotalIssqn",
+    "property": "VOutro",
+    "reader": "ReadTotalIssqnAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ISSQNtot/vDescIncond",
+    "model": "TotalIssqn",
+    "property": "VDescIncond",
+    "reader": "ReadTotalIssqnAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ISSQNtot/vDescCond",
+    "model": "TotalIssqn",
+    "property": "VDescCond",
+    "reader": "ReadTotalIssqnAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ISSQNtot/vISSRet",
+    "model": "TotalIssqn",
+    "property": "VISSRet",
+    "reader": "ReadTotalIssqnAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ISSQNtot/cRegTrib",
+    "model": "TotalIssqn",
+    "property": "CRegTrib",
+    "reader": "ReadTotalIssqnAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ISSQNtot",
+    "model": "Total",
+    "property": "ISSQNtot",
+    "reader": "ReadTotalAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/retTrib/vRetPIS",
+    "model": "RetencoesTributos",
+    "property": "VRetPIS",
+    "reader": "ReadRetencoesTributosAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/retTrib/vRetCOFINS",
+    "model": "RetencoesTributos",
+    "property": "VRetCOFINS",
+    "reader": "ReadRetencoesTributosAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/retTrib/vRetCSLL",
+    "model": "RetencoesTributos",
+    "property": "VRetCSLL",
+    "reader": "ReadRetencoesTributosAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/retTrib/vBCIRRF",
+    "model": "RetencoesTributos",
+    "property": "VBCIRRF",
+    "reader": "ReadRetencoesTributosAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/retTrib/vIRRF",
+    "model": "RetencoesTributos",
+    "property": "VIRRF",
+    "reader": "ReadRetencoesTributosAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/retTrib/vBCRetPrev",
+    "model": "RetencoesTributos",
+    "property": "VBCRetPrev",
+    "reader": "ReadRetencoesTributosAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/retTrib/vRetPrev",
+    "model": "RetencoesTributos",
+    "property": "VRetPrev",
+    "reader": "ReadRetencoesTributosAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/retTrib",
+    "model": "Total",
+    "property": "RetTrib",
+    "reader": "ReadTotalAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ISTot/vIS",
+    "model": "TotalIS",
+    "property": "VIS",
+    "reader": "ReadTotalISAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/ISTot",
+    "model": "Total",
+    "property": "ISTot",
+    "reader": "ReadTotalAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/IBSCBSTot/gIBS/gIBSUF/vDif",
+    "model": "TotalIBSCBSGIBSGIBSUF",
+    "property": "VDif",
+    "reader": "ReadTotalIBSCBSGIBSGIBSUFAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/IBSCBSTot/gIBS/gIBSUF/vDevTrib",
+    "model": "TotalIBSCBSGIBSGIBSUF",
+    "property": "VDevTrib",
+    "reader": "ReadTotalIBSCBSGIBSGIBSUFAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/IBSCBSTot/gIBS/gIBSUF/vIBSUF",
+    "model": "TotalIBSCBSGIBSGIBSUF",
+    "property": "VIBSUF",
+    "reader": "ReadTotalIBSCBSGIBSGIBSUFAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/IBSCBSTot/gIBS/gIBSMun/vDif",
+    "model": "TotalIBSCBSGIBSGIBSMun",
+    "property": "VDif",
+    "reader": "ReadTotalIBSCBSGIBSGIBSMunAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/IBSCBSTot/gIBS/gIBSMun/vDevTrib",
+    "model": "TotalIBSCBSGIBSGIBSMun",
+    "property": "VDevTrib",
+    "reader": "ReadTotalIBSCBSGIBSGIBSMunAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/IBSCBSTot/gIBS/gIBSMun/vIBSMun",
+    "model": "TotalIBSCBSGIBSGIBSMun",
+    "property": "VIBSMun",
+    "reader": "ReadTotalIBSCBSGIBSGIBSMunAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/IBSCBSTot/gIBS/gIBSUF",
+    "model": "TotalIBSCBSGIBS",
+    "property": "GIBSUF",
+    "reader": "ReadTotalIBSCBSGIBSAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/IBSCBSTot/gIBS/gIBSMun",
+    "model": "TotalIBSCBSGIBS",
+    "property": "GIBSMun",
+    "reader": "ReadTotalIBSCBSGIBSAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/IBSCBSTot/gIBS/vIBS",
+    "model": "TotalIBSCBSGIBS",
+    "property": "VIBS",
+    "reader": "ReadTotalIBSCBSGIBSAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/IBSCBSTot/gIBS/vCredPres",
+    "model": "TotalIBSCBSGIBS",
+    "property": "VCredPres",
+    "reader": "ReadTotalIBSCBSGIBSAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/IBSCBSTot/gIBS/vCredPresCondSus",
+    "model": "TotalIBSCBSGIBS",
+    "property": "VCredPresCondSus",
+    "reader": "ReadTotalIBSCBSGIBSAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/IBSCBSTot/gCBS/vDif",
+    "model": "TotalIBSCBSGCBS",
+    "property": "VDif",
+    "reader": "ReadTotalIBSCBSGCBSAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/IBSCBSTot/gCBS/vDevTrib",
+    "model": "TotalIBSCBSGCBS",
+    "property": "VDevTrib",
+    "reader": "ReadTotalIBSCBSGCBSAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/IBSCBSTot/gCBS/vCBS",
+    "model": "TotalIBSCBSGCBS",
+    "property": "VCBS",
+    "reader": "ReadTotalIBSCBSGCBSAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/IBSCBSTot/gCBS/vCredPres",
+    "model": "TotalIBSCBSGCBS",
+    "property": "VCredPres",
+    "reader": "ReadTotalIBSCBSGCBSAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/IBSCBSTot/gCBS/vCredPresCondSus",
+    "model": "TotalIBSCBSGCBS",
+    "property": "VCredPresCondSus",
+    "reader": "ReadTotalIBSCBSGCBSAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/IBSCBSTot/gMono/vIBSMono",
+    "model": "TotalIBSCBSGMono",
+    "property": "VIBSMono",
+    "reader": "ReadTotalIBSCBSGMonoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/IBSCBSTot/gMono/vCBSMono",
+    "model": "TotalIBSCBSGMono",
+    "property": "VCBSMono",
+    "reader": "ReadTotalIBSCBSGMonoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/IBSCBSTot/gMono/vIBSMonoReten",
+    "model": "TotalIBSCBSGMono",
+    "property": "VIBSMonoReten",
+    "reader": "ReadTotalIBSCBSGMonoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/IBSCBSTot/gMono/vCBSMonoReten",
+    "model": "TotalIBSCBSGMono",
+    "property": "VCBSMonoReten",
+    "reader": "ReadTotalIBSCBSGMonoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/IBSCBSTot/gMono/vIBSMonoRet",
+    "model": "TotalIBSCBSGMono",
+    "property": "VIBSMonoRet",
+    "reader": "ReadTotalIBSCBSGMonoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/IBSCBSTot/gMono/vCBSMonoRet",
+    "model": "TotalIBSCBSGMono",
+    "property": "VCBSMonoRet",
+    "reader": "ReadTotalIBSCBSGMonoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/IBSCBSTot/gEstornoCred/vIBSEstCred",
+    "model": "TotalIBSCBSGEstornoCred",
+    "property": "VIBSEstCred",
+    "reader": "ReadTotalIBSCBSGEstornoCredAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/IBSCBSTot/gEstornoCred/vCBSEstCred",
+    "model": "TotalIBSCBSGEstornoCred",
+    "property": "VCBSEstCred",
+    "reader": "ReadTotalIBSCBSGEstornoCredAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/IBSCBSTot/vBCIBSCBS",
+    "model": "TotalIBSCBS",
+    "property": "VBCIBSCBS",
+    "reader": "ReadTotalIBSCBSAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/IBSCBSTot/gIBS",
+    "model": "TotalIBSCBS",
+    "property": "GIBS",
+    "reader": "ReadTotalIBSCBSAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/IBSCBSTot/gCBS",
+    "model": "TotalIBSCBS",
+    "property": "GCBS",
+    "reader": "ReadTotalIBSCBSAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/IBSCBSTot/gMono",
+    "model": "TotalIBSCBS",
+    "property": "GMono",
+    "reader": "ReadTotalIBSCBSAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/IBSCBSTot/gEstornoCred",
+    "model": "TotalIBSCBS",
+    "property": "GEstornoCred",
+    "reader": "ReadTotalIBSCBSAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/IBSCBSTot",
+    "model": "Total",
+    "property": "IBSCBSTot",
+    "reader": "ReadTotalAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total/vNFTot",
+    "model": "Total",
+    "property": "VNFTot",
+    "reader": "ReadTotalAsync"
+  },
+  {
+    "path": "TNFe/infNFe/total",
+    "model": "InfNFe",
+    "property": "Total",
+    "reader": "ReadInfNFeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/transp/transporta/CNPJ",
+    "model": "TransporteTransporta",
+    "property": "CNPJ",
+    "reader": "ReadTransporteTransportaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/transp/transporta/CPF",
+    "model": "TransporteTransporta",
+    "property": "CPF",
+    "reader": "ReadTransporteTransportaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/transp/transporta/xNome",
+    "model": "TransporteTransporta",
+    "property": "XNome",
+    "reader": "ReadTransporteTransportaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/transp/transporta/IE",
+    "model": "TransporteTransporta",
+    "property": "IE",
+    "reader": "ReadTransporteTransportaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/transp/transporta/xEnder",
+    "model": "TransporteTransporta",
+    "property": "XEnder",
+    "reader": "ReadTransporteTransportaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/transp/transporta/xMun",
+    "model": "TransporteTransporta",
+    "property": "XMun",
+    "reader": "ReadTransporteTransportaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/transp/transporta/UF",
+    "model": "TransporteTransporta",
+    "property": "UF",
+    "reader": "ReadTransporteTransportaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/transp/retTransp/vServ",
+    "model": "TransporteRetTransp",
+    "property": "VServ",
+    "reader": "ReadTransporteRetTranspAsync"
+  },
+  {
+    "path": "TNFe/infNFe/transp/retTransp/vBCRet",
+    "model": "TransporteRetTransp",
+    "property": "VBCRet",
+    "reader": "ReadTransporteRetTranspAsync"
+  },
+  {
+    "path": "TNFe/infNFe/transp/retTransp/pICMSRet",
+    "model": "TransporteRetTransp",
+    "property": "PICMSRet",
+    "reader": "ReadTransporteRetTranspAsync"
+  },
+  {
+    "path": "TNFe/infNFe/transp/retTransp/vICMSRet",
+    "model": "TransporteRetTransp",
+    "property": "VICMSRet",
+    "reader": "ReadTransporteRetTranspAsync"
+  },
+  {
+    "path": "TNFe/infNFe/transp/retTransp/CFOP",
+    "model": "TransporteRetTransp",
+    "property": "CFOP",
+    "reader": "ReadTransporteRetTranspAsync"
+  },
+  {
+    "path": "TNFe/infNFe/transp/retTransp/cMunFG",
+    "model": "TransporteRetTransp",
+    "property": "CMunFG",
+    "reader": "ReadTransporteRetTranspAsync"
+  },
+  {
+    "path": "TNFe/infNFe/transp/veicTransp/placa",
+    "model": "TransporteVeicTransp",
+    "property": "Placa",
+    "reader": "ReadTransporteVeicTranspAsync"
+  },
+  {
+    "path": "TNFe/infNFe/transp/veicTransp/UF",
+    "model": "TransporteVeicTransp",
+    "property": "UF",
+    "reader": "ReadTransporteVeicTranspAsync"
+  },
+  {
+    "path": "TNFe/infNFe/transp/veicTransp/RNTC",
+    "model": "TransporteVeicTransp",
+    "property": "RNTC",
+    "reader": "ReadTransporteVeicTranspAsync"
+  },
+  {
+    "path": "TNFe/infNFe/transp/reboque/placa",
+    "model": "TransporteReboque",
+    "property": "Placa",
+    "reader": "ReadTransporteReboqueAsync"
+  },
+  {
+    "path": "TNFe/infNFe/transp/reboque/UF",
+    "model": "TransporteReboque",
+    "property": "UF",
+    "reader": "ReadTransporteReboqueAsync"
+  },
+  {
+    "path": "TNFe/infNFe/transp/reboque/RNTC",
+    "model": "TransporteReboque",
+    "property": "RNTC",
+    "reader": "ReadTransporteReboqueAsync"
+  },
+  {
+    "path": "TNFe/infNFe/transp/vol/lacres/nLacre",
+    "model": "TransporteVolLacres",
+    "property": "NLacre",
+    "reader": "ReadTransporteVolLacresAsync"
+  },
+  {
+    "path": "TNFe/infNFe/transp/vol/qVol",
+    "model": "TransporteVol",
+    "property": "QVol",
+    "reader": "ReadTransporteVolAsync"
+  },
+  {
+    "path": "TNFe/infNFe/transp/vol/esp",
+    "model": "TransporteVol",
+    "property": "Esp",
+    "reader": "ReadTransporteVolAsync"
+  },
+  {
+    "path": "TNFe/infNFe/transp/vol/marca",
+    "model": "TransporteVol",
+    "property": "Marca",
+    "reader": "ReadTransporteVolAsync"
+  },
+  {
+    "path": "TNFe/infNFe/transp/vol/nVol",
+    "model": "TransporteVol",
+    "property": "NVol",
+    "reader": "ReadTransporteVolAsync"
+  },
+  {
+    "path": "TNFe/infNFe/transp/vol/pesoL",
+    "model": "TransporteVol",
+    "property": "PesoL",
+    "reader": "ReadTransporteVolAsync"
+  },
+  {
+    "path": "TNFe/infNFe/transp/vol/pesoB",
+    "model": "TransporteVol",
+    "property": "PesoB",
+    "reader": "ReadTransporteVolAsync"
+  },
+  {
+    "path": "TNFe/infNFe/transp/vol/lacres",
+    "model": "TransporteVol",
+    "property": "Lacres",
+    "reader": "ReadTransporteVolAsync"
+  },
+  {
+    "path": "TNFe/infNFe/transp/modFrete",
+    "model": "Transporte",
+    "property": "ModFrete",
+    "reader": "ReadTransporteAsync"
+  },
+  {
+    "path": "TNFe/infNFe/transp/transporta",
+    "model": "Transporte",
+    "property": "Transporta",
+    "reader": "ReadTransporteAsync"
+  },
+  {
+    "path": "TNFe/infNFe/transp/retTransp",
+    "model": "Transporte",
+    "property": "RetTransp",
+    "reader": "ReadTransporteAsync"
+  },
+  {
+    "path": "TNFe/infNFe/transp/veicTransp",
+    "model": "Transporte",
+    "property": "VeicTransp",
+    "reader": "ReadTransporteAsync"
+  },
+  {
+    "path": "TNFe/infNFe/transp/reboque",
+    "model": "Transporte",
+    "property": "Reboque",
+    "reader": "ReadTransporteAsync"
+  },
+  {
+    "path": "TNFe/infNFe/transp/vagao",
+    "model": "Transporte",
+    "property": "Vagao",
+    "reader": "ReadTransporteAsync"
+  },
+  {
+    "path": "TNFe/infNFe/transp/balsa",
+    "model": "Transporte",
+    "property": "Balsa",
+    "reader": "ReadTransporteAsync"
+  },
+  {
+    "path": "TNFe/infNFe/transp/vol",
+    "model": "Transporte",
+    "property": "Vol",
+    "reader": "ReadTransporteAsync"
+  },
+  {
+    "path": "TNFe/infNFe/transp",
+    "model": "InfNFe",
+    "property": "Transp",
+    "reader": "ReadInfNFeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/cobr/fat/nFat",
+    "model": "CobrancaFat",
+    "property": "NFat",
+    "reader": "ReadCobrancaFatAsync"
+  },
+  {
+    "path": "TNFe/infNFe/cobr/fat/vOrig",
+    "model": "CobrancaFat",
+    "property": "VOrig",
+    "reader": "ReadCobrancaFatAsync"
+  },
+  {
+    "path": "TNFe/infNFe/cobr/fat/vDesc",
+    "model": "CobrancaFat",
+    "property": "VDesc",
+    "reader": "ReadCobrancaFatAsync"
+  },
+  {
+    "path": "TNFe/infNFe/cobr/fat/vLiq",
+    "model": "CobrancaFat",
+    "property": "VLiq",
+    "reader": "ReadCobrancaFatAsync"
+  },
+  {
+    "path": "TNFe/infNFe/cobr/dup/nDup",
+    "model": "CobrancaDup",
+    "property": "NDup",
+    "reader": "ReadCobrancaDupAsync"
+  },
+  {
+    "path": "TNFe/infNFe/cobr/dup/dVenc",
+    "model": "CobrancaDup",
+    "property": "DVenc",
+    "reader": "ReadCobrancaDupAsync"
+  },
+  {
+    "path": "TNFe/infNFe/cobr/dup/vDup",
+    "model": "CobrancaDup",
+    "property": "VDup",
+    "reader": "ReadCobrancaDupAsync"
+  },
+  {
+    "path": "TNFe/infNFe/cobr/fat",
+    "model": "Cobranca",
+    "property": "Fat",
+    "reader": "ReadCobrancaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/cobr/dup",
+    "model": "Cobranca",
+    "property": "Dup",
+    "reader": "ReadCobrancaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/cobr",
+    "model": "InfNFe",
+    "property": "Cobr",
+    "reader": "ReadInfNFeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/pag/detPag/card/tpIntegra",
+    "model": "PagamentoDetPagCard",
+    "property": "TpIntegra",
+    "reader": "ReadPagamentoDetPagCardAsync"
+  },
+  {
+    "path": "TNFe/infNFe/pag/detPag/card/CNPJ",
+    "model": "PagamentoDetPagCard",
+    "property": "CNPJ",
+    "reader": "ReadPagamentoDetPagCardAsync"
+  },
+  {
+    "path": "TNFe/infNFe/pag/detPag/card/tBand",
+    "model": "PagamentoDetPagCard",
+    "property": "TBand",
+    "reader": "ReadPagamentoDetPagCardAsync"
+  },
+  {
+    "path": "TNFe/infNFe/pag/detPag/card/cAut",
+    "model": "PagamentoDetPagCard",
+    "property": "CAut",
+    "reader": "ReadPagamentoDetPagCardAsync"
+  },
+  {
+    "path": "TNFe/infNFe/pag/detPag/card/CNPJReceb",
+    "model": "PagamentoDetPagCard",
+    "property": "CNPJReceb",
+    "reader": "ReadPagamentoDetPagCardAsync"
+  },
+  {
+    "path": "TNFe/infNFe/pag/detPag/card/idTermPag",
+    "model": "PagamentoDetPagCard",
+    "property": "IdTermPag",
+    "reader": "ReadPagamentoDetPagCardAsync"
+  },
+  {
+    "path": "TNFe/infNFe/pag/detPag/indPag",
+    "model": "PagamentoDetPag",
+    "property": "IndPag",
+    "reader": "ReadPagamentoDetPagAsync"
+  },
+  {
+    "path": "TNFe/infNFe/pag/detPag/tPag",
+    "model": "PagamentoDetPag",
+    "property": "TPag",
+    "reader": "ReadPagamentoDetPagAsync"
+  },
+  {
+    "path": "TNFe/infNFe/pag/detPag/xPag",
+    "model": "PagamentoDetPag",
+    "property": "XPag",
+    "reader": "ReadPagamentoDetPagAsync"
+  },
+  {
+    "path": "TNFe/infNFe/pag/detPag/vPag",
+    "model": "PagamentoDetPag",
+    "property": "VPag",
+    "reader": "ReadPagamentoDetPagAsync"
+  },
+  {
+    "path": "TNFe/infNFe/pag/detPag/dPag",
+    "model": "PagamentoDetPag",
+    "property": "DPag",
+    "reader": "ReadPagamentoDetPagAsync"
+  },
+  {
+    "path": "TNFe/infNFe/pag/detPag/CNPJPag",
+    "model": "PagamentoDetPag",
+    "property": "CNPJPag",
+    "reader": "ReadPagamentoDetPagAsync"
+  },
+  {
+    "path": "TNFe/infNFe/pag/detPag/UFPag",
+    "model": "PagamentoDetPag",
+    "property": "UFPag",
+    "reader": "ReadPagamentoDetPagAsync"
+  },
+  {
+    "path": "TNFe/infNFe/pag/detPag/card",
+    "model": "PagamentoDetPag",
+    "property": "Card",
+    "reader": "ReadPagamentoDetPagAsync"
+  },
+  {
+    "path": "TNFe/infNFe/pag/detPag",
+    "model": "Pagamento",
+    "property": "DetPag",
+    "reader": "ReadPagamentoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/pag/vTroco",
+    "model": "Pagamento",
+    "property": "VTroco",
+    "reader": "ReadPagamentoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/pag",
+    "model": "InfNFe",
+    "property": "Pag",
+    "reader": "ReadInfNFeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/infIntermed/CNPJ",
+    "model": "Intermediador",
+    "property": "CNPJ",
+    "reader": "ReadIntermediadorAsync"
+  },
+  {
+    "path": "TNFe/infNFe/infIntermed/idCadIntTran",
+    "model": "Intermediador",
+    "property": "IdCadIntTran",
+    "reader": "ReadIntermediadorAsync"
+  },
+  {
+    "path": "TNFe/infNFe/infIntermed",
+    "model": "InfNFe",
+    "property": "InfIntermed",
+    "reader": "ReadInfNFeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/infAdic/obsCont/xTexto",
+    "model": "InformacoesAdicionaisObsCont",
+    "property": "XTexto",
+    "reader": "ReadInformacoesAdicionaisObsContAsync"
+  },
+  {
+    "path": "TNFe/infNFe/infAdic/obsCont/@xCampo",
+    "model": "InformacoesAdicionaisObsCont",
+    "property": "XCampo",
+    "reader": "ReadInformacoesAdicionaisObsContAsync"
+  },
+  {
+    "path": "TNFe/infNFe/infAdic/obsFisco/xTexto",
+    "model": "InformacoesAdicionaisObsFisco",
+    "property": "XTexto",
+    "reader": "ReadInformacoesAdicionaisObsFiscoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/infAdic/obsFisco/@xCampo",
+    "model": "InformacoesAdicionaisObsFisco",
+    "property": "XCampo",
+    "reader": "ReadInformacoesAdicionaisObsFiscoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/infAdic/procRef/nProc",
+    "model": "InformacoesAdicionaisProcRef",
+    "property": "NProc",
+    "reader": "ReadInformacoesAdicionaisProcRefAsync"
+  },
+  {
+    "path": "TNFe/infNFe/infAdic/procRef/indProc",
+    "model": "InformacoesAdicionaisProcRef",
+    "property": "IndProc",
+    "reader": "ReadInformacoesAdicionaisProcRefAsync"
+  },
+  {
+    "path": "TNFe/infNFe/infAdic/procRef/tpAto",
+    "model": "InformacoesAdicionaisProcRef",
+    "property": "TpAto",
+    "reader": "ReadInformacoesAdicionaisProcRefAsync"
+  },
+  {
+    "path": "TNFe/infNFe/infAdic/infAdFisco",
+    "model": "InformacoesAdicionais",
+    "property": "InfAdFisco",
+    "reader": "ReadInformacoesAdicionaisAsync"
+  },
+  {
+    "path": "TNFe/infNFe/infAdic/infCpl",
+    "model": "InformacoesAdicionais",
+    "property": "InfCpl",
+    "reader": "ReadInformacoesAdicionaisAsync"
+  },
+  {
+    "path": "TNFe/infNFe/infAdic/obsCont",
+    "model": "InformacoesAdicionais",
+    "property": "ObsCont",
+    "reader": "ReadInformacoesAdicionaisAsync"
+  },
+  {
+    "path": "TNFe/infNFe/infAdic/obsFisco",
+    "model": "InformacoesAdicionais",
+    "property": "ObsFisco",
+    "reader": "ReadInformacoesAdicionaisAsync"
+  },
+  {
+    "path": "TNFe/infNFe/infAdic/procRef",
+    "model": "InformacoesAdicionais",
+    "property": "ProcRef",
+    "reader": "ReadInformacoesAdicionaisAsync"
+  },
+  {
+    "path": "TNFe/infNFe/infAdic",
+    "model": "InfNFe",
+    "property": "InfAdic",
+    "reader": "ReadInfNFeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/exporta/UFSaidaPais",
+    "model": "Exportacao",
+    "property": "UFSaidaPais",
+    "reader": "ReadExportacaoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/exporta/xLocExporta",
+    "model": "Exportacao",
+    "property": "XLocExporta",
+    "reader": "ReadExportacaoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/exporta/xLocDespacho",
+    "model": "Exportacao",
+    "property": "XLocDespacho",
+    "reader": "ReadExportacaoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/exporta",
+    "model": "InfNFe",
+    "property": "Exporta",
+    "reader": "ReadInfNFeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/compra/xNEmp",
+    "model": "Compra",
+    "property": "XNEmp",
+    "reader": "ReadCompraAsync"
+  },
+  {
+    "path": "TNFe/infNFe/compra/xPed",
+    "model": "Compra",
+    "property": "XPed",
+    "reader": "ReadCompraAsync"
+  },
+  {
+    "path": "TNFe/infNFe/compra/xCont",
+    "model": "Compra",
+    "property": "XCont",
+    "reader": "ReadCompraAsync"
+  },
+  {
+    "path": "TNFe/infNFe/compra",
+    "model": "InfNFe",
+    "property": "Compra",
+    "reader": "ReadInfNFeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/cana/forDia/qtde",
+    "model": "CanaForDia",
+    "property": "Qtde",
+    "reader": "ReadCanaForDiaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/cana/forDia/@dia",
+    "model": "CanaForDia",
+    "property": "Dia",
+    "reader": "ReadCanaForDiaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/cana/deduc/xDed",
+    "model": "CanaDeduc",
+    "property": "XDed",
+    "reader": "ReadCanaDeducAsync"
+  },
+  {
+    "path": "TNFe/infNFe/cana/deduc/vDed",
+    "model": "CanaDeduc",
+    "property": "VDed",
+    "reader": "ReadCanaDeducAsync"
+  },
+  {
+    "path": "TNFe/infNFe/cana/safra",
+    "model": "Cana",
+    "property": "Safra",
+    "reader": "ReadCanaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/cana/ref",
+    "model": "Cana",
+    "property": "Ref",
+    "reader": "ReadCanaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/cana/forDia",
+    "model": "Cana",
+    "property": "ForDia",
+    "reader": "ReadCanaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/cana/qTotMes",
+    "model": "Cana",
+    "property": "QTotMes",
+    "reader": "ReadCanaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/cana/qTotAnt",
+    "model": "Cana",
+    "property": "QTotAnt",
+    "reader": "ReadCanaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/cana/qTotGer",
+    "model": "Cana",
+    "property": "QTotGer",
+    "reader": "ReadCanaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/cana/deduc",
+    "model": "Cana",
+    "property": "Deduc",
+    "reader": "ReadCanaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/cana/vFor",
+    "model": "Cana",
+    "property": "VFor",
+    "reader": "ReadCanaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/cana/vTotDed",
+    "model": "Cana",
+    "property": "VTotDed",
+    "reader": "ReadCanaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/cana/vLiqFor",
+    "model": "Cana",
+    "property": "VLiqFor",
+    "reader": "ReadCanaAsync"
+  },
+  {
+    "path": "TNFe/infNFe/cana",
+    "model": "InfNFe",
+    "property": "Cana",
+    "reader": "ReadInfNFeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/infRespTec/CNPJ",
+    "model": "ResponsavelTecnico",
+    "property": "CNPJ",
+    "reader": "ReadResponsavelTecnicoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/infRespTec/xContato",
+    "model": "ResponsavelTecnico",
+    "property": "XContato",
+    "reader": "ReadResponsavelTecnicoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/infRespTec/email",
+    "model": "ResponsavelTecnico",
+    "property": "Email",
+    "reader": "ReadResponsavelTecnicoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/infRespTec/fone",
+    "model": "ResponsavelTecnico",
+    "property": "Fone",
+    "reader": "ReadResponsavelTecnicoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/infRespTec/idCSRT",
+    "model": "ResponsavelTecnico",
+    "property": "IdCSRT",
+    "reader": "ReadResponsavelTecnicoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/infRespTec/hashCSRT",
+    "model": "ResponsavelTecnico",
+    "property": "HashCSRT",
+    "reader": "ReadResponsavelTecnicoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/infRespTec",
+    "model": "InfNFe",
+    "property": "InfRespTec",
+    "reader": "ReadInfNFeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/infSolicNFF/xSolic",
+    "model": "InfNFeInfSolicNFF",
+    "property": "XSolic",
+    "reader": "ReadInfNFeInfSolicNFFAsync"
+  },
+  {
+    "path": "TNFe/infNFe/infSolicNFF",
+    "model": "InfNFe",
+    "property": "InfSolicNFF",
+    "reader": "ReadInfNFeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/agropecuario/defensivo/nReceituario",
+    "model": "InfNFeAgropecuarioDefensivo",
+    "property": "NReceituario",
+    "reader": "ReadInfNFeAgropecuarioDefensivoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/agropecuario/defensivo/CPFRespTec",
+    "model": "InfNFeAgropecuarioDefensivo",
+    "property": "CPFRespTec",
+    "reader": "ReadInfNFeAgropecuarioDefensivoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/agropecuario/guiaTransito/tpGuia",
+    "model": "InfNFeAgropecuarioGuiaTransito",
+    "property": "TpGuia",
+    "reader": "ReadInfNFeAgropecuarioGuiaTransitoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/agropecuario/guiaTransito/UFGuia",
+    "model": "InfNFeAgropecuarioGuiaTransito",
+    "property": "UFGuia",
+    "reader": "ReadInfNFeAgropecuarioGuiaTransitoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/agropecuario/guiaTransito/serieGuia",
+    "model": "InfNFeAgropecuarioGuiaTransito",
+    "property": "SerieGuia",
+    "reader": "ReadInfNFeAgropecuarioGuiaTransitoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/agropecuario/guiaTransito/nGuia",
+    "model": "InfNFeAgropecuarioGuiaTransito",
+    "property": "NGuia",
+    "reader": "ReadInfNFeAgropecuarioGuiaTransitoAsync"
+  },
+  {
+    "path": "TNFe/infNFe/agropecuario/defensivo",
+    "model": "InfNFeAgropecuario",
+    "property": "Defensivo",
+    "reader": "ReadInfNFeAgropecuarioAsync"
+  },
+  {
+    "path": "TNFe/infNFe/agropecuario/guiaTransito",
+    "model": "InfNFeAgropecuario",
+    "property": "GuiaTransito",
+    "reader": "ReadInfNFeAgropecuarioAsync"
+  },
+  {
+    "path": "TNFe/infNFe/agropecuario",
+    "model": "InfNFe",
+    "property": "Agropecuario",
+    "reader": "ReadInfNFeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/infPAA/PAASignature/RSAKeyValue/Modulus",
+    "model": "InfNFeInfPAAPAASignatureRSAKeyValue",
+    "property": "Modulus",
+    "reader": "ReadInfNFeInfPAAPAASignatureRSAKeyValueAsync"
+  },
+  {
+    "path": "TNFe/infNFe/infPAA/PAASignature/RSAKeyValue/Exponent",
+    "model": "InfNFeInfPAAPAASignatureRSAKeyValue",
+    "property": "Exponent",
+    "reader": "ReadInfNFeInfPAAPAASignatureRSAKeyValueAsync"
+  },
+  {
+    "path": "TNFe/infNFe/infPAA/PAASignature/SignatureValue",
+    "model": "InfNFeInfPAAPAASignature",
+    "property": "SignatureValue",
+    "reader": "ReadInfNFeInfPAAPAASignatureAsync"
+  },
+  {
+    "path": "TNFe/infNFe/infPAA/PAASignature/RSAKeyValue",
+    "model": "InfNFeInfPAAPAASignature",
+    "property": "RSAKeyValue",
+    "reader": "ReadInfNFeInfPAAPAASignatureAsync"
+  },
+  {
+    "path": "TNFe/infNFe/infPAA/CNPJPAA",
+    "model": "InfNFeInfPAA",
+    "property": "CNPJPAA",
+    "reader": "ReadInfNFeInfPAAAsync"
+  },
+  {
+    "path": "TNFe/infNFe/infPAA/PAASignature",
+    "model": "InfNFeInfPAA",
+    "property": "PAASignature",
+    "reader": "ReadInfNFeInfPAAAsync"
+  },
+  {
+    "path": "TNFe/infNFe/infPAA",
+    "model": "InfNFe",
+    "property": "InfPAA",
+    "reader": "ReadInfNFeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/@versao",
+    "model": "InfNFe",
+    "property": "Versao",
+    "reader": "ReadInfNFeAsync"
+  },
+  {
+    "path": "TNFe/infNFe/@Id",
+    "model": "InfNFe",
+    "property": "Id",
+    "reader": "ReadInfNFeAsync"
+  },
+  {
+    "path": "TNFe/infNFeSupl/qrCode",
+    "model": "InformacaoSuplementar",
+    "property": "QrCode",
+    "reader": "ReadInformacaoSuplementarAsync"
+  },
+  {
+    "path": "TNFe/infNFeSupl/urlChave",
+    "model": "InformacaoSuplementar",
+    "property": "UrlChave",
+    "reader": "ReadInformacaoSuplementarAsync"
+  }
+]

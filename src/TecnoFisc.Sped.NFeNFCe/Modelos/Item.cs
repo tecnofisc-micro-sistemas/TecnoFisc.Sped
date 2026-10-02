@@ -6,7 +6,7 @@ namespace TecnoFisc.Sped.NFeNFCe;
 /// identidade completa de um item no domínio é a chave de acesso da nota somada ao
 /// <see cref="NItem"/> (a chave vive na <see cref="NFe"/> que possui este item).
 /// </summary>
-public sealed record Item
+public sealed partial record Item
 {
     /// <summary><c>nItem</c> — número sequencial do item na nota (1..990).</summary>
     public required int NItem { get; init; }

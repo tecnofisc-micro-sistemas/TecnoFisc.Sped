@@ -31,6 +31,10 @@ internal sealed partial class NFeXmlReader
                 case "ICMSSN500": icms = await ReadIcmsSN500Async(ct).ConfigureAwait(false); return true;
                 case "ICMSSN900": icms = await ReadIcmsSN900Async(ct).ConfigureAwait(false); return true;
                 // Variantes combustível (ICMS02/15/53/61) entram em slices posteriores.
+                case "ICMS02": icms = await ReadIcms02Async(ct).ConfigureAwait(false); return true;
+                case "ICMS15": icms = await ReadIcms15Async(ct).ConfigureAwait(false); return true;
+                case "ICMS53": icms = await ReadIcms53Async(ct).ConfigureAwait(false); return true;
+                case "ICMS61": icms = await ReadIcms61Async(ct).ConfigureAwait(false); return true;
                 default: return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
@@ -285,6 +289,10 @@ internal sealed partial class NFeXmlReader
         decimal? vBCSTRet = null, pST = null, vICMSSubstituto = null, vICMSSTRet = null,
             pRedBCEfet = null, vBCEfet = null, pICMSEfet = null, vICMSEfet = null;
 
+        decimal? extraVBCFCPSTRet = null;
+        decimal? extraPFCPSTRet = null;
+        decimal? extraVFCPSTRet = null;
+
         await _r.ConsumeChildrenAsync(async nome =>
         {
             switch (nome)
@@ -299,6 +307,9 @@ internal sealed partial class NFeXmlReader
                 case "vBCEfet": vBCEfet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
                 case "pICMSEfet": pICMSEfet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
                 case "vICMSEfet": vICMSEfet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
+                case "vBCFCPSTRet": extraVBCFCPSTRet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
+                case "pFCPSTRet": extraPFCPSTRet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
+                case "vFCPSTRet": extraVFCPSTRet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
                 default: return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
@@ -306,7 +317,7 @@ internal sealed partial class NFeXmlReader
         Cst cst = CombinarCst(orig, cstTributacao);
 
         return new Icms60
-        {
+        { VBCFCPSTRet = extraVBCFCPSTRet, PFCPSTRet = extraPFCPSTRet, VFCPSTRet = extraVFCPSTRet, 
             Orig = orig, CST = cst, VBCSTRet = vBCSTRet, PST = pST,
             VICMSSubstituto = vICMSSubstituto, VICMSSTRet = vICMSSTRet,
             PRedBCEfet = pRedBCEfet, VBCEfet = vBCEfet, PICMSEfet = pICMSEfet, VICMSEfet = vICMSEfet,

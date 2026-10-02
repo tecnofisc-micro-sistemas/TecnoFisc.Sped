@@ -29,13 +29,48 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
 
     private sealed record InfNFe(
         ChaveAcesso Chave, string Versao, Identificacao Ide, Emitente Emit,
-        Destinatario? Dest, Total Total, IReadOnlyList<Item> Itens);
+        Destinatario? Dest, Total Total, IReadOnlyList<Item> Itens)
+    {
+    /// <summary>XML: <c>avulsa</c>.</summary>
+    public InfNFeAvulsa? Avulsa { get; init; }
+    /// <summary>XML: <c>retirada</c>.</summary>
+    public LocalRetirada? Retirada { get; init; }
+    /// <summary>XML: <c>entrega</c>.</summary>
+    public LocalEntrega? Entrega { get; init; }
+    /// <summary>XML: <c>autXML</c>.</summary>
+    public IReadOnlyList<AutorizadoXml> AutXML { get; init; } = [];
+    /// <summary>XML: <c>transp</c>.</summary>
+    public Transporte? Transp { get; init; }
+    /// <summary>XML: <c>cobr</c>.</summary>
+    public Cobranca? Cobr { get; init; }
+    /// <summary>XML: <c>pag</c>.</summary>
+    public Pagamento? Pag { get; init; }
+    /// <summary>XML: <c>infIntermed</c>.</summary>
+    public Intermediador? InfIntermed { get; init; }
+    /// <summary>XML: <c>infAdic</c>.</summary>
+    public InformacoesAdicionais? InfAdic { get; init; }
+    /// <summary>XML: <c>exporta</c>.</summary>
+    public Exportacao? Exporta { get; init; }
+    /// <summary>XML: <c>compra</c>.</summary>
+    public Compra? Compra { get; init; }
+    /// <summary>XML: <c>cana</c>.</summary>
+    public Cana? Cana { get; init; }
+    /// <summary>XML: <c>infRespTec</c>.</summary>
+    public ResponsavelTecnico? InfRespTec { get; init; }
+    /// <summary>XML: <c>infSolicNFF</c>.</summary>
+    public InfNFeInfSolicNFF? InfSolicNFF { get; init; }
+    /// <summary>XML: <c>agropecuario</c>.</summary>
+    public InfNFeAgropecuario? Agropecuario { get; init; }
+    /// <summary>XML: <c>infPAA</c>.</summary>
+    public InfNFeInfPAA? InfPAA { get; init; }
+    }
 
     /// <summary>Varre o documento e materializa a <see cref="NFe"/> (com protocolo, se houver).</summary>
     public async Task<NFe> ReadAsync(CancellationToken cancellationToken)
     {
         InfNFe? core = null;
         Protocolo? protocolo = null;
+        InformacaoSuplementar? suplemento = null;
 
         if (!await _r.ReadAsync().ConfigureAwait(false))
             throw new FormatException("Documento XML vazio.");
@@ -53,6 +88,9 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
 
             switch (_r.LocalName)
             {
+                case "infNFeSupl":
+                    suplemento = await ReadInformacaoSuplementarAsync(cancellationToken).ConfigureAwait(false);
+                    break;
                 case "infNFe":
                     if (core is null)
                         core = await ReadInfNFeAsync(cancellationToken).ConfigureAwait(false);
@@ -90,6 +128,23 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
             Total = core.Total,
             Itens = core.Itens,
             Protocolo = protocolo,
+            InfNFeSupl = suplemento,
+            Avulsa = core.Avulsa,
+            Retirada = core.Retirada,
+            Entrega = core.Entrega,
+            AutXML = core.AutXML,
+            Transp = core.Transp,
+            Cobr = core.Cobr,
+            Pag = core.Pag,
+            InfIntermed = core.InfIntermed,
+            InfAdic = core.InfAdic,
+            Exporta = core.Exporta,
+            Compra = core.Compra,
+            Cana = core.Cana,
+            InfRespTec = core.InfRespTec,
+            InfSolicNFF = core.InfSolicNFF,
+            Agropecuario = core.Agropecuario,
+            InfPAA = core.InfPAA,
         };
     }
 
@@ -105,6 +160,23 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
         Total? total = null;
         var itens = new List<Item>();
 
+        InfNFeAvulsa? extraAvulsa = null;
+        LocalRetirada? extraRetirada = null;
+        LocalEntrega? extraEntrega = null;
+        List<AutorizadoXml>? extraAutXML = null;
+        Transporte? extraTransp = null;
+        Cobranca? extraCobr = null;
+        Pagamento? extraPag = null;
+        Intermediador? extraInfIntermed = null;
+        InformacoesAdicionais? extraInfAdic = null;
+        Exportacao? extraExporta = null;
+        Compra? extraCompra = null;
+        Cana? extraCana = null;
+        ResponsavelTecnico? extraInfRespTec = null;
+        InfNFeInfSolicNFF? extraInfSolicNFF = null;
+        InfNFeAgropecuario? extraAgropecuario = null;
+        InfNFeInfPAA? extraInfPAA = null;
+
         await _r.ConsumeChildrenAsync(async nome =>
         {
             switch (nome)
@@ -117,6 +189,22 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
                 // Lê sempre (consome o elemento), mas o atributo homônimo tem precedência se já veio.
                 case "Id": { var v = await _r.ReadTextAsync().ConfigureAwait(false); id ??= v; return true; }
                 case "versao": { var v = await _r.ReadTextAsync().ConfigureAwait(false); versao ??= v; return true; }
+                case "avulsa": extraAvulsa = await ReadInfNFeAvulsaAsync(ct).ConfigureAwait(false); return true;
+                case "retirada": extraRetirada = await ReadLocalRetiradaAsync(ct).ConfigureAwait(false); return true;
+                case "entrega": extraEntrega = await ReadLocalEntregaAsync(ct).ConfigureAwait(false); return true;
+                case "autXML": (extraAutXML ??= []).Add(await ReadAutorizadoXmlAsync(ct).ConfigureAwait(false)); return true;
+                case "transp": extraTransp = await ReadTransporteAsync(ct).ConfigureAwait(false); return true;
+                case "cobr": extraCobr = await ReadCobrancaAsync(ct).ConfigureAwait(false); return true;
+                case "pag": extraPag = await ReadPagamentoAsync(ct).ConfigureAwait(false); return true;
+                case "infIntermed": extraInfIntermed = await ReadIntermediadorAsync(ct).ConfigureAwait(false); return true;
+                case "infAdic": extraInfAdic = await ReadInformacoesAdicionaisAsync(ct).ConfigureAwait(false); return true;
+                case "exporta": extraExporta = await ReadExportacaoAsync(ct).ConfigureAwait(false); return true;
+                case "compra": extraCompra = await ReadCompraAsync(ct).ConfigureAwait(false); return true;
+                case "cana": extraCana = await ReadCanaAsync(ct).ConfigureAwait(false); return true;
+                case "infRespTec": extraInfRespTec = await ReadResponsavelTecnicoAsync(ct).ConfigureAwait(false); return true;
+                case "infSolicNFF": extraInfSolicNFF = await ReadInfNFeInfSolicNFFAsync(ct).ConfigureAwait(false); return true;
+                case "agropecuario": extraAgropecuario = await ReadInfNFeAgropecuarioAsync(ct).ConfigureAwait(false); return true;
+                case "infPAA": extraInfPAA = await ReadInfNFeInfPAAAsync(ct).ConfigureAwait(false); return true;
                 default: return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
@@ -128,7 +216,7 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
             emit ?? throw new FormatException("infNFe sem grupo emit."),
             dest,
             total ?? throw new FormatException("infNFe sem grupo total."),
-            itens);
+            itens) { Avulsa = extraAvulsa, Retirada = extraRetirada, Entrega = extraEntrega, AutXML = (IReadOnlyList<AutorizadoXml>?)extraAutXML ?? [], Transp = extraTransp, Cobr = extraCobr, Pag = extraPag, InfIntermed = extraInfIntermed, InfAdic = extraInfAdic, Exporta = extraExporta, Compra = extraCompra, Cana = extraCana, InfRespTec = extraInfRespTec, InfSolicNFF = extraInfSolicNFF, Agropecuario = extraAgropecuario, InfPAA = extraInfPAA };
     }
 
     private async Task<Identificacao> ReadIdeAsync(CancellationToken ct)
@@ -139,6 +227,17 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
         int tpImp = 0; TipoEmissao tpEmis = default; int cDV = 0; TipoAmbiente tpAmb = default;
         FinalidadeEmissao finNFe = default; bool indFinal = false; IndicadorPresenca indPres = default;
         IndicadorIntermediador? indIntermed = null; int procEmi = 0; string? verProc = null;
+
+        DateOnly? extraDPrevEntrega = null;
+        string? extraCMunFGIBS = null;
+        string? extraTpNFDebito = null;
+        string? extraTpNFCredito = null;
+        string? extraCIndOp = null;
+        DateTimeOffset? extraDhCont = null;
+        string? extraXJust = null;
+        List<ReferenciaNota>? extraNFref = null;
+        IdentificacaoGCompraGov? extraGCompraGov = null;
+        IdentificacaoGPagAntecipado? extraGPagAntecipado = null;
 
         await _r.ConsumeChildrenAsync(async nome =>
         {
@@ -165,12 +264,22 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
                 case "indIntermed": indIntermed = ParseEnum<IndicadorIntermediador>(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
                 case "procEmi": procEmi = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
                 case "verProc": verProc = await _r.ReadTextAsync().ConfigureAwait(false); return true;
+                case "dPrevEntrega": extraDPrevEntrega = DateOnly.Parse(await _r.ReadTextAsync().ConfigureAwait(false), CultureInfo.InvariantCulture); return true;
+                case "cMunFGIBS": extraCMunFGIBS = await _r.ReadTextAsync().ConfigureAwait(false); return true;
+                case "tpNFDebito": extraTpNFDebito = await _r.ReadTextAsync().ConfigureAwait(false); return true;
+                case "tpNFCredito": extraTpNFCredito = await _r.ReadTextAsync().ConfigureAwait(false); return true;
+                case "cIndOp": extraCIndOp = await _r.ReadTextAsync().ConfigureAwait(false); return true;
+                case "dhCont": extraDhCont = ParseDate(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
+                case "xJust": extraXJust = await _r.ReadTextAsync().ConfigureAwait(false); return true;
+                case "NFref": (extraNFref ??= []).Add(await ReadReferenciaNotaAsync(ct).ConfigureAwait(false)); return true;
+                case "gCompraGov": extraGCompraGov = await ReadIdentificacaoGCompraGovAsync(ct).ConfigureAwait(false); return true;
+                case "gPagAntecipado": extraGPagAntecipado = await ReadIdentificacaoGPagAntecipadoAsync(ct).ConfigureAwait(false); return true;
                 default: return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
 
         return new Identificacao
-        {
+        { DPrevEntrega = extraDPrevEntrega, CMunFGIBS = extraCMunFGIBS, TpNFDebito = extraTpNFDebito, TpNFCredito = extraTpNFCredito, CIndOp = extraCIndOp, DhCont = extraDhCont, XJust = extraXJust, NFref = (IReadOnlyList<ReferenciaNota>?)extraNFref ?? [], GCompraGov = extraGCompraGov, GPagAntecipado = extraGPagAntecipado, 
             CUF = cUF, CNF = cNF, NatOp = natOp, Mod = mod, Serie = serie, NNF = nNF,
             DhEmi = dhEmi, DhSaiEnt = dhSaiEnt, TpNF = tpNF, IdDest = idDest, CMunFG = cMunFG,
             TpImp = tpImp, TpEmis = tpEmis, CDV = cDV, TpAmb = tpAmb, FinNFe = finNFe,
@@ -184,6 +293,8 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
         Cnpj? cnpj = null; Cpf? cpf = null; string xNome = string.Empty; string? xFant = null;
         Endereco? ender = null; InscricaoEstadual? ie = null; string? iest = null, im = null, cnae = null;
         int crt = 0;
+
+        string? extraISUFEmit = null;
 
         await _r.ConsumeChildrenAsync(async nome =>
         {
@@ -199,12 +310,13 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
                 case "IM": im = await _r.ReadTextAsync().ConfigureAwait(false); return true;
                 case "CNAE": cnae = await _r.ReadTextAsync().ConfigureAwait(false); return true;
                 case "CRT": crt = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
+                case "ISUFEmit": extraISUFEmit = await _r.ReadTextAsync().ConfigureAwait(false); return true;
                 default: return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
 
         return new Emitente
-        {
+        { ISUFEmit = extraISUFEmit, 
             CNPJ = cnpj, CPF = cpf, XNome = xNome, XFant = xFant,
             EnderEmit = ender ?? throw new FormatException("emit sem grupo enderEmit."),
             IE = ie, IEST = iest, IM = im, CNAE = cnae, CRT = crt,
@@ -215,6 +327,9 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
     {
         Cnpj? cnpj = null; Cpf? cpf = null; string? idEstrangeiro = null, xNome = null, email = null;
         Endereco? ender = null; int? indIEDest = null; InscricaoEstadual? ie = null;
+
+        string? extraISUF = null;
+        string? extraIM = null;
 
         await _r.ConsumeChildrenAsync(async nome =>
         {
@@ -228,12 +343,14 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
                 case "indIEDest": indIEDest = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
                 case "IE": ie = InscricaoEstadual.Create(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
                 case "email": email = await _r.ReadTextAsync().ConfigureAwait(false); return true;
+                case "ISUF": extraISUF = await _r.ReadTextAsync().ConfigureAwait(false); return true;
+                case "IM": extraIM = await _r.ReadTextAsync().ConfigureAwait(false); return true;
                 default: return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
 
         return new Destinatario
-        {
+        { ISUF = extraISUF, IM = extraIM, 
             CNPJ = cnpj, CPF = cpf, IdEstrangeiro = idEstrangeiro, XNome = xNome,
             EnderDest = ender, IndIEDest = indIEDest, IE = ie, Email = email,
         };
@@ -275,16 +392,27 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
     {
         TotalIcms? icmsTot = null;
 
+        TotalIssqn? extraISSQNtot = null;
+        RetencoesTributos? extraRetTrib = null;
+        TotalIS? extraISTot = null;
+        TotalIBSCBS? extraIBSCBSTot = null;
+        decimal? extraVNFTot = null;
+
         await _r.ConsumeChildrenAsync(async nome =>
         {
             switch (nome)
             {
                 case "ICMSTot": icmsTot = await ReadTotalIcmsAsync(ct).ConfigureAwait(false); return true;
+                case "ISSQNtot": extraISSQNtot = await ReadTotalIssqnAsync(ct).ConfigureAwait(false); return true;
+                case "retTrib": extraRetTrib = await ReadRetencoesTributosAsync(ct).ConfigureAwait(false); return true;
+                case "ISTot": extraISTot = await ReadTotalISAsync(ct).ConfigureAwait(false); return true;
+                case "IBSCBSTot": extraIBSCBSTot = await ReadTotalIBSCBSAsync(ct).ConfigureAwait(false); return true;
+                case "vNFTot": extraVNFTot = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
                 default: return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
 
-        return new Total { ICMSTot = icmsTot ?? throw new FormatException("total sem grupo ICMSTot.") };
+        return new Total { ISSQNtot = extraISSQNtot, RetTrib = extraRetTrib, ISTot = extraISTot, IBSCBSTot = extraIBSCBSTot, VNFTot = extraVNFTot,  ICMSTot = icmsTot ?? throw new FormatException("total sem grupo ICMSTot.") };
     }
 
     private async Task<TotalIcms> ReadTotalIcmsAsync(CancellationToken ct)
@@ -292,6 +420,17 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
         decimal vBC = 0, vICMS = 0, vICMSDeson = 0, vFCP = 0, vBCST = 0, vST = 0, vFCPST = 0,
             vFCPSTRet = 0, vProd = 0, vFrete = 0, vSeg = 0, vDesc = 0, vII = 0, vIPI = 0,
             vIPIDevol = 0, vPIS = 0, vCOFINS = 0, vOutro = 0, vNF = 0;
+
+        decimal? extraVFCPUFDest = null;
+        decimal? extraVICMSUFDest = null;
+        decimal? extraVICMSUFRemet = null;
+        decimal? extraQBCMono = null;
+        decimal? extraVICMSMono = null;
+        decimal? extraQBCMonoReten = null;
+        decimal? extraVICMSMonoReten = null;
+        decimal? extraQBCMonoRet = null;
+        decimal? extraVICMSMonoRet = null;
+        decimal? extraVTotTrib = null;
 
         await _r.ConsumeChildrenAsync(async nome =>
         {
@@ -316,12 +455,22 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
                 case "vCOFINS": vCOFINS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
                 case "vOutro": vOutro = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
                 case "vNF": vNF = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
+                case "vFCPUFDest": extraVFCPUFDest = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
+                case "vICMSUFDest": extraVICMSUFDest = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
+                case "vICMSUFRemet": extraVICMSUFRemet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
+                case "qBCMono": extraQBCMono = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
+                case "vICMSMono": extraVICMSMono = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
+                case "qBCMonoReten": extraQBCMonoReten = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
+                case "vICMSMonoReten": extraVICMSMonoReten = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
+                case "qBCMonoRet": extraQBCMonoRet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
+                case "vICMSMonoRet": extraVICMSMonoRet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
+                case "vTotTrib": extraVTotTrib = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
                 default: return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
 
         return new TotalIcms
-        {
+        { VFCPUFDest = extraVFCPUFDest, VICMSUFDest = extraVICMSUFDest, VICMSUFRemet = extraVICMSUFRemet, QBCMono = extraQBCMono, VICMSMono = extraVICMSMono, QBCMonoReten = extraQBCMonoReten, VICMSMonoReten = extraVICMSMonoReten, QBCMonoRet = extraQBCMonoRet, VICMSMonoRet = extraVICMSMonoRet, VTotTrib = extraVTotTrib, 
             VBC = vBC, VICMS = vICMS, VICMSDeson = vICMSDeson, VFCP = vFCP, VBCST = vBCST,
             VST = vST, VFCPST = vFCPST, VFCPSTRet = vFCPSTRet, VProd = vProd, VFrete = vFrete,
             VSeg = vSeg, VDesc = vDesc, VII = vII, VIPI = vIPI, VIPIDevol = vIPIDevol,
@@ -338,6 +487,12 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
         Produto? prod = null;
         var imposto = new Imposto();
 
+        ItemImpostoDevol? extraImpostoDevol = null;
+        string? extraInfAdProd = null;
+        ItemObsItem? extraObsItem = null;
+        decimal? extraVItem = null;
+        ItemDFeReferenciado? extraDFeReferenciado = null;
+
         await _r.ConsumeChildrenAsync(async nome =>
         {
             switch (nome)
@@ -345,12 +500,17 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
                 case "nItem": nItem = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
                 case "prod": prod = await ReadProdutoAsync(ct).ConfigureAwait(false); return true;
                 case "imposto": imposto = await ReadImpostoAsync(ct).ConfigureAwait(false); return true;
+                case "impostoDevol": extraImpostoDevol = await ReadItemImpostoDevolAsync(ct).ConfigureAwait(false); return true;
+                case "infAdProd": extraInfAdProd = await _r.ReadTextAsync().ConfigureAwait(false); return true;
+                case "obsItem": extraObsItem = await ReadItemObsItemAsync(ct).ConfigureAwait(false); return true;
+                case "vItem": extraVItem = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
+                case "DFeReferenciado": extraDFeReferenciado = await ReadItemDFeReferenciadoAsync(ct).ConfigureAwait(false); return true;
                 default: return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
 
         return new Item
-        {
+        { ImpostoDevol = extraImpostoDevol, InfAdProd = extraInfAdProd, ObsItem = extraObsItem, VItem = extraVItem, DFeReferenciado = extraDFeReferenciado, 
             NItem = nItem,
             Prod = prod ?? throw new FormatException($"det (nItem={nItem}) sem grupo prod."),
             Imposto = imposto,
@@ -363,6 +523,33 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
         string? extipi = null;
         Gtin cEAN = default, cEANTrib = default; Ncm ncm = default; Cest? cest = null; Cfop cfop = default;
         decimal qCom = 0, vUnCom = 0, vProd = 0, qTrib = 0, vUnTrib = 0; bool indTot = false;
+
+        string? extraCBarra = null;
+        List<string>? extraNVE = null;
+        string? extraIndEscala = null;
+        string? extraCNPJFab = null;
+        string? extraCBenef = null;
+        List<ProdutoGCred>? extraGCred = null;
+        string? extraTpCredPresIBSZFM = null;
+        string? extraCBarraTrib = null;
+        decimal? extraVFrete = null;
+        decimal? extraVSeg = null;
+        decimal? extraVDesc = null;
+        decimal? extraVOutro = null;
+        string? extraIndBemMovelUsado = null;
+        List<DeclaracaoImportacao>? extraDI = null;
+        List<DetalheExportacao>? extraDetExport = null;
+        string? extraXPed = null;
+        string? extraNItemPed = null;
+        string? extraNFCI = null;
+        List<Rastreabilidade>? extraRastro = null;
+        ProdutoInfProdNFF? extraInfProdNFF = null;
+        ProdutoInfProdEmb? extraInfProdEmb = null;
+        VeiculoProduto? extraVeicProd = null;
+        Medicamento? extraMed = null;
+        List<Armamento>? extraArma = null;
+        Combustivel? extraComb = null;
+        string? extraNRECOPI = null;
 
         await _r.ConsumeChildrenAsync(async nome =>
         {
@@ -384,12 +571,38 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
                 case "qTrib": qTrib = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
                 case "vUnTrib": vUnTrib = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
                 case "indTot": indTot = ParseBool(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
+                case "cBarra": extraCBarra = await _r.ReadTextAsync().ConfigureAwait(false); return true;
+                case "NVE": (extraNVE ??= []).Add(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
+                case "indEscala": extraIndEscala = await _r.ReadTextAsync().ConfigureAwait(false); return true;
+                case "CNPJFab": extraCNPJFab = await _r.ReadTextAsync().ConfigureAwait(false); return true;
+                case "cBenef": extraCBenef = await _r.ReadTextAsync().ConfigureAwait(false); return true;
+                case "gCred": (extraGCred ??= []).Add(await ReadProdutoGCredAsync(ct).ConfigureAwait(false)); return true;
+                case "tpCredPresIBSZFM": extraTpCredPresIBSZFM = await _r.ReadTextAsync().ConfigureAwait(false); return true;
+                case "cBarraTrib": extraCBarraTrib = await _r.ReadTextAsync().ConfigureAwait(false); return true;
+                case "vFrete": extraVFrete = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
+                case "vSeg": extraVSeg = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
+                case "vDesc": extraVDesc = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
+                case "vOutro": extraVOutro = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
+                case "indBemMovelUsado": extraIndBemMovelUsado = await _r.ReadTextAsync().ConfigureAwait(false); return true;
+                case "DI": (extraDI ??= []).Add(await ReadDeclaracaoImportacaoAsync(ct).ConfigureAwait(false)); return true;
+                case "detExport": (extraDetExport ??= []).Add(await ReadDetalheExportacaoAsync(ct).ConfigureAwait(false)); return true;
+                case "xPed": extraXPed = await _r.ReadTextAsync().ConfigureAwait(false); return true;
+                case "nItemPed": extraNItemPed = await _r.ReadTextAsync().ConfigureAwait(false); return true;
+                case "nFCI": extraNFCI = await _r.ReadTextAsync().ConfigureAwait(false); return true;
+                case "rastro": (extraRastro ??= []).Add(await ReadRastreabilidadeAsync(ct).ConfigureAwait(false)); return true;
+                case "infProdNFF": extraInfProdNFF = await ReadProdutoInfProdNFFAsync(ct).ConfigureAwait(false); return true;
+                case "infProdEmb": extraInfProdEmb = await ReadProdutoInfProdEmbAsync(ct).ConfigureAwait(false); return true;
+                case "veicProd": extraVeicProd = await ReadVeiculoProdutoAsync(ct).ConfigureAwait(false); return true;
+                case "med": extraMed = await ReadMedicamentoAsync(ct).ConfigureAwait(false); return true;
+                case "arma": (extraArma ??= []).Add(await ReadArmamentoAsync(ct).ConfigureAwait(false)); return true;
+                case "comb": extraComb = await ReadCombustivelAsync(ct).ConfigureAwait(false); return true;
+                case "nRECOPI": extraNRECOPI = await _r.ReadTextAsync().ConfigureAwait(false); return true;
                 default: return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
 
         return new Produto
-        {
+        { CBarra = extraCBarra, NVE = (IReadOnlyList<string>?)extraNVE ?? [], IndEscala = extraIndEscala, CNPJFab = extraCNPJFab, CBenef = extraCBenef, GCred = (IReadOnlyList<ProdutoGCred>?)extraGCred ?? [], TpCredPresIBSZFM = extraTpCredPresIBSZFM, CBarraTrib = extraCBarraTrib, VFrete = extraVFrete, VSeg = extraVSeg, VDesc = extraVDesc, VOutro = extraVOutro, IndBemMovelUsado = extraIndBemMovelUsado, DI = (IReadOnlyList<DeclaracaoImportacao>?)extraDI ?? [], DetExport = (IReadOnlyList<DetalheExportacao>?)extraDetExport ?? [], XPed = extraXPed, NItemPed = extraNItemPed, NFCI = extraNFCI, Rastro = (IReadOnlyList<Rastreabilidade>?)extraRastro ?? [], InfProdNFF = extraInfProdNFF, InfProdEmb = extraInfProdEmb, VeicProd = extraVeicProd, Med = extraMed, Arma = (IReadOnlyList<Armamento>?)extraArma ?? [], Comb = extraComb, NRECOPI = extraNRECOPI, 
             CProd = cProd, CEAN = cEAN, XProd = xProd, NCM = ncm, CEST = cest, EXTIPI = extipi,
             CFOP = cfop, UCom = uCom, QCom = qCom, VUnCom = vUnCom, VProd = vProd,
             CEANTrib = cEANTrib, UTrib = uTrib, QTrib = qTrib, VUnTrib = vUnTrib, IndTot = indTot,
@@ -408,6 +621,10 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
         Issqn? issqn = null;
         decimal? vTotTrib = null;
 
+        IcmsUfDest? extraICMSUFDest = null;
+        ImpostoSeletivo? extraIS = null;
+        TributacaoIBSCBS? extraIBSCBS = null;
+
         await _r.ConsumeChildrenAsync(async nome =>
         {
             switch (nome)
@@ -421,11 +638,14 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
                 case "II": ii = await ReadIiAsync(ct).ConfigureAwait(false); return true;
                 case "ISSQN": issqn = await ReadIssqnAsync(ct).ConfigureAwait(false); return true;
                 case "vTotTrib": vTotTrib = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
+                case "ICMSUFDest": extraICMSUFDest = await ReadIcmsUfDestAsync(ct).ConfigureAwait(false); return true;
+                case "IS": extraIS = await ReadImpostoSeletivoAsync(ct).ConfigureAwait(false); return true;
+                case "IBSCBS": extraIBSCBS = await ReadTributacaoIBSCBSAsync(ct).ConfigureAwait(false); return true;
                 default: return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
 
-        return new Imposto { Icms = icms, Ipi = ipi, Pis = pis, PisSt = pisSt, Cofins = cofins, CofinsSt = cofinsSt, Ii = ii, Issqn = issqn, VTotTrib = vTotTrib };
+        return new Imposto { ICMSUFDest = extraICMSUFDest, IS = extraIS, IBSCBS = extraIBSCBS,  Icms = icms, Ipi = ipi, Pis = pis, PisSt = pisSt, Cofins = cofins, CofinsSt = cofinsSt, Ii = ii, Issqn = issqn, VTotTrib = vTotTrib };
     }
 
     private async Task<Protocolo> ReadInfProtAsync(CancellationToken ct)

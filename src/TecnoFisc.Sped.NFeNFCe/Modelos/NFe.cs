@@ -15,8 +15,10 @@ namespace TecnoFisc.Sped.NFeNFCe;
 /// <c>det</c>/<c>prod</c> com ICMS60. Demais grupos (<c>transp</c>, <c>cobr</c>, <c>pag</c>,
 /// impostos completos, etc.) entram nas slices 14.4–14.6.
 /// </remarks>
-public sealed record NFe : IDocumentoFiscalXml
+public sealed partial record NFe : IDocumentoFiscalXml
 {
+    public InformacaoSuplementar? InfNFeSupl { get; init; }
+    public bool IsAutorizacaoEfetiva => Protocolo?.IsAutorizada == true;
     /// <summary>Chave de acesso de 44 dígitos (do atributo/elemento <c>Id</c> de <c>infNFe</c>).</summary>
     public required ChaveAcesso ChaveAcesso { get; init; }
 

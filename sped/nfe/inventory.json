@@ -87,7 +87,7 @@
     "choice": false,
     "path": "TNFe/infNFe/ide/dhEmi",
     "type": "TDateTimeUTC",
-    "base": "string"
+    "base": "dateTime"
   },
   {
     "name": "dhSaiEnt",
@@ -97,7 +97,7 @@
     "choice": false,
     "path": "TNFe/infNFe/ide/dhSaiEnt",
     "type": "TDateTimeUTC",
-    "base": "string"
+    "base": "dateTime"
   },
   {
     "name": "dPrevEntrega",
@@ -107,7 +107,7 @@
     "choice": false,
     "path": "TNFe/infNFe/ide/dPrevEntrega",
     "type": "TData",
-    "base": "string"
+    "base": "date"
   },
   {
     "name": "tpNF",
@@ -287,7 +287,7 @@
     "choice": false,
     "path": "TNFe/infNFe/ide/dhCont",
     "type": "TDateTimeUTC",
-    "base": "string"
+    "base": "dateTime"
   },
   {
     "name": "xJust",
@@ -927,7 +927,7 @@
     "choice": false,
     "path": "TNFe/infNFe/avulsa/dEmi",
     "type": "TData",
-    "base": "string"
+    "base": "date"
   },
   {
     "name": "vDAR",
@@ -957,7 +957,7 @@
     "choice": false,
     "path": "TNFe/infNFe/avulsa/dPag",
     "type": "TData",
-    "base": "string"
+    "base": "date"
   },
   {
     "name": "dest",
@@ -1917,7 +1917,7 @@
     "choice": false,
     "path": "TNFe/infNFe/det/prod/DI/dDI",
     "type": "TData",
-    "base": "string"
+    "base": "date"
   },
   {
     "name": "xLocDesemb",
@@ -1947,7 +1947,7 @@
     "choice": false,
     "path": "TNFe/infNFe/det/prod/DI/dDesemb",
     "type": "TData",
-    "base": "string"
+    "base": "date"
   },
   {
     "name": "tpViaTransp",
@@ -2207,7 +2207,7 @@
     "choice": false,
     "path": "TNFe/infNFe/det/prod/rastro/dFab",
     "type": "TData",
-    "base": "string"
+    "base": "date"
   },
   {
     "name": "dVal",
@@ -2217,7 +2217,7 @@
     "choice": false,
     "path": "TNFe/infNFe/det/prod/rastro/dVal",
     "type": "TData",
-    "base": "string"
+    "base": "date"
   },
   {
     "name": "cAgreg",
@@ -9147,7 +9147,7 @@
     "choice": false,
     "path": "TNFe/infNFe/total/ISSQNtot/dCompet",
     "type": "TData",
-    "base": "string"
+    "base": "date"
   },
   {
     "name": "vDeducao",
@@ -10067,7 +10067,7 @@
     "choice": false,
     "path": "TNFe/infNFe/cobr/dup/dVenc",
     "type": "TData",
-    "base": "string"
+    "base": "date"
   },
   {
     "name": "vDup",
@@ -10147,7 +10147,7 @@
     "choice": false,
     "path": "TNFe/infNFe/pag/detPag/dPag",
     "type": "TData",
-    "base": "string"
+    "base": "date"
   },
   {
     "name": "CNPJPag",

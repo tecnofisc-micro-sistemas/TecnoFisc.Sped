@@ -40,6 +40,8 @@ class Schema:
     def base(self, node, seen=()):
         node = self.resolve(node)
         typ = node.get('type', '').split(':')[-1]
+        if typ == 'TData': return 'date'
+        if typ == 'TDateTimeUTC': return 'dateTime'
         if typ in seen:
             raise ValueError('Cycle in simple type '+typ)
         tn = self.type_node(node)

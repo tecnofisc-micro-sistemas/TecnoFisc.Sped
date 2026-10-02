@@ -7,7 +7,7 @@ namespace TecnoFisc.Sped.NFeNFCe;
 /// Cobre os campos essenciais do item; grupos específicos (combustível, medicamento, veículo,
 /// importação detalhada, etc.) estão fora do escopo da v1.
 /// </summary>
-public sealed record Produto
+public sealed partial record Produto
 {
     /// <summary><c>cProd</c> — código do produto no emitente.</summary>
     public required string CProd { get; init; }

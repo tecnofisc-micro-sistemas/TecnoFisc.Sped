@@ -7,7 +7,7 @@ namespace TecnoFisc.Sped.NFeNFCe;
 /// <summary>
 /// Grupo <c>ide</c> — identificação da NF-e/NFC-e (leiaute 4.00).
 /// </summary>
-public sealed record Identificacao
+public sealed partial record Identificacao
 {
     /// <summary><c>cUF</c> — código IBGE da UF do emitente.</summary>
     public required int CUF { get; init; }

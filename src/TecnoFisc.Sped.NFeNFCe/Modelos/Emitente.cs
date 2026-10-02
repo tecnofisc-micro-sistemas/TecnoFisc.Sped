@@ -6,7 +6,7 @@ namespace TecnoFisc.Sped.NFeNFCe;
 /// Grupo <c>emit</c> — emitente da NF-e/NFC-e. O emitente identifica-se por <c>CNPJ</c> ou,
 /// excepcionalmente, por <c>CPF</c> (produtor rural pessoa física) — apenas um dos dois é informado.
 /// </summary>
-public sealed record Emitente
+public sealed partial record Emitente
 {
     /// <summary><c>CNPJ</c> do emitente (mutuamente exclusivo com <see cref="CPF"/>).</summary>
     public Cnpj? CNPJ { get; init; }

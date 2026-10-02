@@ -60,28 +60,29 @@ class Schema:
         return base
 
     def children(self, type_node):
-        def walk(node, optional=False, repeated=False, choice=False):
+        def walk(node, optional=False, repetitions=1, choice=False):
             for child in node:
                 kind = child.tag.removeprefix(XS)
                 if kind in ('annotation', 'simpleType', 'complexType'):
                     continue
                 opt = optional or child.get('minOccurs') == '0'
-                many = repeated or child.get('maxOccurs', '1') != '1'
+                own_max = child.get('maxOccurs', '1')
+                maximum = 'unbounded' if 'unbounded' in (repetitions, own_max) else repetitions * int(own_max)
                 if kind in ('element', 'attribute'):
                     actual = self.resolve(child)
                     yield {'node': actual, 'name': actual.get('name'), 'attribute': kind == 'attribute',
                            'min': 0 if opt or choice or kind == 'attribute' and child.get('use') != 'required' else 1,
-                           'max': ('unbounded' if repeated else child.get('maxOccurs', '1')) if many else 1,
+                           'max': maximum,
                            'choice': choice}
                 elif kind in ('extension', 'restriction'):
                     base = child.get('base', '').split(':')[-1]
                     if base in self.types:
-                        yield from walk(self.types[base], opt, many, choice)
-                    yield from walk(child, opt, many, choice)
+                        yield from walk(self.types[base], opt, maximum, choice)
+                    yield from walk(child, opt, maximum, choice)
                 elif kind in ('group', 'attributeGroup') and child.get('ref'):
-                    yield from walk(self.groups[child.get('ref').split(':')[-1]], opt, many, choice)
+                    yield from walk(self.groups[child.get('ref').split(':')[-1]], opt, maximum, choice)
                 elif kind in ('sequence', 'choice', 'all', 'complexContent', 'simpleContent'):
-                    yield from walk(child, opt, many, choice or kind == 'choice')
+                    yield from walk(child, opt, maximum, choice or kind == 'choice')
         return list(walk(type_node))
 
     def inventory(self, root_type='TNFe'):
@@ -111,4 +112,5 @@ if __name__ == '__main__':
     parser.add_argument('--schema-dir', required=True)
     parser.add_argument('--output', required=True)
     args = parser.parse_args()
-    Path(args.output).write_text(json.dumps(Schema(args.schema_dir).inventory(), indent=2, ensure_ascii=False)+'\n', encoding='utf-8')
+    schema = Schema(args.schema_dir)
+    Path(args.output).write_text(json.dumps(schema.inventory() + schema.inventory('TProtNFe'), indent=2, ensure_ascii=False)+'\n', encoding='utf-8')

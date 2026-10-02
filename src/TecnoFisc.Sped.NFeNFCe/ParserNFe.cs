@@ -12,11 +12,7 @@ namespace TecnoFisc.Sped.NFeNFCe;
 /// entre threads. A desserialização é <b>order-independent</b> (tolera tanto o XML canônico
 /// quanto a reordenação do envelope SERPRO); ver <c>sped/STAGE_14_NFE_NFCE.md</c> §3.
 /// </summary>
-/// <remarks>
-/// Slice 14.3 (piloto): apenas a leitura de NF-e modelo 55 (<see cref="ReadNFeAsync"/>), incluindo
-/// o desembrulho do envelope SERPRO de documento único. NFC-e (65) e eventos chegam nas slices
-/// 14.6/14.7; <c>ReadDirectoryAsync</c> na 14.8.
-/// </remarks>
+/// <remarks>Leiaute 4.00, com importação limitada de XML/ZIP; ver docs/nfe-importacao.md.</remarks>
 public sealed partial class ParserNFe
 {
     private static readonly XmlReaderSettings Settings = new()
@@ -53,7 +49,7 @@ public sealed partial class ParserNFe
     /// </summary>
     /// <param name="entrada">Stream do XML (UTF-8).</param>
     /// <param name="cancelamento">Token de cancelamento.</param>
-    /// <returns>A <see cref="NFe"/> lida, com <see cref="NFe.Protocolo"/> preenchido quando autorizada.</returns>
+    /// <returns>A <see cref="NFe"/> lida, com <see cref="NFe.Protocolo"/> preenchido quando presente na origem.</returns>
     /// <exception cref="FormatException">Quando o documento não contém um grupo <c>infNFe</c>.</exception>
     public async Task<NFe> ReadNFeAsync(Stream entrada, CancellationToken cancelamento = default)
     {
@@ -68,7 +64,7 @@ public sealed partial class ParserNFe
     /// </summary>
     /// <param name="entrada">Stream do XML (canônico ou envelope SERPRO).</param>
     /// <param name="cancelamento">Token de cancelamento.</param>
-    /// <remarks>Na slice 14.3 o fluxo genérico resolve para <see cref="ReadNFeAsync"/> (NF-e 55).</remarks>
+    /// <remarks>Uma nota acompanhada de eventos retorna a nota; use ReadDocumentsAsync para receber todos.</remarks>
     public async Task<IDocumentoFiscalXml> ReadAsync(Stream entrada, CancellationToken cancelamento = default)
     {
         ArgumentNullException.ThrowIfNull(entrada);
@@ -77,8 +73,10 @@ public sealed partial class ParserNFe
         int eventCount = 0;
         await foreach (var document in ReadDocumentsAsync(entrada, cancelamento).ConfigureAwait(false))
         {
-            if (document is Evento evt) { firstEvent ??= evt; eventCount++; continue; }
-            if (result is not null) throw new FormatException("Múltiplos documentos: utilize ReadDocumentsAsync.");
+            if (document is Evento evt)
+            { firstEvent ??= evt; eventCount++; continue; }
+            if (result is not null)
+                throw new FormatException("Múltiplos documentos: utilize ReadDocumentsAsync.");
             result = document;
         }
         return result ?? (eventCount == 1 ? firstEvent : null)
@@ -100,6 +98,7 @@ public sealed partial class ParserNFe
         using var limited = new LimitedReadStream(entrada, Options.MaxXmlBytes, true, cancelamento);
         using var reader = new GuardedXmlReader(XmlReader.Create(limited, Settings), Options, cancelamento);
         var router = new DocumentoXmlReader(reader, Options);
-        await foreach (var document in router.ReadAsync(cancelamento).ConfigureAwait(false)) yield return document;
+        await foreach (var document in router.ReadAsync(cancelamento).ConfigureAwait(false))
+            yield return document;
     }
 }

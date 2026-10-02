@@ -13,7 +13,8 @@ public sealed partial class ParserNFe
         ArgumentException.ThrowIfNullOrWhiteSpace(caminho);
         return ReadFilesAsync(Directory.EnumerateFiles(caminho, "*", new EnumerationOptions
         {
-            RecurseSubdirectories = recursivo, IgnoreInaccessible = false,
+            RecurseSubdirectories = recursivo,
+            IgnoreInaccessible = false,
             AttributesToSkip = FileAttributes.ReparsePoint,
         }).Where(p => IsExtension(p, ".xml") || IsExtension(p, ".zip")), cancelamento);
     }
@@ -36,7 +37,8 @@ public sealed partial class ParserNFe
 
         async Task GuardAsync(Func<Task> action)
         {
-            try { await action().ConfigureAwait(false); }
+            try
+            { await action().ConfigureAwait(false); }
             catch (OperationCanceledException) when (stop.IsCancellationRequested) { }
             catch (Exception error)
             {
@@ -64,7 +66,8 @@ public sealed partial class ParserNFe
                 if (!IsExtension(path, ".xml") && !IsExtension(path, ".zip"))
                 {
                     var error = new FormatException($"Extensão não suportada: {Path.GetExtension(path)}.");
-                    if (Options.FailFast) throw error;
+                    if (Options.FailFast)
+                        throw error;
                     await output.Writer.WriteAsync(ResultadoImportacaoNFe.Failure(new(path), error), stop.Token).ConfigureAwait(false);
                     continue;
                 }
@@ -76,7 +79,8 @@ public sealed partial class ParserNFe
         }
         var tasks = new Task[Options.Parallelism + 1];
         tasks[0] = Task.Run(() => GuardAsync(ProduceAsync), CancellationToken.None);
-        for (int i = 1; i < tasks.Length; i++) tasks[i] = Task.Run(() => GuardAsync(ConsumeAsync), CancellationToken.None);
+        for (int i = 1; i < tasks.Length; i++)
+            tasks[i] = Task.Run(() => GuardAsync(ConsumeAsync), CancellationToken.None);
         async Task FinishAsync()
         {
             await Task.WhenAll(tasks).ConfigureAwait(false);
@@ -85,7 +89,8 @@ public sealed partial class ParserNFe
         Task finished = FinishAsync();
         try
         {
-            await foreach (var result in output.Reader.ReadAllAsync(ct).ConfigureAwait(false)) yield return result;
+            await foreach (var result in output.Reader.ReadAllAsync(ct).ConfigureAwait(false))
+                yield return result;
         }
         finally
         {
@@ -106,12 +111,16 @@ public sealed partial class ParserNFe
             try
             {
                 moved = await iterator.MoveNextAsync().ConfigureAwait(false);
-                if (moved) document = iterator.Current;
-                else if (!found) throw new FormatException("XML não contém documentos fiscais suportados.");
+                if (moved)
+                    document = iterator.Current;
+                else if (!found)
+                    throw new FormatException("XML não contém documentos fiscais suportados.");
             }
             catch (Exception ex) when (!Options.FailFast && IsDocumentError(ex)) { error = ex; }
-            if (error is not null) { yield return ResultadoImportacaoNFe.Failure(origin, error); yield break; }
-            if (!moved) yield break;
+            if (error is not null)
+            { yield return ResultadoImportacaoNFe.Failure(origin, error); yield break; }
+            if (!moved)
+                yield break;
             found = true;
             yield return ResultadoImportacaoNFe.Success(origin, document!);
         }

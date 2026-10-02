@@ -7,7 +7,8 @@ internal sealed class TemporarySeekableStream : IAsyncDisposable
     private TemporarySeekableStream(Stream stream, bool owns) { Stream = stream; _owns = owns; }
     public static async Task<TemporarySeekableStream> CreateAsync(Stream input, ParserNFeOptions options, CancellationToken ct)
     {
-        if (input.CanSeek) return new(input, false);
+        if (input.CanSeek)
+            return new(input, false);
         string directory = options.TemporaryDirectory ?? Path.GetTempPath();
         string path = Path.Combine(directory, "nfe-" + Guid.NewGuid().ToString("N") + ".zip");
         var file = new FileStream(path, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None, 65536,

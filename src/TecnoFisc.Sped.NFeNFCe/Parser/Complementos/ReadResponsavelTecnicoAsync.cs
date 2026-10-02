@@ -16,13 +16,26 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "CNPJ": extraCNPJ = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "xContato": extraXContato = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "email": extraEmail = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "fone": extraFone = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "idCSRT": extraIdCSRT = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "hashCSRT": extraHashCSRT = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                default: return false;
+                case "CNPJ":
+                    extraCNPJ = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "xContato":
+                    extraXContato = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "email":
+                    extraEmail = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "fone":
+                    extraFone = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "idCSRT":
+                    extraIdCSRT = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "hashCSRT":
+                    extraHashCSRT = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new ResponsavelTecnico

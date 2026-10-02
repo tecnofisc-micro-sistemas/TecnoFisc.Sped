@@ -12,9 +12,14 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "detPag": (extraDetPag ??= []).Add(await ReadPagamentoDetPagAsync(ct).ConfigureAwait(false)); return true;
-                case "vTroco": extraVTroco = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                default: return false;
+                case "detPag":
+                    (extraDetPag ??= []).Add(await ReadPagamentoDetPagAsync(ct).ConfigureAwait(false));
+                    return true;
+                case "vTroco":
+                    extraVTroco = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new Pagamento

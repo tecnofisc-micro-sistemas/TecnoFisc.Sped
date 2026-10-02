@@ -13,10 +13,17 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "qBCMono": extraQBCMono = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "adRemCBS": extraAdRemCBS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vCBSMono": extraVCBSMono = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                default: return false;
+                case "qBCMono":
+                    extraQBCMono = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "adRemCBS":
+                    extraAdRemCBS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vCBSMono":
+                    extraVCBSMono = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new TributacaoIBSCBSGIBSCBSMonoGCBSMonoAdRemGMonoPadrao

@@ -15,12 +15,23 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "nAdicao": extraNAdicao = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "nSeqAdic": extraNSeqAdic = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "cFabricante": extraCFabricante = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "vDescDI": extraVDescDI = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "nDraw": extraNDraw = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                default: return false;
+                case "nAdicao":
+                    extraNAdicao = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "nSeqAdic":
+                    extraNSeqAdic = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "cFabricante":
+                    extraCFabricante = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "vDescDI":
+                    extraVDescDI = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "nDraw":
+                    extraNDraw = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new DeclaracaoImportacaoAdi

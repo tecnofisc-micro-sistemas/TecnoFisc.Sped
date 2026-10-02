@@ -12,9 +12,14 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "pDif": extraPDif = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vDif": extraVDif = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                default: return false;
+                case "pDif":
+                    extraPDif = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vDif":
+                    extraVDif = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new TributacaoIBSCBSGIBSCBSGCBSGDif

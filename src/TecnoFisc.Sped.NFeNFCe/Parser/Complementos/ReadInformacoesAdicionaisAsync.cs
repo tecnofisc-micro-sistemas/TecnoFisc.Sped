@@ -15,12 +15,23 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "infAdFisco": extraInfAdFisco = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "infCpl": extraInfCpl = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "obsCont": (extraObsCont ??= []).Add(await ReadInformacoesAdicionaisObsContAsync(ct).ConfigureAwait(false)); return true;
-                case "obsFisco": (extraObsFisco ??= []).Add(await ReadInformacoesAdicionaisObsFiscoAsync(ct).ConfigureAwait(false)); return true;
-                case "procRef": (extraProcRef ??= []).Add(await ReadInformacoesAdicionaisProcRefAsync(ct).ConfigureAwait(false)); return true;
-                default: return false;
+                case "infAdFisco":
+                    extraInfAdFisco = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "infCpl":
+                    extraInfCpl = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "obsCont":
+                    (extraObsCont ??= []).Add(await ReadInformacoesAdicionaisObsContAsync(ct).ConfigureAwait(false));
+                    return true;
+                case "obsFisco":
+                    (extraObsFisco ??= []).Add(await ReadInformacoesAdicionaisObsFiscoAsync(ct).ConfigureAwait(false));
+                    return true;
+                case "procRef":
+                    (extraProcRef ??= []).Add(await ReadInformacoesAdicionaisProcRefAsync(ct).ConfigureAwait(false));
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new InformacoesAdicionais

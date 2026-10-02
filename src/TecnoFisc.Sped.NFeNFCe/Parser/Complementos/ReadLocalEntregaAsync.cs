@@ -26,23 +26,56 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "CNPJ": extraCNPJ = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "CPF": extraCPF = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "xNome": extraXNome = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "xLgr": extraXLgr = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "nro": extraNro = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "xCpl": extraXCpl = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "xBairro": extraXBairro = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "cMun": extraCMun = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "xMun": extraXMun = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "UF": extraUF = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "CEP": extraCEP = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "cPais": extraCPais = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "xPais": extraXPais = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "fone": extraFone = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "email": extraEmail = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "IE": extraIE = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                default: return false;
+                case "CNPJ":
+                    extraCNPJ = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "CPF":
+                    extraCPF = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "xNome":
+                    extraXNome = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "xLgr":
+                    extraXLgr = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "nro":
+                    extraNro = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "xCpl":
+                    extraXCpl = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "xBairro":
+                    extraXBairro = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "cMun":
+                    extraCMun = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "xMun":
+                    extraXMun = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "UF":
+                    extraUF = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "CEP":
+                    extraCEP = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "cPais":
+                    extraCPais = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "xPais":
+                    extraXPais = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "fone":
+                    extraFone = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "email":
+                    extraEmail = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "IE":
+                    extraIE = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new LocalEntrega

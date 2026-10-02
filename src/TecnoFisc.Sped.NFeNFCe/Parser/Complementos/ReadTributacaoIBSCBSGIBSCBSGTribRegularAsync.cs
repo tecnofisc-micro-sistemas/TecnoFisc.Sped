@@ -18,15 +18,32 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "CSTReg": extraCSTReg = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "cClassTribReg": extraCClassTribReg = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "pAliqEfetRegIBSUF": extraPAliqEfetRegIBSUF = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vTribRegIBSUF": extraVTribRegIBSUF = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "pAliqEfetRegIBSMun": extraPAliqEfetRegIBSMun = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vTribRegIBSMun": extraVTribRegIBSMun = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "pAliqEfetRegCBS": extraPAliqEfetRegCBS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vTribRegCBS": extraVTribRegCBS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                default: return false;
+                case "CSTReg":
+                    extraCSTReg = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "cClassTribReg":
+                    extraCClassTribReg = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "pAliqEfetRegIBSUF":
+                    extraPAliqEfetRegIBSUF = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vTribRegIBSUF":
+                    extraVTribRegIBSUF = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "pAliqEfetRegIBSMun":
+                    extraPAliqEfetRegIBSMun = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vTribRegIBSMun":
+                    extraVTribRegIBSMun = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "pAliqEfetRegCBS":
+                    extraPAliqEfetRegCBS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vTribRegCBS":
+                    extraVTribRegCBS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new TributacaoIBSCBSGIBSCBSGTribRegular

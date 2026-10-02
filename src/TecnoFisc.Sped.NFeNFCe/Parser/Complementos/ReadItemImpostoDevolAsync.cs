@@ -12,9 +12,14 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "pDevol": extraPDevol = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "IPI": extraIPI = await ReadItemImpostoDevolIPIAsync(ct).ConfigureAwait(false); return true;
-                default: return false;
+                case "pDevol":
+                    extraPDevol = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "IPI":
+                    extraIPI = await ReadItemImpostoDevolIPIAsync(ct).ConfigureAwait(false);
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new ItemImpostoDevol

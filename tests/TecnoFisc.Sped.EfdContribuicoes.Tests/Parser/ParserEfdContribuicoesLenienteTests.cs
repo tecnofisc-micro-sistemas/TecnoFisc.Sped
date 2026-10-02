@@ -23,7 +23,9 @@ public sealed class ParserEfdContribuicoesLenienteTests
     /// Chave NF-e com 44 dígitos mas DV mod-11 inválido: dado sujo recebido de terceiros,
     /// exatamente o caso real do FiscTax que motivou o parsing tolerante.
     /// </summary>
-    private const string ChaveInvalida = "32251100011998216756550252411200013640116541";
+    // O vetor original terminado em 1 é uma chave NFF/CPF válida (NT 2021.002).
+    // Alterar somente o DV preserva o cenário de erro real, sem rejeitar NFF válida.
+    private const string ChaveInvalida = "32251100011998216756550252411200013640116542";
 
     /// <summary>
     /// Linha C100 com ChvNfe inválida na posição 9 (Ordem=9 do leiaute V006).

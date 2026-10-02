@@ -14,10 +14,17 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "nDup": extraNDup = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "dVenc": extraDVenc = DateOnly.Parse(await _r.ReadTextAsync().ConfigureAwait(false), CultureInfo.InvariantCulture); return true;
-                case "vDup": extraVDup = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                default: return false;
+                case "nDup":
+                    extraNDup = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "dVenc":
+                    extraDVenc = DateOnly.Parse(await _r.ReadTextAsync().ConfigureAwait(false), CultureInfo.InvariantCulture);
+                    return true;
+                case "vDup":
+                    extraVDup = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new CobrancaDup

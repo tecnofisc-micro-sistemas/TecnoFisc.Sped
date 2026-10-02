@@ -16,13 +16,26 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "vServ": extraVServ = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vBCRet": extraVBCRet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "pICMSRet": extraPICMSRet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vICMSRet": extraVICMSRet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "CFOP": extraCFOP = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "cMunFG": extraCMunFG = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                default: return false;
+                case "vServ":
+                    extraVServ = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vBCRet":
+                    extraVBCRet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "pICMSRet":
+                    extraPICMSRet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vICMSRet":
+                    extraVICMSRet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "CFOP":
+                    extraCFOP = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "cMunFG":
+                    extraCMunFG = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new TransporteRetTransp

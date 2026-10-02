@@ -22,18 +22,41 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "CNPJ": extraCNPJ = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "xOrgao": extraXOrgao = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "matr": extraMatr = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "xAgente": extraXAgente = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "fone": extraFone = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "UF": extraUF = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "nDAR": extraNDAR = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "dEmi": extraDEmi = DateOnly.Parse(await _r.ReadTextAsync().ConfigureAwait(false), CultureInfo.InvariantCulture); return true;
-                case "vDAR": extraVDAR = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "repEmi": extraRepEmi = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "dPag": extraDPag = DateOnly.Parse(await _r.ReadTextAsync().ConfigureAwait(false), CultureInfo.InvariantCulture); return true;
-                default: return false;
+                case "CNPJ":
+                    extraCNPJ = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "xOrgao":
+                    extraXOrgao = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "matr":
+                    extraMatr = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "xAgente":
+                    extraXAgente = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "fone":
+                    extraFone = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "UF":
+                    extraUF = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "nDAR":
+                    extraNDAR = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "dEmi":
+                    extraDEmi = DateOnly.Parse(await _r.ReadTextAsync().ConfigureAwait(false), CultureInfo.InvariantCulture);
+                    return true;
+                case "vDAR":
+                    extraVDAR = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "repEmi":
+                    extraRepEmi = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "dPag":
+                    extraDPag = DateOnly.Parse(await _r.ReadTextAsync().ConfigureAwait(false), CultureInfo.InvariantCulture);
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new InfNFeAvulsa

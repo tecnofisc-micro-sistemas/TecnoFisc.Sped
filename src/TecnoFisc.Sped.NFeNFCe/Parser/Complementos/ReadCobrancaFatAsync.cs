@@ -14,11 +14,20 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "nFat": extraNFat = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "vOrig": extraVOrig = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vDesc": extraVDesc = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vLiq": extraVLiq = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                default: return false;
+                case "nFat":
+                    extraNFat = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "vOrig":
+                    extraVOrig = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vDesc":
+                    extraVDesc = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vLiq":
+                    extraVLiq = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new CobrancaFat

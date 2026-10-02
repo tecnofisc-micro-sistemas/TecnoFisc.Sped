@@ -18,15 +18,32 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "CSTIS": extraCSTIS = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "cClassTribIS": extraCClassTribIS = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "vBCIS": extraVBCIS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "pIS": extraPIS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "adRemIS": extraAdRemIS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "uTrib": extraUTrib = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "qTrib": extraQTrib = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vIS": extraVIS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                default: return false;
+                case "CSTIS":
+                    extraCSTIS = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "cClassTribIS":
+                    extraCClassTribIS = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "vBCIS":
+                    extraVBCIS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "pIS":
+                    extraPIS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "adRemIS":
+                    extraAdRemIS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "uTrib":
+                    extraUTrib = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "qTrib":
+                    extraQTrib = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vIS":
+                    extraVIS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new ImpostoSeletivo

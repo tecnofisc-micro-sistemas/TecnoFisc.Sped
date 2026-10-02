@@ -13,10 +13,17 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "mod": extraMod = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "nECF": extraNECF = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "nCOO": extraNCOO = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                default: return false;
+                case "mod":
+                    extraMod = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "nECF":
+                    extraNECF = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "nCOO":
+                    extraNCOO = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new ReferenciaNotaRefECF

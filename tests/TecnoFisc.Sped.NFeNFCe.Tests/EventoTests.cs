@@ -4,6 +4,13 @@ namespace TecnoFisc.Sped.NFeNFCe.Tests;
 
 public sealed class EventoTests
 {
+    [Fact]
+    public void ReturnWithoutIdentityDoesNotProveCancellation()
+    {
+        var evt = new EventoCancelamento { ChaveAcesso = Core.ValueObjects.ChaveAcesso.Create(Key), TpEvento = 110111,
+            NSeqEvento = 1, Retorno = new RetornoEvento { CStat = 135 } };
+        evt.IsEffective.Should().BeFalse();
+    }
     private const string Key = "31210711222333000181550050007156531436322400";
     [Theory]
     [InlineData(135, true)]

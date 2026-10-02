@@ -15,12 +15,23 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "pIBSUF": extraPIBSUF = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "gDif": extraGDif = await ReadTributacaoIBSCBSGIBSCBSGIBSUFGDifAsync(ct).ConfigureAwait(false); return true;
-                case "gDevTrib": extraGDevTrib = await ReadTributacaoIBSCBSGIBSCBSGIBSUFGDevTribAsync(ct).ConfigureAwait(false); return true;
-                case "gRed": extraGRed = await ReadTributacaoIBSCBSGIBSCBSGIBSUFGRedAsync(ct).ConfigureAwait(false); return true;
-                case "vIBSUF": extraVIBSUF = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                default: return false;
+                case "pIBSUF":
+                    extraPIBSUF = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "gDif":
+                    extraGDif = await ReadTributacaoIBSCBSGIBSCBSGIBSUFGDifAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "gDevTrib":
+                    extraGDevTrib = await ReadTributacaoIBSCBSGIBSCBSGIBSUFGDevTribAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "gRed":
+                    extraGRed = await ReadTributacaoIBSCBSGIBSCBSGIBSUFGRedAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "vIBSUF":
+                    extraVIBSUF = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new TributacaoIBSCBSGIBSCBSGIBSUF

@@ -62,7 +62,8 @@ internal static class XmlReaderExtensions
                         throw new FormatException(
                             $"Elemento não mapeado '{nome}' com ParserNFeOptions.Strict ativo.");
 
-                    if (reader is IO.GuardedXmlReader guarded) guarded.ReportIgnored();
+                    if (reader is IO.GuardedXmlReader guarded)
+                        guarded.ReportIgnored();
 
                     await reader.SkipAsync().ConfigureAwait(false); // ignora a subárvore → nó seguinte
                     break;
@@ -82,5 +83,35 @@ internal static class XmlReaderExtensions
     /// <see cref="ConsumeChildrenAsync"/>.
     /// </summary>
     public static async ValueTask<string> ReadTextAsync(this XmlReader reader)
-        => (await reader.ReadElementContentAsStringAsync().ConfigureAwait(false)).Trim();
+    {
+        if (reader.IsEmptyElement)
+        {
+            await reader.ReadAsync().ConfigureAwait(false);
+            return string.Empty;
+        }
+        int depth = reader.Depth;
+        string? value = null;
+        System.Text.StringBuilder? fragments = null;
+        while (await reader.ReadAsync().ConfigureAwait(false))
+        {
+            switch (reader.NodeType)
+            {
+                case XmlNodeType.EndElement when reader.Depth == depth:
+                    await reader.ReadAsync().ConfigureAwait(false);
+                    return (fragments?.ToString() ?? value ?? string.Empty).Trim();
+                case XmlNodeType.Text:
+                case XmlNodeType.CDATA:
+                case XmlNodeType.Whitespace:
+                case XmlNodeType.SignificantWhitespace:
+                    if (value is null)
+                        value = reader.Value;
+                    else
+                        (fragments ??= new System.Text.StringBuilder(value)).Append(reader.Value);
+                    break;
+                case XmlNodeType.Element:
+                    throw new XmlException("Elemento complexo em campo escalar.");
+            }
+        }
+        throw new XmlException("Campo escalar XML truncado.");
+    }
 }

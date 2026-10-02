@@ -1,8 +1,8 @@
 namespace TecnoFisc.Sped.Core.ValueObjects;
 
 /// <summary>
-/// CNPJ — Cadastro Nacional da Pessoa Jurídica. 14 dígitos com dois dígitos verificadores
-/// calculados por módulo 11. A representação canônica em SPED é a forma de 14 dígitos sem máscara.
+/// CNPJ — 12 caracteres ASCII alfanuméricos maiúsculos e dois dígitos verificadores.
+/// Módulo 11 com valor ASCII menos 48 (compatível com o CNPJ numérico).
 /// </summary>
 public readonly struct Cnpj : IEquatable<Cnpj>
 {
@@ -24,7 +24,7 @@ public readonly struct Cnpj : IEquatable<Cnpj>
     public static bool TentarCriar(ReadOnlySpan<char> valor, out Cnpj cnpj)
     {
         Span<char> digitos = stackalloc char[Tamanho];
-        if (!DigitosSomenteHelper.TentarExtrair(valor, digitos))
+        if (!IdentificadorAlfanumericoHelper.TentarExtrair(valor, digitos, 0, 12))
         {
             cnpj = default;
             return false;
@@ -68,7 +68,7 @@ public readonly struct Cnpj : IEquatable<Cnpj>
         return resto < 2 ? 0 : 11 - resto;
     }
 
-    /// <summary>Forma canônica SPED: 14 dígitos sem máscara.</summary>
+    /// <summary>Forma canônica: 14 caracteres sem máscara.</summary>
     public override string ToString() => _valor ?? new string('0', Tamanho);
 
     /// <summary>Forma humana: <c>NN.NNN.NNN/NNNN-NN</c>.</summary>

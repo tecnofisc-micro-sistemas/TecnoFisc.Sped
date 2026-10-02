@@ -5,7 +5,7 @@ namespace TecnoFisc.Sped.NFeNFCe;
 /// <summary>
 /// Grupo <c>prod</c> — produto ou serviço de um item da NF-e/NFC-e (leiaute 4.00).
 /// Cobre os campos essenciais do item; grupos específicos (combustível, medicamento, veículo,
-/// importação detalhada, etc.) estão fora do escopo da v1.
+/// importação detalhada, etc.) estão disponíveis nos complementos tipados do modelo.
 /// </summary>
 public sealed partial record Produto
 {

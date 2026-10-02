@@ -13,10 +13,17 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "xEmb": extraXEmb = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "qVolEmb": extraQVolEmb = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "uEmb": extraUEmb = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                default: return false;
+                case "xEmb":
+                    extraXEmb = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "qVolEmb":
+                    extraQVolEmb = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "uEmb":
+                    extraUEmb = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new ProdutoInfProdEmb

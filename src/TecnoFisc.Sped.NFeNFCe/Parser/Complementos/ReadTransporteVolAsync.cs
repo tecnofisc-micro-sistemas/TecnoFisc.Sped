@@ -17,14 +17,29 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "qVol": extraQVol = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "esp": extraEsp = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "marca": extraMarca = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "nVol": extraNVol = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "pesoL": extraPesoL = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "pesoB": extraPesoB = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "lacres": (extraLacres ??= []).Add(await ReadTransporteVolLacresAsync(ct).ConfigureAwait(false)); return true;
-                default: return false;
+                case "qVol":
+                    extraQVol = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "esp":
+                    extraEsp = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "marca":
+                    extraMarca = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "nVol":
+                    extraNVol = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "pesoL":
+                    extraPesoL = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "pesoB":
+                    extraPesoB = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "lacres":
+                    (extraLacres ??= []).Add(await ReadTransporteVolLacresAsync(ct).ConfigureAwait(false));
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new TransporteVol

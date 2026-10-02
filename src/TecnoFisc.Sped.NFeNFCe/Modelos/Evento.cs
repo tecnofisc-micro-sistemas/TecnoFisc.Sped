@@ -11,6 +11,7 @@ public abstract record Evento : IDocumentoFiscalXml
     public DateTimeOffset? DhEvento { get; init; }
     public string? Id { get; init; }
     public string? Versao { get; init; }
+    public string? VersaoDetalhes { get; init; }
     public string? VerEvento { get; init; }
     public int? COrgao { get; init; }
     public int? TpAmb { get; init; }
@@ -28,7 +29,8 @@ public sealed record EventoCancelamento : Evento
     public string? NProt { get; init; }
     public string? XJust { get; init; }
     /// <summary>Retorno vinculado à nota (135) ou cancelamento homologado fora de prazo (155).</summary>
-    public bool IsEffective => Retorno?.CStat is 135 or 155;
+    public bool IsEffective => NSeqEvento is not null && Retorno is { CStat: 135 or 155, TpEvento: 110111 }
+        && Retorno.ChaveAcesso == ChaveAcesso && Retorno.NSeqEvento == NSeqEvento;
     public bool Equals(EventoCancelamento? other) => base.Equals(other);
     public override int GetHashCode() => base.GetHashCode();
 }
@@ -47,6 +49,7 @@ public sealed record AtributoEvento(string Nome, string Namespace, string Valor)
 
 public sealed record RetornoEvento
 {
+    public string? Versao { get; init; }
     public ChaveAcesso? ChaveAcesso { get; init; }
     public int? TpEvento { get; init; }
     public int? NSeqEvento { get; init; }

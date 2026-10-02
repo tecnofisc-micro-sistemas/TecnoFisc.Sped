@@ -16,13 +16,26 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "vIBSMono": extraVIBSMono = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vCBSMono": extraVCBSMono = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vIBSMonoReten": extraVIBSMonoReten = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vCBSMonoReten": extraVCBSMonoReten = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vIBSMonoRet": extraVIBSMonoRet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vCBSMonoRet": extraVCBSMonoRet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                default: return false;
+                case "vIBSMono":
+                    extraVIBSMono = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vCBSMono":
+                    extraVCBSMono = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vIBSMonoReten":
+                    extraVIBSMonoReten = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vCBSMonoReten":
+                    extraVCBSMonoReten = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vIBSMonoRet":
+                    extraVIBSMonoRet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vCBSMonoRet":
+                    extraVCBSMonoRet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new TotalIBSCBSGMono

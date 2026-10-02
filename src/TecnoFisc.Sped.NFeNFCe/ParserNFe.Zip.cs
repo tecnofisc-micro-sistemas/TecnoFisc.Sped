@@ -29,7 +29,8 @@ public sealed partial class ParserNFe
                 _ = zip.Entries.Count; // Safe only after the bounded metadata scan.
             }
             catch (Exception ex) when (!Options.FailFast && IsZipError(ex)) { archiveError = ex; }
-            if (archiveError is not null) { yield return ResultadoImportacaoNFe.Failure(new(origin), archiveError); yield break; }
+            if (archiveError is not null)
+            { yield return ResultadoImportacaoNFe.Failure(new(origin), archiveError); yield break; }
             long total = 0;
             foreach (var entry in zip!.Entries)
             {
@@ -38,35 +39,41 @@ public sealed partial class ParserNFe
                 if (IsExtension(entry.FullName, ".zip"))
                 {
                     var error = new InvalidDataException("ZIP aninhado não suportado.");
-                    if (Options.FailFast) throw error;
+                    if (Options.FailFast)
+                        throw error;
                     yield return ResultadoImportacaoNFe.Failure(source, error);
                     continue;
                 }
-                if (!IsExtension(entry.FullName, ".xml")) continue;
+                if (!IsExtension(entry.FullName, ".xml"))
+                    continue;
                 Stream? data = null;
                 Exception? openError = null;
-                try { data = entry.Open(); }
+                try
+                { data = entry.Open(); }
                 catch (Exception ex) when (!Options.FailFast && IsZipError(ex)) { openError = ex; }
-                if (openError is not null) { yield return ResultadoImportacaoNFe.Failure(source, openError); continue; }
+                if (openError is not null)
+                { yield return ResultadoImportacaoNFe.Failure(source, openError); continue; }
                 await using (data!.ConfigureAwait(false))
                 {
                     long remaining = Options.MaxZipUncompressedBytes - total;
-                    using var bounded = new LimitedReadStream(data!, Math.Min(Options.MaxZipEntryBytes, remaining), true, ct);
+                    using var bounded = new LimitedReadStream(data!, Math.Min(Options.MaxZipEntryBytes, remaining), true, ct, entry.Crc32, entry.Length);
                     try
                     {
-                        await foreach (var result in ReadXmlResultsAsync(bounded, source, ct).ConfigureAwait(false)) yield return result;
+                        await foreach (var result in ReadXmlResultsAsync(bounded, source, ct).ConfigureAwait(false))
+                            yield return result;
                     }
                     finally { total += bounded.BytesRead; }
-                    if (total > Options.MaxZipUncompressedBytes) yield break;
+                    if (total > Options.MaxZipUncompressedBytes)
+                        yield break;
                 }
             }
         }
         finally
         {
             zip?.Dispose();
-            if (storage is not null) await storage.DisposeAsync().ConfigureAwait(false);
+            if (storage is not null)
+                await storage.DisposeAsync().ConfigureAwait(false);
         }
     }
     private static bool IsZipError(Exception error) => IsDocumentError(error) || error is EndOfStreamException;
 }
-

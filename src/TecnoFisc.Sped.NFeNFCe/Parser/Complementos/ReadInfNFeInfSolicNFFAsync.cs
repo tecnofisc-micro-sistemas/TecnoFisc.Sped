@@ -11,8 +11,11 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "xSolic": extraXSolic = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                default: return false;
+                case "xSolic":
+                    extraXSolic = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new InfNFeInfSolicNFF

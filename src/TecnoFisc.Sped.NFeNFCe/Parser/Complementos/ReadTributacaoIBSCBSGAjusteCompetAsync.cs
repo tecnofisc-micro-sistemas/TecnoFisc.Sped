@@ -13,10 +13,17 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "competApur": extraCompetApur = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "vIBS": extraVIBS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vCBS": extraVCBS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                default: return false;
+                case "competApur":
+                    extraCompetApur = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "vIBS":
+                    extraVIBS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vCBS":
+                    extraVCBS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new TributacaoIBSCBSGAjusteCompet

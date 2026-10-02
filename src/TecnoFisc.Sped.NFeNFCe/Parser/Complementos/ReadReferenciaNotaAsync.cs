@@ -16,13 +16,26 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "refNFe": extraRefNFe = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "refNFeSig": extraRefNFeSig = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "refNF": extraRefNF = await ReadReferenciaNotaRefNFAsync(ct).ConfigureAwait(false); return true;
-                case "refNFP": extraRefNFP = await ReadReferenciaNotaRefNFPAsync(ct).ConfigureAwait(false); return true;
-                case "refCTe": extraRefCTe = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "refECF": extraRefECF = await ReadReferenciaNotaRefECFAsync(ct).ConfigureAwait(false); return true;
-                default: return false;
+                case "refNFe":
+                    extraRefNFe = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "refNFeSig":
+                    extraRefNFeSig = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "refNF":
+                    extraRefNF = await ReadReferenciaNotaRefNFAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "refNFP":
+                    extraRefNFP = await ReadReferenciaNotaRefNFPAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "refCTe":
+                    extraRefCTe = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "refECF":
+                    extraRefECF = await ReadReferenciaNotaRefECFAsync(ct).ConfigureAwait(false);
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new ReferenciaNota

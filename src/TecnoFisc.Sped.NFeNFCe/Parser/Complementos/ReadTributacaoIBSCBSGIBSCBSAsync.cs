@@ -17,14 +17,29 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "vBC": extraVBC = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "gIBSUF": extraGIBSUF = await ReadTributacaoIBSCBSGIBSCBSGIBSUFAsync(ct).ConfigureAwait(false); return true;
-                case "gIBSMun": extraGIBSMun = await ReadTributacaoIBSCBSGIBSCBSGIBSMunAsync(ct).ConfigureAwait(false); return true;
-                case "vIBS": extraVIBS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "gCBS": extraGCBS = await ReadTributacaoIBSCBSGIBSCBSGCBSAsync(ct).ConfigureAwait(false); return true;
-                case "gTribRegular": extraGTribRegular = await ReadTributacaoIBSCBSGIBSCBSGTribRegularAsync(ct).ConfigureAwait(false); return true;
-                case "gTribCompraGov": extraGTribCompraGov = await ReadTributacaoIBSCBSGIBSCBSGTribCompraGovAsync(ct).ConfigureAwait(false); return true;
-                default: return false;
+                case "vBC":
+                    extraVBC = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "gIBSUF":
+                    extraGIBSUF = await ReadTributacaoIBSCBSGIBSCBSGIBSUFAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "gIBSMun":
+                    extraGIBSMun = await ReadTributacaoIBSCBSGIBSCBSGIBSMunAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "vIBS":
+                    extraVIBS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "gCBS":
+                    extraGCBS = await ReadTributacaoIBSCBSGIBSCBSGCBSAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "gTribRegular":
+                    extraGTribRegular = await ReadTributacaoIBSCBSGIBSCBSGTribRegularAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "gTribCompraGov":
+                    extraGTribCompraGov = await ReadTributacaoIBSCBSGIBSCBSGTribCompraGovAsync(ct).ConfigureAwait(false);
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new TributacaoIBSCBSGIBSCBS

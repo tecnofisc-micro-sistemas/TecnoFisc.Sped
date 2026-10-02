@@ -4,25 +4,23 @@ using TecnoFisc.Sped.Xml.Engine;
 namespace TecnoFisc.Sped.NFeNFCe;
 
 /// <summary>
-/// Nota Fiscal Eletrônica — modelo 55, leiaute 4.00. Modelo nativo (espelha a estrutura do XML),
+/// Nota Fiscal de Consumidor Eletrônica — modelo 65, leiaute 4.00. Modelo nativo (espelha a estrutura do XML),
 /// read-only. A <see cref="Protocolo"/> é preenchida quando a origem é um <c>nfeProc</c>
-/// (nota autorizada) e fica nula quando é uma <c>NFCe</c> pura.
+/// (nota autorizada) e fica nula quando é uma <c>NFe</c> pura.
 /// </summary>
 /// <remarks>
 /// Identidade de domínio = <see cref="ChaveAcesso"/> (override manual de
 /// <see cref="Equals(NFCe)"/>/<see cref="GetHashCode"/>); ver <c>sped/STAGE_14_NFE_NFCE.md</c> §4.
-/// Escopo da slice 14.3 (piloto): <c>ide</c>, <c>emit</c>, <c>dest</c>, <c>total</c> e os
-/// <c>det</c>/<c>prod</c> com ICMS60. Demais grupos (<c>transp</c>, <c>cobr</c>, <c>pag</c>,
-/// impostos completos, etc.) entram nas slices 14.4–14.6.
+/// Cobertura fiscal vinculada ao pacote PL_010f_v1.04; ver sped/nfe/field-bindings.json.
 /// </remarks>
 public sealed partial record NFCe : IDocumentoFiscalXml
 {
     public InformacaoSuplementar? InfNFeSupl { get; init; }
     public bool IsAutorizacaoEfetiva => Protocolo?.IsAutorizada == true;
-    /// <summary>Chave de acesso de 44 dígitos (do atributo/elemento <c>Id</c> de <c>infNFCe</c>).</summary>
+    /// <summary>Chave de acesso de 44 caracteres (do atributo/elemento <c>Id</c> de <c>infNFe</c>).</summary>
     public required ChaveAcesso ChaveAcesso { get; init; }
 
-    /// <summary>Versão do leiaute (atributo/elemento <c>versao</c> de <c>infNFCe</c>), ex.: "4.00".</summary>
+    /// <summary>Versão do leiaute (atributo/elemento <c>versao</c> de <c>infNFe</c>), ex.: "4.00".</summary>
     public required string Versao { get; init; }
 
     /// <summary>Grupo <c>ide</c> — identificação da NF-e.</summary>
@@ -40,7 +38,7 @@ public sealed partial record NFCe : IDocumentoFiscalXml
     /// <summary>Itens (<c>det</c>) na ordem do documento.</summary>
     public required IReadOnlyList<Item> Itens { get; init; }
 
-    /// <summary>Protocolo de autorização (<c>protNFCe</c>); nulo quando a origem é uma <c>NFCe</c> pura.</summary>
+    /// <summary>Protocolo de autorização (<c>protNFCe</c>); nulo quando a origem é uma <c>NFe</c> pura.</summary>
     public Protocolo? Protocolo { get; init; }
 
     /// <summary>Verdadeiro quando a nota carrega protocolo de autorização.</summary>
@@ -81,4 +79,3 @@ public sealed partial record NFCe : IDocumentoFiscalXml
     /// <inheritdoc />
     public override int GetHashCode() => ChaveAcesso.GetHashCode();
 }
-

@@ -12,9 +12,14 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "fat": extraFat = await ReadCobrancaFatAsync(ct).ConfigureAwait(false); return true;
-                case "dup": (extraDup ??= []).Add(await ReadCobrancaDupAsync(ct).ConfigureAwait(false)); return true;
-                default: return false;
+                case "fat":
+                    extraFat = await ReadCobrancaFatAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "dup":
+                    (extraDup ??= []).Add(await ReadCobrancaDupAsync(ct).ConfigureAwait(false));
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new Cobranca

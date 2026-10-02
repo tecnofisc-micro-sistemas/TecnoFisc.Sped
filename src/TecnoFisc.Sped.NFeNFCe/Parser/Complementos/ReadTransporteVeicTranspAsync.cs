@@ -13,10 +13,17 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "placa": extraPlaca = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "UF": extraUF = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "RNTC": extraRNTC = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                default: return false;
+                case "placa":
+                    extraPlaca = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "UF":
+                    extraUF = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "RNTC":
+                    extraRNTC = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new TransporteVeicTransp

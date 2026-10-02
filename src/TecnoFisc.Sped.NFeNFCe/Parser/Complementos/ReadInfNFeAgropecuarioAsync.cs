@@ -12,9 +12,14 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "defensivo": (extraDefensivo ??= []).Add(await ReadInfNFeAgropecuarioDefensivoAsync(ct).ConfigureAwait(false)); return true;
-                case "guiaTransito": extraGuiaTransito = await ReadInfNFeAgropecuarioGuiaTransitoAsync(ct).ConfigureAwait(false); return true;
-                default: return false;
+                case "defensivo":
+                    (extraDefensivo ??= []).Add(await ReadInfNFeAgropecuarioDefensivoAsync(ct).ConfigureAwait(false));
+                    return true;
+                case "guiaTransito":
+                    extraGuiaTransito = await ReadInfNFeAgropecuarioGuiaTransitoAsync(ct).ConfigureAwait(false);
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new InfNFeAgropecuario

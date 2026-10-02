@@ -8,13 +8,12 @@ using TecnoFisc.Sped.NFeNFCe.Enums;
 namespace TecnoFisc.Sped.NFeNFCe.Parser;
 
 /// <summary>
-/// Desserializa uma NF-e (modelo 55) a partir de um <see cref="XmlReader"/> forward-only,
+/// Desserializa o núcleo compartilhado de NF-e/NFC-e (modelos 55/65) a partir de um <see cref="XmlReader"/> forward-only,
 /// de forma <b>order-independent</b>: o entry point varre o documento e colhe o grupo
 /// <c>infNFe</c> e o protocolo (<c>infProt</c>) onde quer que apareçam — o que cobre tanto o
 /// XML canônico (<c>nfeProc</c>/<c>NFe</c>) quanto o envelope SERPRO (SOAP →
 /// <c>retConsNFeLog</c> → <c>NFeLog</c>), que embaralha a ordem dos elementos e inverte
-/// <c>protNFe</c>/<c>NFe</c>. Eventos embutidos no envelope SERPRO são ignorados nesta slice
-/// (entram na 14.7).
+/// <c>protNFe</c>/<c>NFe</c>. O roteador externo delimita a unidade e lê eventos separadamente.
 /// </summary>
 /// <remarks>
 /// Instância de uso único, criada por chamada de <c>ParserNFe.ReadAsync</c> — não compartilha
@@ -31,63 +30,97 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
         ChaveAcesso Chave, string Versao, Identificacao Ide, Emitente Emit,
         Destinatario? Dest, Total Total, IReadOnlyList<Item> Itens)
     {
-    /// <summary>XML: <c>avulsa</c>.</summary>
-    public InfNFeAvulsa? Avulsa { get; init; }
-    /// <summary>XML: <c>retirada</c>.</summary>
-    public LocalRetirada? Retirada { get; init; }
-    /// <summary>XML: <c>entrega</c>.</summary>
-    public LocalEntrega? Entrega { get; init; }
-    /// <summary>XML: <c>autXML</c>.</summary>
-    public IReadOnlyList<AutorizadoXml> AutXML { get; init; } = [];
-    /// <summary>XML: <c>transp</c>.</summary>
-    public Transporte? Transp { get; init; }
-    /// <summary>XML: <c>cobr</c>.</summary>
-    public Cobranca? Cobr { get; init; }
-    /// <summary>XML: <c>pag</c>.</summary>
-    public Pagamento? Pag { get; init; }
-    /// <summary>XML: <c>infIntermed</c>.</summary>
-    public Intermediador? InfIntermed { get; init; }
-    /// <summary>XML: <c>infAdic</c>.</summary>
-    public InformacoesAdicionais? InfAdic { get; init; }
-    /// <summary>XML: <c>exporta</c>.</summary>
-    public Exportacao? Exporta { get; init; }
-    /// <summary>XML: <c>compra</c>.</summary>
-    public Compra? Compra { get; init; }
-    /// <summary>XML: <c>cana</c>.</summary>
-    public Cana? Cana { get; init; }
-    /// <summary>XML: <c>infRespTec</c>.</summary>
-    public ResponsavelTecnico? InfRespTec { get; init; }
-    /// <summary>XML: <c>infSolicNFF</c>.</summary>
-    public InfNFeInfSolicNFF? InfSolicNFF { get; init; }
-    /// <summary>XML: <c>agropecuario</c>.</summary>
-    public InfNFeAgropecuario? Agropecuario { get; init; }
-    /// <summary>XML: <c>infPAA</c>.</summary>
-    public InfNFeInfPAA? InfPAA { get; init; }
+        /// <summary>XML: <c>avulsa</c>.</summary>
+        public InfNFeAvulsa? Avulsa { get; init; }
+        /// <summary>XML: <c>retirada</c>.</summary>
+        public LocalRetirada? Retirada { get; init; }
+        /// <summary>XML: <c>entrega</c>.</summary>
+        public LocalEntrega? Entrega { get; init; }
+        /// <summary>XML: <c>autXML</c>.</summary>
+        public IReadOnlyList<AutorizadoXml> AutXML { get; init; } = [];
+        /// <summary>XML: <c>transp</c>.</summary>
+        public Transporte? Transp { get; init; }
+        /// <summary>XML: <c>cobr</c>.</summary>
+        public Cobranca? Cobr { get; init; }
+        /// <summary>XML: <c>pag</c>.</summary>
+        public Pagamento? Pag { get; init; }
+        /// <summary>XML: <c>infIntermed</c>.</summary>
+        public Intermediador? InfIntermed { get; init; }
+        /// <summary>XML: <c>infAdic</c>.</summary>
+        public InformacoesAdicionais? InfAdic { get; init; }
+        /// <summary>XML: <c>exporta</c>.</summary>
+        public Exportacao? Exporta { get; init; }
+        /// <summary>XML: <c>compra</c>.</summary>
+        public Compra? Compra { get; init; }
+        /// <summary>XML: <c>cana</c>.</summary>
+        public Cana? Cana { get; init; }
+        /// <summary>XML: <c>infRespTec</c>.</summary>
+        public ResponsavelTecnico? InfRespTec { get; init; }
+        /// <summary>XML: <c>infSolicNFF</c>.</summary>
+        public InfNFeInfSolicNFF? InfSolicNFF { get; init; }
+        /// <summary>XML: <c>agropecuario</c>.</summary>
+        public InfNFeAgropecuario? Agropecuario { get; init; }
+        /// <summary>XML: <c>infPAA</c>.</summary>
+        public InfNFeInfPAA? InfPAA { get; init; }
     }
 
     /// <summary>Varre o documento e materializa a <see cref="NFe"/> (com protocolo, se houver).</summary>
-    public async Task<NFe> ReadAsync(CancellationToken cancellationToken)
+    public async Task<NFe> ReadAsync(CancellationToken cancellationToken, bool positioned = false)
     {
         InfNFe? core = null;
         Protocolo? protocolo = null;
         InformacaoSuplementar? suplemento = null;
 
-        if (!await _r.ReadAsync().ConfigureAwait(false))
+        if (!positioned && !await _r.ReadAsync().ConfigureAwait(false))
             throw new FormatException("Documento XML vazio.");
+
+        int rootDepth = _r.Depth;
+        if (_r.IsEmptyElement)
+            throw new FormatException("Documento fiscal vazio.");
+        string? envelopeVersion = _r.GetAttribute("versao");
+        string? protocolVersion = null;
+        int protocolDepth = -1;
 
         while (!_r.EOF)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            if (_r.NodeType == XmlNodeType.EndElement && _r.Depth == rootDepth)
+                break;
 
             if (_r.NodeType != XmlNodeType.Element)
             {
+                if (_r.NodeType == XmlNodeType.EndElement && _r.Depth == protocolDepth)
+                    protocolDepth = -1;
                 if (!await _r.ReadAsync().ConfigureAwait(false))
                     break;
                 continue;
             }
 
+            if (!DocumentoXmlReader.IsFiscal(_r))
+            {
+                if (_r.LocalName != "Signature" || _r.NamespaceURI != "http://www.w3.org/2000/09/xmldsig#")
+                {
+                    if (_options.Strict)
+                        throw new FormatException($"Elemento não mapeado '{_r.LocalName}'.");
+                    if (_r is IO.GuardedXmlReader foreignGuard)
+                        foreignGuard.ReportIgnored();
+                }
+                await _r.SkipAsync().ConfigureAwait(false);
+                continue;
+            }
             switch (_r.LocalName)
             {
+                case "protNFe":
+                    protocolDepth = _r.Depth;
+                    protocolVersion = _r.GetAttribute("versao");
+                    await _r.ReadAsync().ConfigureAwait(false);
+                    break;
+                case "versao":
+                    if (protocolDepth >= 0)
+                        protocolVersion = await _r.ReadTextAsync().ConfigureAwait(false);
+                    else
+                        envelopeVersion = await _r.ReadTextAsync().ConfigureAwait(false);
+                    break;
                 case "infNFeSupl":
                     suplemento = await ReadInformacaoSuplementarAsync(cancellationToken).ConfigureAwait(false);
                     break;
@@ -105,30 +138,40 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
                         throw new FormatException("Múltiplos protocolos na mesma unidade documental.");
                     break;
 
-                default:
-                    // Desce em qualquer envelope (soap/NFeLog/nfeProc/NFe/Signature/eventos)
-                    // procurando os nós de interesse.
+                case "nfeProc":
+                case "procNFe":
+                case "NFe":
                     if (!await _r.ReadAsync().ConfigureAwait(false))
                         goto done;
+                    break;
+                default:
+                    if (_options.Strict)
+                        throw new FormatException($"Elemento não mapeado '{_r.LocalName}'.");
+                    if (_r is IO.GuardedXmlReader guard)
+                        guard.ReportIgnored();
+                    await _r.SkipAsync().ConfigureAwait(false);
                     break;
             }
         }
 
-    done:
+done:
         if (core is null)
             throw new FormatException("Nenhum grupo infNFe encontrado no documento.");
+        if (protocolo is not null)
+            protocolo = protocolo with { Versao = protocolVersion };
 
         if (protocolo is not null && protocolo.ChNFe != core.Chave)
             throw new FormatException("Protocolo pertence a outra chave de acesso.");
-        if (core.Versao.Length != 0 && core.Versao != "4.00")
-            throw new FormatException($"Versão não suportada: {core.Versao}.");
+        string version = core.Versao.Length == 0 ? envelopeVersion ?? string.Empty : core.Versao;
+        if (version.Length != 0 && version != "4.00")
+            throw new FormatException($"Versão não suportada: {version}.");
         if (!core.Chave.ToString().AsSpan(20, 2).SequenceEqual(core.Ide.Mod.Codigo.AsSpan()))
             throw new FormatException("Modelo da chave difere do grupo ide.");
 
         return new NFe
         {
             ChaveAcesso = core.Chave,
-            Versao = core.Versao,
+            Versao = version,
             Ide = core.Ide,
             Emit = core.Emit,
             Dest = core.Dest,
@@ -188,31 +231,76 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
         {
             switch (nome)
             {
-                case "ide": ide = await ReadIdeAsync(ct).ConfigureAwait(false); return true;
-                case "emit": emit = await ReadEmitenteAsync(ct).ConfigureAwait(false); return true;
-                case "dest": dest = await ReadDestinatarioAsync(ct).ConfigureAwait(false); return true;
-                case "total": total = await ReadTotalAsync(ct).ConfigureAwait(false); return true;
-                case "det": itens.Add(await ReadItemAsync(ct).ConfigureAwait(false)); return true;
+                case "ide":
+                    ide = await ReadIdeAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "emit":
+                    emit = await ReadEmitenteAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "dest":
+                    dest = await ReadDestinatarioAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "total":
+                    total = await ReadTotalAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "det":
+                    itens.Add(await ReadItemAsync(ct).ConfigureAwait(false));
+                    return true;
                 // Lê sempre (consome o elemento), mas o atributo homônimo tem precedência se já veio.
-                case "Id": { var v = await _r.ReadTextAsync().ConfigureAwait(false); id ??= v; return true; }
-                case "versao": { var v = await _r.ReadTextAsync().ConfigureAwait(false); versao ??= v; return true; }
-                case "avulsa": extraAvulsa = await ReadInfNFeAvulsaAsync(ct).ConfigureAwait(false); return true;
-                case "retirada": extraRetirada = await ReadLocalRetiradaAsync(ct).ConfigureAwait(false); return true;
-                case "entrega": extraEntrega = await ReadLocalEntregaAsync(ct).ConfigureAwait(false); return true;
-                case "autXML": (extraAutXML ??= []).Add(await ReadAutorizadoXmlAsync(ct).ConfigureAwait(false)); return true;
-                case "transp": extraTransp = await ReadTransporteAsync(ct).ConfigureAwait(false); return true;
-                case "cobr": extraCobr = await ReadCobrancaAsync(ct).ConfigureAwait(false); return true;
-                case "pag": extraPag = await ReadPagamentoAsync(ct).ConfigureAwait(false); return true;
-                case "infIntermed": extraInfIntermed = await ReadIntermediadorAsync(ct).ConfigureAwait(false); return true;
-                case "infAdic": extraInfAdic = await ReadInformacoesAdicionaisAsync(ct).ConfigureAwait(false); return true;
-                case "exporta": extraExporta = await ReadExportacaoAsync(ct).ConfigureAwait(false); return true;
-                case "compra": extraCompra = await ReadCompraAsync(ct).ConfigureAwait(false); return true;
-                case "cana": extraCana = await ReadCanaAsync(ct).ConfigureAwait(false); return true;
-                case "infRespTec": extraInfRespTec = await ReadResponsavelTecnicoAsync(ct).ConfigureAwait(false); return true;
-                case "infSolicNFF": extraInfSolicNFF = await ReadInfNFeInfSolicNFFAsync(ct).ConfigureAwait(false); return true;
-                case "agropecuario": extraAgropecuario = await ReadInfNFeAgropecuarioAsync(ct).ConfigureAwait(false); return true;
-                case "infPAA": extraInfPAA = await ReadInfNFeInfPAAAsync(ct).ConfigureAwait(false); return true;
-                default: return false;
+                case "Id":
+                    { var v = await _r.ReadTextAsync().ConfigureAwait(false); id ??= v; return true; }
+                case "versao":
+                    { var v = await _r.ReadTextAsync().ConfigureAwait(false); versao ??= v; return true; }
+                case "avulsa":
+                    extraAvulsa = await ReadInfNFeAvulsaAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "retirada":
+                    extraRetirada = await ReadLocalRetiradaAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "entrega":
+                    extraEntrega = await ReadLocalEntregaAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "autXML":
+                    (extraAutXML ??= []).Add(await ReadAutorizadoXmlAsync(ct).ConfigureAwait(false));
+                    return true;
+                case "transp":
+                    extraTransp = await ReadTransporteAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "cobr":
+                    extraCobr = await ReadCobrancaAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "pag":
+                    extraPag = await ReadPagamentoAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "infIntermed":
+                    extraInfIntermed = await ReadIntermediadorAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "infAdic":
+                    extraInfAdic = await ReadInformacoesAdicionaisAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "exporta":
+                    extraExporta = await ReadExportacaoAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "compra":
+                    extraCompra = await ReadCompraAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "cana":
+                    extraCana = await ReadCanaAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "infRespTec":
+                    extraInfRespTec = await ReadResponsavelTecnicoAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "infSolicNFF":
+                    extraInfSolicNFF = await ReadInfNFeInfSolicNFFAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "agropecuario":
+                    extraAgropecuario = await ReadInfNFeAgropecuarioAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "infPAA":
+                    extraInfPAA = await ReadInfNFeInfPAAAsync(ct).ConfigureAwait(false);
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
 
@@ -223,17 +311,33 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
             emit ?? throw new FormatException("infNFe sem grupo emit."),
             dest,
             total ?? throw new FormatException("infNFe sem grupo total."),
-            itens) { Avulsa = extraAvulsa, Retirada = extraRetirada, Entrega = extraEntrega, AutXML = (IReadOnlyList<AutorizadoXml>?)extraAutXML ?? [], Transp = extraTransp, Cobr = extraCobr, Pag = extraPag, InfIntermed = extraInfIntermed, InfAdic = extraInfAdic, Exporta = extraExporta, Compra = extraCompra, Cana = extraCana, InfRespTec = extraInfRespTec, InfSolicNFF = extraInfSolicNFF, Agropecuario = extraAgropecuario, InfPAA = extraInfPAA };
+            itens)
+        { Avulsa = extraAvulsa, Retirada = extraRetirada, Entrega = extraEntrega, AutXML = (IReadOnlyList<AutorizadoXml>?)extraAutXML ?? [], Transp = extraTransp, Cobr = extraCobr, Pag = extraPag, InfIntermed = extraInfIntermed, InfAdic = extraInfAdic, Exporta = extraExporta, Compra = extraCompra, Cana = extraCana, InfRespTec = extraInfRespTec, InfSolicNFF = extraInfSolicNFF, Agropecuario = extraAgropecuario, InfPAA = extraInfPAA };
     }
 
     private async Task<Identificacao> ReadIdeAsync(CancellationToken ct)
     {
-        int cUF = 0; string cNF = string.Empty; string natOp = string.Empty; ModeloDocumento mod = default;
-        int serie = 0; int nNF = 0; DateTimeOffset dhEmi = default; DateTimeOffset? dhSaiEnt = null;
-        IndicadorOperacao tpNF = default; int idDest = 0; CodigoMunicipioIbge cMunFG = default;
-        int tpImp = 0; TipoEmissao tpEmis = default; int cDV = 0; TipoAmbiente tpAmb = default;
-        FinalidadeEmissao finNFe = default; bool indFinal = false; IndicadorPresenca indPres = default;
-        IndicadorIntermediador? indIntermed = null; int procEmi = 0; string? verProc = null;
+        int cUF = 0;
+        string cNF = string.Empty;
+        string natOp = string.Empty;
+        ModeloDocumento mod = default;
+        int serie = 0;
+        int nNF = 0;
+        DateTimeOffset dhEmi = default;
+        DateTimeOffset? dhSaiEnt = null;
+        IndicadorOperacao tpNF = default;
+        int idDest = 0;
+        CodigoMunicipioIbge cMunFG = default;
+        int tpImp = 0;
+        TipoEmissao tpEmis = default;
+        int cDV = 0;
+        TipoAmbiente tpAmb = default;
+        FinalidadeEmissao finNFe = default;
+        bool indFinal = false;
+        IndicadorPresenca indPres = default;
+        IndicadorIntermediador? indIntermed = null;
+        int procEmi = 0;
+        string? verProc = null;
 
         DateOnly? extraDPrevEntrega = null;
         string? extraCMunFGIBS = null;
@@ -250,55 +354,149 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
         {
             switch (nome)
             {
-                case "cUF": cUF = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "cNF": cNF = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "natOp": natOp = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "mod": mod = ModeloDocumento.Create(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "serie": serie = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "nNF": nNF = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "dhEmi": dhEmi = ParseDate(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "dhSaiEnt": dhSaiEnt = ParseDate(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "tpNF": tpNF = ParseEnum<IndicadorOperacao>(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "idDest": idDest = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "cMunFG": cMunFG = CodigoMunicipioIbge.Create(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "tpImp": tpImp = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "tpEmis": tpEmis = ParseEnum<TipoEmissao>(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "cDV": cDV = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "tpAmb": tpAmb = ParseEnum<TipoAmbiente>(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "finNFe": finNFe = ParseEnum<FinalidadeEmissao>(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "indFinal": indFinal = ParseBool(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "indPres": indPres = ParseEnum<IndicadorPresenca>(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "indIntermed": indIntermed = ParseEnum<IndicadorIntermediador>(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "procEmi": procEmi = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "verProc": verProc = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "dPrevEntrega": extraDPrevEntrega = DateOnly.Parse(await _r.ReadTextAsync().ConfigureAwait(false), CultureInfo.InvariantCulture); return true;
-                case "cMunFGIBS": extraCMunFGIBS = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "tpNFDebito": extraTpNFDebito = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "tpNFCredito": extraTpNFCredito = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "cIndOp": extraCIndOp = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "dhCont": extraDhCont = ParseDate(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "xJust": extraXJust = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "NFref": (extraNFref ??= []).Add(await ReadReferenciaNotaAsync(ct).ConfigureAwait(false)); return true;
-                case "gCompraGov": extraGCompraGov = await ReadIdentificacaoGCompraGovAsync(ct).ConfigureAwait(false); return true;
-                case "gPagAntecipado": extraGPagAntecipado = await ReadIdentificacaoGPagAntecipadoAsync(ct).ConfigureAwait(false); return true;
-                default: return false;
+                case "cUF":
+                    cUF = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "cNF":
+                    cNF = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "natOp":
+                    natOp = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "mod":
+                    mod = ModeloDocumento.Create(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "serie":
+                    serie = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "nNF":
+                    nNF = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "dhEmi":
+                    dhEmi = ParseDate(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "dhSaiEnt":
+                    dhSaiEnt = ParseDate(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "tpNF":
+                    tpNF = ParseEnum<IndicadorOperacao>(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "idDest":
+                    idDest = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "cMunFG":
+                    cMunFG = CodigoMunicipioIbge.Create(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "tpImp":
+                    tpImp = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "tpEmis":
+                    tpEmis = ParseEnum<TipoEmissao>(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "cDV":
+                    cDV = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "tpAmb":
+                    tpAmb = ParseEnum<TipoAmbiente>(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "finNFe":
+                    finNFe = ParseEnum<FinalidadeEmissao>(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "indFinal":
+                    indFinal = ParseBool(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "indPres":
+                    indPres = ParseEnum<IndicadorPresenca>(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "indIntermed":
+                    indIntermed = ParseEnum<IndicadorIntermediador>(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "procEmi":
+                    procEmi = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "verProc":
+                    verProc = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "dPrevEntrega":
+                    extraDPrevEntrega = DateOnly.Parse(await _r.ReadTextAsync().ConfigureAwait(false), CultureInfo.InvariantCulture);
+                    return true;
+                case "cMunFGIBS":
+                    extraCMunFGIBS = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "tpNFDebito":
+                    extraTpNFDebito = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "tpNFCredito":
+                    extraTpNFCredito = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "cIndOp":
+                    extraCIndOp = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "dhCont":
+                    extraDhCont = ParseDate(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "xJust":
+                    extraXJust = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "NFref":
+                    (extraNFref ??= []).Add(await ReadReferenciaNotaAsync(ct).ConfigureAwait(false));
+                    return true;
+                case "gCompraGov":
+                    extraGCompraGov = await ReadIdentificacaoGCompraGovAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "gPagAntecipado":
+                    extraGPagAntecipado = await ReadIdentificacaoGPagAntecipadoAsync(ct).ConfigureAwait(false);
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
 
         return new Identificacao
-        { DPrevEntrega = extraDPrevEntrega, CMunFGIBS = extraCMunFGIBS, TpNFDebito = extraTpNFDebito, TpNFCredito = extraTpNFCredito, CIndOp = extraCIndOp, DhCont = extraDhCont, XJust = extraXJust, NFref = (IReadOnlyList<ReferenciaNota>?)extraNFref ?? [], GCompraGov = extraGCompraGov, GPagAntecipado = extraGPagAntecipado, 
-            CUF = cUF, CNF = cNF, NatOp = natOp, Mod = mod, Serie = serie, NNF = nNF,
-            DhEmi = dhEmi, DhSaiEnt = dhSaiEnt, TpNF = tpNF, IdDest = idDest, CMunFG = cMunFG,
-            TpImp = tpImp, TpEmis = tpEmis, CDV = cDV, TpAmb = tpAmb, FinNFe = finNFe,
-            IndFinal = indFinal, IndPres = indPres, IndIntermed = indIntermed,
-            ProcEmi = procEmi, VerProc = verProc,
+        {
+            DPrevEntrega = extraDPrevEntrega,
+            CMunFGIBS = extraCMunFGIBS,
+            TpNFDebito = extraTpNFDebito,
+            TpNFCredito = extraTpNFCredito,
+            CIndOp = extraCIndOp,
+            DhCont = extraDhCont,
+            XJust = extraXJust,
+            NFref = (IReadOnlyList<ReferenciaNota>?)extraNFref ?? [],
+            GCompraGov = extraGCompraGov,
+            GPagAntecipado = extraGPagAntecipado,
+            CUF = cUF,
+            CNF = cNF,
+            NatOp = natOp,
+            Mod = mod,
+            Serie = serie,
+            NNF = nNF,
+            DhEmi = dhEmi,
+            DhSaiEnt = dhSaiEnt,
+            TpNF = tpNF,
+            IdDest = idDest,
+            CMunFG = cMunFG,
+            TpImp = tpImp,
+            TpEmis = tpEmis,
+            CDV = cDV,
+            TpAmb = tpAmb,
+            FinNFe = finNFe,
+            IndFinal = indFinal,
+            IndPres = indPres,
+            IndIntermed = indIntermed,
+            ProcEmi = procEmi,
+            VerProc = verProc,
         };
     }
 
     private async Task<Emitente> ReadEmitenteAsync(CancellationToken ct)
     {
-        Cnpj? cnpj = null; Cpf? cpf = null; string xNome = string.Empty; string? xFant = null;
-        Endereco? ender = null; InscricaoEstadual? ie = null; string? iest = null, im = null, cnae = null;
+        Cnpj? cnpj = null;
+        Cpf? cpf = null;
+        string xNome = string.Empty;
+        string? xFant = null;
+        Endereco? ender = null;
+        InscricaoEstadual? ie = null;
+        string? iest = null, im = null, cnae = null;
         int crt = 0;
 
         string? extraISUFEmit = null;
@@ -307,33 +505,68 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
         {
             switch (nome)
             {
-                case "CNPJ": cnpj = Cnpj.Create(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "CPF": cpf = Cpf.Create(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "xNome": xNome = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "xFant": xFant = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "enderEmit": ender = await ReadEnderecoAsync(ct).ConfigureAwait(false); return true;
-                case "IE": ie = InscricaoEstadual.Create(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "IEST": iest = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "IM": im = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "CNAE": cnae = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "CRT": crt = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "ISUFEmit": extraISUFEmit = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                default: return false;
+                case "CNPJ":
+                    cnpj = Cnpj.Create(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "CPF":
+                    cpf = Cpf.Create(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "xNome":
+                    xNome = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "xFant":
+                    xFant = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "enderEmit":
+                    ender = await ReadEnderecoAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "IE":
+                    ie = InscricaoEstadual.Create(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "IEST":
+                    iest = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "IM":
+                    im = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "CNAE":
+                    cnae = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "CRT":
+                    crt = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "ISUFEmit":
+                    extraISUFEmit = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
 
         return new Emitente
-        { ISUFEmit = extraISUFEmit, 
-            CNPJ = cnpj, CPF = cpf, XNome = xNome, XFant = xFant,
+        {
+            ISUFEmit = extraISUFEmit,
+            CNPJ = cnpj,
+            CPF = cpf,
+            XNome = xNome,
+            XFant = xFant,
             EnderEmit = ender ?? throw new FormatException("emit sem grupo enderEmit."),
-            IE = ie, IEST = iest, IM = im, CNAE = cnae, CRT = crt,
+            IE = ie,
+            IEST = iest,
+            IM = im,
+            CNAE = cnae,
+            CRT = crt,
         };
     }
 
     private async Task<Destinatario> ReadDestinatarioAsync(CancellationToken ct)
     {
-        Cnpj? cnpj = null; Cpf? cpf = null; string? idEstrangeiro = null, xNome = null, email = null;
-        Endereco? ender = null; int? indIEDest = null; InscricaoEstadual? ie = null;
+        Cnpj? cnpj = null;
+        Cpf? cpf = null;
+        string? idEstrangeiro = null, xNome = null, email = null;
+        Endereco? ender = null;
+        int? indIEDest = null;
+        InscricaoEstadual? ie = null;
 
         string? extraISUF = null;
         string? extraIM = null;
@@ -342,24 +575,53 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
         {
             switch (nome)
             {
-                case "CNPJ": cnpj = Cnpj.Create(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "CPF": cpf = Cpf.Create(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "idEstrangeiro": idEstrangeiro = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "xNome": xNome = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "enderDest": ender = await ReadEnderecoAsync(ct).ConfigureAwait(false); return true;
-                case "indIEDest": indIEDest = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "IE": ie = InscricaoEstadual.Create(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "email": email = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "ISUF": extraISUF = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "IM": extraIM = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                default: return false;
+                case "CNPJ":
+                    cnpj = Cnpj.Create(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "CPF":
+                    cpf = Cpf.Create(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "idEstrangeiro":
+                    idEstrangeiro = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "xNome":
+                    xNome = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "enderDest":
+                    ender = await ReadEnderecoAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "indIEDest":
+                    indIEDest = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "IE":
+                    ie = InscricaoEstadual.Create(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "email":
+                    email = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "ISUF":
+                    extraISUF = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "IM":
+                    extraIM = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
 
         return new Destinatario
-        { ISUF = extraISUF, IM = extraIM, 
-            CNPJ = cnpj, CPF = cpf, IdEstrangeiro = idEstrangeiro, XNome = xNome,
-            EnderDest = ender, IndIEDest = indIEDest, IE = ie, Email = email,
+        {
+            ISUF = extraISUF,
+            IM = extraIM,
+            CNPJ = cnpj,
+            CPF = cpf,
+            IdEstrangeiro = idEstrangeiro,
+            XNome = xNome,
+            EnderDest = ender,
+            IndIEDest = indIEDest,
+            IE = ie,
+            Email = email,
         };
     }
 
@@ -367,31 +629,64 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
     {
         string xLgr = string.Empty, nro = string.Empty, xBairro = string.Empty, xMun = string.Empty, uf = string.Empty;
         string? xCpl = null, cep = null, xPais = null, fone = null;
-        CodigoMunicipioIbge cMun = default; int? cPais = null;
+        CodigoMunicipioIbge cMun = default;
+        int? cPais = null;
 
         await _r.ConsumeChildrenAsync(async nome =>
         {
             switch (nome)
             {
-                case "xLgr": xLgr = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "nro": nro = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "xCpl": xCpl = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "xBairro": xBairro = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "cMun": cMun = CodigoMunicipioIbge.Create(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "xMun": xMun = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "UF": uf = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "CEP": cep = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "cPais": cPais = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "xPais": xPais = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "fone": fone = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                default: return false;
+                case "xLgr":
+                    xLgr = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "nro":
+                    nro = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "xCpl":
+                    xCpl = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "xBairro":
+                    xBairro = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "cMun":
+                    cMun = CodigoMunicipioIbge.Create(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "xMun":
+                    xMun = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "UF":
+                    uf = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "CEP":
+                    cep = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "cPais":
+                    cPais = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "xPais":
+                    xPais = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "fone":
+                    fone = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
 
         return new Endereco
         {
-            XLgr = xLgr, Nro = nro, XCpl = xCpl, XBairro = xBairro, CMun = cMun,
-            XMun = xMun, UF = uf, CEP = cep, CPais = cPais, XPais = xPais, Fone = fone,
+            XLgr = xLgr,
+            Nro = nro,
+            XCpl = xCpl,
+            XBairro = xBairro,
+            CMun = cMun,
+            XMun = xMun,
+            UF = uf,
+            CEP = cep,
+            CPais = cPais,
+            XPais = xPais,
+            Fone = fone,
         };
     }
 
@@ -409,17 +704,30 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
         {
             switch (nome)
             {
-                case "ICMSTot": icmsTot = await ReadTotalIcmsAsync(ct).ConfigureAwait(false); return true;
-                case "ISSQNtot": extraISSQNtot = await ReadTotalIssqnAsync(ct).ConfigureAwait(false); return true;
-                case "retTrib": extraRetTrib = await ReadRetencoesTributosAsync(ct).ConfigureAwait(false); return true;
-                case "ISTot": extraISTot = await ReadTotalISAsync(ct).ConfigureAwait(false); return true;
-                case "IBSCBSTot": extraIBSCBSTot = await ReadTotalIBSCBSAsync(ct).ConfigureAwait(false); return true;
-                case "vNFTot": extraVNFTot = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                default: return false;
+                case "ICMSTot":
+                    icmsTot = await ReadTotalIcmsAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "ISSQNtot":
+                    extraISSQNtot = await ReadTotalIssqnAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "retTrib":
+                    extraRetTrib = await ReadRetencoesTributosAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "ISTot":
+                    extraISTot = await ReadTotalISAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "IBSCBSTot":
+                    extraIBSCBSTot = await ReadTotalIBSCBSAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "vNFTot":
+                    extraVNFTot = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
 
-        return new Total { ISSQNtot = extraISSQNtot, RetTrib = extraRetTrib, ISTot = extraISTot, IBSCBSTot = extraIBSCBSTot, VNFTot = extraVNFTot,  ICMSTot = icmsTot ?? throw new FormatException("total sem grupo ICMSTot.") };
+        return new Total { ISSQNtot = extraISSQNtot, RetTrib = extraRetTrib, ISTot = extraISTot, IBSCBSTot = extraIBSCBSTot, VNFTot = extraVNFTot, ICMSTot = icmsTot ?? throw new FormatException("total sem grupo ICMSTot.") };
     }
 
     private async Task<TotalIcms> ReadTotalIcmsAsync(CancellationToken ct)
@@ -443,45 +751,129 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
         {
             switch (nome)
             {
-                case "vBC": vBC = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vICMS": vICMS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vICMSDeson": vICMSDeson = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vFCP": vFCP = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vBCST": vBCST = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vST": vST = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vFCPST": vFCPST = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vFCPSTRet": vFCPSTRet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vProd": vProd = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vFrete": vFrete = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vSeg": vSeg = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vDesc": vDesc = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vII": vII = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vIPI": vIPI = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vIPIDevol": vIPIDevol = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vPIS": vPIS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vCOFINS": vCOFINS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vOutro": vOutro = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vNF": vNF = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vFCPUFDest": extraVFCPUFDest = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vICMSUFDest": extraVICMSUFDest = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vICMSUFRemet": extraVICMSUFRemet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "qBCMono": extraQBCMono = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vICMSMono": extraVICMSMono = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "qBCMonoReten": extraQBCMonoReten = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vICMSMonoReten": extraVICMSMonoReten = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "qBCMonoRet": extraQBCMonoRet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vICMSMonoRet": extraVICMSMonoRet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vTotTrib": extraVTotTrib = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                default: return false;
+                case "vBC":
+                    vBC = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vICMS":
+                    vICMS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vICMSDeson":
+                    vICMSDeson = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vFCP":
+                    vFCP = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vBCST":
+                    vBCST = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vST":
+                    vST = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vFCPST":
+                    vFCPST = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vFCPSTRet":
+                    vFCPSTRet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vProd":
+                    vProd = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vFrete":
+                    vFrete = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vSeg":
+                    vSeg = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vDesc":
+                    vDesc = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vII":
+                    vII = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vIPI":
+                    vIPI = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vIPIDevol":
+                    vIPIDevol = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vPIS":
+                    vPIS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vCOFINS":
+                    vCOFINS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vOutro":
+                    vOutro = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vNF":
+                    vNF = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vFCPUFDest":
+                    extraVFCPUFDest = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vICMSUFDest":
+                    extraVICMSUFDest = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vICMSUFRemet":
+                    extraVICMSUFRemet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "qBCMono":
+                    extraQBCMono = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vICMSMono":
+                    extraVICMSMono = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "qBCMonoReten":
+                    extraQBCMonoReten = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vICMSMonoReten":
+                    extraVICMSMonoReten = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "qBCMonoRet":
+                    extraQBCMonoRet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vICMSMonoRet":
+                    extraVICMSMonoRet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vTotTrib":
+                    extraVTotTrib = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
 
         return new TotalIcms
-        { VFCPUFDest = extraVFCPUFDest, VICMSUFDest = extraVICMSUFDest, VICMSUFRemet = extraVICMSUFRemet, QBCMono = extraQBCMono, VICMSMono = extraVICMSMono, QBCMonoReten = extraQBCMonoReten, VICMSMonoReten = extraVICMSMonoReten, QBCMonoRet = extraQBCMonoRet, VICMSMonoRet = extraVICMSMonoRet, VTotTrib = extraVTotTrib, 
-            VBC = vBC, VICMS = vICMS, VICMSDeson = vICMSDeson, VFCP = vFCP, VBCST = vBCST,
-            VST = vST, VFCPST = vFCPST, VFCPSTRet = vFCPSTRet, VProd = vProd, VFrete = vFrete,
-            VSeg = vSeg, VDesc = vDesc, VII = vII, VIPI = vIPI, VIPIDevol = vIPIDevol,
-            VPIS = vPIS, VCOFINS = vCOFINS, VOutro = vOutro, VNF = vNF,
+        {
+            VFCPUFDest = extraVFCPUFDest,
+            VICMSUFDest = extraVICMSUFDest,
+            VICMSUFRemet = extraVICMSUFRemet,
+            QBCMono = extraQBCMono,
+            VICMSMono = extraVICMSMono,
+            QBCMonoReten = extraQBCMonoReten,
+            VICMSMonoReten = extraVICMSMonoReten,
+            QBCMonoRet = extraQBCMonoRet,
+            VICMSMonoRet = extraVICMSMonoRet,
+            VTotTrib = extraVTotTrib,
+            VBC = vBC,
+            VICMS = vICMS,
+            VICMSDeson = vICMSDeson,
+            VFCP = vFCP,
+            VBCST = vBCST,
+            VST = vST,
+            VFCPST = vFCPST,
+            VFCPSTRet = vFCPSTRet,
+            VProd = vProd,
+            VFrete = vFrete,
+            VSeg = vSeg,
+            VDesc = vDesc,
+            VII = vII,
+            VIPI = vIPI,
+            VIPIDevol = vIPIDevol,
+            VPIS = vPIS,
+            VCOFINS = vCOFINS,
+            VOutro = vOutro,
+            VNF = vNF,
         };
     }
 
@@ -504,20 +896,42 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
         {
             switch (nome)
             {
-                case "nItem": nItem = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "prod": prod = await ReadProdutoAsync(ct).ConfigureAwait(false); return true;
-                case "imposto": imposto = await ReadImpostoAsync(ct).ConfigureAwait(false); return true;
-                case "impostoDevol": extraImpostoDevol = await ReadItemImpostoDevolAsync(ct).ConfigureAwait(false); return true;
-                case "infAdProd": extraInfAdProd = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "obsItem": extraObsItem = await ReadItemObsItemAsync(ct).ConfigureAwait(false); return true;
-                case "vItem": extraVItem = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "DFeReferenciado": extraDFeReferenciado = await ReadItemDFeReferenciadoAsync(ct).ConfigureAwait(false); return true;
-                default: return false;
+                case "nItem":
+                    nItem = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "prod":
+                    prod = await ReadProdutoAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "imposto":
+                    imposto = await ReadImpostoAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "impostoDevol":
+                    extraImpostoDevol = await ReadItemImpostoDevolAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "infAdProd":
+                    extraInfAdProd = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "obsItem":
+                    extraObsItem = await ReadItemObsItemAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "vItem":
+                    extraVItem = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "DFeReferenciado":
+                    extraDFeReferenciado = await ReadItemDFeReferenciadoAsync(ct).ConfigureAwait(false);
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
 
         return new Item
-        { ImpostoDevol = extraImpostoDevol, InfAdProd = extraInfAdProd, ObsItem = extraObsItem, VItem = extraVItem, DFeReferenciado = extraDFeReferenciado, 
+        {
+            ImpostoDevol = extraImpostoDevol,
+            InfAdProd = extraInfAdProd,
+            ObsItem = extraObsItem,
+            VItem = extraVItem,
+            DFeReferenciado = extraDFeReferenciado,
             NItem = nItem,
             Prod = prod ?? throw new FormatException($"det (nItem={nItem}) sem grupo prod."),
             Imposto = imposto,
@@ -528,8 +942,12 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
     {
         string cProd = string.Empty, xProd = string.Empty, uCom = string.Empty, uTrib = string.Empty;
         string? extipi = null;
-        Gtin cEAN = default, cEANTrib = default; Ncm ncm = default; Cest? cest = null; Cfop cfop = default;
-        decimal qCom = 0, vUnCom = 0, vProd = 0, qTrib = 0, vUnTrib = 0; bool indTot = false;
+        Gtin cEAN = default, cEANTrib = default;
+        Ncm ncm = default;
+        Cest? cest = null;
+        Cfop cfop = default;
+        decimal qCom = 0, vUnCom = 0, vProd = 0, qTrib = 0, vUnTrib = 0;
+        bool indTot = false;
 
         string? extraCBarra = null;
         List<string>? extraNVE = null;
@@ -558,61 +976,198 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
         Combustivel? extraComb = null;
         string? extraNRECOPI = null;
 
-        await _r.ConsumeChildrenAsync(async nome =>
+        async ValueTask<bool> ReadComplementosAsync(string nome)
         {
             switch (nome)
             {
-                case "cProd": cProd = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "cEAN": cEAN = ParseGtin(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "xProd": xProd = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "NCM": ncm = Ncm.Create(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "CEST": cest = Cest.Create(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "EXTIPI": extipi = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "CFOP": cfop = Cfop.Create(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "uCom": uCom = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "qCom": qCom = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vUnCom": vUnCom = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vProd": vProd = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "cEANTrib": cEANTrib = ParseGtin(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "uTrib": uTrib = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "qTrib": qTrib = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vUnTrib": vUnTrib = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "indTot": indTot = ParseBool(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "cBarra": extraCBarra = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "NVE": (extraNVE ??= []).Add(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "indEscala": extraIndEscala = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "CNPJFab": extraCNPJFab = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "cBenef": extraCBenef = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "gCred": (extraGCred ??= []).Add(await ReadProdutoGCredAsync(ct).ConfigureAwait(false)); return true;
-                case "tpCredPresIBSZFM": extraTpCredPresIBSZFM = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "cBarraTrib": extraCBarraTrib = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "vFrete": extraVFrete = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vSeg": extraVSeg = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vDesc": extraVDesc = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vOutro": extraVOutro = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "indBemMovelUsado": extraIndBemMovelUsado = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "DI": (extraDI ??= []).Add(await ReadDeclaracaoImportacaoAsync(ct).ConfigureAwait(false)); return true;
-                case "detExport": (extraDetExport ??= []).Add(await ReadDetalheExportacaoAsync(ct).ConfigureAwait(false)); return true;
-                case "xPed": extraXPed = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "nItemPed": extraNItemPed = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "nFCI": extraNFCI = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "rastro": (extraRastro ??= []).Add(await ReadRastreabilidadeAsync(ct).ConfigureAwait(false)); return true;
-                case "infProdNFF": extraInfProdNFF = await ReadProdutoInfProdNFFAsync(ct).ConfigureAwait(false); return true;
-                case "infProdEmb": extraInfProdEmb = await ReadProdutoInfProdEmbAsync(ct).ConfigureAwait(false); return true;
-                case "veicProd": extraVeicProd = await ReadVeiculoProdutoAsync(ct).ConfigureAwait(false); return true;
-                case "med": extraMed = await ReadMedicamentoAsync(ct).ConfigureAwait(false); return true;
-                case "arma": (extraArma ??= []).Add(await ReadArmamentoAsync(ct).ConfigureAwait(false)); return true;
-                case "comb": extraComb = await ReadCombustivelAsync(ct).ConfigureAwait(false); return true;
-                case "nRECOPI": extraNRECOPI = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                default: return false;
+                case "cBarra":
+                    extraCBarra = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "NVE":
+                    (extraNVE ??= []).Add(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "indEscala":
+                    extraIndEscala = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "CNPJFab":
+                    extraCNPJFab = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "cBenef":
+                    extraCBenef = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "gCred":
+                    (extraGCred ??= []).Add(await ReadProdutoGCredAsync(ct).ConfigureAwait(false));
+                    return true;
+                case "tpCredPresIBSZFM":
+                    extraTpCredPresIBSZFM = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "cBarraTrib":
+                    extraCBarraTrib = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "vFrete":
+                    extraVFrete = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vSeg":
+                    extraVSeg = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vDesc":
+                    extraVDesc = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vOutro":
+                    extraVOutro = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "indBemMovelUsado":
+                    extraIndBemMovelUsado = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "DI":
+                    (extraDI ??= []).Add(await ReadDeclaracaoImportacaoAsync(ct).ConfigureAwait(false));
+                    return true;
+                case "detExport":
+                    (extraDetExport ??= []).Add(await ReadDetalheExportacaoAsync(ct).ConfigureAwait(false));
+                    return true;
+                case "xPed":
+                    extraXPed = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "nItemPed":
+                    extraNItemPed = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "nFCI":
+                    extraNFCI = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "rastro":
+                    (extraRastro ??= []).Add(await ReadRastreabilidadeAsync(ct).ConfigureAwait(false));
+                    return true;
+                case "infProdNFF":
+                    extraInfProdNFF = await ReadProdutoInfProdNFFAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "infProdEmb":
+                    extraInfProdEmb = await ReadProdutoInfProdEmbAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "veicProd":
+                    extraVeicProd = await ReadVeiculoProdutoAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "med":
+                    extraMed = await ReadMedicamentoAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "arma":
+                    (extraArma ??= []).Add(await ReadArmamentoAsync(ct).ConfigureAwait(false));
+                    return true;
+                case "comb":
+                    extraComb = await ReadCombustivelAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "nRECOPI":
+                    extraNRECOPI = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                default:
+                    return false;
             }
+        }
+
+        await _r.ConsumeChildrenAsync(async nome =>
+        {
+            if (nome is "cProd" or "cEAN" or "xProd" or "NCM" or "CEST" or "EXTIPI" or "CFOP" or "uCom" or "qCom" or "vUnCom" or "vProd" or "cEANTrib" or "uTrib" or "qTrib" or "vUnTrib" or "indTot")
+            {
+                string text = await _r.ReadTextAsync().ConfigureAwait(false);
+                switch (nome)
+                {
+                    case "cProd":
+                        cProd = text;
+                        break;
+                    case "cEAN":
+                        cEAN = ParseGtin(text);
+                        break;
+                    case "xProd":
+                        xProd = text;
+                        break;
+                    case "NCM":
+                        ncm = Ncm.Create(text);
+                        break;
+                    case "CEST":
+                        cest = Cest.Create(text);
+                        break;
+                    case "EXTIPI":
+                        extipi = text;
+                        break;
+                    case "CFOP":
+                        cfop = Cfop.Create(text);
+                        break;
+                    case "uCom":
+                        uCom = text;
+                        break;
+                    case "qCom":
+                        qCom = ParseDecimal(text);
+                        break;
+                    case "vUnCom":
+                        vUnCom = ParseDecimal(text);
+                        break;
+                    case "vProd":
+                        vProd = ParseDecimal(text);
+                        break;
+                    case "cEANTrib":
+                        cEANTrib = ParseGtin(text);
+                        break;
+                    case "uTrib":
+                        uTrib = text;
+                        break;
+                    case "qTrib":
+                        qTrib = ParseDecimal(text);
+                        break;
+                    case "vUnTrib":
+                        vUnTrib = ParseDecimal(text);
+                        break;
+                    case "indTot":
+                        indTot = ParseBool(text);
+                        break;
+                }
+                return true;
+            }
+            return await ReadComplementosAsync(nome).ConfigureAwait(false);
         }, _options.Strict, ct).ConfigureAwait(false);
 
         return new Produto
-        { CBarra = extraCBarra, NVE = (IReadOnlyList<string>?)extraNVE ?? [], IndEscala = extraIndEscala, CNPJFab = extraCNPJFab, CBenef = extraCBenef, GCred = (IReadOnlyList<ProdutoGCred>?)extraGCred ?? [], TpCredPresIBSZFM = extraTpCredPresIBSZFM, CBarraTrib = extraCBarraTrib, VFrete = extraVFrete, VSeg = extraVSeg, VDesc = extraVDesc, VOutro = extraVOutro, IndBemMovelUsado = extraIndBemMovelUsado, DI = (IReadOnlyList<DeclaracaoImportacao>?)extraDI ?? [], DetExport = (IReadOnlyList<DetalheExportacao>?)extraDetExport ?? [], XPed = extraXPed, NItemPed = extraNItemPed, NFCI = extraNFCI, Rastro = (IReadOnlyList<Rastreabilidade>?)extraRastro ?? [], InfProdNFF = extraInfProdNFF, InfProdEmb = extraInfProdEmb, VeicProd = extraVeicProd, Med = extraMed, Arma = (IReadOnlyList<Armamento>?)extraArma ?? [], Comb = extraComb, NRECOPI = extraNRECOPI, 
-            CProd = cProd, CEAN = cEAN, XProd = xProd, NCM = ncm, CEST = cest, EXTIPI = extipi,
-            CFOP = cfop, UCom = uCom, QCom = qCom, VUnCom = vUnCom, VProd = vProd,
-            CEANTrib = cEANTrib, UTrib = uTrib, QTrib = qTrib, VUnTrib = vUnTrib, IndTot = indTot,
+        {
+            CBarra = extraCBarra,
+            NVE = (IReadOnlyList<string>?)extraNVE ?? [],
+            IndEscala = extraIndEscala,
+            CNPJFab = extraCNPJFab,
+            CBenef = extraCBenef,
+            GCred = (IReadOnlyList<ProdutoGCred>?)extraGCred ?? [],
+            TpCredPresIBSZFM = extraTpCredPresIBSZFM,
+            CBarraTrib = extraCBarraTrib,
+            VFrete = extraVFrete,
+            VSeg = extraVSeg,
+            VDesc = extraVDesc,
+            VOutro = extraVOutro,
+            IndBemMovelUsado = extraIndBemMovelUsado,
+            DI = (IReadOnlyList<DeclaracaoImportacao>?)extraDI ?? [],
+            DetExport = (IReadOnlyList<DetalheExportacao>?)extraDetExport ?? [],
+            XPed = extraXPed,
+            NItemPed = extraNItemPed,
+            NFCI = extraNFCI,
+            Rastro = (IReadOnlyList<Rastreabilidade>?)extraRastro ?? [],
+            InfProdNFF = extraInfProdNFF,
+            InfProdEmb = extraInfProdEmb,
+            VeicProd = extraVeicProd,
+            Med = extraMed,
+            Arma = (IReadOnlyList<Armamento>?)extraArma ?? [],
+            Comb = extraComb,
+            NRECOPI = extraNRECOPI,
+            CProd = cProd,
+            CEAN = cEAN,
+            XProd = xProd,
+            NCM = ncm,
+            CEST = cest,
+            EXTIPI = extipi,
+            CFOP = cfop,
+            UCom = uCom,
+            QCom = qCom,
+            VUnCom = vUnCom,
+            VProd = vProd,
+            CEANTrib = cEANTrib,
+            UTrib = uTrib,
+            QTrib = qTrib,
+            VUnTrib = vUnTrib,
+            IndTot = indTot,
         };
     }
 
@@ -636,53 +1191,117 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
         {
             switch (nome)
             {
-                case "ICMS": icms = await ReadIcmsAsync(ct).ConfigureAwait(false); return true;
-                case "IPI": ipi = await ReadIpiAsync(ct).ConfigureAwait(false); return true;
-                case "PIS": pis = await ReadPisAsync(ct).ConfigureAwait(false); return true;
-                case "PISST": pisSt = await ReadPisStAsync(ct).ConfigureAwait(false); return true;
-                case "COFINS": cofins = await ReadCofinsAsync(ct).ConfigureAwait(false); return true;
-                case "COFINSST": cofinsSt = await ReadCofinsStAsync(ct).ConfigureAwait(false); return true;
-                case "II": ii = await ReadIiAsync(ct).ConfigureAwait(false); return true;
-                case "ISSQN": issqn = await ReadIssqnAsync(ct).ConfigureAwait(false); return true;
-                case "vTotTrib": vTotTrib = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "ICMSUFDest": extraICMSUFDest = await ReadIcmsUfDestAsync(ct).ConfigureAwait(false); return true;
-                case "IS": extraIS = await ReadImpostoSeletivoAsync(ct).ConfigureAwait(false); return true;
-                case "IBSCBS": extraIBSCBS = await ReadTributacaoIBSCBSAsync(ct).ConfigureAwait(false); return true;
-                default: return false;
+                case "ICMS":
+                    icms = await ReadIcmsAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "IPI":
+                    ipi = await ReadIpiAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "PIS":
+                    pis = await ReadPisAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "PISST":
+                    pisSt = await ReadPisStAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "COFINS":
+                    cofins = await ReadCofinsAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "COFINSST":
+                    cofinsSt = await ReadCofinsStAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "II":
+                    ii = await ReadIiAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "ISSQN":
+                    issqn = await ReadIssqnAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "vTotTrib":
+                    vTotTrib = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "ICMSUFDest":
+                    extraICMSUFDest = await ReadIcmsUfDestAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "IS":
+                    extraIS = await ReadImpostoSeletivoAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "IBSCBS":
+                    extraIBSCBS = await ReadTributacaoIBSCBSAsync(ct).ConfigureAwait(false);
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
 
-        return new Imposto { ICMSUFDest = extraICMSUFDest, IS = extraIS, IBSCBS = extraIBSCBS,  Icms = icms, Ipi = ipi, Pis = pis, PisSt = pisSt, Cofins = cofins, CofinsSt = cofinsSt, Ii = ii, Issqn = issqn, VTotTrib = vTotTrib };
+        return new Imposto { ICMSUFDest = extraICMSUFDest, IS = extraIS, IBSCBS = extraIBSCBS, Icms = icms, Ipi = ipi, Pis = pis, PisSt = pisSt, Cofins = cofins, CofinsSt = cofinsSt, Ii = ii, Issqn = issqn, VTotTrib = vTotTrib };
     }
 
     private async Task<Protocolo> ReadInfProtAsync(CancellationToken ct)
     {
-        TipoAmbiente tpAmb = default; string? verAplic = null; ChaveAcesso chNFe = default; bool chSet = false;
-        DateTimeOffset dhRecbto = default; string? nProt = null, digVal = null, xMotivo = null; int cStat = 0;
+        string? id = _r.GetAttribute("Id");
+        List<string>? cMsg = null, xMsg = null;
+        TipoAmbiente tpAmb = default;
+        string? verAplic = null;
+        ChaveAcesso chNFe = default;
+        bool chSet = false;
+        DateTimeOffset dhRecbto = default;
+        string? nProt = null, digVal = null, xMotivo = null;
+        int cStat = 0;
 
         await _r.ConsumeChildrenAsync(async nome =>
         {
             switch (nome)
             {
-                case "tpAmb": tpAmb = ParseEnum<TipoAmbiente>(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "verAplic": verAplic = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "chNFe": chNFe = ChaveAcesso.Create(await _r.ReadTextAsync().ConfigureAwait(false)); chSet = true; return true;
-                case "dhRecbto": dhRecbto = ParseDate(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "nProt": nProt = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "digVal": digVal = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "cStat": cStat = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "xMotivo": xMotivo = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                // No SERPRO, o protocolo traz o nº como elemento <Id> (não é a chave): consome e descarta.
-                case "Id": await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                default: return false;
+                case "tpAmb":
+                    tpAmb = ParseEnum<TipoAmbiente>(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "verAplic":
+                    verAplic = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "chNFe":
+                    chNFe = ChaveAcesso.Create(await _r.ReadTextAsync().ConfigureAwait(false));
+                    chSet = true;
+                    return true;
+                case "dhRecbto":
+                    dhRecbto = ParseDate(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "nProt":
+                    nProt = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "digVal":
+                    digVal = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "cStat":
+                    cStat = ParseInt(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "xMotivo":
+                    xMotivo = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "Id":
+                    { var v = await _r.ReadTextAsync().ConfigureAwait(false); id ??= v; return true; }
+                case "cMsg":
+                    (cMsg ??= []).Add(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "xMsg":
+                    (xMsg ??= []).Add(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
 
         return new Protocolo
         {
-            TpAmb = tpAmb, VerAplic = verAplic,
+            Id = id,
+            CMsg = (IReadOnlyList<string>?)cMsg ?? [],
+            XMsg = (IReadOnlyList<string>?)xMsg ?? [],
+            TpAmb = tpAmb,
+            VerAplic = verAplic,
             ChNFe = chSet ? chNFe : throw new FormatException("infProt sem chNFe."),
-            DhRecbto = dhRecbto, NProt = nProt, DigVal = digVal, CStat = cStat, XMotivo = xMotivo,
+            DhRecbto = dhRecbto,
+            NProt = nProt,
+            DigVal = digVal,
+            CStat = cStat,
+            XMotivo = xMotivo,
         };
     }
 
@@ -726,4 +1345,3 @@ internal sealed partial class NFeXmlReader(XmlReader reader, ParserNFeOptions op
     private static T ParseEnum<T>(string s) where T : struct, Enum
         => (T)Enum.ToObject(typeof(T), ParseInt(s));
 }
-

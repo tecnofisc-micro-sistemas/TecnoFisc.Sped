@@ -17,12 +17,23 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "orig": extraOrig = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "CST": extraCST = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "qBCMonoRet": extraQBCMonoRet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "adRemICMSRet": extraAdRemICMSRet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vICMSMonoRet": extraVICMSMonoRet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                default: return false;
+                case "orig":
+                    extraOrig = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "CST":
+                    extraCST = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "qBCMonoRet":
+                    extraQBCMonoRet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "adRemICMSRet":
+                    extraAdRemICMSRet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vICMSMonoRet":
+                    extraVICMSMonoRet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new Icms61

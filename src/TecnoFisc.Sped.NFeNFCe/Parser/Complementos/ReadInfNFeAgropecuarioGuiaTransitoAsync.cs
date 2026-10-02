@@ -14,11 +14,20 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "tpGuia": extraTpGuia = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "UFGuia": extraUFGuia = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "serieGuia": extraSerieGuia = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "nGuia": extraNGuia = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                default: return false;
+                case "tpGuia":
+                    extraTpGuia = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "UFGuia":
+                    extraUFGuia = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "serieGuia":
+                    extraSerieGuia = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "nGuia":
+                    extraNGuia = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new InfNFeAgropecuarioGuiaTransito

@@ -13,10 +13,17 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "xNEmp": extraXNEmp = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "xPed": extraXPed = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "xCont": extraXCont = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                default: return false;
+                case "xNEmp":
+                    extraXNEmp = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "xPed":
+                    extraXPed = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "xCont":
+                    extraXCont = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new Compra

@@ -12,9 +12,14 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "vIBSEstCred": extraVIBSEstCred = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vCBSEstCred": extraVCBSEstCred = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                default: return false;
+                case "vIBSEstCred":
+                    extraVIBSEstCred = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vCBSEstCred":
+                    extraVCBSEstCred = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new TributacaoIBSCBSGEstornoCred

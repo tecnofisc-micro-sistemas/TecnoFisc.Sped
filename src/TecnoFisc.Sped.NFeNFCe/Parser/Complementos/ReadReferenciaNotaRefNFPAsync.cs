@@ -18,15 +18,32 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "cUF": extraCUF = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "AAMM": extraAAMM = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "CNPJ": extraCNPJ = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "CPF": extraCPF = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "IE": extraIE = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "mod": extraMod = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "serie": extraSerie = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "nNF": extraNNF = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                default: return false;
+                case "cUF":
+                    extraCUF = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "AAMM":
+                    extraAAMM = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "CNPJ":
+                    extraCNPJ = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "CPF":
+                    extraCPF = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "IE":
+                    extraIE = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "mod":
+                    extraMod = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "serie":
+                    extraSerie = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "nNF":
+                    extraNNF = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new ReferenciaNotaRefNFP

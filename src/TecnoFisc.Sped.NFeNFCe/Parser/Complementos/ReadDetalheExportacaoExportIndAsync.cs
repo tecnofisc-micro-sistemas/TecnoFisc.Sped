@@ -13,10 +13,17 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "nRE": extraNRE = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "chNFe": extraChNFe = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "qExport": extraQExport = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                default: return false;
+                case "nRE":
+                    extraNRE = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "chNFe":
+                    extraChNFe = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "qExport":
+                    extraQExport = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new DetalheExportacaoExportInd

@@ -15,12 +15,23 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "gIBSUF": extraGIBSUF = await ReadTotalIBSCBSGIBSGIBSUFAsync(ct).ConfigureAwait(false); return true;
-                case "gIBSMun": extraGIBSMun = await ReadTotalIBSCBSGIBSGIBSMunAsync(ct).ConfigureAwait(false); return true;
-                case "vIBS": extraVIBS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vCredPres": extraVCredPres = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vCredPresCondSus": extraVCredPresCondSus = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                default: return false;
+                case "gIBSUF":
+                    extraGIBSUF = await ReadTotalIBSCBSGIBSGIBSUFAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "gIBSMun":
+                    extraGIBSMun = await ReadTotalIBSCBSGIBSGIBSMunAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "vIBS":
+                    extraVIBS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vCredPres":
+                    extraVCredPres = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vCredPresCondSus":
+                    extraVCredPresCondSus = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new TotalIBSCBSGIBS

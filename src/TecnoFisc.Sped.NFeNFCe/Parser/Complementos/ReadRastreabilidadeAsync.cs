@@ -16,12 +16,23 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "nLote": extraNLote = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "qLote": extraQLote = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "dFab": extraDFab = DateOnly.Parse(await _r.ReadTextAsync().ConfigureAwait(false), CultureInfo.InvariantCulture); return true;
-                case "dVal": extraDVal = DateOnly.Parse(await _r.ReadTextAsync().ConfigureAwait(false), CultureInfo.InvariantCulture); return true;
-                case "cAgreg": extraCAgreg = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                default: return false;
+                case "nLote":
+                    extraNLote = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "qLote":
+                    extraQLote = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "dFab":
+                    extraDFab = DateOnly.Parse(await _r.ReadTextAsync().ConfigureAwait(false), CultureInfo.InvariantCulture);
+                    return true;
+                case "dVal":
+                    extraDVal = DateOnly.Parse(await _r.ReadTextAsync().ConfigureAwait(false), CultureInfo.InvariantCulture);
+                    return true;
+                case "cAgreg":
+                    extraCAgreg = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new Rastreabilidade

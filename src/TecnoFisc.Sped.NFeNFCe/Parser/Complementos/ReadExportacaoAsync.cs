@@ -13,10 +13,17 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "UFSaidaPais": extraUFSaidaPais = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "xLocExporta": extraXLocExporta = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "xLocDespacho": extraXLocDespacho = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                default: return false;
+                case "UFSaidaPais":
+                    extraUFSaidaPais = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "xLocExporta":
+                    extraXLocExporta = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "xLocDespacho":
+                    extraXLocDespacho = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new Exportacao

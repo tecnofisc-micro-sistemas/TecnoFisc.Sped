@@ -22,17 +22,38 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "orig": extraOrig = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "CST": extraCST = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "qBCMono": extraQBCMono = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "adRemICMS": extraAdRemICMS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vICMSMonoOp": extraVICMSMonoOp = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "pDif": extraPDif = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vICMSMonoDif": extraVICMSMonoDif = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vICMSMono": extraVICMSMono = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "qBCMonoDif": extraQBCMonoDif = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "adRemICMSDif": extraAdRemICMSDif = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                default: return false;
+                case "orig":
+                    extraOrig = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "CST":
+                    extraCST = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "qBCMono":
+                    extraQBCMono = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "adRemICMS":
+                    extraAdRemICMS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vICMSMonoOp":
+                    extraVICMSMonoOp = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "pDif":
+                    extraPDif = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vICMSMonoDif":
+                    extraVICMSMonoDif = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vICMSMono":
+                    extraVICMSMono = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "qBCMonoDif":
+                    extraQBCMonoDif = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "adRemICMSDif":
+                    extraAdRemICMSDif = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new Icms53

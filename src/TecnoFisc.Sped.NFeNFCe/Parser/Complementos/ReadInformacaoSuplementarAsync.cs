@@ -12,9 +12,14 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "qrCode": extraQrCode = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "urlChave": extraUrlChave = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                default: return false;
+                case "qrCode":
+                    extraQrCode = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "urlChave":
+                    extraUrlChave = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new InformacaoSuplementar

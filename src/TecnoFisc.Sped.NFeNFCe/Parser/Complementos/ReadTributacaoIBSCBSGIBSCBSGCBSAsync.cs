@@ -16,13 +16,26 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "pCBS": extraPCBS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "gDif": extraGDif = await ReadTributacaoIBSCBSGIBSCBSGCBSGDifAsync(ct).ConfigureAwait(false); return true;
-                case "gDevTrib": extraGDevTrib = await ReadTributacaoIBSCBSGIBSCBSGCBSGDevTribAsync(ct).ConfigureAwait(false); return true;
-                case "gRed": extraGRed = await ReadTributacaoIBSCBSGIBSCBSGCBSGRedAsync(ct).ConfigureAwait(false); return true;
-                case "gALCZFMCBS": extraGALCZFMCBS = await ReadTributacaoIBSCBSGIBSCBSGCBSGALCZFMCBSAsync(ct).ConfigureAwait(false); return true;
-                case "vCBS": extraVCBS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                default: return false;
+                case "pCBS":
+                    extraPCBS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "gDif":
+                    extraGDif = await ReadTributacaoIBSCBSGIBSCBSGCBSGDifAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "gDevTrib":
+                    extraGDevTrib = await ReadTributacaoIBSCBSGIBSCBSGCBSGDevTribAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "gRed":
+                    extraGRed = await ReadTributacaoIBSCBSGIBSCBSGCBSGRedAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "gALCZFMCBS":
+                    extraGALCZFMCBS = await ReadTributacaoIBSCBSGIBSCBSGCBSGALCZFMCBSAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "vCBS":
+                    extraVCBS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new TributacaoIBSCBSGIBSCBSGCBS

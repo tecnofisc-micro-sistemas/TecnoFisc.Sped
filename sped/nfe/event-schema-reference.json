@@ -1,0 +1,40 @@
+{
+  "package": "Evento Cancelamento v1.00 (2018-12-21)",
+  "url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=0Yynu2Ck%2BbM%3D",
+  "retrieved": "2026-10-02",
+  "archiveSha256": "71CCD5FCC48F9604A2A8965146DF45E3B73E96E87942AB3391BE0D55CC0DF718",
+  "files": [
+    {
+      "name": "e110111_v1.00.xsd",
+      "sha256": "56FCDAD336B281A9DE5E7AAE27850BC2C5BD7714E267C891E1B4D0DC227C65DA"
+    },
+    {
+      "name": "envEventoCancNFe_v1.00.xsd",
+      "sha256": "D3F1550B1C3FA6974690CC27E5B74A55FBEC3DD11ECDD2992FBCD248B015D534"
+    },
+    {
+      "name": "eventoCancNFe_v1.00.xsd",
+      "sha256": "3E5A2840A42F1F66BBBCB21066DCDE6AA90407C1EF05456AD9AC38456D96982D"
+    },
+    {
+      "name": "leiauteEventoCancNFe_v1.00.xsd",
+      "sha256": "9426EC0D8E3CE441C78D61CF2BD8B6910B7B1CC377A0B337A5A1A9DBE438A66F"
+    },
+    {
+      "name": "procEventoCancNFe_v1.00.xsd",
+      "sha256": "7E85DA1583DF86AEE753400286D4AAD48160846090CD6ECD2C1400FED4AFAA69"
+    },
+    {
+      "name": "retEnvEventoCancNFe_v1.00.xsd",
+      "sha256": "A0A81BF59C9C166F4061F52F8D74CD7AA21BDC1BD8C9B0E0B8BC44D0DF34E665"
+    },
+    {
+      "name": "tiposBasico_v1.03.xsd",
+      "sha256": "486F7B7E2AC053EDDF87661858FBEB171F8DCE2E805D501D388665269C95DBF3"
+    },
+    {
+      "name": "xmldsig-core-schema_v1.01.xsd",
+      "sha256": "8CE2A385B593C85ACF09CB03521F9E730DAD2B2E6A5D02CC6F5B688CA94CE230"
+    }
+  ]
+}

@@ -10,6 +10,8 @@ from inventory import Schema, XS
 
 ROOT = Path(__file__).resolve().parents[2]
 SRC = ROOT / 'src/TecnoFisc.Sped.NFeNFCe'
+if (SRC/'Modelos/Complementos').exists():
+    raise SystemExit('One-shot scaffold already applied. Edit/review the committed C#; do not overwrite it.')
 schema = Schema(ROOT / 'sped/nfe/schemas')
 files = {p: p.read_text(encoding='utf-8-sig') for p in (SRC/'Parser').glob('NFeXmlReader*.cs') if 'Complementos' not in p.name}
 methods = {}

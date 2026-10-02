@@ -23,19 +23,44 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "vServ": extraVServ = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vBC": extraVBC = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vISS": extraVISS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vPIS": extraVPIS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vCOFINS": extraVCOFINS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "dCompet": extraDCompet = DateOnly.Parse(await _r.ReadTextAsync().ConfigureAwait(false), CultureInfo.InvariantCulture); return true;
-                case "vDeducao": extraVDeducao = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vOutro": extraVOutro = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vDescIncond": extraVDescIncond = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vDescCond": extraVDescCond = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vISSRet": extraVISSRet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "cRegTrib": extraCRegTrib = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                default: return false;
+                case "vServ":
+                    extraVServ = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vBC":
+                    extraVBC = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vISS":
+                    extraVISS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vPIS":
+                    extraVPIS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vCOFINS":
+                    extraVCOFINS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "dCompet":
+                    extraDCompet = DateOnly.Parse(await _r.ReadTextAsync().ConfigureAwait(false), CultureInfo.InvariantCulture);
+                    return true;
+                case "vDeducao":
+                    extraVDeducao = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vOutro":
+                    extraVOutro = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vDescIncond":
+                    extraVDescIncond = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vDescCond":
+                    extraVDescCond = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vISSRet":
+                    extraVISSRet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "cRegTrib":
+                    extraCRegTrib = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new TotalIssqn

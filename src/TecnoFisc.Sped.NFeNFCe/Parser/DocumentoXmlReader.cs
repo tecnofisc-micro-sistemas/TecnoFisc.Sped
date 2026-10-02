@@ -1,6 +1,5 @@
 using System.Runtime.CompilerServices;
 using System.Xml;
-using TecnoFisc.Sped.NFeNFCe.IO;
 using TecnoFisc.Sped.Xml.Engine;
 using TecnoFisc.Sped.Core.ValueObjects;
 
@@ -23,39 +22,45 @@ internal sealed class DocumentoXmlReader(XmlReader reader, ParserNFeOptions opti
             {
                 if (pending is not null)
                 {
-                    if (noteCount != 1 || contextKey is null) throw new FormatException("Resumo de evento sem contexto de chave inequívoco.");
-                    foreach (var evt in pending) yield return evt with { ChaveAcesso = contextKey.Value };
+                    if (noteCount != 1 || contextKey is null)
+                        throw new FormatException("Resumo de evento sem contexto de chave inequívoco.");
+                    foreach (var evt in pending)
+                        yield return evt with { ChaveAcesso = contextKey.Value };
                 }
                 pending = null;
                 contextKey = null;
                 noteCount = 0;
                 logDepth = -1;
             }
-            if (reader.NodeType != XmlNodeType.Element) continue;
+            if (reader.NodeType != XmlNodeType.Element)
+                continue;
             if (reader.LocalName == "NFeLog" && IsFiscal(reader))
             {
-                if (logDepth >= 0) throw new FormatException("NFeLog aninhado não suportado.");
+                if (logDepth >= 0)
+                    throw new FormatException("NFeLog aninhado não suportado.");
                 logDepth = reader.Depth;
             }
             if (IsFiscal(reader) && reader.LocalName is "procEventoNFe" or "evento" or "eventoNFe")
             {
-                using var eventTree = new GuardedXmlReader(reader.ReadSubtree(), options, ct);
-                var evt = await new EventoXmlReader(eventTree, options).ReadAsync(ct).ConfigureAwait(false);
+                var evt = await new EventoXmlReader(reader, options).ReadAsync(ct).ConfigureAwait(false);
                 if (evt.ChaveAcesso == default)
                 {
-                    if (logDepth < 0) throw new FormatException("Resumo de evento sem chave/contexto SERPRO.");
+                    if (logDepth < 0)
+                        throw new FormatException("Resumo de evento sem chave/contexto SERPRO.");
                     (pending ??= []).Add(evt);
                 }
-                else yield return evt;
+                else
+                    yield return evt;
                 continue;
             }
-            if (IsFiscal(reader) && reader.LocalName is "nfeProc" or "procNFe" or "NFe" or "infNFe")
+            if (IsFiscal(reader) && reader.LocalName is "nfeProc" or "procNFe" or "NFe")
             {
                 string? version = reader.GetAttribute("versao");
-                using var subtree = new GuardedXmlReader(reader.ReadSubtree(), options, ct);
-                var note = await new NFeXmlReader(subtree, options).ReadAsync(ct).ConfigureAwait(false);
-                if (logDepth >= 0) { contextKey = note.ChaveAcesso; noteCount++; }
-                if (note.Versao.Length == 0 && version is not null) note = note with { Versao = version };
+                var note = await new NFeXmlReader(reader, options).ReadAsync(ct, positioned: true).ConfigureAwait(false);
+                if (logDepth >= 0)
+                { contextKey = note.ChaveAcesso; noteCount++; }
+                if (note.Versao.Length == 0 && version is not null)
+                    note = note with { Versao = version };
                 yield return note.Ide.Mod.Codigo switch
                 {
                     "55" => note,

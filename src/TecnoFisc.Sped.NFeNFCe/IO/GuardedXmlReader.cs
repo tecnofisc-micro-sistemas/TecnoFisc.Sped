@@ -11,15 +11,31 @@ internal sealed class GuardedXmlReader(XmlReader inner, ParserNFeOptions options
             throw new LimiteLeituraException($"Profundidade XML excede {options.MaxXmlDepth}.");
         return result;
     }
-    public void ReportIgnored() => options.OnIgnoredElement?.Invoke(new(NamespaceURI, LocalName, LineNumber, LinePosition));
+    public void ReportIgnored()
+    {
+        if (options.OnIgnoredElement is not { } callback)
+            return;
+        try
+        { callback(new(NamespaceURI, LocalName, LineNumber, LinePosition)); }
+        catch (Exception error) { throw new FalhaCallbackXmlException("Falha no callback OnIgnoredElement.", error); }
+    }
     public override bool Read() => Check(inner.Read());
-    public override async Task<bool> ReadAsync() => Check(await inner.ReadAsync().ConfigureAwait(false));
+    public override Task<bool> ReadAsync()
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        Task<bool> task = inner.ReadAsync();
+        if (task.IsCompletedSuccessfully)
+        { Check(task.Result); return task; }
+        return AwaitReadAsync(task);
+    }
+    private async Task<bool> AwaitReadAsync(Task<bool> task) => Check(await task.ConfigureAwait(false));
     public override async Task SkipAsync()
     {
         if (NodeType == XmlNodeType.Element && !IsEmptyElement)
         {
             int depth = Depth;
-            while (await ReadAsync().ConfigureAwait(false) && Depth > depth) { }
+            while (await ReadAsync().ConfigureAwait(false) && Depth > depth)
+            { }
         }
         await ReadAsync().ConfigureAwait(false);
     }
@@ -28,14 +44,23 @@ internal sealed class GuardedXmlReader(XmlReader inner, ParserNFeOptions options
         if (NodeType == XmlNodeType.Element && !IsEmptyElement)
         {
             int depth = Depth;
-            while (Read() && Depth > depth) { }
+            while (Read() && Depth > depth)
+            { }
         }
         Read();
     }
-    public override async Task<string> ReadElementContentAsStringAsync()
+    public override Task<string> ReadElementContentAsStringAsync()
     {
         cancellationToken.ThrowIfCancellationRequested();
-        string value = await inner.ReadElementContentAsStringAsync().ConfigureAwait(false);
+        Task<string> task = inner.ReadElementContentAsStringAsync();
+        if (!task.IsCompletedSuccessfully)
+            return AwaitTextAsync(task);
+        Check(!inner.EOF);
+        return task;
+    }
+    private async Task<string> AwaitTextAsync(Task<string> task)
+    {
+        string value = await task.ConfigureAwait(false);
         Check(!inner.EOF);
         return value;
     }

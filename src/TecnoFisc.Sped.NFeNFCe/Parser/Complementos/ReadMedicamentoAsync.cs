@@ -13,10 +13,17 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "cProdANVISA": extraCProdANVISA = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "xMotivoIsencao": extraXMotivoIsencao = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "vPMC": extraVPMC = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                default: return false;
+                case "cProdANVISA":
+                    extraCProdANVISA = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "xMotivoIsencao":
+                    extraXMotivoIsencao = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "vPMC":
+                    extraVPMC = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new Medicamento

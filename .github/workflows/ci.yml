@@ -50,6 +50,9 @@ jobs:
       - name: Restore
         run: dotnet restore TecnoFisc.Sped.slnx
 
+      - name: NF-e schema inventory tests
+        run: python -m unittest discover -s tools/nfe-schema -p test_*.py
+
       - name: Build
         run: dotnet build TecnoFisc.Sped.slnx --configuration Release --no-restore
 

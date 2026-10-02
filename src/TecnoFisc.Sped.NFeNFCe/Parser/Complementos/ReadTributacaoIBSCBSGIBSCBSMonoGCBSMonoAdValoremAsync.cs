@@ -14,11 +14,20 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "gMonoPadrao": extraGMonoPadrao = await ReadTributacaoIBSCBSGIBSCBSMonoGCBSMonoAdValoremGMonoPadraoAsync(ct).ConfigureAwait(false); return true;
-                case "gMonoReten": extraGMonoReten = await ReadTributacaoIBSCBSGIBSCBSMonoGCBSMonoAdValoremGMonoRetenAsync(ct).ConfigureAwait(false); return true;
-                case "gMonoRet": extraGMonoRet = await ReadTributacaoIBSCBSGIBSCBSMonoGCBSMonoAdValoremGMonoRetAsync(ct).ConfigureAwait(false); return true;
-                case "gpBioDiferenca": extraGpBioDiferenca = await ReadTributacaoIBSCBSGIBSCBSMonoGCBSMonoAdValoremGpBioDiferencaAsync(ct).ConfigureAwait(false); return true;
-                default: return false;
+                case "gMonoPadrao":
+                    extraGMonoPadrao = await ReadTributacaoIBSCBSGIBSCBSMonoGCBSMonoAdValoremGMonoPadraoAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "gMonoReten":
+                    extraGMonoReten = await ReadTributacaoIBSCBSGIBSCBSMonoGCBSMonoAdValoremGMonoRetenAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "gMonoRet":
+                    extraGMonoRet = await ReadTributacaoIBSCBSGIBSCBSMonoGCBSMonoAdValoremGMonoRetAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "gpBioDiferenca":
+                    extraGpBioDiferenca = await ReadTributacaoIBSCBSGIBSCBSMonoGCBSMonoAdValoremGpBioDiferencaAsync(ct).ConfigureAwait(false);
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new TributacaoIBSCBSGIBSCBSMonoGCBSMonoAdValorem

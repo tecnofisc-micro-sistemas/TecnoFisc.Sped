@@ -14,11 +14,20 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "tpEnteGov": extraTpEnteGov = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "pRedutor": extraPRedutor = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "tpOperGov": extraTpOperGov = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "refDFeAnt": (extraRefDFeAnt ??= []).Add(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                default: return false;
+                case "tpEnteGov":
+                    extraTpEnteGov = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "pRedutor":
+                    extraPRedutor = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "tpOperGov":
+                    extraTpOperGov = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "refDFeAnt":
+                    (extraRefDFeAnt ??= []).Add(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new IdentificacaoGCompraGov

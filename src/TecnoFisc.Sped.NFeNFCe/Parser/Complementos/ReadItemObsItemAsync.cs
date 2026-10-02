@@ -12,9 +12,14 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "obsCont": extraObsCont = await ReadItemObsItemObsContAsync(ct).ConfigureAwait(false); return true;
-                case "obsFisco": extraObsFisco = await ReadItemObsItemObsFiscoAsync(ct).ConfigureAwait(false); return true;
-                default: return false;
+                case "obsCont":
+                    extraObsCont = await ReadItemObsItemObsContAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "obsFisco":
+                    extraObsFisco = await ReadItemObsItemObsFiscoAsync(ct).ConfigureAwait(false);
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new ItemObsItem

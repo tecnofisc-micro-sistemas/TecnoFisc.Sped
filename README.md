@@ -20,8 +20,9 @@ publicados pelos projetos do **SPED — Sistema Público de Escrituração Digit
 > o antigo `Core` monolítico em `Core` universal + engines `Txt.Engine`/`Xml.Engine` (Stage 18),
 > adiciona os guarda-chuvas `TecnoFisc.Sped.Txt` e `TecnoFisc.Sped` (Stage 13) e os sniffers
 > de identificação de documento por mundo (Stage 12). Estreia ainda, em **preview**, o pacote
-> XML `TecnoFisc.Sped.NFeNFCe` — cobertura atual limitada a **NF-e modelo 55 parcial** (NFC-e 65,
-> eventos e os grupos transp/cobr/pag/protNFe ainda em desenvolvimento). Próximos passos
+> XML `TecnoFisc.Sped.NFeNFCe` — nesta branch, leitura tipada de **NF-e 55 e NFC-e 65**,
+> eventos e importação streaming de XML/ZIP, com cobertura fixada no PL_010f_v1.04.
+> Veja o [guia de importação](docs/nfe-importacao.md). Próximos passos
 > rastreados no `ARCHITECTURE.md`; o CT-e permanece planejado como read-only. A `0.8.0`
 > adiciona o sniffer fiscal TXT opt-in para extrair CNPJ e período do registro `0000`. A `0.9.0`
 > adiciona **parsing tolerante opt-in** no leitor TXT (`ReadingOptions.LenientFieldParsing` e
@@ -56,7 +57,7 @@ pacote afetado é versionado.
 | EFD Contribuições | `TecnoFisc.Sped.EfdContribuicoes` | **1.0.0** — leiaute V006 completo (leitura + geração) |
 | EFD ICMS-IPI | `TecnoFisc.Sped.EfdIcmsIpi` | **1.0.0** — baseline V015 + incrementos V016 → V020 (vigente), **read-only** |
 | ECD | `TecnoFisc.Sped.Ecd` | **1.0.0** — baseline leiaute 9 completo (vigente), **read-only** |
-| NF-e / NFC-e | `TecnoFisc.Sped.NFeNFCe` | **1.0.0 preview** — só NF-e modelo 55 parcial (XML, read-only); NFC-e 65 e eventos em desenvolvimento |
+| NF-e / NFC-e | `TecnoFisc.Sped.NFeNFCe` | **preview** — nesta branch: NF-e 55/NFC-e 65 4.00, eventos e XML/ZIP em streaming; [guia](docs/nfe-importacao.md) |
 | CT-e | `TecnoFisc.Sped.CTe` | planejado (XML, read-only) |
 | ECF | `TecnoFisc.Sped.Ecf` | **1.0.0** (estreia) — modelo tipado do leiaute 12 com leitura dos leiautes 8 → 12 (registros e colunas exclusivos dos leiautes 8 a 10 são reconhecidos, não tipados: sem propriedade tipada, conteúdo bruto em `ColunasNaoModeladas`), **read-only** |
 | Guarda-chuva TXT | `TecnoFisc.Sped.Txt` | **1.0.0** — agrega EFD Contribuições, EFD ICMS-IPI, ECD e ECF |
@@ -65,7 +66,7 @@ pacote afetado é versionado.
 
 > **Modo de operação.** O único pacote com geração de arquivo confirmada é
 > `TecnoFisc.Sped.EfdContribuicoes` (leitura + escrita, round-trip simétrico). Todos
-> os demais — EFD ICMS-IPI, ECD e ECF (implementados), NFeNFCe (preview, NF-e 55 parcial)
+> os demais — EFD ICMS-IPI, ECD e ECF (implementados), NFeNFCe (preview, NF-e/NFC-e e eventos)
 > e CT-e (planejado) — são **read-only** (parser + modelo tipado). Promoção para
 > read+write em qualquer um deles depende de confirmação externa e entra como stage
 > dedicada (`ARCHITECTURE.md` §2.5).

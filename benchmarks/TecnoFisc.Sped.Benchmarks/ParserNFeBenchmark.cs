@@ -87,7 +87,7 @@ public class ParserNFeBenchmark
         return sb.ToString();
     }
 
-    private static string GerarCanonico(int qtd) =>
+    internal static string GerarCanonico(int qtd) =>
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
         "<nfeProc versao=\"4.00\" xmlns=\"http://www.portalfiscal.inf.br/nfe\"><NFe>" +
         $"<infNFe Id=\"NFe{Chave}\" versao=\"4.00\">{Ide()}{Emit()}{Dest()}{Itens(qtd)}{Total()}</infNFe>" +

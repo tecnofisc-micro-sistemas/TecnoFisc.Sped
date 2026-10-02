@@ -4,6 +4,28 @@ namespace TecnoFisc.Sped.NFeNFCe.Tests.Streaming;
 
 public sealed class ReadLimitsTests
 {
+    [Fact]
+    public async Task UnknownUnitChildIsReportedAndStrictRejectsIt()
+    {
+        string xml = Fixture.Replace("</nfeProc>", "<future><infProt/></future></nfeProc>", StringComparison.Ordinal);
+        var names = new List<string>();
+        using var input = new MemoryStream(Encoding.UTF8.GetBytes(xml));
+        await new ParserNFe(new() { OnIgnoredElement = item => names.Add(item.Nome) }).ReadNFeAsync(input, TestContext.Current.CancellationToken);
+        names.Should().Contain("future");
+        input.Position = 0;
+        await Assert.ThrowsAsync<FormatException>(() => new ParserNFe(new() { Strict = true }).ReadNFeAsync(input, TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
+    public async Task ScalarTextPreservesCdataFragmentsAndRejectsNestedElements()
+    {
+        string xml = System.Text.RegularExpressions.Regex.Replace(Fixture, "<xProd>[^<]*</xProd>", "<xProd> A<![CDATA[&B]]><!--comment--> C </xProd>");
+        using var input = new MemoryStream(Encoding.UTF8.GetBytes(xml));
+        var note = await new ParserNFe().ReadNFeAsync(input, TestContext.Current.CancellationToken);
+        note.Itens[0].Prod.XProd.Should().Be("A&B C");
+        using var invalid = new MemoryStream(Encoding.UTF8.GetBytes(xml.Replace("<![CDATA[&B]]>", "<nested/>", StringComparison.Ordinal)));
+        await Assert.ThrowsAsync<System.Xml.XmlException>(() => new ParserNFe().ReadNFeAsync(invalid, TestContext.Current.CancellationToken));
+    }
     internal static string Fixture => File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "nfe55-icms60-canonico.xml"));
 
     [Fact]

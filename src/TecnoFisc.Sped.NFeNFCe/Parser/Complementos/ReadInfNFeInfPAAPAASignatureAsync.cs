@@ -12,9 +12,14 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "SignatureValue": extraSignatureValue = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "RSAKeyValue": extraRSAKeyValue = await ReadInfNFeInfPAAPAASignatureRSAKeyValueAsync(ct).ConfigureAwait(false); return true;
-                default: return false;
+                case "SignatureValue":
+                    extraSignatureValue = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "RSAKeyValue":
+                    extraRSAKeyValue = await ReadInfNFeInfPAAPAASignatureRSAKeyValueAsync(ct).ConfigureAwait(false);
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new InfNFeInfPAAPAASignature

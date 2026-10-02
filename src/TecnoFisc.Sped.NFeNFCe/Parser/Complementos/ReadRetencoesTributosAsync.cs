@@ -17,14 +17,29 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "vRetPIS": extraVRetPIS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vRetCOFINS": extraVRetCOFINS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vRetCSLL": extraVRetCSLL = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vBCIRRF": extraVBCIRRF = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vIRRF": extraVIRRF = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vBCRetPrev": extraVBCRetPrev = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vRetPrev": extraVRetPrev = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                default: return false;
+                case "vRetPIS":
+                    extraVRetPIS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vRetCOFINS":
+                    extraVRetCOFINS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vRetCSLL":
+                    extraVRetCSLL = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vBCIRRF":
+                    extraVBCIRRF = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vIRRF":
+                    extraVIRRF = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vBCRetPrev":
+                    extraVBCRetPrev = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vRetPrev":
+                    extraVRetPrev = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new RetencoesTributos

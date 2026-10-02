@@ -19,15 +19,32 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "indPag": extraIndPag = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "tPag": extraTPag = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "xPag": extraXPag = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "vPag": extraVPag = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "dPag": extraDPag = DateOnly.Parse(await _r.ReadTextAsync().ConfigureAwait(false), CultureInfo.InvariantCulture); return true;
-                case "CNPJPag": extraCNPJPag = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "UFPag": extraUFPag = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "card": extraCard = await ReadPagamentoDetPagCardAsync(ct).ConfigureAwait(false); return true;
-                default: return false;
+                case "indPag":
+                    extraIndPag = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "tPag":
+                    extraTPag = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "xPag":
+                    extraXPag = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "vPag":
+                    extraVPag = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "dPag":
+                    extraDPag = DateOnly.Parse(await _r.ReadTextAsync().ConfigureAwait(false), CultureInfo.InvariantCulture);
+                    return true;
+                case "CNPJPag":
+                    extraCNPJPag = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "UFPag":
+                    extraUFPag = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "card":
+                    extraCard = await ReadPagamentoDetPagCardAsync(ct).ConfigureAwait(false);
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new PagamentoDetPag

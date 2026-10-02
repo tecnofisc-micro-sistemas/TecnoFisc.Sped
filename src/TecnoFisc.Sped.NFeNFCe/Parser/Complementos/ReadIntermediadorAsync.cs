@@ -12,9 +12,14 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "CNPJ": extraCNPJ = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "idCadIntTran": extraIdCadIntTran = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                default: return false;
+                case "CNPJ":
+                    extraCNPJ = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "idCadIntTran":
+                    extraIdCadIntTran = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new Intermediador

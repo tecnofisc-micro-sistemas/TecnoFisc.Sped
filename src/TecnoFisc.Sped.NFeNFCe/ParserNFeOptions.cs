@@ -43,8 +43,8 @@ public sealed class ParserNFeOptions
     public bool Strict { get; init; }
 
     /// <summary>
-    /// Quando <c>true</c> (padrão), valida o dígito verificador da chave de acesso e demais
-    /// value objects (GTIN, etc.) na construção do modelo.
+    /// Quando <c>true</c> (padrão), valida o GTIN. Chave de acesso e documentos fiscais
+    /// mantêm as validações obrigatórias de seus value objects independentemente desta opção.
     /// </summary>
     public bool ValidateChecksums { get; init; } = true;
 
@@ -64,7 +64,7 @@ public sealed class ParserNFeOptions
 
     /// <summary>
     /// Quando <c>true</c> (padrão), a primeira falha de parse interrompe a leitura. Quando
-    /// <c>false</c>, em <c>ReadDirectoryAsync</c> o arquivo com erro é logado e pulado.
+    /// <c>false</c>, as APIs de importação emitem um resultado com erro por origem e continuam quando recuperável.
     /// </summary>
     public bool FailFast { get; init; } = true;
 }

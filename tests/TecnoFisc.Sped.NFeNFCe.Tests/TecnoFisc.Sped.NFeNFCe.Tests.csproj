@@ -26,6 +26,8 @@
   <ItemGroup>
     <!-- Fixtures XML anonimizadas: copiadas para a saída para os testes E2E. -->
     <None Include="Fixtures\**\*.xml" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Fixtures\**\*.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\sped\nfe\**\*" Link="Schema\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

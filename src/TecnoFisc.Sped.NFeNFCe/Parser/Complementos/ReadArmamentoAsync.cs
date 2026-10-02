@@ -14,11 +14,20 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "tpArma": extraTpArma = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "nSerie": extraNSerie = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "nCano": extraNCano = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "descr": extraDescr = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                default: return false;
+                case "tpArma":
+                    extraTpArma = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "nSerie":
+                    extraNSerie = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "nCano":
+                    extraNCano = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "descr":
+                    extraDescr = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new Armamento

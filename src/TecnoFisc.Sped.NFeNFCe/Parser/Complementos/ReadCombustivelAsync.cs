@@ -23,20 +23,47 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "cProdANP": extraCProdANP = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "descANP": extraDescANP = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "pGLP": extraPGLP = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "pGNn": extraPGNn = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "pGNi": extraPGNi = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vPart": extraVPart = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "CODIF": extraCODIF = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "qTemp": extraQTemp = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "UFCons": extraUFCons = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "CIDE": extraCIDE = await ReadCombustivelCIDEAsync(ct).ConfigureAwait(false); return true;
-                case "encerrante": extraEncerrante = await ReadCombustivelEncerranteAsync(ct).ConfigureAwait(false); return true;
-                case "pBio": extraPBio = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "origComb": (extraOrigComb ??= []).Add(await ReadCombustivelOrigCombAsync(ct).ConfigureAwait(false)); return true;
-                default: return false;
+                case "cProdANP":
+                    extraCProdANP = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "descANP":
+                    extraDescANP = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "pGLP":
+                    extraPGLP = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "pGNn":
+                    extraPGNn = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "pGNi":
+                    extraPGNi = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vPart":
+                    extraVPart = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "CODIF":
+                    extraCODIF = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "qTemp":
+                    extraQTemp = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "UFCons":
+                    extraUFCons = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "CIDE":
+                    extraCIDE = await ReadCombustivelCIDEAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "encerrante":
+                    extraEncerrante = await ReadCombustivelEncerranteAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "pBio":
+                    extraPBio = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "origComb":
+                    (extraOrigComb ??= []).Add(await ReadCombustivelOrigCombAsync(ct).ConfigureAwait(false));
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new Combustivel

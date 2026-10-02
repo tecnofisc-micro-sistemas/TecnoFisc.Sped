@@ -13,10 +13,17 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "indImport": extraIndImport = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "cUFOrig": extraCUFOrig = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "pOrig": extraPOrig = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                default: return false;
+                case "indImport":
+                    extraIndImport = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "cUFOrig":
+                    extraCUFOrig = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "pOrig":
+                    extraPOrig = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new CombustivelOrigComb

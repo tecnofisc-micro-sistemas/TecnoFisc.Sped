@@ -17,14 +17,29 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "CNPJ": extraCNPJ = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "CPF": extraCPF = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "xNome": extraXNome = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "IE": extraIE = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "xEnder": extraXEnder = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "xMun": extraXMun = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "UF": extraUF = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                default: return false;
+                case "CNPJ":
+                    extraCNPJ = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "CPF":
+                    extraCPF = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "xNome":
+                    extraXNome = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "IE":
+                    extraIE = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "xEnder":
+                    extraXEnder = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "xMun":
+                    extraXMun = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "UF":
+                    extraUF = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new TransporteTransporta

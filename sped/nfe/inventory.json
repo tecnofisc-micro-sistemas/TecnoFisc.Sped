@@ -10938,5 +10938,135 @@
     "path": "TNFe/infNFeSupl/urlChave",
     "type": null,
     "base": "string"
+  },
+  {
+    "name": "infProt",
+    "attribute": false,
+    "min": 1,
+    "max": 1,
+    "choice": false,
+    "path": "TProtNFe/infProt",
+    "type": null,
+    "base": "complex"
+  },
+  {
+    "name": "tpAmb",
+    "attribute": false,
+    "min": 1,
+    "max": 1,
+    "choice": false,
+    "path": "TProtNFe/infProt/tpAmb",
+    "type": "TAmb",
+    "base": "string"
+  },
+  {
+    "name": "verAplic",
+    "attribute": false,
+    "min": 1,
+    "max": 1,
+    "choice": false,
+    "path": "TProtNFe/infProt/verAplic",
+    "type": "TVerAplic",
+    "base": "string"
+  },
+  {
+    "name": "chNFe",
+    "attribute": false,
+    "min": 1,
+    "max": 1,
+    "choice": false,
+    "path": "TProtNFe/infProt/chNFe",
+    "type": "TChNFe",
+    "base": "string"
+  },
+  {
+    "name": "dhRecbto",
+    "attribute": false,
+    "min": 1,
+    "max": 1,
+    "choice": false,
+    "path": "TProtNFe/infProt/dhRecbto",
+    "type": "TDateTimeUTC",
+    "base": "dateTime"
+  },
+  {
+    "name": "nProt",
+    "attribute": false,
+    "min": 0,
+    "max": 1,
+    "choice": false,
+    "path": "TProtNFe/infProt/nProt",
+    "type": "TProt",
+    "base": "string"
+  },
+  {
+    "name": "digVal",
+    "attribute": false,
+    "min": 0,
+    "max": 1,
+    "choice": false,
+    "path": "TProtNFe/infProt/digVal",
+    "type": "ds:DigestValueType",
+    "base": "base64Binary"
+  },
+  {
+    "name": "cStat",
+    "attribute": false,
+    "min": 1,
+    "max": 1,
+    "choice": false,
+    "path": "TProtNFe/infProt/cStat",
+    "type": "TStat",
+    "base": "string"
+  },
+  {
+    "name": "xMotivo",
+    "attribute": false,
+    "min": 1,
+    "max": 1,
+    "choice": false,
+    "path": "TProtNFe/infProt/xMotivo",
+    "type": "TMotivo",
+    "base": "string"
+  },
+  {
+    "name": "cMsg",
+    "attribute": false,
+    "min": 0,
+    "max": 5,
+    "choice": false,
+    "path": "TProtNFe/infProt/cMsg",
+    "type": null,
+    "base": "string"
+  },
+  {
+    "name": "xMsg",
+    "attribute": false,
+    "min": 0,
+    "max": 5,
+    "choice": false,
+    "path": "TProtNFe/infProt/xMsg",
+    "type": null,
+    "base": "string"
+  },
+  {
+    "name": "Id",
+    "attribute": true,
+    "min": 0,
+    "max": 1,
+    "choice": false,
+    "path": "TProtNFe/infProt/@Id",
+    "type": "xs:ID",
+    "base": "ID"
+  },
+  {
+    "name": "versao",
+    "attribute": true,
+    "min": 1,
+    "max": 1,
+    "choice": false,
+    "path": "TProtNFe/@versao",
+    "type": "TVerNFe",
+    "base": "string"
   }
 ]

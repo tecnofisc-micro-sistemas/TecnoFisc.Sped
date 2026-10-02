@@ -12,9 +12,14 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "nDraw": extraNDraw = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "exportInd": extraExportInd = await ReadDetalheExportacaoExportIndAsync(ct).ConfigureAwait(false); return true;
-                default: return false;
+                case "nDraw":
+                    extraNDraw = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "exportInd":
+                    extraExportInd = await ReadDetalheExportacaoExportIndAsync(ct).ConfigureAwait(false);
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new DetalheExportacao

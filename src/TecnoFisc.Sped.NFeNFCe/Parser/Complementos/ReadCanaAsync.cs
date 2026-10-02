@@ -20,17 +20,38 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "safra": extraSafra = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "ref": extraRef = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "forDia": (extraForDia ??= []).Add(await ReadCanaForDiaAsync(ct).ConfigureAwait(false)); return true;
-                case "qTotMes": extraQTotMes = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "qTotAnt": extraQTotAnt = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "qTotGer": extraQTotGer = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "deduc": (extraDeduc ??= []).Add(await ReadCanaDeducAsync(ct).ConfigureAwait(false)); return true;
-                case "vFor": extraVFor = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vTotDed": extraVTotDed = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vLiqFor": extraVLiqFor = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                default: return false;
+                case "safra":
+                    extraSafra = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "ref":
+                    extraRef = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "forDia":
+                    (extraForDia ??= []).Add(await ReadCanaForDiaAsync(ct).ConfigureAwait(false));
+                    return true;
+                case "qTotMes":
+                    extraQTotMes = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "qTotAnt":
+                    extraQTotAnt = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "qTotGer":
+                    extraQTotGer = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "deduc":
+                    (extraDeduc ??= []).Add(await ReadCanaDeducAsync(ct).ConfigureAwait(false));
+                    return true;
+                case "vFor":
+                    extraVFor = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vTotDed":
+                    extraVTotDed = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vLiqFor":
+                    extraVLiqFor = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new Cana

@@ -12,9 +12,14 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "qBCBioComb": extraQBCBioComb = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vIBSDiferenca": extraVIBSDiferenca = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                default: return false;
+                case "qBCBioComb":
+                    extraQBCBioComb = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vIBSDiferenca":
+                    extraVIBSDiferenca = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new TributacaoIBSCBSGIBSCBSMonoGIBSMonoAdValoremGpBioDiferenca

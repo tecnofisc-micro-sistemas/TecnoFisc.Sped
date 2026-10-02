@@ -15,12 +15,23 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "vBCIBSCBS": extraVBCIBSCBS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "gIBS": extraGIBS = await ReadTotalIBSCBSGIBSAsync(ct).ConfigureAwait(false); return true;
-                case "gCBS": extraGCBS = await ReadTotalIBSCBSGCBSAsync(ct).ConfigureAwait(false); return true;
-                case "gMono": extraGMono = await ReadTotalIBSCBSGMonoAsync(ct).ConfigureAwait(false); return true;
-                case "gEstornoCred": extraGEstornoCred = await ReadTotalIBSCBSGEstornoCredAsync(ct).ConfigureAwait(false); return true;
-                default: return false;
+                case "vBCIBSCBS":
+                    extraVBCIBSCBS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "gIBS":
+                    extraGIBS = await ReadTotalIBSCBSGIBSAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "gCBS":
+                    extraGCBS = await ReadTotalIBSCBSGCBSAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "gMono":
+                    extraGMono = await ReadTotalIBSCBSGMonoAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "gEstornoCred":
+                    extraGEstornoCred = await ReadTotalIBSCBSGEstornoCredAsync(ct).ConfigureAwait(false);
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new TotalIBSCBS

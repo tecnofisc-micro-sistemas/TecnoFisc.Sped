@@ -16,13 +16,26 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "vBCMono": extraVBCMono = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "pAliqMonoUF": extraPAliqMonoUF = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vIBSMonoUF": extraVIBSMonoUF = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "pAliqMonoMun": extraPAliqMonoMun = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vIBSMonoMun": extraVIBSMonoMun = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vIBSMono": extraVIBSMono = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                default: return false;
+                case "vBCMono":
+                    extraVBCMono = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "pAliqMonoUF":
+                    extraPAliqMonoUF = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vIBSMonoUF":
+                    extraVIBSMonoUF = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "pAliqMonoMun":
+                    extraPAliqMonoMun = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vIBSMonoMun":
+                    extraVIBSMonoMun = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vIBSMono":
+                    extraVIBSMono = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new TributacaoIBSCBSGIBSCBSMonoGIBSMonoAdValoremGMonoPadrao

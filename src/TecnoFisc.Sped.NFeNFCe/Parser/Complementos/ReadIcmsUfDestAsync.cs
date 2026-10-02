@@ -19,16 +19,35 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "vBCUFDest": extraVBCUFDest = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vBCFCPUFDest": extraVBCFCPUFDest = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "pFCPUFDest": extraPFCPUFDest = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "pICMSUFDest": extraPICMSUFDest = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "pICMSInter": extraPICMSInter = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "pICMSInterPart": extraPICMSInterPart = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vFCPUFDest": extraVFCPUFDest = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vICMSUFDest": extraVICMSUFDest = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vICMSUFRemet": extraVICMSUFRemet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                default: return false;
+                case "vBCUFDest":
+                    extraVBCUFDest = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vBCFCPUFDest":
+                    extraVBCFCPUFDest = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "pFCPUFDest":
+                    extraPFCPUFDest = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "pICMSUFDest":
+                    extraPICMSUFDest = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "pICMSInter":
+                    extraPICMSInter = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "pICMSInterPart":
+                    extraPICMSInterPart = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vFCPUFDest":
+                    extraVFCPUFDest = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vICMSUFDest":
+                    extraVICMSUFDest = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vICMSUFRemet":
+                    extraVICMSUFRemet = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new IcmsUfDest

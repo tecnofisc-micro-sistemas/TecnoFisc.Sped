@@ -12,9 +12,14 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "Modulus": extraModulus = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "Exponent": extraExponent = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                default: return false;
+                case "Modulus":
+                    extraModulus = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "Exponent":
+                    extraExponent = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new InfNFeInfPAAPAASignatureRSAKeyValue

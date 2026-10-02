@@ -24,20 +24,47 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "nDI": extraNDI = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "dDI": extraDDI = DateOnly.Parse(await _r.ReadTextAsync().ConfigureAwait(false), CultureInfo.InvariantCulture); return true;
-                case "xLocDesemb": extraXLocDesemb = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "UFDesemb": extraUFDesemb = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "dDesemb": extraDDesemb = DateOnly.Parse(await _r.ReadTextAsync().ConfigureAwait(false), CultureInfo.InvariantCulture); return true;
-                case "tpViaTransp": extraTpViaTransp = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "vAFRMM": extraVAFRMM = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "tpIntermedio": extraTpIntermedio = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "CNPJ": extraCNPJ = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "CPF": extraCPF = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "UFTerceiro": extraUFTerceiro = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "cExportador": extraCExportador = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "adi": (extraAdi ??= []).Add(await ReadDeclaracaoImportacaoAdiAsync(ct).ConfigureAwait(false)); return true;
-                default: return false;
+                case "nDI":
+                    extraNDI = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "dDI":
+                    extraDDI = DateOnly.Parse(await _r.ReadTextAsync().ConfigureAwait(false), CultureInfo.InvariantCulture);
+                    return true;
+                case "xLocDesemb":
+                    extraXLocDesemb = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "UFDesemb":
+                    extraUFDesemb = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "dDesemb":
+                    extraDDesemb = DateOnly.Parse(await _r.ReadTextAsync().ConfigureAwait(false), CultureInfo.InvariantCulture);
+                    return true;
+                case "tpViaTransp":
+                    extraTpViaTransp = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "vAFRMM":
+                    extraVAFRMM = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "tpIntermedio":
+                    extraTpIntermedio = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "CNPJ":
+                    extraCNPJ = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "CPF":
+                    extraCPF = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "UFTerceiro":
+                    extraUFTerceiro = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "cExportador":
+                    extraCExportador = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "adi":
+                    (extraAdi ??= []).Add(await ReadDeclaracaoImportacaoAdiAsync(ct).ConfigureAwait(false));
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new DeclaracaoImportacao

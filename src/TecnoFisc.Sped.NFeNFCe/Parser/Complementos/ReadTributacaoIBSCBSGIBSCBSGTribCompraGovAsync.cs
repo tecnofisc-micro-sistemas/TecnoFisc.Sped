@@ -16,13 +16,26 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "pAliqIBSUF": extraPAliqIBSUF = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vTribIBSUF": extraVTribIBSUF = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "pAliqIBSMun": extraPAliqIBSMun = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vTribIBSMun": extraVTribIBSMun = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "pAliqCBS": extraPAliqCBS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vTribCBS": extraVTribCBS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                default: return false;
+                case "pAliqIBSUF":
+                    extraPAliqIBSUF = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vTribIBSUF":
+                    extraVTribIBSUF = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "pAliqIBSMun":
+                    extraPAliqIBSMun = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vTribIBSMun":
+                    extraVTribIBSMun = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "pAliqCBS":
+                    extraPAliqCBS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vTribCBS":
+                    extraVTribCBS = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new TributacaoIBSCBSGIBSCBSGTribCompraGov

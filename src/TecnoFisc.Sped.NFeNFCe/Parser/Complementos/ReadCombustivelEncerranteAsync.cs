@@ -15,12 +15,23 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "nBico": extraNBico = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "nBomba": extraNBomba = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "nTanque": extraNTanque = await _r.ReadTextAsync().ConfigureAwait(false); return true;
-                case "vEncIni": extraVEncIni = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vEncFin": extraVEncFin = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                default: return false;
+                case "nBico":
+                    extraNBico = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "nBomba":
+                    extraNBomba = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "nTanque":
+                    extraNTanque = await _r.ReadTextAsync().ConfigureAwait(false);
+                    return true;
+                case "vEncIni":
+                    extraVEncIni = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vEncFin":
+                    extraVEncFin = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new CombustivelEncerrante

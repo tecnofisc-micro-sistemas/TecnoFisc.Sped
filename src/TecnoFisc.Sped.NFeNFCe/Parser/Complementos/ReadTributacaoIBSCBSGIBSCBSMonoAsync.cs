@@ -16,13 +16,26 @@ internal sealed partial class NFeXmlReader
         {
             switch (nome)
             {
-                case "gIBSMonoAdRem": extraGIBSMonoAdRem = await ReadTributacaoIBSCBSGIBSCBSMonoGIBSMonoAdRemAsync(ct).ConfigureAwait(false); return true;
-                case "gIBSMonoAdValorem": extraGIBSMonoAdValorem = await ReadTributacaoIBSCBSGIBSCBSMonoGIBSMonoAdValoremAsync(ct).ConfigureAwait(false); return true;
-                case "gCBSMonoAdRem": extraGCBSMonoAdRem = await ReadTributacaoIBSCBSGIBSCBSMonoGCBSMonoAdRemAsync(ct).ConfigureAwait(false); return true;
-                case "gCBSMonoAdValorem": extraGCBSMonoAdValorem = await ReadTributacaoIBSCBSGIBSCBSMonoGCBSMonoAdValoremAsync(ct).ConfigureAwait(false); return true;
-                case "vTotIBSMonoItem": extraVTotIBSMonoItem = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                case "vTotCBSMonoItem": extraVTotCBSMonoItem = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false)); return true;
-                default: return false;
+                case "gIBSMonoAdRem":
+                    extraGIBSMonoAdRem = await ReadTributacaoIBSCBSGIBSCBSMonoGIBSMonoAdRemAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "gIBSMonoAdValorem":
+                    extraGIBSMonoAdValorem = await ReadTributacaoIBSCBSGIBSCBSMonoGIBSMonoAdValoremAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "gCBSMonoAdRem":
+                    extraGCBSMonoAdRem = await ReadTributacaoIBSCBSGIBSCBSMonoGCBSMonoAdRemAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "gCBSMonoAdValorem":
+                    extraGCBSMonoAdValorem = await ReadTributacaoIBSCBSGIBSCBSMonoGCBSMonoAdValoremAsync(ct).ConfigureAwait(false);
+                    return true;
+                case "vTotIBSMonoItem":
+                    extraVTotIBSMonoItem = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                case "vTotCBSMonoItem":
+                    extraVTotCBSMonoItem = ParseDecimal(await _r.ReadTextAsync().ConfigureAwait(false));
+                    return true;
+                default:
+                    return false;
             }
         }, _options.Strict, ct).ConfigureAwait(false);
         return new TributacaoIBSCBSGIBSCBSMono

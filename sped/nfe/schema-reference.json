@@ -1,0 +1,29 @@
+{
+  "files": [
+    {
+      "name": "DFeTiposBasicos_v1.00.xsd",
+      "sha256": "173577A4E3A9DC1D0DECED85B89B955B6064BB5A4AE5A96F6727D2DA8A694D09"
+    },
+    {
+      "name": "leiauteNFe_v4.00.xsd",
+      "sha256": "2BACE939973916D54184FF3E2740041A932DE5D79772F3363504504160F22542"
+    },
+    {
+      "name": "nfe_v4.00.xsd",
+      "sha256": "ADCE3646C13CEB54922EC3142FC1DC45BD4FB839AC35AD583E86C733C07D27DF"
+    },
+    {
+      "name": "tiposBasico_v4.00.xsd",
+      "sha256": "772619C85723E598840667CA66E7298A250442DF47EEB94B397D2A333CE62047"
+    },
+    {
+      "name": "xmldsig-core-schema_v1.01.xsd",
+      "sha256": "F56744A5F51C03F027DE13F39F869307091781A9EF1D91B1EBE14719CE28E1AC"
+    }
+  ],
+  "package": "PL_010f_v1.04",
+  "archiveSha256": "B8589490A58A09A993A80E6AC4D7ED10F20892061ECFC56719337098D4B95998",
+  "retrieved": "2026-10-02",
+  "published": "2026-08-31",
+  "url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=8ITFuBLltXs="
+}
